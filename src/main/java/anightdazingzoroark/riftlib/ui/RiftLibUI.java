@@ -263,8 +263,19 @@ public abstract class RiftLibUI extends GuiScreen {
         //tab selector clicking
         for (RiftLibUISection.TabSelectorClickRegion tabSelectorClickRegion : section.getTabSelectorClickRegions()) {
             if (tabSelectorClickRegion.isHovered(mouseX, mouseY)) {
+                section.updateSectionFromTabChange(tabSelectorClickRegion.tabID, tabSelectorClickRegion.tabContentsID);
+                /*
+                //get old scroll info first
+                System.out.println("old max scroll: "+section.getMaxScroll());
+                double oldScrollProgress = section.getScrollOffset() / ((double) section.getMaxScroll());
+
                 this.playPressSound();
                 section.getOpenedTabs().replace(tabSelectorClickRegion.tabID, tabSelectorClickRegion.tabContentsID);
+
+                int newMaxScroll = section.getMaxScroll();
+                System.out.println("new max scroll: "+newMaxScroll);
+                section.setScrollOffset((int) (newMaxScroll * oldScrollProgress));
+                 */
             }
         }
     }

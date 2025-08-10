@@ -797,6 +797,10 @@ public abstract class RiftLibUISection {
         return this.scrollOffset;
     }
 
+    public int getMaxScroll() {
+        return this.maxScroll;
+    }
+
     public void setScrollOffset(int value) {
         this.scrollOffset = value;
     }
@@ -966,6 +970,17 @@ public abstract class RiftLibUISection {
 
     public Map<String, String> getOpenedTabs() {
         return this.openedTabs;
+    }
+
+    public void updateSectionFromTabChange(String tabID, String tabContentsID) {
+        //get old scroll progress
+        double oldScrollProgress = this.scrollOffset / ((double) this.maxScroll);
+
+        //change opened tabs map
+        this.openedTabs.replace(tabID, tabContentsID);
+
+        //change scroll progress
+        this.setScrollOffset((int) (this.maxScroll * oldScrollProgress));
     }
     //tab related stuff ends here
 }

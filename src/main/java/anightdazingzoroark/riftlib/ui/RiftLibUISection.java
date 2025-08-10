@@ -693,7 +693,7 @@ public abstract class RiftLibUISection {
 
     private int getTabContentWidth(RiftLibUIElement.TabElement tabElement) {
         if (tabElement.getWidth() > 0) return tabElement.getWidth();
-        return this.width;
+        return this.getWidthMinusScrollbar();
     }
 
     private int getWidthMinusScrollbar() {

@@ -420,7 +420,7 @@ public abstract class RiftLibUI extends GuiScreen {
         }
     }
 
-    protected void setAllButtonsUsability(boolean value) {
+    protected void setAllButtonsUsability(String sectionID, boolean value) {
         if (this.popupSection != null) {
             for (RiftLibButton button : this.popupSection.getActiveButtons()) {
                 this.popupSection.setButtonEnabled(button.buttonId, value);
@@ -428,8 +428,10 @@ public abstract class RiftLibUI extends GuiScreen {
         }
         else {
             for (RiftLibUISection section : this.uiSections) {
-                for (RiftLibButton button : section.getActiveButtons()) {
-                    section.setButtonEnabled(button.buttonId, value);
+                if (section.id.equals(sectionID)) {
+                    for (RiftLibButton button : section.getActiveButtons()) {
+                        section.setButtonEnabled(button.buttonId, value);
+                    }
                 }
             }
         }

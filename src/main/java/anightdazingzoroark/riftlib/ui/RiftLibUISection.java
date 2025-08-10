@@ -746,6 +746,15 @@ public abstract class RiftLibUISection {
         }
     }
 
+    public boolean mouseOnScrollSection(int mouseX, int mouseY) {
+        int sectionX = (this.guiWidth - this.width) / 2 + this.xPos;
+        int sectionY = (this.guiHeight - this.height) / 2 + this.yPos;
+        int scrollX = sectionX + this.getWidthMinusScrollbar() + this.scrollbarXOffset;
+
+        return mouseX >= scrollX && mouseX <= scrollX + this.scrollbarWidth &&
+                mouseY >= sectionY && mouseY <= sectionY + height;
+    }
+
     //this changes scroll offset based on where the user clicked on scroll section
     public void handleClickOnScrollSection(int mouseX, int mouseY, int button) {
         if (button == 0 && this.contentHeight > this.height) {
@@ -970,17 +979,6 @@ public abstract class RiftLibUISection {
 
     public Map<String, String> getOpenedTabs() {
         return this.openedTabs;
-    }
-
-    public void updateSectionFromTabChange(String tabID, String tabContentsID) {
-        //get old scroll progress
-        double oldScrollProgress = this.scrollOffset / ((double) this.maxScroll);
-
-        //change opened tabs map
-        this.openedTabs.replace(tabID, tabContentsID);
-
-        //change scroll progress
-        this.setScrollOffset((int) (this.maxScroll * oldScrollProgress));
     }
     //tab related stuff ends here
 }

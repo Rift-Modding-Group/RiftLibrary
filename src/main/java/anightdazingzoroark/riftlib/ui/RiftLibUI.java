@@ -21,13 +21,12 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public abstract class RiftLibUI extends GuiScreen {
     private final ResourceLocation popupBackground = new ResourceLocation(RiftLib.ModID, "textures/ui/popup.png");
+    private final Map<String, Double> sectionScrollProgress = new HashMap<>();
+    private String sectionWithHeightChange = "";
     protected final String popupID = "popup";
     private List<RiftLibUISection> uiSections = new ArrayList<>();
     private RiftLibUISection popupSection;
@@ -66,7 +65,16 @@ public abstract class RiftLibUI extends GuiScreen {
         super.initGui();
 
         //set contents of sections when opening screen
-        if (this.uiSections.isEmpty()) this.uiSections = this.uiSections();
+        if (this.uiSections.isEmpty()) {
+            this.uiSections = this.uiSections();
+
+            //initialize scroll progress for all the sections
+            for (RiftLibUISection section : this.uiSections) {
+                if (this.sectionScrollProgress.containsKey(section.id)) {
+                    this.sectionScrollProgress.put(section.id, 0D);
+                }
+            }
+        }
         //when screen resizes, make sure that the section and all changes to it are preserved
         //only thing that changes is what it believes to be the ui size
         else {
@@ -98,7 +106,16 @@ public abstract class RiftLibUI extends GuiScreen {
                 //when there's a popup, make sure that hover related effects cannot happen
                 section.setCanDoHoverEffects(this.popupSection == null);
 
+                //draw section
                 section.drawSectionContents(mouseX, mouseY, partialTicks);
+
+                //if there's a section whose height was changed, update it here
+                if (!this.sectionWithHeightChange.isEmpty()) {
+                    double oldScrollProgress = this.sectionScrollProgress.get(this.sectionWithHeightChange);
+                    int newMaxScroll = section.getMaxScroll();
+                    section.setScrollOffset((int) (newMaxScroll * oldScrollProgress));
+                    this.sectionWithHeightChange = "";
+                }
             }
 
             //if theres a popup, skip the hoverlay related stuff
@@ -202,6 +219,12 @@ public abstract class RiftLibUI extends GuiScreen {
 
                     //handle scrolling with scrollbar on sections
                     section.handleScrollWithScrollbar(mouseX, mouseY, delta);
+
+                    //update scroll map
+                    this.sectionScrollProgress.put(
+                            section.id,
+                            section.getScrollOffset() / (double) section.getMaxScroll()
+                    );
                 }
             }
         }
@@ -230,6 +253,12 @@ public abstract class RiftLibUI extends GuiScreen {
 
         //skip to clicked position scroll bar on sections
         section.handleClickOnScrollSection(mouseX, mouseY, mouseButton);
+
+        //update scroll map
+        this.sectionScrollProgress.put(
+                section.id,
+                section.getScrollOffset() / (double) section.getMaxScroll()
+        );
 
         //open jei for items
         section.itemElementClicked(mouseX, mouseY, mouseButton);
@@ -263,19 +292,10 @@ public abstract class RiftLibUI extends GuiScreen {
         //tab selector clicking
         for (RiftLibUISection.TabSelectorClickRegion tabSelectorClickRegion : section.getTabSelectorClickRegions()) {
             if (tabSelectorClickRegion.isHovered(mouseX, mouseY)) {
-                section.updateSectionFromTabChange(tabSelectorClickRegion.tabID, tabSelectorClickRegion.tabContentsID);
-                /*
-                //get old scroll info first
-                System.out.println("old max scroll: "+section.getMaxScroll());
-                double oldScrollProgress = section.getScrollOffset() / ((double) section.getMaxScroll());
-
                 this.playPressSound();
                 section.getOpenedTabs().replace(tabSelectorClickRegion.tabID, tabSelectorClickRegion.tabContentsID);
-
-                int newMaxScroll = section.getMaxScroll();
-                System.out.println("new max scroll: "+newMaxScroll);
-                section.setScrollOffset((int) (newMaxScroll * oldScrollProgress));
-                 */
+                //this is for changing scroll related stuff for later
+                this.sectionWithHeightChange = section.id;
             }
         }
     }
@@ -292,6 +312,12 @@ public abstract class RiftLibUI extends GuiScreen {
                 if (this.hiddenUISections.contains(section.id)) continue;
 
                 section.handleReleaseClickOnScrollbar(mouseX, mouseY, state);
+
+                //update scroll map
+                this.sectionScrollProgress.put(
+                        section.id,
+                        section.getScrollOffset() / (double) section.getMaxScroll()
+                );
             }
         }
     }
@@ -308,6 +334,12 @@ public abstract class RiftLibUI extends GuiScreen {
                 if (this.hiddenUISections.contains(section.id)) continue;
 
                 section.handleScrollWithClick(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+
+                //update scroll map
+                this.sectionScrollProgress.put(
+                        section.id,
+                        section.getScrollOffset() / (double) section.getMaxScroll()
+                );
             }
         }
     }

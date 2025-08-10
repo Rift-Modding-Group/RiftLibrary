@@ -675,7 +675,7 @@ public abstract class RiftLibUISection {
                     contentInnerHeight += usedHeight;
 
                     //extra bottom height for certain elements
-                    if (i < this.defineSectionContents().size() - 1) {
+                    if (i < tabContentElements.size() - 1) {
                         int bottomSpace = element.getBottomSpace();
                         contentInnerY += bottomSpace;
                         contentInnerHeight += bottomSpace;

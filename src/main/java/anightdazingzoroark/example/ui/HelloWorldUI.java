@@ -30,8 +30,9 @@ public class HelloWorldUI extends RiftLibUI {
 
                 //hello world text element
                 RiftLibUIElement.TextElement helloWorldText = new RiftLibUIElement.TextElement();
+                helloWorldText.setBottomSpace(0);
                 helloWorldText.setText("Hello world!");
-                helloWorldText.setAlignment(RiftLibUIElement.ALIGN_CENTER);
+                helloWorldText.setAlignment(RiftLibUIElement.ALIGN_RIGHT);
                 //helloWorldText.setScale(0.75f);
                 helloWorldText.setSingleLine();
                 elementsToReturn.add(helloWorldText);
@@ -192,8 +193,16 @@ public class HelloWorldUI extends RiftLibUI {
                 tabOneTextLineOne.setText("This is the first tab!");
                 RiftLibUIElement.TextElement tabOneTextLineTwo = new RiftLibUIElement.TextElement();
                 tabOneTextLineTwo.setText("There are many more tabs like this one!");
+                RiftLibUIElement.TextElement tabOneTextLineThree = new RiftLibUIElement.TextElement();
+                tabOneTextLineThree.setText("This has no bottom space");
+                tabOneTextLineThree.setBottomSpace(0);
+                RiftLibUIElement.TextElement tabOneTextLineFour = new RiftLibUIElement.TextElement();
+                tabOneTextLineFour.setText("And this is the fourth line");
+                tabOneTextLineFour.setBottomSpace(0);
                 tabOne.add(tabOneTextLineOne);
                 tabOne.add(tabOneTextLineTwo);
+                tabOne.add(tabOneTextLineThree);
+                tabOne.add(tabOneTextLineFour);
                 tabElement.addTab("tabOne", "One", tabOne);
 
                 //tab two

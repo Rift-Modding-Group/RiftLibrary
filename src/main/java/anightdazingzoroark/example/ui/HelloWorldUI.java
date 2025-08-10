@@ -184,7 +184,7 @@ public class HelloWorldUI extends RiftLibUI {
 
                 //tab contents
                 RiftLibUIElement.TabElement tabElement = new RiftLibUIElement.TabElement();
-                tabElement.setWidth(150);
+                //tabElement.setWidth(150);
 
                 //tab one
                 List<RiftLibUIElement.Element> tabOne = new ArrayList<>();

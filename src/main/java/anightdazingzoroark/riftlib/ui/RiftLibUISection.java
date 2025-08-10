@@ -670,7 +670,7 @@ public abstract class RiftLibUISection {
                     RiftLibUIElement.Element elementInTab = tabContentElements.get(i);
 
                     //draw all the elements in the tab
-                    int usedHeight = this.drawElement(elementInTab, draw, this.getTabContentWidth(tabElement), contentInnerX, contentInnerY, mouseX, mouseY, partialTicks);
+                    int usedHeight = this.drawElement(elementInTab, draw, this.getTabContentWidth(tabElement) - contentPadding, contentInnerX, contentInnerY, mouseX, mouseY, partialTicks);
                     contentInnerY += usedHeight;
                     contentInnerHeight += usedHeight;
 
@@ -683,7 +683,7 @@ public abstract class RiftLibUISection {
                 }
 
                 //draw content outline box after measuring
-                if (draw) this.drawRectOutline(x, contentBoxY, this.getTabContentWidth(tabElement) + contentPadding * 2, contentInnerHeight + contentPadding * 2, 0xFF000000);
+                if (draw) this.drawRectOutline(x, contentBoxY, this.getTabContentWidth(tabElement), contentInnerHeight + contentPadding * 2, 0xFF000000);
             }
 
             return tabSelectorHeight + 4 + contentInnerHeight + contentPadding * 2;

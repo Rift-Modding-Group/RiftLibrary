@@ -8,7 +8,6 @@ import anightdazingzoroark.riftlib.ui.uiElement.RiftLibUIElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderItem;
@@ -933,14 +932,14 @@ public abstract class RiftLibUISection {
 
     public String getTextBoxContentsByID(String id) {
         for (RiftLibTextField textField : this.textFields) {
-            if (textField.id.equals(id)) return textField.getText();
+            if (textField.textBoxID.equals(id)) return textField.getText();
         }
         return "";
     }
 
     public void setTextBoxContentsByID(String id, String contents) {
         for (RiftLibTextField textField : this.textFields) {
-            if (textField.id.equals(id)) {
+            if (textField.textBoxID.equals(id)) {
                 textField.setText(contents);
                 if (this.textFieldContents.containsKey(id)) this.textFieldContents.replace(id, contents);
                 else this.textFieldContents.put(id, contents);

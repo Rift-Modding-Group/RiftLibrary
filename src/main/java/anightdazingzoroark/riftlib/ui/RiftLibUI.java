@@ -101,7 +101,7 @@ public abstract class RiftLibUI extends GuiScreen {
 
         //iterate over all ui sections
         for (RiftLibUISection section : this.uiSections) {
-            //draw all the sections in uiSections as long as its id is not hidden
+            //draw all the sections in uiSections as long as its textBoxID is not hidden
             if (!this.hiddenUISections.contains(section.id)) {
                 //when there's a popup, make sure that hover related effects cannot happen
                 section.setCanDoHoverEffects(this.popupSection == null);
@@ -376,12 +376,12 @@ public abstract class RiftLibUI extends GuiScreen {
             Map<String, String> contents = section.getTextFieldContents();
 
             //add to contents map if it exists
-            if (contents.containsKey(textField.id)) {
+            if (contents.containsKey(textField.textBoxID)) {
                 textField.textboxKeyTyped(typedChar, keyCode);
-                contents.replace(textField.id, textField.getText());
+                contents.replace(textField.textBoxID, textField.getText());
             }
             //just put it inside otherwise
-            else contents.put(textField.id, String.valueOf(typedChar));
+            else contents.put(textField.textBoxID, String.valueOf(typedChar));
         }
     }
 
@@ -531,13 +531,13 @@ public abstract class RiftLibUI extends GuiScreen {
     protected String getTextFieldTextByID(String id) {
         if (this.popupSection != null) {
             for (RiftLibTextField textField : this.popupSection.getTextFields()) {
-                if (textField.id.equals(id)) return textField.getText();
+                if (textField.textBoxID.equals(id)) return textField.getText();
             }
         }
         else {
             for (RiftLibUISection section : this.uiSections) {
                 for (RiftLibTextField textField : section.getTextFields()) {
-                    if (textField.id.equals(id)) return textField.getText();
+                    if (textField.textBoxID.equals(id)) return textField.getText();
                 }
             }
         }
@@ -547,7 +547,7 @@ public abstract class RiftLibUI extends GuiScreen {
     protected void setTextFieldTextByID(String id, String value) {
         if (this.popupSection != null) {
             for (RiftLibTextField textField : this.popupSection.getTextFields()) {
-                if (textField.id.equals(id)) {
+                if (textField.textBoxID.equals(id)) {
                     this.popupSection.setTextBoxContentsByID(id, value);
                 }
             }
@@ -555,7 +555,7 @@ public abstract class RiftLibUI extends GuiScreen {
         else {
             for (RiftLibUISection section : this.uiSections) {
                 for (RiftLibTextField textField : section.getTextFields()) {
-                    if (textField.id.equals(id)) {
+                    if (textField.textBoxID.equals(id)) {
                         section.setTextBoxContentsByID(id, value);
                     }
                 }

@@ -46,7 +46,7 @@ public class HelloWorldUI extends RiftLibUI {
                 elementsToReturn.add(introText);
 
                 RiftLibUIElement.TextElement one = new RiftLibUIElement.TextElement();
-                one.setText("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam tincidunt, turpis auctor tincidunt sollicitudin, nunc est dictum mi, eget vehicula nulla arcu a velit. Proin odio nibh, lacinia non blandit id, faucibus nec massa. Nulla vehicula convallis nisl. Maecenas ultrices ultricies quam sit amet tempor. Maecenas vestibulum, ligula eu suscipit tincidunt, lorem augue congue odio, a faucibus augue erat ut ante. Cras imperdiet neque nec purus mollis maximus. Vivamus congue quam quis erat varius, sed iaculis nibh auctor. Praesent tempor vitae felis vel rutrum. Nunc vitae risus lorem. Nulla venenatis molestie hendrerit. Sed mollis risus non fringilla ornare.");
+                one.setText("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam tincidunt, turpis auctor tincidunt sollicitudin, nunc est dictum mi, eget vehicula nulla arcu a velit. Proin odio nibh, lacinia non blandit textBoxID, faucibus nec massa. Nulla vehicula convallis nisl. Maecenas ultrices ultricies quam sit amet tempor. Maecenas vestibulum, ligula eu suscipit tincidunt, lorem augue congue odio, a faucibus augue erat ut ante. Cras imperdiet neque nec purus mollis maximus. Vivamus congue quam quis erat varius, sed iaculis nibh auctor. Praesent tempor vitae felis vel rutrum. Nunc vitae risus lorem. Nulla venenatis molestie hendrerit. Sed mollis risus non fringilla ornare.");
                 one.setAlignment(RiftLibUIElement.ALIGN_CENTER);
                 //introText.setScale(0.75f);
                 //introText.setSingleLine();
@@ -258,7 +258,7 @@ public class HelloWorldUI extends RiftLibUI {
             List<RiftLibUIElement.Element> popupElements = new ArrayList<>();
 
             RiftLibUIElement.TextElement popupTextElement = new RiftLibUIElement.TextElement();
-            popupTextElement.setText("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam tincidunt, turpis auctor tincidunt sollicitudin, nunc est dictum mi, eget vehicula nulla arcu a velit. Proin odio nibh, lacinia non blandit id, faucibus nec massa. Nulla vehicula convallis nisl. Maecenas ultrices ultricies quam sit amet tempor. Maecenas vestibulum, ligula eu suscipit tincidunt, lorem augue congue odio, a faucibus augue erat ut ante. Cras imperdiet neque nec purus mollis maximus. Vivamus congue quam quis erat varius, sed iaculis nibh auctor. Praesent tempor vitae felis vel rutrum. Nunc vitae risus lorem. Nulla venenatis molestie hendrerit. Sed mollis risus non fringilla ornare.");
+            popupTextElement.setText("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam tincidunt, turpis auctor tincidunt sollicitudin, nunc est dictum mi, eget vehicula nulla arcu a velit. Proin odio nibh, lacinia non blandit textBoxID, faucibus nec massa. Nulla vehicula convallis nisl. Maecenas ultrices ultricies quam sit amet tempor. Maecenas vestibulum, ligula eu suscipit tincidunt, lorem augue congue odio, a faucibus augue erat ut ante. Cras imperdiet neque nec purus mollis maximus. Vivamus congue quam quis erat varius, sed iaculis nibh auctor. Praesent tempor vitae felis vel rutrum. Nunc vitae risus lorem. Nulla venenatis molestie hendrerit. Sed mollis risus non fringilla ornare.");
             popupTextElement.setAlignment(RiftLibUIElement.ALIGN_CENTER);
             popupElements.add(popupTextElement);
 

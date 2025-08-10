@@ -363,6 +363,18 @@ public abstract class RiftLibUI extends GuiScreen {
         }
     }
 
+    //once sections are generated, these methods have to be used to get them
+    protected List<RiftLibUISection> getUiSections() {
+        return this.uiSections;
+    }
+
+    protected RiftLibUISection getSectionByID(String sectionID) {
+        for (RiftLibUISection section : this.uiSections) {
+            if (section.id.equals(sectionID)) return section;
+        }
+        return null;
+    }
+
     //button management starts here
     protected boolean buttonInSection(String sectionID, RiftLibButton button) {
         if (this.popupSection != null) {

@@ -364,6 +364,19 @@ public abstract class RiftLibUI extends GuiScreen {
     }
 
     //button management starts here
+    protected boolean buttonInSection(String sectionID, RiftLibButton button) {
+        if (this.popupSection != null) {
+            //get popup section
+            return this.popupSection.getActiveButtons().contains(button);
+        }
+        else {
+            for (RiftLibUISection section : this.uiSections) {
+                if (section.id.equals(sectionID)) return section.getActiveButtons().contains(button);
+            }
+        }
+        return false;
+    }
+
     protected RiftLibButton getButtonByID(String id) {
         if (this.popupSection != null) {
             for (RiftLibButton button : this.popupSection.getActiveButtons()) {

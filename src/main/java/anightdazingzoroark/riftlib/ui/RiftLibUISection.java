@@ -56,6 +56,9 @@ public abstract class RiftLibUISection {
     protected final Minecraft minecraft;
     protected final FontRenderer fontRenderer;
 
+    //for storing elements once they're made
+    private List<String> elementIDs = new ArrayList<>();
+
     //for being able hover over items and see their jei recipes
     private final List<ItemClickRegion> itemClickRegions = new ArrayList<>();
 
@@ -130,6 +133,8 @@ public abstract class RiftLibUISection {
         this.textFields.clear();
         this.tabSelectorClickRegions.clear();
 
+        List<RiftLibUIElement.Element> sectionContents = this.defineSectionContents();
+
         int sectionX = (this.guiWidth - this.getWidthMinusScrollbar()) / 2 + this.xPos;
         int sectionY = (this.guiHeight - this.height) / 2 + this.yPos;
 
@@ -161,12 +166,12 @@ public abstract class RiftLibUISection {
 
         //measure total height
         int totalHeight = 0;
-        for (int i = 0; i < this.defineSectionContents().size(); i++) {
-            RiftLibUIElement.Element element = this.defineSectionContents().get(i);
+        for (int i = 0; i < sectionContents.size(); i++) {
+            RiftLibUIElement.Element element = sectionContents.get(i);
             int elementHeight = this.drawElement(element, false, this.getWidthMinusScrollbar(), sectionX, 0, mouseX, mouseY, partialTicks);
             totalHeight += elementHeight;
 
-            if (i < this.defineSectionContents().size() - 1) {
+            if (i < sectionContents.size() - 1) {
                 totalHeight += element.getBottomSpace();
             }
         }
@@ -184,8 +189,8 @@ public abstract class RiftLibUISection {
 
         //draw the elements
         int accumulatedHeight = 0;
-        for (int i = 0; i < this.defineSectionContents().size(); i++) {
-            RiftLibUIElement.Element element = this.defineSectionContents().get(i);
+        for (int i = 0; i < sectionContents.size(); i++) {
+            RiftLibUIElement.Element element = sectionContents.get(i);
 
             accumulatedHeight += this.drawElement(
                     element,
@@ -198,7 +203,9 @@ public abstract class RiftLibUISection {
                     partialTicks
             );
 
-            if (i < this.defineSectionContents().size() - 1) {
+            if (!this.elementIDs.contains(element.getID())) this.elementIDs.add(element.getID());
+
+            if (i < sectionContents.size() - 1) {
                 accumulatedHeight += element.getBottomSpace();
             }
         }

@@ -906,7 +906,7 @@ public abstract class RiftLibUISection {
 
     public void setButtonEnabled(String id, boolean value) {
         if (value) this.disabledButtonIds.remove(id);
-        else this.disabledButtonIds.add(id);
+        else if (!this.disabledButtonIds.contains(id)) this.disabledButtonIds.add(id);
     }
     //button related stuff ends here
 
@@ -916,7 +916,9 @@ public abstract class RiftLibUISection {
     }
 
     public void setClickableSectionSelected(String id, boolean value) {
-        if (value) this.selectedClickableSections.add(id);
+        if (value) {
+            if (!this.selectedClickableSections.contains(id)) this.selectedClickableSections.add(id);
+        }
         else this.selectedClickableSections.remove(id);
     }
     //clickable section stuff ends here

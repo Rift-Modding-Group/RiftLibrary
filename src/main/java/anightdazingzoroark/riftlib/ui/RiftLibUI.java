@@ -566,7 +566,7 @@ public abstract class RiftLibUI extends GuiScreen {
 
     protected void setUISectionVisibility(String sectionID, boolean value) {
         if (value) this.hiddenUISections.remove(sectionID);
-        else this.hiddenUISections.add(sectionID);
+        else if (!this.hiddenUISections.contains(sectionID)) this.hiddenUISections.add(sectionID);
     }
 
     protected void playPressSound() {

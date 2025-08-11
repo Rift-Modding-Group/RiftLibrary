@@ -52,6 +52,7 @@ public abstract class RiftLibUISection {
     private boolean draggingScrollbar = false;
     private int dragOffsetY = 0;
     protected int scrollbarXOffset;
+    private final int scrollbarSpace = 4;
 
     //other stuff required for section to work properly
     private int guiWidth;
@@ -146,14 +147,14 @@ public abstract class RiftLibUISection {
 
         List<RiftLibUIElement.Element> sectionContents = this.defineSectionContents();
 
-        int sectionX = (this.guiWidth - this.getWidthMinusScrollbar()) / 2 + this.xPos;
+        int sectionX = (this.guiWidth - this.width) / 2 + this.xPos;
         int sectionY = (this.guiHeight - this.height) / 2 + this.yPos;
 
         //scissor setup
         ScaledResolution res = new ScaledResolution(this.minecraft);
         int scaleFactor = res.getScaleFactor();
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
-        GL11.glScissor(sectionX * scaleFactor, (this.minecraft.displayHeight - (sectionY + this.height) * scaleFactor), this.getWidthMinusScrollbar() * scaleFactor, this.height * scaleFactor);
+        GL11.glScissor(sectionX * scaleFactor, (this.minecraft.displayHeight - (sectionY + this.height) * scaleFactor), this.width * scaleFactor, this.height * scaleFactor);
         /*
         int drawY = sectionY - this.scrollOffset;
         int totalHeight = 0;
@@ -179,7 +180,7 @@ public abstract class RiftLibUISection {
         int totalHeight = 0;
         for (int i = 0; i < sectionContents.size(); i++) {
             RiftLibUIElement.Element element = sectionContents.get(i);
-            int elementHeight = this.drawElement(element, false, this.getWidthMinusScrollbar(), sectionX, 0, mouseX, mouseY, partialTicks);
+            int elementHeight = this.drawElement(element, false, this.width, sectionX, 0, mouseX, mouseY, partialTicks);
             totalHeight += elementHeight;
 
             if (i < sectionContents.size() - 1) {
@@ -198,6 +199,10 @@ public abstract class RiftLibUISection {
             drawY += verticalOffset;
         }
 
+        //modify based on if scrolling is needed or not
+        boolean scrollable = this.contentHeight > this.height;
+        int sectionXScrollable = sectionX + (this.width - this.getWidthMinusScrollbar()) / 2;
+
         //draw the elements
         int accumulatedHeight = 0;
         for (int i = 0; i < sectionContents.size(); i++) {
@@ -207,7 +212,7 @@ public abstract class RiftLibUISection {
                     element,
                     true,
                     this.getWidthMinusScrollbar(),
-                    sectionX,
+                    scrollable ? sectionXScrollable : sectionX,
                     drawY + accumulatedHeight,
                     mouseX,
                     mouseY,
@@ -220,23 +225,26 @@ public abstract class RiftLibUISection {
                 accumulatedHeight += element.getBottomSpace();
             }
         }
+        //update with new heights for scrolling
+        this.contentHeight = accumulatedHeight;
+        this.maxScroll = Math.max(0, this.contentHeight - this.height);
 
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
 
+        //draw the boundaries
+        if (this.showBounds) {
+            this.drawRectOutline(sectionX, sectionY, this.width, this.height, 0xFF000000);
+        }
+
         //draw scrollbar
-        if (this.contentHeight > this.height) {
+        if (scrollable) {
             float ratio = (float) this.scrollOffset / (float) this.maxScroll;
             int thumbHeight = Math.max(20, (int)((float) this.height * this.height / (float) this.contentHeight));
             int thumbY = sectionY + (int)((this.height - thumbHeight) * ratio);
-            int scrollX = sectionX + this.getWidthMinusScrollbar() + this.scrollbarXOffset;
+            int scrollX = sectionX + this.getWidthMinusScrollbar() + this.scrollbarXOffset + this.scrollbarSpace;
 
             drawRect(scrollX, sectionY, scrollX + this.scrollbarWidth, sectionY + this.height, 0xFF333333);
             drawRect(scrollX, thumbY, scrollX + this.scrollbarWidth, thumbY + thumbHeight, 0xFFAAAAAA);
-        }
-
-        //draw the boundaries
-        if (this.showBounds) {
-            this.drawRectOutline(sectionX, sectionY, this.getWidthMinusScrollbar(), this.height, 0xFF000000);
         }
     }
 
@@ -755,11 +763,12 @@ public abstract class RiftLibUISection {
 
     private int getTabContentWidth(RiftLibUIElement.TabElement tabElement) {
         if (tabElement.getWidth() > 0) return tabElement.getWidth();
-        return this.getWidthMinusScrollbar();
+        else if (this.contentHeight > this.height) return this.getWidthMinusScrollbar();
+        else return this.width;
     }
 
     private int getWidthMinusScrollbar() {
-        return this.width - this.scrollbarWidth;
+        return this.width - this.scrollbarWidth - this.scrollbarSpace;
     }
 
     private void drawImprovedSplitString(RiftLibUIElement.TextElement textElement, int x, int y, int wrapWidth, int sectionWidth, float scale, int color) {
@@ -808,19 +817,10 @@ public abstract class RiftLibUISection {
         }
     }
 
-    public boolean mouseOnScrollSection(int mouseX, int mouseY) {
-        int sectionX = (this.guiWidth - this.width) / 2 + this.xPos;
-        int sectionY = (this.guiHeight - this.height) / 2 + this.yPos;
-        int scrollX = sectionX + this.getWidthMinusScrollbar() + this.scrollbarXOffset;
-
-        return mouseX >= scrollX && mouseX <= scrollX + this.scrollbarWidth &&
-                mouseY >= sectionY && mouseY <= sectionY + height;
-    }
-
     //this changes scroll offset based on where the user clicked on scroll section
     public void handleClickOnScrollSection(int mouseX, int mouseY, int button) {
         if (button == 0 && this.contentHeight > this.height) {
-            int sectionX = (this.guiWidth - this.width) / 2 + this.xPos;
+            int sectionX = (this.guiWidth - this.getWidthMinusScrollbar()) / 2 + this.xPos;
             int sectionY = (this.guiHeight - this.height) / 2 + this.yPos;
             int scrollX = sectionX + this.getWidthMinusScrollbar() + this.scrollbarXOffset;
 

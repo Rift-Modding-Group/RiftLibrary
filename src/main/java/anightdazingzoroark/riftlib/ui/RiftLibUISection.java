@@ -10,8 +10,12 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
@@ -85,6 +89,9 @@ public abstract class RiftLibUISection {
     //hover related stuff
     private boolean doHoverEffects = true;
 
+    //debug related stuff only, its for drawing a box that shows the boundaries of the section
+    private boolean showBounds;
+
     public RiftLibUISection(String id, int guiWidth, int guiHeight, int width, int height, int xPos, int yPos, FontRenderer fontRenderer, Minecraft minecraft) {
         this.id = id;
         this.guiWidth = guiWidth;
@@ -105,6 +112,11 @@ public abstract class RiftLibUISection {
     public void repositionSection(int xPos, int yPos) {
         this.xPos = xPos;
         this.yPos = yPos;
+    }
+
+    //for debugging
+    public void showBounds(boolean value) {
+        this.showBounds = value;
     }
 
     public int[] sectionPos() {
@@ -220,6 +232,11 @@ public abstract class RiftLibUISection {
 
             drawRect(scrollX, sectionY, scrollX + this.scrollbarWidth, sectionY + this.height, 0xFF333333);
             drawRect(scrollX, thumbY, scrollX + this.scrollbarWidth, thumbY + thumbHeight, 0xFFAAAAAA);
+        }
+
+        //draw the boundaries
+        if (this.showBounds) {
+            this.drawRectOutline(sectionX, sectionY, this.getWidthMinusScrollbar(), this.height, 0xFF000000);
         }
     }
 
@@ -567,17 +584,49 @@ public abstract class RiftLibUISection {
 
                 //entity rendering
                 if ((y + scaledRenderHeight) > sectionTop && y < sectionBottom) {
-                    GlStateManager.color(1f, 1f, 1f, 1f);
+                    Entity entityToRender = this.modifiedEntityForRendering(renderedEntityElement.getEntity());
+
                     GlStateManager.pushMatrix();
-                    GlStateManager.pushMatrix();
+                    GlStateManager.enableColorMaterial();
                     GlStateManager.enableDepth();
-                    GlStateManager.translate(renderedEntityX, y + scaledRenderHeight, 210f);
-                    GlStateManager.rotate(180, 1f, 0f, 0f);
-                    GlStateManager.rotate(renderedEntityElement.getRotationAngle(), 0f, 1f, 0f);
+
+                    // Position and orient
+                    GlStateManager.translate(renderedEntityX, y + scaledRenderHeight, 210.0F);
                     GlStateManager.scale(scale, scale, scale);
-                    this.minecraft.getRenderManager().renderEntity(renderedEntityElement.getEntity(), 0.0D, 0.0D, 0.0D, 0.0F, 0F, false);
+                    GlStateManager.rotate(180.0F, 1.0F, 0.0F, 0.0F);
+                    GlStateManager.rotate(renderedEntityElement.getRotationAngle(), 0.0F, 1.0F, 0.0F);
+
+                    // --- CRITICAL: ensure lightmap texture is enabled BEFORE rendering ---
+                    OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+                    GlStateManager.enableTexture2D(); // make sure lightmap sampler is on
+                    OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240f, 240f);
+
+                    // Back to default tex unit for normal diffuse textures
+                    OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
+                    GlStateManager.enableTexture2D();
+
+                    RenderHelper.enableStandardItemLighting();
+                    this.minecraft.getRenderManager().setPlayerViewY(180.0F);
+                    this.minecraft.getRenderManager().setRenderShadow(false);
+
+                    // Render
+                    GlStateManager.color(1f, 1f, 1f, 1f);
+                    this.minecraft.getRenderManager().renderEntity(entityToRender, 0, 0, 0, 0.0F, 0.0F, false);
+
+                    // Restore
+                    this.minecraft.getRenderManager().setRenderShadow(true);
+                    RenderHelper.disableStandardItemLighting();
+                    GlStateManager.disableRescaleNormal();
                     GlStateManager.disableDepth();
-                    GlStateManager.popMatrix();
+                    GlStateManager.color(1f, 1f, 1f, 1f);
+
+                    // Restore lightmap & texture unit states
+                    OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, OpenGlHelper.lastBrightnessX, OpenGlHelper.lastBrightnessY);
+                    OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
+                    GlStateManager.disableTexture2D(); // typical GUI state
+                    OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
+                    GlStateManager.enableTexture2D();
+
                     GlStateManager.popMatrix();
                 }
             }
@@ -688,6 +737,20 @@ public abstract class RiftLibUISection {
             return tabSelectorHeight + 4 + contentInnerHeight + contentPadding * 2;
         }
         return 0;
+    }
+
+    private Entity modifiedEntityForRendering(Entity entity) {
+        if (entity instanceof EntityLivingBase) {
+            EntityLivingBase entityLivingBase = (EntityLivingBase) entity;
+            entityLivingBase.deathTime = 0;
+            entityLivingBase.hurtTime = 0;
+            entityLivingBase.isDead = false;
+            return entityLivingBase;
+        }
+        else {
+            entity.isDead = false;
+            return entity;
+        }
     }
 
     private int getTabContentWidth(RiftLibUIElement.TabElement tabElement) {

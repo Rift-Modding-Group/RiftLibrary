@@ -23,7 +23,7 @@ public class HelloWorldUI extends RiftLibUI {
     public List<RiftLibUISection> uiSections() {
         List<RiftLibUISection> toReturn = new ArrayList<>();
 
-        toReturn.add(new RiftLibUISection("mainSection", this.width, this.height, 166, 156, 0, 0, this.fontRenderer, this.mc) {
+        RiftLibUISection section = new RiftLibUISection("mainSection", this.width, this.height, 166, 156, 0, 0, this.fontRenderer, this.mc) {
             @Override
             public List<RiftLibUIElement.Element> defineSectionContents() {
                 List<RiftLibUIElement.Element> elementsToReturn = new ArrayList<>();
@@ -219,7 +219,10 @@ public class HelloWorldUI extends RiftLibUI {
 
                 return elementsToReturn;
             }
-        });
+        };
+        section.showBounds(true);
+
+        toReturn.add(section);
 
         return toReturn;
     }

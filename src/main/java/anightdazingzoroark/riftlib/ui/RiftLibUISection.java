@@ -211,7 +211,7 @@ public abstract class RiftLibUISection {
             accumulatedHeight += this.drawElement(
                     element,
                     true,
-                    this.getWidthMinusScrollbar(),
+                    scrollable ? this.getWidthMinusScrollbar() : this.width,
                     scrollable ? sectionXScrollable : sectionX,
                     drawY + accumulatedHeight,
                     mouseX,

@@ -157,6 +157,7 @@ public class HelloWorldUI extends RiftLibUI {
 
                 //entity
                 RiftLibUIElement.RenderedEntityElement renderedEntityElement = new RiftLibUIElement.RenderedEntityElement();
+                renderedEntityElement.setNotLimitedByBounds();
                 renderedEntityElement.setID("chicken");
                 renderedEntityElement.setScale(40f);
                 renderedEntityElement.setAlignment(RiftLibUIElement.ALIGN_CENTER);

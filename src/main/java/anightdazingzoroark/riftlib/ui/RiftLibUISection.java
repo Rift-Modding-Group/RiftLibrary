@@ -214,6 +214,9 @@ public abstract class RiftLibUISection {
         for (int i = 0; i < this.sectionContents.size(); i++) {
             RiftLibUIElement.Element element = this.sectionContents.get(i);
 
+            //if element is not limited by bounds, make em here
+            if (!element.getLimitedByBounds()) GL11.glDisable(GL11.GL_SCISSOR_TEST);
+
             //now draw
             accumulatedHeight += this.drawElement(
                     element,
@@ -228,6 +231,11 @@ public abstract class RiftLibUISection {
 
             if (i < this.sectionContents.size() - 1) {
                 accumulatedHeight += element.getBottomSpace();
+            }
+
+            if (!element.getLimitedByBounds()) {
+                GL11.glEnable(GL11.GL_SCISSOR_TEST);
+                GL11.glScissor(sectionX * scaleFactor, (this.minecraft.displayHeight - (sectionY + this.height) * scaleFactor), this.width * scaleFactor, this.height * scaleFactor);
             }
         }
         //update with new heights for scrolling

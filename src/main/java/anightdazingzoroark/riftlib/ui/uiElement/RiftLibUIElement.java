@@ -21,6 +21,7 @@ public class RiftLibUIElement {
         private int alignment;
         private int bottomSpace = 9;
         private float scale = 1f;
+        private boolean limitedByBounds = true;
 
         public void setID(String value) {
             this.id = value;
@@ -59,6 +60,14 @@ public class RiftLibUIElement {
             else if (this.getAlignment() == ALIGN_CENTER) return x + (int) Math.ceil((sectionWidth - elementWidth) / 2f);
             else if (this.getAlignment() == ALIGN_RIGHT) return x + sectionWidth - elementWidth;
             return 0;
+        }
+
+        public void setNotLimitedByBounds() {
+            this.limitedByBounds = false;
+        }
+
+        public boolean getLimitedByBounds() {
+            return this.limitedByBounds;
         }
     }
 

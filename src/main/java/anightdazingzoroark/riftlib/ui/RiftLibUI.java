@@ -215,6 +215,10 @@ public abstract class RiftLibUI extends GuiScreen {
         };
     }
 
+    protected RiftLibUISection getPopupSection() {
+        return this.popupSection;
+    }
+
     protected void clearPopup() {
         this.popupSection = null;
     }

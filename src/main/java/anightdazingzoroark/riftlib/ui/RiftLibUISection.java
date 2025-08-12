@@ -61,7 +61,7 @@ public abstract class RiftLibUISection {
     protected final FontRenderer fontRenderer;
 
     //for storing elements once they're made
-    private List<String> elementIDs = new ArrayList<>();
+    private List<RiftLibUIElement.Element> sectionContents = new ArrayList<>();
 
     //for being able hover over items and see their jei recipes
     private final List<ItemClickRegion> itemClickRegions = new ArrayList<>();
@@ -135,6 +135,11 @@ public abstract class RiftLibUISection {
     //draw elements to be drawn
     public abstract List<RiftLibUIElement.Element> defineSectionContents();
 
+    //set the section elements
+    public void setSectionContents() {
+        this.sectionContents = this.defineSectionContents();
+    }
+
     //draw contents as defined in defineSectionContents()
     public void drawSectionContents(int mouseX, int mouseY, float partialTicks) {
         //preemptively clear lists
@@ -145,7 +150,8 @@ public abstract class RiftLibUISection {
         this.textFields.clear();
         this.tabSelectorClickRegions.clear();
 
-        List<RiftLibUIElement.Element> sectionContents = this.defineSectionContents();
+        //if theres no section contents, do nothing
+        if (this.sectionContents.isEmpty()) return;
 
         int sectionX = (this.guiWidth - this.width) / 2 + this.xPos;
         int sectionY = (this.guiHeight - this.height) / 2 + this.yPos;
@@ -178,12 +184,12 @@ public abstract class RiftLibUISection {
 
         //measure total height
         int totalHeight = 0;
-        for (int i = 0; i < sectionContents.size(); i++) {
-            RiftLibUIElement.Element element = sectionContents.get(i);
+        for (int i = 0; i < this.sectionContents.size(); i++) {
+            RiftLibUIElement.Element element = this.sectionContents.get(i);
             int elementHeight = this.drawElement(element, false, this.width, sectionX, 0, mouseX, mouseY, partialTicks);
             totalHeight += elementHeight;
 
-            if (i < sectionContents.size() - 1) {
+            if (i < this.sectionContents.size() - 1) {
                 totalHeight += element.getBottomSpace();
             }
         }
@@ -205,9 +211,10 @@ public abstract class RiftLibUISection {
 
         //draw the elements
         int accumulatedHeight = 0;
-        for (int i = 0; i < sectionContents.size(); i++) {
-            RiftLibUIElement.Element element = sectionContents.get(i);
+        for (int i = 0; i < this.sectionContents.size(); i++) {
+            RiftLibUIElement.Element element = this.sectionContents.get(i);
 
+            //now draw
             accumulatedHeight += this.drawElement(
                     element,
                     true,
@@ -219,9 +226,7 @@ public abstract class RiftLibUISection {
                     partialTicks
             );
 
-            if (!this.elementIDs.contains(element.getID())) this.elementIDs.add(element.getID());
-
-            if (i < sectionContents.size() - 1) {
+            if (i < this.sectionContents.size() - 1) {
                 accumulatedHeight += element.getBottomSpace();
             }
         }
@@ -846,6 +851,14 @@ public abstract class RiftLibUISection {
 
     public void handleReleaseClickOnScrollbar(int mouseX, int mouseY, int button) {
         if (button == 0) this.draggingScrollbar = false;
+    }
+
+    public List<RiftLibUIElement.Element> getSectionContents() {
+        return this.sectionContents;
+    }
+
+    public void setSectionContent(int pos, RiftLibUIElement.Element element) {
+
     }
 
     //this changes scroll offset based on clicking and dragging the scroll guide

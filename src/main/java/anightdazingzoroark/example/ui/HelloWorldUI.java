@@ -7,6 +7,7 @@ import anightdazingzoroark.riftlib.ui.uiElement.RiftLibButton;
 import anightdazingzoroark.riftlib.ui.uiElement.RiftLibClickableSection;
 import anightdazingzoroark.riftlib.ui.uiElement.RiftLibUIElement;
 import net.minecraft.entity.passive.EntityChicken;
+import net.minecraft.entity.passive.EntityPig;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -89,7 +90,7 @@ public class HelloWorldUI extends RiftLibUI {
                     elementsToReturn.add(itemElement);
                 }
 
-                //tool  test
+                //tool test
                 RiftLibUIElement.ToolElement toolElement = new RiftLibUIElement.ToolElement();
                 toolElement.setAlignment(RiftLibUIElement.ALIGN_CENTER);
                 toolElement.setToolType("pickaxe");
@@ -156,6 +157,7 @@ public class HelloWorldUI extends RiftLibUI {
 
                 //entity
                 RiftLibUIElement.RenderedEntityElement renderedEntityElement = new RiftLibUIElement.RenderedEntityElement();
+                renderedEntityElement.setID("chicken");
                 renderedEntityElement.setScale(40f);
                 renderedEntityElement.setAlignment(RiftLibUIElement.ALIGN_CENTER);
                 renderedEntityElement.setEntity(new EntityChicken(this.minecraft.world));
@@ -224,6 +226,15 @@ public class HelloWorldUI extends RiftLibUI {
         toReturn.add(section);
 
         return toReturn;
+    }
+
+    public RiftLibUIElement.Element modifyUISectionElement(RiftLibUISection section, RiftLibUIElement.Element oldElement) {
+        if (section.id.equals("mainSection") && oldElement.getID().equals("chicken")) {
+            RiftLibUIElement.RenderedEntityElement entityElement = (RiftLibUIElement.RenderedEntityElement) oldElement;
+            entityElement.setEntity(new EntityPig(this.mc.world));
+            oldElement = entityElement;
+        }
+        return oldElement;
     }
 
     @Override

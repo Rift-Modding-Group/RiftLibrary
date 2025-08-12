@@ -103,8 +103,18 @@ public abstract class RiftLibUI extends GuiScreen {
         for (RiftLibUISection section : this.uiSections) {
             //draw all the sections in uiSections as long as its textBoxID is not hidden
             if (!this.hiddenUISections.contains(section.id)) {
+                //define contents
+                section.setSectionContents();
+
                 //when there's a popup, make sure that hover related effects cannot happen
                 section.setCanDoHoverEffects(this.popupSection == null);
+
+                //put in the method that allows for additional section element modification
+                for (int i = 0; i < section.getSectionContents().size(); i++) {
+                    RiftLibUIElement.Element element = section.getSectionContents().get(i);
+                    element = this.modifyUISectionElement(section, element);
+                    section.setSectionContent(i, element);
+                }
 
                 //put in the method that allows for additional section modification
                 section = this.modifyUISection(section);
@@ -156,6 +166,8 @@ public abstract class RiftLibUI extends GuiScreen {
             this.popupSection.drawSectionContents(mouseX, mouseY, partialTicks);
         }
     }
+
+    public abstract RiftLibUIElement.Element modifyUISectionElement(RiftLibUISection section, RiftLibUIElement.Element oldElement);
 
     public abstract RiftLibUISection modifyUISection(RiftLibUISection oldSection);
 

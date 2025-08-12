@@ -227,6 +227,11 @@ public class HelloWorldUI extends RiftLibUI {
     }
 
     @Override
+    public RiftLibUISection modifyUISection(RiftLibUISection oldSection) {
+        return oldSection;
+    }
+
+    @Override
     public ResourceLocation drawBackground() {
         return new ResourceLocation(RiftLib.ModID, "textures/ui/generic_screen.png");
     }

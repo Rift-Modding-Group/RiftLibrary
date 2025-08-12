@@ -106,6 +106,9 @@ public abstract class RiftLibUI extends GuiScreen {
                 //when there's a popup, make sure that hover related effects cannot happen
                 section.setCanDoHoverEffects(this.popupSection == null);
 
+                //put in the method that allows for additional section modification
+                section = this.modifyUISection(section);
+
                 //draw section
                 section.drawSectionContents(mouseX, mouseY, partialTicks);
 
@@ -153,6 +156,8 @@ public abstract class RiftLibUI extends GuiScreen {
             this.popupSection.drawSectionContents(mouseX, mouseY, partialTicks);
         }
     }
+
+    public abstract RiftLibUISection modifyUISection(RiftLibUISection oldSection);
 
     private void drawGuiContainerBackgroundLayer() {
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);

@@ -162,6 +162,9 @@ public abstract class RiftLibUI extends GuiScreen {
             );
             this.drawPopupBackgroundLayer();
 
+            //define contents
+            this.popupSection.setSectionContents();
+
             //draw popup elements
             this.popupSection.drawSectionContents(mouseX, mouseY, partialTicks);
         }

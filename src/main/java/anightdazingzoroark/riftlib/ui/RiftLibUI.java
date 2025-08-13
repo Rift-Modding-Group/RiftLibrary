@@ -138,8 +138,8 @@ public abstract class RiftLibUI extends GuiScreen {
             if (hoveredItem == null) hoveredItem = section.getHoveredItemStack(mouseX, mouseY);
 
             //create overlay text for hovered tool
-            String toolOverlayString = section.getStringToHoverFromTool(mouseX, mouseY);
-            if (!toolOverlayString.isEmpty()) this.drawHoveringText(toolOverlayString, mouseX, mouseY);
+            String elementOverlayString = section.getStringToHoverFromElement(mouseX, mouseY);
+            if (!elementOverlayString.isEmpty()) this.drawHoveringText(elementOverlayString, mouseX, mouseY);
         }
 
         //show overlay info regarding hovered item
@@ -454,6 +454,24 @@ public abstract class RiftLibUI extends GuiScreen {
         else {
             for (RiftLibUISection section : this.uiSections) {
                 if (section.id.equals(sectionID)) return section.getActiveButtons().contains(button);
+            }
+        }
+        return false;
+    }
+
+    protected boolean buttonIsUsable(String sectionID, String buttonID) {
+        if (this.popupSection != null) {
+            for (RiftLibButton button : this.popupSection.getActiveButtons()) {
+                if (button.buttonId.equals(buttonID)) return this.popupSection.buttonIsEnabled(buttonID);
+            }
+        }
+        else {
+            for (RiftLibUISection section : this.uiSections) {
+                if (section.id.equals(sectionID)) {
+                    for (RiftLibButton button : section.getActiveButtons()) {
+                        if (button.buttonId.equals(buttonID)) return section.buttonIsEnabled(buttonID);
+                    }
+                }
             }
         }
         return false;

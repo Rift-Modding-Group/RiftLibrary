@@ -270,17 +270,8 @@ public class RiftLibUIElement {
 
     //for representation of a tool
     public static class ToolElement extends Element {
-        private String overlayText = "";
         private String toolType;
         private int miningLevel = -1;
-
-        public void setOverlayText(String value) {
-            this.overlayText = value;
-        }
-
-        public String getOverlayText() {
-            return this.overlayText;
-        }
 
         public void setToolType(String value) {
             this.toolType = value;

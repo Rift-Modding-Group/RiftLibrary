@@ -33,6 +33,7 @@ public class HelloWorldUI extends RiftLibUI {
                 RiftLibUIElement.TextElement helloWorldText = new RiftLibUIElement.TextElement();
                 helloWorldText.setBottomSpace(0);
                 helloWorldText.setText("Hello world!");
+                helloWorldText.setOverlayText("Hello once again, world!");
                 helloWorldText.setAlignment(RiftLibUIElement.ALIGN_RIGHT);
                 //helloWorldText.setScale(0.75f);
                 helloWorldText.setSingleLine();
@@ -41,6 +42,7 @@ public class HelloWorldUI extends RiftLibUI {
                 //rift lib intro text element
                 RiftLibUIElement.TextElement introText = new RiftLibUIElement.TextElement();
                 introText.setText("This text has been opened by hitting the sky with a piece of paper!");
+                introText.setOverlayText("Teehee!");
                 introText.setAlignment(RiftLibUIElement.ALIGN_LEFT);
                 //introText.setScale(0.75f);
                 //introText.setSingleLine();
@@ -69,6 +71,7 @@ public class HelloWorldUI extends RiftLibUI {
 
                 //image test
                 RiftLibUIElement.ImageElement imageElement = new RiftLibUIElement.ImageElement();
+                imageElement.setOverlayText("a simple image");
                 imageElement.setImage(
                         new ResourceLocation(RiftLib.ModID, "textures/ui/controls.png"),
                         64,
@@ -143,6 +146,7 @@ public class HelloWorldUI extends RiftLibUI {
                 textBoxSection.setWidth(80);
                 textBoxSection.setID("myTextBox");
                 textBoxSection.setDefaultText("Hello");
+                textBoxSection.setOverlayText("type anything here!");
                 textBoxSection.setAlignment(RiftLibUIElement.ALIGN_CENTER);
                 elementsToReturn.add(textBoxSection);
 
@@ -153,6 +157,7 @@ public class HelloWorldUI extends RiftLibUI {
                 progressBarElement.setAlignment(RiftLibUIElement.ALIGN_CENTER);
                 progressBarElement.setScale(1f);
                 progressBarElement.setWidth(80);
+                progressBarElement.setOverlayText("a red progress bar");
                 elementsToReturn.add(progressBarElement);
 
                 //entity
@@ -162,6 +167,7 @@ public class HelloWorldUI extends RiftLibUI {
                 renderedEntityElement.setScale(40f);
                 renderedEntityElement.setAlignment(RiftLibUIElement.ALIGN_CENTER);
                 renderedEntityElement.setEntity(new EntityChicken(this.minecraft.world));
+                renderedEntityElement.setOverlayText("A chicken! Or pig? Who knows?");
                 elementsToReturn.add(renderedEntityElement);
 
                 //table
@@ -233,7 +239,11 @@ public class HelloWorldUI extends RiftLibUI {
         if (section.id.equals("mainSection") && oldElement.getID().equals("chicken")) {
             RiftLibUIElement.RenderedEntityElement entityElement = (RiftLibUIElement.RenderedEntityElement) oldElement;
             entityElement.setEntity(new EntityPig(this.mc.world));
-            oldElement = entityElement;
+        }
+        if (section.id.equals("mainSection") && oldElement.getID().equals("deactivatable")) {
+            RiftLibUIElement.ButtonElement buttonElement = (RiftLibUIElement.ButtonElement) oldElement;
+            if (this.buttonIsUsable("mainSection", "deactivatable")) buttonElement.setOverlayText("This button is usable!");
+            else buttonElement.setOverlayText("This one isn't...");
         }
         return oldElement;
     }

@@ -66,11 +66,11 @@ public abstract class RiftLibUISection {
     //for storing elements once they're made
     private List<RiftLibUIElement.Element> sectionContents = new ArrayList<>();
 
-    //for being able hover over items and see their jei recipes
-    private final List<ItemClickRegion> itemClickRegions = new ArrayList<>();
+    //for being able to hover over elements and see hover text (if they have)
+    private final List<ElementHoverRegion> elementHoverRegions = new ArrayList<>();
 
-    //for being able to hover over tools and see hover text
-    private final List<ToolHoverRegion> toolHoverRegions = new ArrayList<>();
+    //for being able hover over items and see their jei recipes
+    private final List<ItemHoverRegion> itemClickRegions = new ArrayList<>();
 
     //for dealing with active buttons
     private final List<RiftLibButton> activeButtons = new ArrayList<>();
@@ -147,7 +147,7 @@ public abstract class RiftLibUISection {
     public void drawSectionContents(int mouseX, int mouseY, float partialTicks) {
         //preemptively clear lists
         this.itemClickRegions.clear();
-        this.toolHoverRegions.clear();
+        this.elementHoverRegions.clear();
         this.activeButtons.clear();
         this.clickableSections.clear();
         this.textFields.clear();
@@ -291,18 +291,47 @@ public abstract class RiftLibUISection {
                             (int) (y / scale),
                             textElement.getTextColor()
                     );
+
+                    //if text has hover text, add it
+                    if (textElement.getOverlayText() != null && !textElement.getOverlayText().isEmpty()) {
+                        this.elementHoverRegions.add(new ElementHoverRegion(
+                                textElement.getOverlayText(),
+                                totalTextX,
+                                y,
+                                stringWidth,
+                                lines * this.fontRenderer.FONT_HEIGHT,
+                                sectionTop,
+                                sectionBottom
+                        ));
+                    }
                 }
                 else {
                     List<String> stringList = this.fontRenderer.listFormattedStringToWidth(textElement.getText(), (int) (sectionWidth * scale));
-                    this.drawImprovedSplitString(
-                            textElement,
-                            x,
-                            y,
-                            sectionWidth,
-                            sectionWidth,
-                            scale,
-                            textElement.getTextColor()
-                    );
+                    for (int i = 0; i < stringList.size(); i++) {
+                        //render line of each string first
+                        String stringToRender = stringList.get(i);
+                        int stringWidth = (int) (Math.min(sectionWidth, this.fontRenderer.getStringWidth(stringToRender)) * scale);
+                        int totalTextX = textElement.xOffsetFromAlignment(sectionWidth, stringWidth, x);
+                        this.fontRenderer.drawString(
+                                stringToRender,
+                                (int) (totalTextX / scale),
+                                (int)((y + this.fontRenderer.FONT_HEIGHT * i) / scale),
+                                textElement.getTextColor()
+                        );
+
+                        //if text has hover text, make it so it hovers over each line
+                        if (textElement.getOverlayText() != null && !textElement.getOverlayText().isEmpty()) {
+                            this.elementHoverRegions.add(new ElementHoverRegion(
+                                    textElement.getOverlayText(),
+                                    (int) (totalTextX / scale),
+                                    (int)((y + this.fontRenderer.FONT_HEIGHT * i) / scale),
+                                    (int) (this.fontRenderer.getStringWidth(stringToRender) * scale),
+                                    lines * this.fontRenderer.FONT_HEIGHT,
+                                    sectionTop,
+                                    sectionBottom
+                            ));
+                        }
+                    }
                     lines = stringList.size();
                 }
                 if (scale != 1f) GlStateManager.popMatrix();
@@ -346,6 +375,19 @@ public abstract class RiftLibUISection {
                         imageElement.getTextureSize()[1]
                 );
                 GlStateManager.popMatrix();
+
+                //if image has hover text, add it
+                if (imageElement.getOverlayText() != null && !imageElement.getOverlayText().isEmpty()) {
+                    this.elementHoverRegions.add(new ElementHoverRegion(
+                            imageElement.getOverlayText(),
+                            (int) (totalImgX / scale),
+                            (int) (y / scale),
+                            scaledImageWidth,
+                            scaledImageHeight,
+                            sectionTop,
+                            sectionBottom
+                    ));
+                }
             }
 
             return scaledImageHeight;
@@ -375,7 +417,7 @@ public abstract class RiftLibUISection {
                 if (scale != 1f) GlStateManager.popMatrix();
 
                 //for being able hover over items and see their jei recipes
-                this.itemClickRegions.add(new ItemClickRegion(itemStack, totalItemX, y, scaledItemSize, sectionTop, sectionBottom));
+                this.itemClickRegions.add(new ItemHoverRegion(itemStack, totalItemX, y, scaledItemSize, sectionTop, sectionBottom));
             }
 
             return scaledItemSize;
@@ -424,7 +466,7 @@ public abstract class RiftLibUISection {
 
                 //it tool has hover text, add it
                 if (toolElement.getOverlayText() != null && !toolElement.getOverlayText().isEmpty()) {
-                    this.toolHoverRegions.add(new ToolHoverRegion(
+                    this.elementHoverRegions.add(new ToolHoverRegion(
                             toolElement.getOverlayText(),
                             toolElement.getToolType(),
                             toolElement.getMiningLevel(),
@@ -458,6 +500,19 @@ public abstract class RiftLibUISection {
                     button.drawButton(this.minecraft, mouseX, mouseY, partialTicks);
                 }
                 this.activeButtons.add(button);
+
+                //if button has hover text, add it
+                if (buttonElement.getOverlayText() != null && !buttonElement.getOverlayText().isEmpty()) {
+                    this.elementHoverRegions.add(new ElementHoverRegion(
+                            buttonElement.getOverlayText(),
+                            buttonX,
+                            y,
+                            buttonW,
+                            buttonH,
+                            sectionTop,
+                            sectionBottom
+                    ));
+                }
             }
 
             return buttonH;
@@ -525,6 +580,19 @@ public abstract class RiftLibUISection {
                     clickableSection.drawSection(mouseX, mouseY);
                 }
                 this.clickableSections.add(clickableSection);
+
+                //if clickable section has hover text, add it
+                if (clickableSectionElement.getOverlayText() != null && !clickableSectionElement.getOverlayText().isEmpty()) {
+                    this.elementHoverRegions.add(new ElementHoverRegion(
+                            clickableSectionElement.getOverlayText(),
+                            sectionX,
+                            y,
+                            sectionW,
+                            sectionH,
+                            sectionTop,
+                            sectionBottom
+                    ));
+                }
             }
 
             return sectionH;
@@ -562,6 +630,19 @@ public abstract class RiftLibUISection {
 
                 textField.drawTextBox();
                 this.textFields.add(textField);
+
+                //if text box has hover text, add it
+                if (textBoxElement.getOverlayText() != null && !textBoxElement.getOverlayText().isEmpty()) {
+                    this.elementHoverRegions.add(new ElementHoverRegion(
+                            textBoxElement.getOverlayText(),
+                            scaledTextBoxX,
+                            scaledTextBoxY,
+                            textBoxWidth,
+                            textBoxHeight,
+                            sectionTop,
+                            sectionBottom
+                    ));
+                }
             }
 
             return textBoxHeight;
@@ -590,6 +671,19 @@ public abstract class RiftLibUISection {
                 //draw progress of progress bar
                 if (progressBarElement.getPercentage() > 0)
                     this.drawRectOutline(progressBarContentX, progressBarContentY, (int) (progressBarContentWidth * progressBarElement.getPercentage()), progressBarContentHeight, (0xFF000000 | progressBarElement.getOverlayColor()));
+
+                //if progress bar has hover text, add it
+                if (progressBarElement.getOverlayText() != null && !progressBarElement.getOverlayText().isEmpty()) {
+                    this.elementHoverRegions.add(new ElementHoverRegion(
+                            progressBarElement.getOverlayText(),
+                            progressBarX,
+                            y,
+                            progressBarWidth,
+                            progressBarHeight,
+                            sectionTop,
+                            sectionBottom
+                    ));
+                }
             }
 
             return progressBarHeight;
@@ -614,18 +708,17 @@ public abstract class RiftLibUISection {
                     GlStateManager.enableColorMaterial();
                     GlStateManager.enableDepth();
 
-                    // Position and orient
                     GlStateManager.translate(renderedEntityX, y + scaledRenderHeight, 210.0F);
                     GlStateManager.scale(scale, scale, scale);
                     GlStateManager.rotate(180.0F, 1.0F, 0.0F, 0.0F);
                     GlStateManager.rotate(renderedEntityElement.getRotationAngle(), 0.0F, 1.0F, 0.0F);
 
-                    // --- CRITICAL: ensure lightmap texture is enabled BEFORE rendering ---
+                    //ensure lightmap texture is enabled b4 rendering
                     OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
                     GlStateManager.enableTexture2D(); // make sure lightmap sampler is on
                     OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240f, 240f);
 
-                    // Back to default tex unit for normal diffuse textures
+                    //back to default tex unit for normal diffuse textures
                     OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
                     GlStateManager.enableTexture2D();
 
@@ -633,18 +726,18 @@ public abstract class RiftLibUISection {
                     this.minecraft.getRenderManager().setPlayerViewY(180.0F);
                     this.minecraft.getRenderManager().setRenderShadow(false);
 
-                    // Render
+                    //render entity
                     GlStateManager.color(1f, 1f, 1f, 1f);
                     this.minecraft.getRenderManager().renderEntity(entityToRender, 0, 0, 0, 0.0F, 0.0F, false);
 
-                    // Restore
+                    //restore
                     this.minecraft.getRenderManager().setRenderShadow(true);
                     RenderHelper.disableStandardItemLighting();
                     GlStateManager.disableRescaleNormal();
                     GlStateManager.disableDepth();
                     GlStateManager.color(1f, 1f, 1f, 1f);
 
-                    // Restore lightmap & texture unit states
+                    //restore lightmap & texture unit states
                     OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, OpenGlHelper.lastBrightnessX, OpenGlHelper.lastBrightnessY);
                     OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
                     GlStateManager.disableTexture2D(); // typical GUI state
@@ -653,6 +746,21 @@ public abstract class RiftLibUISection {
 
                     GlStateManager.popMatrix();
                 }
+
+                /*
+                //if entity has hover text, add it
+                if (renderedEntityElement.getOverlayText() != null && !renderedEntityElement.getOverlayText().isEmpty()) {
+                    this.elementHoverRegions.add(new ElementHoverRegion(
+                            renderedEntityElement.getOverlayText(),
+                            renderedEntityX,
+                            y,
+                            scaledRenderWidth,
+                            scaledRenderHeight,
+                            sectionTop,
+                            sectionBottom
+                    ));
+                }
+                 */
             }
 
             return scaledRenderHeight;
@@ -787,22 +895,6 @@ public abstract class RiftLibUISection {
         return this.width - this.scrollbarWidth - this.scrollbarSpace;
     }
 
-    private void drawImprovedSplitString(RiftLibUIElement.TextElement textElement, int x, int y, int wrapWidth, int sectionWidth, float scale, int color) {
-        String string = textElement.getText();
-        List<String> stringList = this.fontRenderer.listFormattedStringToWidth(string, wrapWidth);
-        for (int i = 0; i < stringList.size(); i++) {
-            String stringToRender = stringList.get(i);
-            int stringWidth = (int) (Math.min(sectionWidth, this.fontRenderer.getStringWidth(stringToRender)) * scale);
-            int totalTextX = textElement.xOffsetFromAlignment(sectionWidth, stringWidth, x);
-            this.fontRenderer.drawString(
-                    stringToRender,
-                    (int) (totalTextX / scale),
-                    (int)((y + this.fontRenderer.FONT_HEIGHT * i) / scale),
-                    color
-            );
-        }
-    }
-
     private void drawRectOutline(int x, int y, int w, int h, int color) {
         drawRect(x, y, x + w, y + 1, color);             // top
         drawRect(x, y + h - 1, x + w, y + h, color);     // bottom
@@ -901,31 +993,56 @@ public abstract class RiftLibUISection {
     }
     //scroll management stops here
 
-    //item element related stuff starts here
-    private class ItemClickRegion {
-        private final ItemStack stack;
-        private final int x, y, size;
-        private final int sectionTop, sectionBottom;
+    //element hovering stuff starts here
+    private class ElementHoverRegion {
+        protected final String stringOverlay;
+        protected final int x, y, width, height;
+        protected final int sectionTop, sectionBottom;
 
-        private ItemClickRegion(ItemStack stack, int x, int y, int size, int sectionTop, int sectionBottom) {
-            this.stack = stack;
+        private ElementHoverRegion(String stringOverlay, int x, int y, int width, int height, int sectionTop, int sectionBottom) {
+            this.stringOverlay = stringOverlay;
             this.x = x;
             this.y = y;
-            this.size = size;
+            this.width = width;
+            this.height = height;
             this.sectionTop = sectionTop;
             this.sectionBottom = sectionBottom;
         }
 
-        private boolean isHovered(int mouseX, int mouseY) {
+        public String renderStringOverlay() {
+            return this.stringOverlay;
+        }
+
+        protected boolean isHovered(int mouseX, int mouseY) {
             if (!doHoverEffects) return false;
-            return mouseX >= this.x && mouseX < this.x + this.size && mouseY >= this.y && mouseY < this.y + this.size
+            return mouseX >= this.x && mouseX < this.x + this.width && mouseY >= this.y && mouseY < this.y + this.height
                     && mouseY > this.sectionTop && mouseY < this.sectionBottom;
+        }
+    }
+
+    public String getStringToHoverFromElement(int mouseX, int mouseY) {
+        for (ElementHoverRegion region : this.elementHoverRegions) {
+            if (region.isHovered(mouseX, mouseY)) {
+                return region.renderStringOverlay();
+            }
+        }
+        return "";
+    }
+    //element hovering stuff ends here
+
+    //item element related stuff starts here
+    private class ItemHoverRegion extends ElementHoverRegion {
+        private final ItemStack stack;
+
+        private ItemHoverRegion(ItemStack stack, int x, int y, int size, int sectionTop, int sectionBottom) {
+            super("", x, y, size, size, sectionTop, sectionBottom);
+            this.stack = stack;
         }
     }
 
     public void itemElementClicked(int mouseX, int mouseY, int button) {
         //for item clicking
-        for (ItemClickRegion region : this.itemClickRegions) {
+        for (ItemHoverRegion region : this.itemClickRegions) {
             if (region.isHovered(mouseX, mouseY)) {
                 if (Loader.isModLoaded(RiftLibJEI.JEI_MOD_ID)) {
                     RiftLibJEI.showRecipesForItemStack(region.stack, false);
@@ -936,7 +1053,7 @@ public abstract class RiftLibUISection {
     }
 
     public ItemStack getHoveredItemStack(int mouseX, int mouseY) {
-        for (ItemClickRegion region : this.itemClickRegions) {
+        for (ItemHoverRegion region : this.itemClickRegions) {
             if (region.isHovered(mouseX, mouseY)) {
                 return region.stack;
             }
@@ -946,43 +1063,20 @@ public abstract class RiftLibUISection {
     //item element related stuff ends here
 
     //tool element related stuff starts here
-    private class ToolHoverRegion {
-        private final String stringOverlay;
+    private class ToolHoverRegion extends ElementHoverRegion {
         private final String toolType;
         private final int miningLevel;
-        private final int x, y, size;
-        private final int sectionTop, sectionBottom;
 
         private ToolHoverRegion(String stringOverlay, String toolType, int miningLevel, int x, int y, int size, int sectionTop, int sectionBottom) {
-            this.stringOverlay = stringOverlay;
+            super(stringOverlay, x, y, size, size, sectionTop, sectionBottom);
             this.toolType = toolType;
             this.miningLevel = miningLevel;
-
-            this.x = x;
-            this.y = y;
-            this.size = size;
-            this.sectionTop = sectionTop;
-            this.sectionBottom = sectionBottom;
         }
 
+        @Override
         public String renderStringOverlay() {
             return I18n.format(this.stringOverlay, this.toolType, this.miningLevel);
         }
-
-        private boolean isHovered(int mouseX, int mouseY) {
-            if (!doHoverEffects) return false;
-            return mouseX >= this.x && mouseX < this.x + this.size && mouseY >= this.y && mouseY < this.y + this.size
-                    && mouseY > this.sectionTop && mouseY < this.sectionBottom;
-        }
-    }
-
-    public String getStringToHoverFromTool(int mouseX, int mouseY) {
-        for (ToolHoverRegion region : this.toolHoverRegions) {
-            if (region.isHovered(mouseX, mouseY)) {
-                return region.renderStringOverlay();
-            }
-        }
-        return "";
     }
     //tool element related stuff ends here
 
@@ -994,6 +1088,10 @@ public abstract class RiftLibUISection {
     public void setButtonEnabled(String id, boolean value) {
         if (value) this.disabledButtonIds.remove(id);
         else if (!this.disabledButtonIds.contains(id)) this.disabledButtonIds.add(id);
+    }
+
+    public boolean buttonIsEnabled(String id) {
+        return !this.disabledButtonIds.contains(id);
     }
     //button related stuff ends here
 

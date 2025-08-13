@@ -165,6 +165,9 @@ public abstract class RiftLibUI extends GuiScreen {
             //define contents
             this.popupSection.setSectionContents();
 
+            //force contents of section to be centered
+            this.popupSection.setContentsCenteredVertically(true);
+
             //draw popup elements
             this.popupSection.drawSectionContents(mouseX, mouseY, partialTicks);
         }

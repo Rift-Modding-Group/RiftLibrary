@@ -42,6 +42,9 @@ public abstract class RiftLibUISection {
     //section management stuff
     public final String id;
 
+    //vertical centering of contents
+    private boolean contentsCenteredVertically;
+
     //scrolling related stuff
     private boolean scrollable;
     protected int contentHeight;
@@ -200,7 +203,7 @@ public abstract class RiftLibUISection {
 
         //adjust drawY based on scroll and vertical centering
         int drawY = sectionY - this.scrollOffset;
-        if (this.elementsCenteredVertically() && this.contentHeight < this.height) {
+        if (this.contentsCenteredVertically && this.contentHeight < this.height) {
             int verticalOffset = (this.height - this.contentHeight) / 2;
             drawY += verticalOffset;
         }
@@ -813,8 +816,8 @@ public abstract class RiftLibUISection {
         renderItem.renderItemOverlayIntoGUI(this.fontRenderer, stack, x, y, null);
     }
 
-    protected boolean elementsCenteredVertically() {
-        return false;
+    public void setContentsCenteredVertically(boolean value) {
+        this.contentsCenteredVertically = value;
     }
 
     //scroll management starts here

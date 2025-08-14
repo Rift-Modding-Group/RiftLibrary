@@ -265,7 +265,7 @@ public abstract class RiftLibUISection {
     }
 
     //return value is the total height created by these elements
-    private int drawElement(RiftLibUIElement.Element element, boolean draw, int sectionWidth, int x, int y, int mouseX, int mouseY, float partialTicks) {
+    protected int drawElement(RiftLibUIElement.Element element, boolean draw, int sectionWidth, int x, int y, int mouseX, int mouseY, float partialTicks) {
         //for items that have select, hover, or click functionalities
         //this is to ensure that items out of bounds dont get interacted with ever
         int sectionTop = (this.guiHeight - this.height) / 2 + this.yPos;

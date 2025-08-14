@@ -137,7 +137,7 @@ public abstract class RiftLibUI extends GuiScreen {
             //assign hovered item as long as its originally null
             if (hoveredItem == null) hoveredItem = section.getHoveredItemStack(mouseX, mouseY);
 
-            //create overlay text for hovered tool
+            //create overlay text for hovered element
             String elementOverlayString = section.getStringToHoverFromElement(mouseX, mouseY);
             if (!elementOverlayString.isEmpty()) this.drawHoveringText(elementOverlayString, mouseX, mouseY);
         }

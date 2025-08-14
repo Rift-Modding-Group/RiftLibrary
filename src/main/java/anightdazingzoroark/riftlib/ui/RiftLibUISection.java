@@ -64,31 +64,31 @@ public abstract class RiftLibUISection {
     protected final FontRenderer fontRenderer;
 
     //for storing elements once they're made
-    private List<RiftLibUIElement.Element> sectionContents = new ArrayList<>();
+    protected List<RiftLibUIElement.Element> sectionContents = new ArrayList<>();
 
     //for being able to hover over elements and see hover text (if they have)
-    private final List<ElementHoverRegion> elementHoverRegions = new ArrayList<>();
+    protected final List<ElementHoverRegion> elementHoverRegions = new ArrayList<>();
 
     //for being able hover over items and see their jei recipes
-    private final List<ItemHoverRegion> itemClickRegions = new ArrayList<>();
+    protected final List<ItemHoverRegion> itemClickRegions = new ArrayList<>();
 
     //for dealing with active buttons
-    private final List<RiftLibButton> activeButtons = new ArrayList<>();
+    protected final List<RiftLibButton> activeButtons = new ArrayList<>();
 
     //for dealing with clickable sections
-    private final List<RiftLibClickableSection> clickableSections = new ArrayList<>();
-    private final List<String> selectedClickableSections = new ArrayList<>();
+    protected final List<RiftLibClickableSection> clickableSections = new ArrayList<>();
+    protected final List<String> selectedClickableSections = new ArrayList<>();
 
     //logic involved in disabling buttons
-    private final List<String> disabledButtonIds = new ArrayList<>();
+    protected final List<String> disabledButtonIds = new ArrayList<>();
 
     //text box stuff
-    private final List<RiftLibTextField> textFields = new ArrayList<>();
-    private final Map<String, String> textFieldContents = new HashMap<>();
+    protected final List<RiftLibTextField> textFields = new ArrayList<>();
+    protected final Map<String, String> textFieldContents = new HashMap<>();
 
     //tab stuff
-    private final Map<String, String> openedTabs = new HashMap<>();
-    private final List<TabSelectorClickRegion> tabSelectorClickRegions = new ArrayList<>();
+    protected final Map<String, String> openedTabs = new HashMap<>();
+    protected final List<TabSelectorClickRegion> tabSelectorClickRegions = new ArrayList<>();
 
     //hover related stuff
     protected boolean doHoverEffects = true;

@@ -92,6 +92,11 @@ public class RiftLibUIElement {
             this.elements.add(element);
         }
 
+        public void replaceElement(Element element, int pos) {
+            if (pos >= this.elements.size() || pos < 0) return;
+            this.elements.set(pos, element);
+        }
+
         public List<Element> getElements() {
             return this.elements;
         }

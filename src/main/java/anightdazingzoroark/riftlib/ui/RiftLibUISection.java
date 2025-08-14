@@ -91,7 +91,7 @@ public abstract class RiftLibUISection {
     private final List<TabSelectorClickRegion> tabSelectorClickRegions = new ArrayList<>();
 
     //hover related stuff
-    private boolean doHoverEffects = true;
+    protected boolean doHoverEffects = true;
 
     //debug related stuff only, its for drawing a box that shows the boundaries of the section
     private boolean showBounds;

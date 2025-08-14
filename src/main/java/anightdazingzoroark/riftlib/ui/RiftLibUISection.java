@@ -32,8 +32,8 @@ import static net.minecraft.client.gui.Gui.drawRect;
 
 public abstract class RiftLibUISection {
     //section size related stuff
-    private final int width;
-    private final int height;
+    protected final int width;
+    protected final int height;
 
     //section position related stuff
     private int xPos;
@@ -58,8 +58,8 @@ public abstract class RiftLibUISection {
     private final int scrollbarSpace = 4;
 
     //other stuff required for section to work properly
-    private int guiWidth;
-    private int guiHeight;
+    protected int guiWidth;
+    protected int guiHeight;
     protected final Minecraft minecraft;
     protected final FontRenderer fontRenderer;
 

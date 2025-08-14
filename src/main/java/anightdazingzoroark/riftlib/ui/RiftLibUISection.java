@@ -36,8 +36,8 @@ public abstract class RiftLibUISection {
     protected final int height;
 
     //section position related stuff
-    private int xPos;
-    private int yPos;
+    protected int xPos;
+    protected int yPos;
 
     //section management stuff
     public final String id;

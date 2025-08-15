@@ -306,11 +306,11 @@ public abstract class RiftLibUISection {
                     }
                 }
                 else {
-                    List<String> stringList = this.fontRenderer.listFormattedStringToWidth(textElement.getText(), (int) (sectionWidth * scale));
+                    List<String> stringList = this.fontRenderer.listFormattedStringToWidth(textElement.getText(), (int) (sectionWidth / scale));
                     for (int i = 0; i < stringList.size(); i++) {
                         //render line of each string first
                         String stringToRender = stringList.get(i);
-                        int stringWidth = (int) (Math.min(sectionWidth, this.fontRenderer.getStringWidth(stringToRender)) * scale);
+                        int stringWidth = (int) (MathHelper.clamp(this.fontRenderer.getStringWidth(stringToRender) * scale, 0, sectionWidth));
                         int totalTextX = textElement.xOffsetFromAlignment(sectionWidth, stringWidth, x);
                         this.fontRenderer.drawString(
                                 stringToRender,

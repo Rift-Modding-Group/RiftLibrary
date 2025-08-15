@@ -343,7 +343,7 @@ public abstract class RiftLibUISection {
                 }
             }
 
-            return lines * this.fontRenderer.FONT_HEIGHT;
+            return (int) (lines * this.fontRenderer.FONT_HEIGHT * scale);
         }
         else if (element instanceof RiftLibUIElement.ImageElement) {
             RiftLibUIElement.ImageElement imageElement = (RiftLibUIElement.ImageElement) element;

@@ -295,7 +295,7 @@ public abstract class RiftLibUISection {
                     //if text has hover text, add it
                     if (textElement.getOverlayText() != null && !textElement.getOverlayText().isEmpty()) {
                         this.elementHoverRegions.add(new ElementHoverRegion(
-                                textElement.getOverlayText(),
+                                textElement,
                                 totalTextX,
                                 y,
                                 stringWidth,
@@ -322,7 +322,7 @@ public abstract class RiftLibUISection {
                         //if text has hover text, make it so it hovers over each line
                         if (textElement.getOverlayText() != null && !textElement.getOverlayText().isEmpty()) {
                             this.elementHoverRegions.add(new ElementHoverRegion(
-                                    textElement.getOverlayText(),
+                                    textElement,
                                     (int) (totalTextX / scale),
                                     (int)((y + this.fontRenderer.FONT_HEIGHT * i) / scale),
                                     (int) (this.fontRenderer.getStringWidth(stringToRender) * scale),
@@ -379,7 +379,7 @@ public abstract class RiftLibUISection {
                 //if image has hover text, add it
                 if (imageElement.getOverlayText() != null && !imageElement.getOverlayText().isEmpty()) {
                     this.elementHoverRegions.add(new ElementHoverRegion(
-                            imageElement.getOverlayText(),
+                            imageElement,
                             (int) (totalImgX / scale),
                             (int) (y / scale),
                             scaledImageWidth,
@@ -504,7 +504,7 @@ public abstract class RiftLibUISection {
                 //if button has hover text, add it
                 if (buttonElement.getOverlayText() != null && !buttonElement.getOverlayText().isEmpty()) {
                     this.elementHoverRegions.add(new ElementHoverRegion(
-                            buttonElement.getOverlayText(),
+                            buttonElement,
                             buttonX,
                             y,
                             buttonW,
@@ -584,7 +584,7 @@ public abstract class RiftLibUISection {
                 //if clickable section has hover text, add it
                 if (clickableSectionElement.getOverlayText() != null && !clickableSectionElement.getOverlayText().isEmpty()) {
                     this.elementHoverRegions.add(new ElementHoverRegion(
-                            clickableSectionElement.getOverlayText(),
+                            clickableSectionElement,
                             sectionX,
                             y,
                             sectionW,
@@ -634,7 +634,7 @@ public abstract class RiftLibUISection {
                 //if text box has hover text, add it
                 if (textBoxElement.getOverlayText() != null && !textBoxElement.getOverlayText().isEmpty()) {
                     this.elementHoverRegions.add(new ElementHoverRegion(
-                            textBoxElement.getOverlayText(),
+                            textBoxElement,
                             scaledTextBoxX,
                             scaledTextBoxY,
                             textBoxWidth,
@@ -675,7 +675,7 @@ public abstract class RiftLibUISection {
                 //if progress bar has hover text, add it
                 if (progressBarElement.getOverlayText() != null && !progressBarElement.getOverlayText().isEmpty()) {
                     this.elementHoverRegions.add(new ElementHoverRegion(
-                            progressBarElement.getOverlayText(),
+                            progressBarElement,
                             progressBarX,
                             y,
                             progressBarWidth,
@@ -995,12 +995,12 @@ public abstract class RiftLibUISection {
 
     //element hovering stuff starts here
     private class ElementHoverRegion {
-        protected final String stringOverlay;
+        protected final RiftLibUIElement.Element element;
         protected final int x, y, width, height;
         protected final int sectionTop, sectionBottom;
 
-        private ElementHoverRegion(String stringOverlay, int x, int y, int width, int height, int sectionTop, int sectionBottom) {
-            this.stringOverlay = stringOverlay;
+        private ElementHoverRegion(RiftLibUIElement.Element element, int x, int y, int width, int height, int sectionTop, int sectionBottom) {
+            this.element = element;
             this.x = x;
             this.y = y;
             this.width = width;
@@ -1009,8 +1009,8 @@ public abstract class RiftLibUISection {
             this.sectionBottom = sectionBottom;
         }
 
-        public String renderStringOverlay() {
-            return this.stringOverlay;
+        public RiftLibUIElement.Element getElement() {
+            return this.element;
         }
 
         protected boolean isHovered(int mouseX, int mouseY) {
@@ -1020,13 +1020,13 @@ public abstract class RiftLibUISection {
         }
     }
 
-    public String getStringToHoverFromElement(int mouseX, int mouseY) {
+    public RiftLibUIElement.Element getHoveredElement(int mouseX, int mouseY) {
         for (ElementHoverRegion region : this.elementHoverRegions) {
             if (region.isHovered(mouseX, mouseY)) {
-                return region.renderStringOverlay();
+                return region.getElement();
             }
         }
-        return "";
+        return null;
     }
     //element hovering stuff ends here
 
@@ -1035,7 +1035,7 @@ public abstract class RiftLibUISection {
         private final ItemStack stack;
 
         private ItemHoverRegion(ItemStack stack, int x, int y, int size, int sectionTop, int sectionBottom) {
-            super("", x, y, size, size, sectionTop, sectionBottom);
+            super(null, x, y, size, size, sectionTop, sectionBottom);
             this.stack = stack;
         }
     }
@@ -1064,16 +1064,17 @@ public abstract class RiftLibUISection {
 
     //tool element related stuff starts here
     private class ToolHoverRegion extends ElementHoverRegion {
+        private final String stringOverlay;
         private final String toolType;
         private final int miningLevel;
 
         private ToolHoverRegion(String stringOverlay, String toolType, int miningLevel, int x, int y, int size, int sectionTop, int sectionBottom) {
-            super(stringOverlay, x, y, size, size, sectionTop, sectionBottom);
+            super(null, x, y, size, size, sectionTop, sectionBottom);
+            this.stringOverlay = stringOverlay;
             this.toolType = toolType;
             this.miningLevel = miningLevel;
         }
 
-        @Override
         public String renderStringOverlay() {
             return I18n.format(this.stringOverlay, this.toolType, this.miningLevel);
         }

@@ -96,8 +96,9 @@ public abstract class RiftLibUI extends GuiScreen {
         //background
         this.drawGuiContainerBackgroundLayer();
 
-        //hovered item will be defined when iterating over the sections
+        //hovered elements will be defined when iterating over the sections
         ItemStack hoveredItem = null;
+        RiftLibUIElement.Element hoveredElement = null;
 
         //iterate over all ui sections
         for (RiftLibUISection section : this.uiSections) {
@@ -138,8 +139,10 @@ public abstract class RiftLibUI extends GuiScreen {
             if (hoveredItem == null) hoveredItem = section.getHoveredItemStack(mouseX, mouseY);
 
             //create overlay text for hovered element
-            String elementOverlayString = section.getStringToHoverFromElement(mouseX, mouseY);
-            if (!elementOverlayString.isEmpty()) this.drawHoveringText(elementOverlayString, mouseX, mouseY);
+            RiftLibUIElement.Element elementToTest = section.getHoveredElement(mouseX, mouseY);
+            if (elementToTest != null
+                    && !elementToTest.getOverlayText().isEmpty()
+                    && !this.hiddenUISections.contains(section.id)) hoveredElement = elementToTest;
         }
 
         //show overlay info regarding hovered item
@@ -149,6 +152,11 @@ public abstract class RiftLibUI extends GuiScreen {
             tooltip.add(hoveredItem.getDisplayName());
             if (Loader.isModLoaded(RiftLibJEI.JEI_MOD_ID)) tooltip.add(I18n.format("ui.open_in_jei"));
             this.drawHoveringText(tooltip, mouseX, mouseY);
+        }
+
+        //show hoverlay over a hovered element
+        if (hoveredElement != null) {
+            this.drawHoveringText(hoveredElement.getOverlayText(), mouseX, mouseY);
         }
 
         //create popup and a black gradient over the ui for when a popup has been opened

@@ -390,7 +390,7 @@ public abstract class RiftLibUI extends GuiScreen {
         }
         else {
             //for exiting gui in general when pressing escape, as well as other functions involving keyboard
-            super.keyTyped(typedChar, keyCode);
+            if (keyCode == 1) this.onPressEscape();
 
             //deal with input for text boxes in each section
             for (RiftLibUISection section : this.uiSections) {
@@ -418,6 +418,12 @@ public abstract class RiftLibUI extends GuiScreen {
             //just put it inside otherwise
             else contents.put(textField.textBoxID, String.valueOf(typedChar));
         }
+    }
+
+    //effects that take place when pressing escape, can be overridden for custom stuff
+    protected void onPressEscape() {
+        this.mc.displayGuiScreen(null);
+        if (this.mc.currentScreen == null) this.mc.setIngameFocus();
     }
 
     @Override

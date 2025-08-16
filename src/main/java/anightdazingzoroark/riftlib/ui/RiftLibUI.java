@@ -571,15 +571,29 @@ public abstract class RiftLibUI extends GuiScreen {
     }
 
     protected void setSelectClickableSectionByID(String id, boolean value) {
-        if (this.popupSection != null) {
-            for (RiftLibClickableSection clickableSection : this.popupSection.getClickableSections()) {
-                if (clickableSection.getStringID().equals(id)) this.popupSection.setClickableSectionSelected(id, value);
+        this.setSelectClickableSectionByID(true, id, value);
+    }
+
+    protected void setSelectClickableSectionByID(boolean discriminate, String id, boolean value) {
+        if (discriminate) {
+            if (this.popupSection != null) {
+                for (RiftLibClickableSection clickableSection : this.popupSection.getClickableSections()) {
+                    if (clickableSection.getStringID().equals(id)) this.popupSection.setClickableSectionSelected(id, value);
+                }
+            }
+            else {
+                for (RiftLibUISection section : this.uiSections) {
+                    for (RiftLibClickableSection clickableSection : section.getClickableSections()) {
+                        if (clickableSection.getStringID().equals(id)) section.setClickableSectionSelected(id, value);
+                    }
+                }
             }
         }
         else {
-            for (RiftLibUISection section : this.uiSections) {
-                for (RiftLibClickableSection clickableSection : section.getClickableSections()) {
-                    if (clickableSection.getStringID().equals(id)) section.setClickableSectionSelected(id, value);
+            if (this.popupSection != null) this.popupSection.setClickableSectionSelected(id, value);
+            else {
+                for (RiftLibUISection section : this.uiSections) {
+                    section.setClickableSectionSelected(id, value);
                 }
             }
         }

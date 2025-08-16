@@ -156,6 +156,7 @@ public abstract class RiftLibUI extends GuiScreen {
 
         //show hoverlay over a hovered element
         if (hoveredElement != null) {
+            this.onElementHovered(hoveredElement);
             this.drawHoveringText(hoveredElement.getOverlayText(), mouseX, mouseY);
         }
 
@@ -218,6 +219,8 @@ public abstract class RiftLibUI extends GuiScreen {
     public abstract void onButtonClicked(RiftLibButton button);
 
     public abstract void onClickableSectionClicked(RiftLibClickableSection clickableSection);
+
+    public abstract void onElementHovered(RiftLibUIElement.Element hoveredElement);
 
     protected void createPopup(List<RiftLibUIElement.Element> elements) {
         //this.popup = new RiftLibPopupUI(elements, this.width, this.height, this.fontRenderer, this.mc);

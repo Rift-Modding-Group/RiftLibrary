@@ -305,4 +305,7 @@ public class HelloWorldUI extends RiftLibUI {
             }
         }
     }
+
+    @Override
+    public void onElementHovered(RiftLibUIElement.Element hoveredElement) {}
 }

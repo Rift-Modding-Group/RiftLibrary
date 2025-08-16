@@ -98,6 +98,7 @@ public abstract class RiftLibUI extends GuiScreen {
 
         //hovered elements will be defined when iterating over the sections
         ItemStack hoveredItem = null;
+        RiftLibUISection sectionWithHoveredElement = null;
         RiftLibUIElement.Element hoveredElement = null;
 
         //iterate over all ui sections
@@ -142,7 +143,10 @@ public abstract class RiftLibUI extends GuiScreen {
             RiftLibUIElement.Element elementToTest = section.getHoveredElement(mouseX, mouseY);
             if (elementToTest != null
                     && !elementToTest.getOverlayText().isEmpty()
-                    && !this.hiddenUISections.contains(section.id)) hoveredElement = elementToTest;
+                    && !this.hiddenUISections.contains(section.id)) {
+                sectionWithHoveredElement = section;
+                hoveredElement = elementToTest;
+            }
         }
 
         //show overlay info regarding hovered item
@@ -155,8 +159,8 @@ public abstract class RiftLibUI extends GuiScreen {
         }
 
         //show hoverlay over a hovered element
-        if (hoveredElement != null) {
-            this.onElementHovered(hoveredElement);
+        if (sectionWithHoveredElement != null && hoveredElement != null) {
+            this.onElementHovered(sectionWithHoveredElement, hoveredElement);
             this.drawHoveringText(hoveredElement.getOverlayText(), mouseX, mouseY);
         }
 
@@ -220,7 +224,7 @@ public abstract class RiftLibUI extends GuiScreen {
 
     public abstract void onClickableSectionClicked(RiftLibClickableSection clickableSection);
 
-    public abstract void onElementHovered(RiftLibUIElement.Element hoveredElement);
+    public abstract void onElementHovered(RiftLibUISection hoveredSection, RiftLibUIElement.Element hoveredElement);
 
     protected void createPopup(List<RiftLibUIElement.Element> elements) {
         //this.popup = new RiftLibPopupUI(elements, this.width, this.height, this.fontRenderer, this.mc);

@@ -338,7 +338,7 @@ public abstract class RiftLibUISection {
             }
             else {
                 if (!textElement.getSingleLine()) {
-                    List<String> stringList = this.fontRenderer.listFormattedStringToWidth(textElement.getText(), (int) (sectionWidth * scale));
+                    List<String> stringList = this.fontRenderer.listFormattedStringToWidth(textElement.getText(), (int) (sectionWidth / scale));
                     lines = stringList.size();
                 }
             }

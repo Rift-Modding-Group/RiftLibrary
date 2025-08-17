@@ -32,6 +32,7 @@ public class HelloWorldUI extends RiftLibUI {
                 //hello world text element
                 RiftLibUIElement.TextElement helloWorldText = new RiftLibUIElement.TextElement();
                 helloWorldText.setBottomSpace(0);
+                helloWorldText.setID("helloWorldText");
                 helloWorldText.setText("Hello world!");
                 helloWorldText.setOverlayText("Hello once again, world!");
                 helloWorldText.setAlignment(RiftLibUIElement.ALIGN_RIGHT);
@@ -307,5 +308,9 @@ public class HelloWorldUI extends RiftLibUI {
     }
 
     @Override
-    public void onElementHovered(RiftLibUISection hoveredSection, RiftLibUIElement.Element hoveredElement) {}
+    public void onElementHovered(RiftLibUISection hoveredSection, RiftLibUIElement.Element hoveredElement) {
+        if (hoveredElement.getID().equals("helloWorldText")) {
+            System.out.println("hello world!");
+        }
+    }
 }

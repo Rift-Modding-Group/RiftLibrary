@@ -159,7 +159,7 @@ public abstract class RiftLibUI extends GuiScreen {
         //show hoverlay over a hovered element
         if (sectionWithHoveredElement != null && hoveredElement != null) {
             this.onElementHovered(sectionWithHoveredElement, hoveredElement);
-            if (hoveredElement.getOverlayText().isEmpty()) this.drawHoveringText(hoveredElement.getOverlayText(), mouseX, mouseY);
+            if (!hoveredElement.getOverlayText().isEmpty()) this.drawHoveringText(hoveredElement.getOverlayText(), mouseX, mouseY);
         }
 
         //create popup and a black gradient over the ui for when a popup has been opened

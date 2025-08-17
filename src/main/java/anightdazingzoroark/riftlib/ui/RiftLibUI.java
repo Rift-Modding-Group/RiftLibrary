@@ -100,6 +100,7 @@ public abstract class RiftLibUI extends GuiScreen {
         ItemStack hoveredItem = null;
         RiftLibUISection sectionWithHoveredElement = null;
         RiftLibUIElement.Element hoveredElement = null;
+        String overlayText = "";
 
         //iterate over all ui sections
         for (RiftLibUISection section : this.uiSections) {
@@ -139,11 +140,19 @@ public abstract class RiftLibUI extends GuiScreen {
             //assign hovered item as long as its originally null
             if (hoveredItem == null) hoveredItem = section.getHoveredItemStack(mouseX, mouseY);
 
-            //create overlay text for hovered element
+            //if element has hover effects, do them
             RiftLibUIElement.Element elementToTest = section.getHoveredElement(mouseX, mouseY);
             if (elementToTest != null && !this.hiddenUISections.contains(section.id)) {
-                sectionWithHoveredElement = section;
-                hoveredElement = elementToTest;
+                if (elementToTest instanceof RiftLibUIElement.ToolElement) {
+                    sectionWithHoveredElement = section;
+                    hoveredElement = elementToTest;
+                    overlayText = section.getToolHoverText(mouseX, mouseY);
+                }
+                else if (elementToTest.hasOverlayEffects()) {
+                    sectionWithHoveredElement = section;
+                    hoveredElement = elementToTest;
+                    overlayText = elementToTest.getOverlayText();
+                }
             }
         }
 
@@ -159,7 +168,7 @@ public abstract class RiftLibUI extends GuiScreen {
         //show hoverlay over a hovered element
         if (sectionWithHoveredElement != null && hoveredElement != null) {
             this.onElementHovered(sectionWithHoveredElement, hoveredElement);
-            if (!hoveredElement.getOverlayText().isEmpty()) this.drawHoveringText(hoveredElement.getOverlayText(), mouseX, mouseY);
+            if (!overlayText.isEmpty()) this.drawHoveringText(overlayText, mouseX, mouseY);
         }
 
         //create popup and a black gradient over the ui for when a popup has been opened

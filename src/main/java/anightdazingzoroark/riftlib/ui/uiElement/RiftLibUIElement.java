@@ -22,6 +22,7 @@ public class RiftLibUIElement {
         private int bottomSpace = 9;
         private float scale = 1f;
         private boolean limitedByBounds = true;
+        private boolean hasOverlayEffects = false;
         private String overlayText = "";
 
         public void setID(String value) {
@@ -69,6 +70,14 @@ public class RiftLibUIElement {
 
         public boolean getLimitedByBounds() {
             return this.limitedByBounds;
+        }
+
+        public void setHasOverlayEffects() {
+            this.hasOverlayEffects = true;
+        }
+
+        public boolean hasOverlayEffects() {
+            return this.hasOverlayEffects;
         }
 
         public void setOverlayText(String value) {

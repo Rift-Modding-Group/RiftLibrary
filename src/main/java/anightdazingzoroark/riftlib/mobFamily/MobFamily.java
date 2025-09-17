@@ -1,11 +1,14 @@
 package anightdazingzoroark.riftlib.mobFamily;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MobFamily {
-    private final String name;
+    private String name = "";
     private final List<String> familyMembers = new ArrayList<>();
+
+    public MobFamily() {}
 
     public MobFamily(String name) {
         this.name = name;
@@ -20,7 +23,17 @@ public class MobFamily {
     }
 
     //this is to only accept ids of entities
-    public void addToFamilyMembers(String entityId) {
-        this.familyMembers.add(entityId);
+    public MobFamily addToFamilyMembers(String... entityIDs) {
+        Collections.addAll(this.familyMembers, entityIDs);
+        return this;
+    }
+
+    public MobFamily addToFamilyMembers(String entityID) {
+        if (!this.familyMembers.contains(entityID)) this.familyMembers.add(entityID);
+        return this;
+    }
+
+    public void removeFromFamilyMembers(String entityID) {
+        this.familyMembers.remove(entityID);
     }
 }

@@ -13,9 +13,13 @@ import anightdazingzoroark.example.entity.ridePosLinker.DragonRidePosLinker;
 import anightdazingzoroark.riftlib.RiftLibConfig;
 import anightdazingzoroark.riftlib.RiftLibEvent;
 import anightdazingzoroark.riftlib.RiftLibLinkerRegistry;
+import anightdazingzoroark.riftlib.command.RiftLibMobFamily;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitbox;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitboxRenderer;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
+import anightdazingzoroark.riftlib.mobFamily.MobFamily;
+import anightdazingzoroark.riftlib.mobFamily.MobFamilyCreator;
+import anightdazingzoroark.riftlib.mobFamily.MobFamilyManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.creativetab.CreativeTabs;
@@ -30,6 +34,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import anightdazingzoroark.example.block.tile.BotariumTileEntity;
@@ -51,6 +56,7 @@ public class RiftLibMod {
 	public static boolean DISABLE_IN_DEV = false;
 	private static CreativeTabs riftlibItemGroup;
 	private boolean deobfuscatedEnvironment;
+    private static MobFamilyManager MOB_FAMILY_MANAGER;
 
 	public static CreativeTabs getRiftlibItemGroup() {
 		if (riftlibItemGroup == null) {
@@ -78,6 +84,57 @@ public class RiftLibMod {
 		File directory = event.getModConfigurationDirectory();
 		configMain = new Configuration(new File(directory.getPath(), "riftlib.cfg"));
 		RiftLibConfig.readConfig();
+
+        //default mob families are to be made here
+        MOB_FAMILY_MANAGER = MobFamilyCreator.createManager(directory, "mob_families.json");
+        MOB_FAMILY_MANAGER.addMobFamily(new MobFamily("animal").addToFamilyMembers(
+                "minecraft:pig",
+                "minecraft:chicken",
+                "minecraft:cow",
+                "minecraft:sheep",
+                "minecraft:rabbit",
+                "minecraft:horse",
+                "minecraft:donkey",
+                "minecraft:mule",
+                "minecraft:llama",
+                "minecraft:polar_bear"
+        ));
+        MOB_FAMILY_MANAGER.addMobFamily(new MobFamily("monster").addToFamilyMembers(
+                "minecraft:cave_spider",
+                "minecraft:enderman",
+                "minecraft:spider",
+                "minecraft:zombie_pigman",
+                "minecraft:blaze",
+                "minecraft:creeper",
+                "minecraft:elder_guardian",
+                "minecraft:endermite",
+                "minecraft:evoker",
+                "minecraft:ghast",
+                "minecraft:guardian",
+                "minecraft:husk",
+                "minecraft:magma_cube",
+                "minecraft:shulker",
+                "minecraft:silverfish",
+                "minecraft:skeleton",
+                "minecraft:slime",
+                "minecraft:stray",
+                "minecraft:vex",
+                "minecraft:vindicator",
+                "minecraft:witch",
+                "minecraft:wither_skeleton",
+                "minecraft:zombie",
+                "minecraft:zombie_villager"
+        ));
+        MOB_FAMILY_MANAGER.addMobFamily(new MobFamily("human").addToFamilyMembers(
+                "minecraft:player",
+                "minecraft:villager",
+                "minecraft:evoker",
+                "minecraft:vindicator",
+                "minecraft:villager"
+        ));
+
+        // Load or generate file
+        MOB_FAMILY_MANAGER.load();
 
 		//other essentials, like message registry and removing hitbox textures
 		//go here too
@@ -130,4 +187,9 @@ public class RiftLibMod {
 		//for config
 		if (configMain.hasChanged()) configMain.save();
 	}
+
+    @Mod.EventHandler
+    public void serverLoad(FMLServerStartingEvent event) {
+        event.registerServerCommand(new RiftLibMobFamily());
+    }
 }

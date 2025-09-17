@@ -20,10 +20,30 @@ public class MobFamilyCreator {
         return Collections.unmodifiableList(ALL_MANAGERS);
     }
 
-    /** Gather every MobFamily from every mod */
+    //get all registered mob families
     public static List<MobFamily> getAllFamilies() {
         return ALL_MANAGERS.stream()
                 .flatMap(m -> m.getFamilies().stream())
                 .collect(Collectors.toList());
+    }
+
+    public static void addMembersToFamily(String familyId, String... members) {
+        for (MobFamilyManager manager : ALL_MANAGERS) {
+            for (MobFamily family : manager.getFamilies()) {
+                if (family.getName().equals(familyId)) {
+                    family.addToFamilyMembers(members);
+                }
+            }
+        }
+    }
+
+    public static void addMembersToFamily(String familyId, String member) {
+        for (MobFamilyManager manager : ALL_MANAGERS) {
+            for (MobFamily family : manager.getFamilies()) {
+                if (family.getName().equals(familyId)) {
+                    family.addToFamilyMembers(member);
+                }
+            }
+        }
     }
 }

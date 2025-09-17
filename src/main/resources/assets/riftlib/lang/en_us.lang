@@ -8,6 +8,7 @@ item.riftlib.bomb.name=Bomb
 command.riftlib.mob_family_usage=/riftlibmobfamily OR /riftlibmobfamily [name]
 command.riftlib.mob_family_all=All mob families: %s
 command.riftlib.mob_family_all_members=Members of mob family %s: %s
+command.riftlib.mob_family_invalid_member=%s is not a valid mob family member!
 
 item.riftlib.jackintheboxitem.name=Jack In The Box
 tile.riftlib.botariumblock.name=Botarium

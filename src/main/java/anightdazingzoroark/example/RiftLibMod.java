@@ -132,6 +132,12 @@ public class RiftLibMod {
                 "minecraft:vindicator",
                 "minecraft:villager"
         ));
+        MOB_FAMILY_MANAGER.addMobFamily(new MobFamily("arthropod").addToFamilyMembers(
+                "minecraft:spider",
+                "minecraft:cave_spider",
+                "minecraft:silverfish",
+                "minecraft:endermite"
+        ));
 
         // Load or generate file
         MOB_FAMILY_MANAGER.load();

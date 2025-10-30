@@ -29,21 +29,15 @@ public class MobFamilyCreator {
 
     public static void addMembersToFamily(String familyId, String... members) {
         for (MobFamilyManager manager : ALL_MANAGERS) {
-            for (MobFamily family : manager.getFamilies()) {
-                if (family.getName().equals(familyId)) {
-                    family.addToFamilyMembers(members);
-                }
-            }
+            boolean changed = manager.addMembersToFamily(familyId, members);
+            if (changed) manager.save();
         }
     }
 
     public static void addMembersToFamily(String familyId, String member) {
         for (MobFamilyManager manager : ALL_MANAGERS) {
-            for (MobFamily family : manager.getFamilies()) {
-                if (family.getName().equals(familyId)) {
-                    family.addToFamilyMembers(member);
-                }
-            }
+            boolean changed = manager.addMembersToFamily(familyId, member);
+            if (changed) manager.save();
         }
     }
 }

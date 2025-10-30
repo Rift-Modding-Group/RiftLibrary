@@ -23,9 +23,29 @@ public class MobFamilyManager {
         this.configFile = configFile;
     }
 
-    //add
+    //add mob family
     public void addMobFamily(MobFamily family) {
         MOB_FAMILIES_TO_ADD.add(family);
+    }
+
+    public boolean addMembersToFamily(String familyName, String... members) {
+        for (MobFamily family : MOB_FAMILIES) {
+            if (family.getName().equals(familyName)) {
+                family.addToFamilyMembers(members);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean addMembersToFamily(String familyName, String members) {
+        for (MobFamily family : MOB_FAMILIES) {
+            if (family.getName().equals(familyName)) {
+                family.addToFamilyMembers(members);
+                return true;
+            }
+        }
+        return false;
     }
 
     //load

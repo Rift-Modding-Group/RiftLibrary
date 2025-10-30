@@ -39,7 +39,7 @@ public abstract class RiftLibProjectile extends EntityArrow implements IAnimatab
         BlockPos blockPos = raytraceResultIn.getBlockPos();
 
         if (!this.world.isRemote) {
-            if (entity != null && this.checkHitEntityShooterNotEqual(entity)) {
+            if (entity != null && this.checkHitEntityShooterNotEqual(entity) && this.checkHitEntityNotRiderOfShooter(entity)) {
                 float f = MathHelper.sqrt(this.motionX * this.motionX + this.motionY * this.motionY + this.motionZ * this.motionZ);
                 int i = MathHelper.ceil((double) f * this.getDamage());
 
@@ -107,6 +107,12 @@ public abstract class RiftLibProjectile extends EntityArrow implements IAnimatab
             return this.checkHitEntityShooterNotEqual(parentPart);
         }
         else return !this.shootingEntity.equals(target);
+    }
+
+    private boolean checkHitEntityNotRiderOfShooter(Entity target) {
+        //if theres no shooter or target, cannot continue
+        if (this.shootingEntity == null || target == null) return false;
+        return !this.shootingEntity.isPassenger(target);
     }
 
     public abstract void projectileEntityEffects(EntityLivingBase entityLivingBase);

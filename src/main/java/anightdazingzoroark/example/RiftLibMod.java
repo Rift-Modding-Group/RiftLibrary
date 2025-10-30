@@ -97,7 +97,9 @@ public class RiftLibMod {
                 "minecraft:donkey",
                 "minecraft:mule",
                 "minecraft:llama",
-                "minecraft:polar_bear"
+                "minecraft:polar_bear",
+                "minecraft:wolf",
+                "minecraft:ocelot"
         ));
         MOB_FAMILY_MANAGER.addMobFamily(new MobFamily("monster").addToFamilyMembers(
                 "minecraft:cave_spider",

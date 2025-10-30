@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public class MobFamilyHelper {
     public static List<String> getMobFamilyNames(Entity entity) {
         //players arent in EntityList, hence...
-        String entityId = (entity instanceof EntityPlayer) ? "minecraft:player" : EntityList.getEntityString(entity);
+        String entityId = (entity instanceof EntityPlayer) ? "minecraft:player" : EntityList.getKey(entity).toString();
         return MobFamilyCreator.getAllFamilies().stream()
                 .filter(m -> m.getFamilyMembers().contains(entityId))
                 .map(MobFamily::getName)
@@ -27,7 +27,7 @@ public class MobFamilyHelper {
         for (MobFamily mobFamily : MobFamilyCreator.getAllFamilies()) {
             if (mobFamily.getName().equals(mobFamilyName)) {
                 //players arent in EntityList, hence...
-                String entityId = (entity instanceof EntityPlayer) ? "minecraft:player" : EntityList.getEntityString(entity);
+                String entityId = (entity instanceof EntityPlayer) ? "minecraft:player" : EntityList.getKey(entity).toString();
                 if (mobFamily.getFamilyMembers().contains(entityId)) return true;
             }
         }

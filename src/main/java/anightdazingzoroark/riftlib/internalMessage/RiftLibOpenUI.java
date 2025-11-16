@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.message;
+package anightdazingzoroark.riftlib.internalMessage;
 
 import anightdazingzoroark.riftlib.ui.RiftLibUI;
 import anightdazingzoroark.riftlib.ui.RiftLibUIHelper;

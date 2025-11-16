@@ -13,10 +13,10 @@ import anightdazingzoroark.riftlib.geo.render.built.GeoBone;
 import anightdazingzoroark.riftlib.geo.render.built.GeoLocator;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitbox;
 import anightdazingzoroark.riftlib.hitboxLogic.IMultiHitboxUser;
-import anightdazingzoroark.riftlib.message.RiftLibMessage;
-import anightdazingzoroark.riftlib.message.RiftLibUpdateHitboxPos;
-import anightdazingzoroark.riftlib.message.RiftLibUpdateHitboxSize;
-import anightdazingzoroark.riftlib.message.RiftLibUpdateRiderPos;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibInternalMessage;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateHitboxPos;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateHitboxSize;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateRiderPos;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosUtils;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
 import anightdazingzoroark.riftlib.util.json.JsonHitboxUtils;
@@ -203,14 +203,14 @@ public class AnimationProcessor<T extends IAnimatable> {
 
 						//update positions
 						if (dPosTotal > RiftLibConfig.HITBOX_DISPLACEMENT_TOLERANCE) {
-							RiftLibMessage.WRAPPER.sendToAll(new RiftLibUpdateHitboxPos(
+							RiftLibInternalMessage.WRAPPER.sendToAll(new RiftLibUpdateHitboxPos(
 									(Entity) entity,
 									hitboxName,
 									newHitboxX,
 									newHitboxY,
 									newHitboxZ
 							));
-							RiftLibMessage.WRAPPER.sendToServer(new RiftLibUpdateHitboxPos(
+							RiftLibInternalMessage.WRAPPER.sendToServer(new RiftLibUpdateHitboxPos(
 									(Entity) entity,
 									hitboxName,
 									newHitboxX,
@@ -228,13 +228,13 @@ public class AnimationProcessor<T extends IAnimatable> {
 
 						//update sizes
 						if (dSizeTotal > RiftLibConfig.HITBOX_RESIZING_TOLERANCE) {
-							RiftLibMessage.WRAPPER.sendToAll(new RiftLibUpdateHitboxSize(
+							RiftLibInternalMessage.WRAPPER.sendToAll(new RiftLibUpdateHitboxSize(
 									(Entity) entity,
 									hitboxName,
 									Math.max(bone.getScaleX(), bone.getScaleZ()),
 									bone.getScaleY()
 							));
-							RiftLibMessage.WRAPPER.sendToServer(new RiftLibUpdateHitboxSize(
+							RiftLibInternalMessage.WRAPPER.sendToServer(new RiftLibUpdateHitboxSize(
 									(Entity) entity,
 									hitboxName,
 									Math.max(bone.getScaleX(), bone.getScaleZ()),
@@ -281,12 +281,12 @@ public class AnimationProcessor<T extends IAnimatable> {
 
 					//update ride positions
 					if (rDispTotal > RiftLibConfig.RIDE_POS_DISPLACEMENT_TOLERANCE) {
-						RiftLibMessage.WRAPPER.sendToAll(new RiftLibUpdateRiderPos(
+						RiftLibInternalMessage.WRAPPER.sendToAll(new RiftLibUpdateRiderPos(
 								(Entity) entity,
 								x,
 								definitionList.finalOrderedRiderPositions().get(x)
 						));
-						RiftLibMessage.WRAPPER.sendToServer(new RiftLibUpdateRiderPos(
+						RiftLibInternalMessage.WRAPPER.sendToServer(new RiftLibUpdateRiderPos(
 								(Entity) entity,
 								x,
 								definitionList.finalOrderedRiderPositions().get(x)

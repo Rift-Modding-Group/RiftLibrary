@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.message;
+package anightdazingzoroark.riftlib.internalMessage;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;

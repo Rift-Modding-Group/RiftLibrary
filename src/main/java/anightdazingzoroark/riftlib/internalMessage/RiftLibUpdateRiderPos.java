@@ -1,6 +1,5 @@
-package anightdazingzoroark.riftlib.message;
+package anightdazingzoroark.riftlib.internalMessage;
 
-import anightdazingzoroark.riftlib.hitboxLogic.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;

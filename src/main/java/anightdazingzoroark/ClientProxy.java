@@ -20,6 +20,7 @@ import anightdazingzoroark.example.item.PotatoArmorItem;
 import anightdazingzoroark.riftlib.RiftLibLinkerRegistry;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitbox;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitboxRenderer;
+import anightdazingzoroark.riftlib.message.RiftLibMessage;
 import anightdazingzoroark.riftlib.renderers.geo.GeoArmorRenderer;
 import anightdazingzoroark.riftlib.renderers.geo.GeoReplacedEntityRenderer;
 import net.minecraft.client.Minecraft;
@@ -30,6 +31,7 @@ import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -70,6 +72,19 @@ public class ClientProxy extends ServerProxy {
             ReplacedCreeperRenderer creeperRenderer = new ReplacedCreeperRenderer(renderManager);
             renderManager.entityRenderMap.put(EntityCreeper.class, creeperRenderer);
             GeoReplacedEntityRenderer.registerReplacedEntity(ReplacedCreeperEntity.class, creeperRenderer);
+        }
+    }
+
+    @Override
+    public <T extends RiftLibMessage<T>> void handleMessage(final T message, final MessageContext messageContext) {
+        if (messageContext.side.isServer()) super.handleMessage(message, messageContext);
+        else {
+            Minecraft.getMinecraft().addScheduledTask(() -> message.executeOnClient(
+                    Minecraft.getMinecraft(),
+                    message,
+                    Minecraft.getMinecraft().player,
+                    messageContext
+            ));
         }
     }
 }

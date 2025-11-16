@@ -1,7 +1,7 @@
 package anightdazingzoroark.riftlib.ui;
 
-import anightdazingzoroark.riftlib.message.RiftLibMessage;
-import anightdazingzoroark.riftlib.message.RiftLibOpenUI;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibInternalMessage;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibOpenUI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,6 +13,6 @@ public class RiftLibUIHelper {
     public static void showUI(EntityPlayer player, RiftLibUI screen) {
         SCREEN = screen;
         if (player instanceof EntityPlayerSP) Minecraft.getMinecraft().displayGuiScreen((RiftLibUI) RiftLibUIHelper.SCREEN);
-        else if (player instanceof EntityPlayerMP) RiftLibMessage.WRAPPER.sendTo(new RiftLibOpenUI(), (EntityPlayerMP) (player));
+        else if (player instanceof EntityPlayerMP) RiftLibInternalMessage.WRAPPER.sendTo(new RiftLibOpenUI(), (EntityPlayerMP) (player));
     }
 }

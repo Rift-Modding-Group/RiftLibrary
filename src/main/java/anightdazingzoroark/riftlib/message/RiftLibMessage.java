@@ -1,23 +1,32 @@
 package anightdazingzoroark.riftlib.message;
 
 import anightdazingzoroark.RiftLib;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import anightdazingzoroark.RiftLibMod;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class RiftLibMessage {
-    public static SimpleNetworkWrapper WRAPPER;
+public abstract class RiftLibMessage<T extends RiftLibMessage<T>> implements IMessage, IMessageHandler<T, IMessage> {
+    public abstract void fromBytes(ByteBuf buf);
 
-    public static void registerMessages() {
-        WRAPPER = NetworkRegistry.INSTANCE.newSimpleChannel(RiftLib.ModID);
+    public abstract void toBytes(ByteBuf buf);
 
-        int id = 0;
-        WRAPPER.registerMessage(RiftLibUpdateHitboxPos.Handler.class, RiftLibUpdateHitboxPos.class, id++, Side.SERVER);
-        WRAPPER.registerMessage(RiftLibUpdateHitboxPos.Handler.class, RiftLibUpdateHitboxPos.class, id++, Side.CLIENT);
-        WRAPPER.registerMessage(RiftLibUpdateRiderPos.Handler.class, RiftLibUpdateRiderPos.class, id++, Side.SERVER);
-        WRAPPER.registerMessage(RiftLibUpdateRiderPos.Handler.class, RiftLibUpdateRiderPos.class, id++, Side.CLIENT);
-        WRAPPER.registerMessage(RiftLibUpdateHitboxSize.Handler.class, RiftLibUpdateHitboxSize.class, id++, Side.SERVER);
-        WRAPPER.registerMessage(RiftLibUpdateHitboxSize.Handler.class, RiftLibUpdateHitboxSize.class, id++, Side.CLIENT);
-        WRAPPER.registerMessage(RiftLibOpenUI.Handler.class, RiftLibOpenUI.class, id++, Side.CLIENT);
+    public abstract void executeOnServer(MinecraftServer server, T message, EntityPlayer player, MessageContext messageContext);
+
+    @SideOnly(Side.CLIENT)
+    public abstract void executeOnClient(Minecraft client, T message, EntityPlayer player, MessageContext messageContext);
+
+    public abstract RiftLibMessageSide side();
+
+    @Override
+    public IMessage onMessage(T message, MessageContext messageContext) {
+        RiftLibMod.PROXY.handleMessage(message, messageContext);
+        return null;
     }
 }

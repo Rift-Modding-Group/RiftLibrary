@@ -1,17 +1,20 @@
 package anightdazingzoroark.riftlib.internalMessage;
 
 import anightdazingzoroark.riftlib.hitboxLogic.IMultiHitboxUser;
+import anightdazingzoroark.riftlib.message.RiftLibMessage;
+import anightdazingzoroark.riftlib.message.RiftLibMessageSide;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 
-public class RiftLibUpdateHitboxSize implements IMessage {
+public class RiftLibUpdateHitboxSize extends RiftLibMessage<RiftLibUpdateHitboxSize> {
     private int entityId;
     private String hitboxName;
     private float width, height;
@@ -50,32 +53,28 @@ public class RiftLibUpdateHitboxSize implements IMessage {
         buf.writeFloat(this.height);
     }
 
-    public static class Handler implements IMessageHandler<RiftLibUpdateHitboxSize, IMessage> {
-        @Override
-        public IMessage onMessage(RiftLibUpdateHitboxSize message, MessageContext ctx) {
-            FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> handle(message, ctx));
-            return null;
+    @Override
+    public void executeOnServer(MinecraftServer server, RiftLibUpdateHitboxSize message, EntityPlayer player, MessageContext messageContext) {
+        Entity entity = player.world.getEntityByID(message.entityId);
+
+        if (entity instanceof IMultiHitboxUser) {
+            IMultiHitboxUser hitboxUser = (IMultiHitboxUser) entity;
+            hitboxUser.updateHitboxScaleFromAnim(message.hitboxName, message.width, message.height);
         }
+    }
 
-        private void handle(RiftLibUpdateHitboxSize message, MessageContext ctx) {
-            if (ctx.side == Side.SERVER) {
-                EntityPlayer messagePlayer = ctx.getServerHandler().player;
-                Entity entity = messagePlayer.world.getEntityByID(message.entityId);
+    @Override
+    public void executeOnClient(Minecraft client, RiftLibUpdateHitboxSize message, EntityPlayer player, MessageContext messageContext) {
+        Entity entity = player.world.getEntityByID(message.entityId);
 
-                if (entity instanceof IMultiHitboxUser) {
-                    IMultiHitboxUser hitboxUser = (IMultiHitboxUser) entity;
-                    hitboxUser.updateHitboxScaleFromAnim(message.hitboxName, message.width, message.height);
-                }
-            }
-            if (ctx.side == Side.CLIENT) {
-                EntityPlayer messagePlayer = Minecraft.getMinecraft().player;
-                Entity entity = messagePlayer.world.getEntityByID(message.entityId);
-
-                if (entity instanceof IMultiHitboxUser) {
-                    IMultiHitboxUser hitboxUser = (IMultiHitboxUser) entity;
-                    hitboxUser.updateHitboxScaleFromAnim(message.hitboxName, message.width, message.height);
-                }
-            }
+        if (entity instanceof IMultiHitboxUser) {
+            IMultiHitboxUser hitboxUser = (IMultiHitboxUser) entity;
+            hitboxUser.updateHitboxScaleFromAnim(message.hitboxName, message.width, message.height);
         }
+    }
+
+    @Override
+    public RiftLibMessageSide side() {
+        return RiftLibMessageSide.BOTH;
     }
 }

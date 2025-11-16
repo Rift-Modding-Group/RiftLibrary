@@ -2,8 +2,9 @@ package anightdazingzoroark;
 
 import anightdazingzoroark.example.CommonListener;
 import anightdazingzoroark.riftlib.RiftLibEvent;
-import anightdazingzoroark.riftlib.internalMessage.RiftLibInternalMessage;
+import anightdazingzoroark.riftlib.internalMessage.*;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
+import anightdazingzoroark.riftlib.message.RiftLibMessageWrapper;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -14,8 +15,15 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 @Mod.EventBusSubscriber
 public class ServerProxy {
+    public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> MESSAGE_WRAPPER;
+
     public void preInit(FMLPreInitializationEvent e) {
-        RiftLibInternalMessage.registerMessages();
+        MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID,
+                RiftLibUpdateHitboxPos.class,
+                RiftLibUpdateRiderPos.class,
+                RiftLibUpdateHitboxSize.class,
+                RiftLibOpenUI.class
+        );
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {

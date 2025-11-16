@@ -1,10 +1,13 @@
 package anightdazingzoroark.riftlib.internalMessage;
 
 import anightdazingzoroark.riftlib.hitboxLogic.IMultiHitboxUser;
+import anightdazingzoroark.riftlib.message.RiftLibMessage;
+import anightdazingzoroark.riftlib.message.RiftLibMessageSide;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
@@ -12,7 +15,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class RiftLibUpdateHitboxPos implements IMessage {
+public class RiftLibUpdateHitboxPos extends RiftLibMessage<RiftLibUpdateHitboxPos> {
     private int entityId;
     private String hitboxName;
     private float x, y, z;
@@ -54,35 +57,28 @@ public class RiftLibUpdateHitboxPos implements IMessage {
         buf.writeFloat(this.z);
     }
 
-    public static class Handler implements IMessageHandler<RiftLibUpdateHitboxPos, IMessage> {
-        @Override
-        public IMessage onMessage(RiftLibUpdateHitboxPos message, MessageContext ctx) {
-            if (ctx.side == Side.SERVER) FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> serverHandle(message, ctx));
-            if (ctx.side == Side.CLIENT) FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> clientHandle(message, ctx));
+    @Override
+    public void executeOnServer(MinecraftServer server, RiftLibUpdateHitboxPos message, EntityPlayer player, MessageContext messageContext) {
+        Entity entity = player.world.getEntityByID(message.entityId);
 
-            return null;
+        if (entity instanceof IMultiHitboxUser) {
+            IMultiHitboxUser hitboxUser = (IMultiHitboxUser) entity;
+            hitboxUser.updateHitboxPos(message.hitboxName, message.x, message.y, message.z);
         }
+    }
 
-        private void serverHandle(RiftLibUpdateHitboxPos message, MessageContext ctx) {
-            EntityPlayer messagePlayer = ctx.getServerHandler().player;
-            Entity entity = messagePlayer.world.getEntityByID(message.entityId);
+    @Override
+    public void executeOnClient(Minecraft client, RiftLibUpdateHitboxPos message, EntityPlayer player, MessageContext messageContext) {
+        Entity entity = player.world.getEntityByID(message.entityId);
 
-            if (entity instanceof IMultiHitboxUser) {
-                IMultiHitboxUser hitboxUser = (IMultiHitboxUser) entity;
-                hitboxUser.updateHitboxPos(message.hitboxName, message.x, message.y, message.z);
-            }
+        if (entity instanceof IMultiHitboxUser) {
+            IMultiHitboxUser hitboxUser = (IMultiHitboxUser) entity;
+            hitboxUser.updateHitboxPos(message.hitboxName, message.x, message.y, message.z);
         }
+    }
 
-
-        @SideOnly(Side.CLIENT)
-        private void clientHandle(RiftLibUpdateHitboxPos message, MessageContext ctx) {
-            EntityPlayer messagePlayer = Minecraft.getMinecraft().player;
-            Entity entity = messagePlayer.world.getEntityByID(message.entityId);
-
-            if (entity instanceof IMultiHitboxUser) {
-                IMultiHitboxUser hitboxUser = (IMultiHitboxUser) entity;
-                hitboxUser.updateHitboxPos(message.hitboxName, message.x, message.y, message.z);
-            }
-        }
+    @Override
+    public RiftLibMessageSide side() {
+        return RiftLibMessageSide.BOTH;
     }
 }

@@ -1,16 +1,20 @@
 package anightdazingzoroark.riftlib.internalMessage;
 
+import anightdazingzoroark.riftlib.message.RiftLibMessage;
+import anightdazingzoroark.riftlib.message.RiftLibMessageSide;
 import anightdazingzoroark.riftlib.ui.RiftLibUI;
 import anightdazingzoroark.riftlib.ui.RiftLibUIHelper;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 
-public class RiftLibOpenUI implements IMessage {
+public class RiftLibOpenUI extends RiftLibMessage<RiftLibOpenUI> {
     public RiftLibOpenUI() {}
 
     @Override
@@ -19,17 +23,16 @@ public class RiftLibOpenUI implements IMessage {
     @Override
     public void toBytes(ByteBuf buf) {}
 
-    public static class Handler implements IMessageHandler<RiftLibOpenUI, IMessage> {
-        @Override
-        public IMessage onMessage(RiftLibOpenUI message, MessageContext ctx) {
-            FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> handle(message, ctx));
-            return null;
-        }
+    @Override
+    public void executeOnServer(MinecraftServer server, RiftLibOpenUI message, EntityPlayer player, MessageContext messageContext) {}
 
-        private void handle(RiftLibOpenUI message, MessageContext ctx) {
-            if (ctx.side == Side.CLIENT) {
-                Minecraft.getMinecraft().displayGuiScreen((RiftLibUI) RiftLibUIHelper.SCREEN);
-            }
-        }
+    @Override
+    public void executeOnClient(Minecraft client, RiftLibOpenUI message, EntityPlayer player, MessageContext messageContext) {
+        client.displayGuiScreen((RiftLibUI) RiftLibUIHelper.SCREEN);
+    }
+
+    @Override
+    public RiftLibMessageSide side() {
+        return RiftLibMessageSide.CLIENT;
     }
 }

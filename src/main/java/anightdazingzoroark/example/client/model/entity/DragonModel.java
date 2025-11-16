@@ -1,7 +1,7 @@
 package anightdazingzoroark.example.client.model.entity;
 
 import anightdazingzoroark.example.entity.DragonEntity;
-import anightdazingzoroark.riftlib.RiftLib;
+import anightdazingzoroark.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
 

@@ -18,7 +18,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import anightdazingzoroark.riftlib.RiftLib;
+import anightdazingzoroark.RiftLib;
 import anightdazingzoroark.riftlib.core.ConstantValue;
 import anightdazingzoroark.riftlib.core.easing.EasingType;
 import anightdazingzoroark.riftlib.core.keyframe.KeyFrame;

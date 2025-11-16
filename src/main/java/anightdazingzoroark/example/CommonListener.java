@@ -1,5 +1,6 @@
 package anightdazingzoroark.example;
 
+import anightdazingzoroark.RiftLibMod;
 import anightdazingzoroark.example.client.renderer.item.BombRenderer;
 import anightdazingzoroark.example.entity.*;
 import anightdazingzoroark.example.item.BombItem;
@@ -30,7 +31,7 @@ import anightdazingzoroark.example.item.PotatoArmorItem;
 import anightdazingzoroark.example.registry.BlockRegistry;
 import anightdazingzoroark.example.registry.ItemRegistry;
 import anightdazingzoroark.example.registry.SoundRegistry;
-import anightdazingzoroark.riftlib.RiftLib;
+import anightdazingzoroark.RiftLib;
 
 public class CommonListener {
 	private static IForgeRegistry<Item> itemRegistry;

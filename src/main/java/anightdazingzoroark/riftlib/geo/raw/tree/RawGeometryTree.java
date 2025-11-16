@@ -1,7 +1,7 @@
 package anightdazingzoroark.riftlib.geo.raw.tree;
 
 import net.minecraft.util.ResourceLocation;
-import anightdazingzoroark.riftlib.RiftLib;
+import anightdazingzoroark.RiftLib;
 import anightdazingzoroark.riftlib.geo.raw.pojo.Bone;
 import anightdazingzoroark.riftlib.geo.raw.pojo.MinecraftGeometry;
 import anightdazingzoroark.riftlib.geo.raw.pojo.ModelProperties;

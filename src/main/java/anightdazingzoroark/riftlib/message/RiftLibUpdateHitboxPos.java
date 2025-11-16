@@ -10,6 +10,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class RiftLibUpdateHitboxPos implements IMessage {
     private int entityId;
@@ -56,28 +57,31 @@ public class RiftLibUpdateHitboxPos implements IMessage {
     public static class Handler implements IMessageHandler<RiftLibUpdateHitboxPos, IMessage> {
         @Override
         public IMessage onMessage(RiftLibUpdateHitboxPos message, MessageContext ctx) {
-            FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> handle(message, ctx));
+            if (ctx.side == Side.SERVER) FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> serverHandle(message, ctx));
+            if (ctx.side == Side.CLIENT) FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> clientHandle(message, ctx));
+
             return null;
         }
 
-        private void handle(RiftLibUpdateHitboxPos message, MessageContext ctx) {
-            if (ctx.side == Side.SERVER) {
-                EntityPlayer messagePlayer = ctx.getServerHandler().player;
-                Entity entity = messagePlayer.world.getEntityByID(message.entityId);
+        private void serverHandle(RiftLibUpdateHitboxPos message, MessageContext ctx) {
+            EntityPlayer messagePlayer = ctx.getServerHandler().player;
+            Entity entity = messagePlayer.world.getEntityByID(message.entityId);
 
-                if (entity instanceof IMultiHitboxUser) {
-                    IMultiHitboxUser hitboxUser = (IMultiHitboxUser) entity;
-                    hitboxUser.updateHitboxPos(message.hitboxName, message.x, message.y, message.z);
-                }
+            if (entity instanceof IMultiHitboxUser) {
+                IMultiHitboxUser hitboxUser = (IMultiHitboxUser) entity;
+                hitboxUser.updateHitboxPos(message.hitboxName, message.x, message.y, message.z);
             }
-            if (ctx.side == Side.CLIENT) {
-                EntityPlayer messagePlayer = Minecraft.getMinecraft().player;
-                Entity entity = messagePlayer.world.getEntityByID(message.entityId);
+        }
 
-                if (entity instanceof IMultiHitboxUser) {
-                    IMultiHitboxUser hitboxUser = (IMultiHitboxUser) entity;
-                    hitboxUser.updateHitboxPos(message.hitboxName, message.x, message.y, message.z);
-                }
+
+        @SideOnly(Side.CLIENT)
+        private void clientHandle(RiftLibUpdateHitboxPos message, MessageContext ctx) {
+            EntityPlayer messagePlayer = Minecraft.getMinecraft().player;
+            Entity entity = messagePlayer.world.getEntityByID(message.entityId);
+
+            if (entity instanceof IMultiHitboxUser) {
+                IMultiHitboxUser hitboxUser = (IMultiHitboxUser) entity;
+                hitboxUser.updateHitboxPos(message.hitboxName, message.x, message.y, message.z);
             }
         }
     }

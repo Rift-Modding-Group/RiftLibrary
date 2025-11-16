@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib;
+package anightdazingzoroark;
 
 import java.util.concurrent.FutureTask;
 

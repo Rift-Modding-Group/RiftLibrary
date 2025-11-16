@@ -203,7 +203,6 @@ public class DragonEntity extends EntityCreature implements IAnimatable, IMultiH
         data.addAnimationController(new AnimationController(this, "attack", 0, new AnimationController.IAnimationPredicate() {
             @Override
             public PlayState test(AnimationEvent event) {
-                /*
                 if (isAttacking()) {
                     event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.dragon.attack_while_flying", true));
                     return PlayState.CONTINUE;
@@ -212,9 +211,6 @@ public class DragonEntity extends EntityCreature implements IAnimatable, IMultiH
                     event.getController().clearAnimationCache();
                     return PlayState.STOP;
                 }
-                 */
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.dragon.attack_while_flying", true));
-                return PlayState.CONTINUE;
             }
         }));
     }

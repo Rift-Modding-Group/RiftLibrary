@@ -1,6 +1,6 @@
 package anightdazingzoroark.example.item;
 
-import anightdazingzoroark.example.RiftLibMod;
+import anightdazingzoroark.RiftLibMod;
 import anightdazingzoroark.example.entity.BombProjectile;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AnimationData;

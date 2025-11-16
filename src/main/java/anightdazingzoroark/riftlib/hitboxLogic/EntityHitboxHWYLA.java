@@ -1,6 +1,6 @@
 package anightdazingzoroark.riftlib.hitboxLogic;
 
-import anightdazingzoroark.riftlib.RiftLib;
+import anightdazingzoroark.RiftLib;
 import com.google.common.base.Strings;
 import mcp.mobius.waila.api.*;
 import mcp.mobius.waila.config.FormattingConfig;

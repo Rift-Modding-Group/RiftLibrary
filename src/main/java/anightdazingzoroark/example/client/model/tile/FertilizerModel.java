@@ -6,7 +6,7 @@ package anightdazingzoroark.example.client.model.tile;
 
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.example.block.tile.FertilizerTileEntity;
-import anightdazingzoroark.riftlib.RiftLib;
+import anightdazingzoroark.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 
 public class FertilizerModel extends AnimatedGeoModel<FertilizerTileEntity> {

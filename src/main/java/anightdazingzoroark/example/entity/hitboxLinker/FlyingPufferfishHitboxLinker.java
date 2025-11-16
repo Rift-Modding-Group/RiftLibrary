@@ -1,8 +1,7 @@
 package anightdazingzoroark.example.entity.hitboxLinker;
 
-import anightdazingzoroark.example.entity.DragonEntity;
 import anightdazingzoroark.example.entity.FlyingPufferfishEntity;
-import anightdazingzoroark.riftlib.RiftLib;
+import anightdazingzoroark.RiftLib;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitboxLinker;
 import net.minecraft.util.ResourceLocation;
 

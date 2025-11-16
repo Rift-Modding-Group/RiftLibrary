@@ -1,6 +1,7 @@
 package anightdazingzoroark.riftlib;
 
-import anightdazingzoroark.example.RiftLibMod;
+import anightdazingzoroark.RiftLib;
+import anightdazingzoroark.RiftLibMod;
 import net.minecraftforge.common.config.Configuration;
 import org.apache.logging.log4j.Level;
 

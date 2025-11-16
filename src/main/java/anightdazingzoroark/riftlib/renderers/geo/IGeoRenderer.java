@@ -22,8 +22,7 @@ import anightdazingzoroark.riftlib.util.MatrixStack;
 public interface IGeoRenderer<T> {
 	public static MatrixStack MATRIX_STACK = new MatrixStack();
 
-	default void render(GeoModel model, T animatable, float partialTicks, float red, float green, float blue,
-			float alpha) {
+	default void render(GeoModel model, T animatable, float partialTicks, float red, float green, float blue, float alpha) {
 		GlStateManager.disableCull();
 		GlStateManager.enableRescaleNormal();
 		renderEarly(animatable, partialTicks, red, green, blue, alpha);
@@ -46,8 +45,7 @@ public interface IGeoRenderer<T> {
 		GlStateManager.enableCull();
 	}
 
-	default void renderRecursively(BufferBuilder builder, GeoBone bone, float red, float green, float blue,
-			float alpha) {
+	default void renderRecursively(BufferBuilder builder, GeoBone bone, float red, float green, float blue, float alpha) {
 		MATRIX_STACK.push();
 
 		MATRIX_STACK.translate(bone);

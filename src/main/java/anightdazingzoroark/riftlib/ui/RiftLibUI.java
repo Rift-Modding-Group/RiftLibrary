@@ -1,6 +1,6 @@
 package anightdazingzoroark.riftlib.ui;
 
-import anightdazingzoroark.riftlib.RiftLib;
+import anightdazingzoroark.RiftLib;
 import anightdazingzoroark.riftlib.RiftLibJEI;
 import anightdazingzoroark.riftlib.ui.uiElement.RiftLibButton;
 import anightdazingzoroark.riftlib.ui.uiElement.RiftLibClickableSection;

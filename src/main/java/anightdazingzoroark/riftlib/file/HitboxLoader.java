@@ -1,6 +1,6 @@
 package anightdazingzoroark.riftlib.file;
 
-import anightdazingzoroark.riftlib.RiftLib;
+import anightdazingzoroark.RiftLib;
 import anightdazingzoroark.riftlib.util.json.JsonHitboxUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;

@@ -4,6 +4,7 @@ import anightdazingzoroark.example.CommonListener;
 import anightdazingzoroark.riftlib.RiftLibEvent;
 import anightdazingzoroark.riftlib.internalMessage.*;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
+import anightdazingzoroark.riftlib.message.RiftLibMessageSide;
 import anightdazingzoroark.riftlib.message.RiftLibMessageWrapper;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
@@ -16,12 +17,12 @@ public class ServerProxy {
     public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> MESSAGE_WRAPPER;
 
     public void preInit(FMLPreInitializationEvent e) {
-        MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID,
-                RiftLibUpdateHitboxPos.class,
-                RiftLibUpdateRiderPos.class,
-                RiftLibUpdateHitboxSize.class,
-                RiftLibOpenUI.class
-        );
+        //register internal messages
+        MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID);
+        MESSAGE_WRAPPER.registerMessage(RiftLibUpdateHitboxPos.class, RiftLibMessageSide.BOTH);
+        MESSAGE_WRAPPER.registerMessage(RiftLibUpdateRiderPos.class, RiftLibMessageSide.BOTH);
+        MESSAGE_WRAPPER.registerMessage(RiftLibUpdateHitboxSize.class, RiftLibMessageSide.BOTH);
+        MESSAGE_WRAPPER.registerMessage(RiftLibOpenUI.class, RiftLibMessageSide.CLIENT);
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {

@@ -6,37 +6,32 @@ import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
 
 public class RiftLibMessageWrapper<REQ extends IMessage, REPLY extends IMessage> extends SimpleNetworkWrapper {
-    @SafeVarargs
-    public RiftLibMessageWrapper(String channelName, Class<? extends RiftLibMessage<?>>... messageClasses) {
+    private int id;
+
+    public RiftLibMessageWrapper(String channelName) {
         super(channelName);
+    }
 
-        int id = 0;
-        for (Class<? extends RiftLibMessage<?>> messageClass : messageClasses) {
-            try {
-                RiftLibMessage<?> message = messageClass.newInstance();
+    public void registerMessage(Class<? extends RiftLibMessage<?>> messageClass, RiftLibMessageSide side) {
+        //Cast to the proper types for registerMessage
+        Class<? extends IMessageHandler<REQ, REPLY>> handlerClass = (Class<? extends IMessageHandler<REQ, REPLY>>) messageClass;
+        Class<REQ> messageType = (Class<REQ>) messageClass;
 
-                // Cast to the proper types for registerMessage
-                Class<? extends IMessageHandler<REQ, REPLY>> handlerClass = (Class<? extends IMessageHandler<REQ, REPLY>>) messageClass;
-                Class<REQ> messageType = (Class<REQ>) messageClass;
-
-                if (message.side() == RiftLibMessageSide.SERVER || message.side() == RiftLibMessageSide.BOTH) {
-                    this.registerMessage(
-                            handlerClass,
-                            messageType,
-                            id++,
-                            Side.SERVER
-                    );
-                }
-                if (message.side() == RiftLibMessageSide.CLIENT || message.side() == RiftLibMessageSide.BOTH) {
-                    this.registerMessage(
-                            handlerClass,
-                            messageType,
-                            id++,
-                            Side.CLIENT
-                    );
-                }
-            }
-            catch (Exception e) {}
+        if (side == RiftLibMessageSide.SERVER || side == RiftLibMessageSide.BOTH) {
+            this.registerMessage(
+                    handlerClass,
+                    messageType,
+                    this.id++,
+                    Side.SERVER
+            );
+        }
+        if (side == RiftLibMessageSide.CLIENT || side == RiftLibMessageSide.BOTH) {
+            this.registerMessage(
+                    handlerClass,
+                    messageType,
+                    this.id++,
+                    Side.CLIENT
+            );
         }
     }
 }

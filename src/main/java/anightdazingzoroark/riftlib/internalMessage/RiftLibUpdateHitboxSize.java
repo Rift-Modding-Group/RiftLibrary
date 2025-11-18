@@ -72,9 +72,4 @@ public class RiftLibUpdateHitboxSize extends RiftLibMessage<RiftLibUpdateHitboxS
             hitboxUser.updateHitboxScaleFromAnim(message.hitboxName, message.width, message.height);
         }
     }
-
-    @Override
-    public RiftLibMessageSide side() {
-        return RiftLibMessageSide.BOTH;
-    }
 }

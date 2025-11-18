@@ -14,7 +14,6 @@ public class RiftLibEvent {
         ItemStack heldItem = player.getHeldItemMainhand();
 
         if (!heldItem.isEmpty() && heldItem.getItem() == Items.PAPER && !event.getWorld().isRemote) {
-            System.out.println("hello world!");
             RiftLibUIHelper.showUI(player, "helloWorld", (int) player.posX, (int) player.posY, (int) player.posZ);
         }
     }

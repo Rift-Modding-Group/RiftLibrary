@@ -63,9 +63,4 @@ public class RiftLibUpdateRiderPos extends RiftLibMessage<RiftLibUpdateRiderPos>
             dynamicRideUser.setRidePosition(message.index, message.pos);
         }
     }
-
-    @Override
-    public RiftLibMessageSide side() {
-        return RiftLibMessageSide.BOTH;
-    }
 }

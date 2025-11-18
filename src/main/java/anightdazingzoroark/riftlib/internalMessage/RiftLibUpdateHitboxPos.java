@@ -76,9 +76,4 @@ public class RiftLibUpdateHitboxPos extends RiftLibMessage<RiftLibUpdateHitboxPo
             hitboxUser.updateHitboxPos(message.hitboxName, message.x, message.y, message.z);
         }
     }
-
-    @Override
-    public RiftLibMessageSide side() {
-        return RiftLibMessageSide.BOTH;
-    }
 }

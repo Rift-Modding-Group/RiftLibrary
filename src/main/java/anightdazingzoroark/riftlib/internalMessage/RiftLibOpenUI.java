@@ -60,9 +60,4 @@ public class RiftLibOpenUI extends RiftLibMessage<RiftLibOpenUI> {
         RiftLibUI ui = RiftLibUIRegistry.createUI(message.uiID, message.nbtTagCompound, message.x, message.y, message.z);
         if (ui != null) client.displayGuiScreen(ui);
     }
-
-    @Override
-    public RiftLibMessageSide side() {
-        return RiftLibMessageSide.CLIENT;
-    }
 }

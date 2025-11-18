@@ -1,6 +1,5 @@
 package anightdazingzoroark.riftlib.message;
 
-import anightdazingzoroark.RiftLib;
 import anightdazingzoroark.RiftLibMod;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
@@ -21,8 +20,6 @@ public abstract class RiftLibMessage<T extends RiftLibMessage<T>> implements IMe
 
     @SideOnly(Side.CLIENT)
     public abstract void executeOnClient(Minecraft client, T message, EntityPlayer player, MessageContext messageContext);
-
-    public abstract RiftLibMessageSide side();
 
     @Override
     public IMessage onMessage(T message, MessageContext messageContext) {

@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.ui;
 
+import anightdazingzoroark.ClientProxy;
 import anightdazingzoroark.ServerProxy;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibOpenUI;
 import net.minecraft.client.Minecraft;
@@ -10,11 +11,11 @@ import net.minecraft.nbt.NBTTagCompound;
 
 public class RiftLibUIHelper {
     public static void showUI(EntityPlayer player, String id, int x, int y, int z) {
-        System.out.println("hello!");
         showUI(player, id, new NBTTagCompound(), x, y, z);
     }
 
     public static void showUI(EntityPlayer player, String id, NBTTagCompound nbtTagCompound, int x, int y, int z) {
-        ServerProxy.MESSAGE_WRAPPER.sendTo(new RiftLibOpenUI(id, nbtTagCompound, x, y, z), (EntityPlayerMP) (player));
+        if (player instanceof EntityPlayerMP) ServerProxy.MESSAGE_WRAPPER.sendTo(new RiftLibOpenUI(id, nbtTagCompound, x, y, z), (EntityPlayerMP) (player));
+        else ClientProxy.showUI(id, nbtTagCompound, x, y, z);
     }
 }

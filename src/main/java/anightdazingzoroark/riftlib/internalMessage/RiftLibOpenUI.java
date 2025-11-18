@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.internalMessage;
 
+import anightdazingzoroark.ClientProxy;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
 import anightdazingzoroark.riftlib.message.RiftLibMessageSide;
 import anightdazingzoroark.riftlib.ui.RiftLibUI;
@@ -57,7 +58,6 @@ public class RiftLibOpenUI extends RiftLibMessage<RiftLibOpenUI> {
     @SideOnly(Side.CLIENT)
     @Override
     public void executeOnClient(Minecraft client, RiftLibOpenUI message, EntityPlayer player, MessageContext messageContext) {
-        RiftLibUI ui = RiftLibUIRegistry.createUI(message.uiID, message.nbtTagCompound, message.x, message.y, message.z);
-        if (ui != null) client.displayGuiScreen(ui);
+        ClientProxy.showUI(message.uiID, message.nbtTagCompound, message.x, message.y, message.z);
     }
 }

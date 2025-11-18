@@ -13,7 +13,7 @@ public class RiftLibEvent {
         EntityPlayer player = event.getEntityPlayer();
         ItemStack heldItem = player.getHeldItemMainhand();
 
-        if (!heldItem.isEmpty() && heldItem.getItem() == Items.PAPER && !event.getWorld().isRemote) {
+        if (!heldItem.isEmpty() && heldItem.getItem() == Items.PAPER && event.getWorld().isRemote) {
             RiftLibUIHelper.showUI(player, "helloWorld", (int) player.posX, (int) player.posY, (int) player.posZ);
         }
     }

@@ -24,10 +24,12 @@ import anightdazingzoroark.riftlib.hitboxLogic.EntityHitboxRenderer;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
 import anightdazingzoroark.riftlib.renderers.geo.GeoArmorRenderer;
 import anightdazingzoroark.riftlib.renderers.geo.GeoReplacedEntityRenderer;
+import anightdazingzoroark.riftlib.ui.RiftLibUI;
 import anightdazingzoroark.riftlib.ui.RiftLibUIRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.monster.EntityCreeper;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
@@ -91,5 +93,11 @@ public class ClientProxy extends ServerProxy {
                     messageContext
             ));
         }
+    }
+
+    @SideOnly(Side.CLIENT)
+    public static void showUI(String id, NBTTagCompound nbtTagCompound, int x, int y, int z) {
+        RiftLibUI ui = RiftLibUIRegistry.createUI(id, nbtTagCompound, x, y, z);
+        if (ui != null) Minecraft.getMinecraft().displayGuiScreen(ui);
     }
 }

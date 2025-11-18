@@ -6,13 +6,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTTagCompound;
 
 public class RiftLibUIHelper {
-    public static Object SCREEN;
+    public static void showUI(EntityPlayer player, String id, int x, int y, int z) {
+        System.out.println("hello!");
+        showUI(player, id, new NBTTagCompound(), x, y, z);
+    }
 
-    public static void showUI(EntityPlayer player, RiftLibUI screen) {
-        SCREEN = screen;
-        if (player instanceof EntityPlayerSP) Minecraft.getMinecraft().displayGuiScreen((RiftLibUI) RiftLibUIHelper.SCREEN);
-        else if (player instanceof EntityPlayerMP) ServerProxy.MESSAGE_WRAPPER.sendTo(new RiftLibOpenUI(), (EntityPlayerMP) (player));
+    public static void showUI(EntityPlayer player, String id, NBTTagCompound nbtTagCompound, int x, int y, int z) {
+        ServerProxy.MESSAGE_WRAPPER.sendTo(new RiftLibOpenUI(id, nbtTagCompound, x, y, z), (EntityPlayerMP) (player));
     }
 }

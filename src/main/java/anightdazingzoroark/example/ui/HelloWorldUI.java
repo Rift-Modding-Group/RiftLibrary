@@ -10,14 +10,15 @@ import net.minecraft.entity.passive.EntityChicken;
 import net.minecraft.entity.passive.EntityPig;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class HelloWorldUI extends RiftLibUI {
-    public HelloWorldUI(int x, int y, int z) {
-        super(x, y, z);
+    public HelloWorldUI(NBTTagCompound nbtTagCompound, int x, int y, int z) {
+        super(nbtTagCompound, x, y, z);
     }
 
     @Override

@@ -15,14 +15,18 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 import java.util.*;
 
+@SideOnly(Side.CLIENT)
 public abstract class RiftLibUI extends GuiScreen {
     private final ResourceLocation popupBackground = new ResourceLocation(RiftLib.ModID, "textures/ui/popup.png");
     private final Map<String, Double> sectionScrollProgress = new HashMap<>();
@@ -34,12 +38,16 @@ public abstract class RiftLibUI extends GuiScreen {
     //for managing sections
     private final List<String> hiddenUISections = new ArrayList<>();
 
+    //other information
+    public final NBTTagCompound nbtTagCompound;
+
     //position
     public final int x;
     public final int y;
     public final int z;
 
-    public RiftLibUI(int x, int y, int z) {
+    public RiftLibUI(NBTTagCompound nbtTagCompound, int x, int y, int z) {
+        this.nbtTagCompound = nbtTagCompound;
         this.x = x;
         this.y = y;
         this.z = z;

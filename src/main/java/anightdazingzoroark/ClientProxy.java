@@ -17,12 +17,14 @@ import anightdazingzoroark.example.entity.hitboxLinker.DragonHitboxLinker;
 import anightdazingzoroark.example.entity.hitboxLinker.FlyingPufferfishHitboxLinker;
 import anightdazingzoroark.example.entity.ridePosLinker.DragonRidePosLinker;
 import anightdazingzoroark.example.item.PotatoArmorItem;
+import anightdazingzoroark.example.ui.HelloWorldUI;
 import anightdazingzoroark.riftlib.RiftLibLinkerRegistry;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitbox;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitboxRenderer;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
 import anightdazingzoroark.riftlib.renderers.geo.GeoArmorRenderer;
 import anightdazingzoroark.riftlib.renderers.geo.GeoReplacedEntityRenderer;
+import anightdazingzoroark.riftlib.ui.RiftLibUIRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.monster.EntityCreeper;
@@ -44,6 +46,9 @@ public class ClientProxy extends ServerProxy {
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {
+            //uis
+            RiftLibUIRegistry.registerUI("helloWorld", HelloWorldUI.class);
+
             //linkers
             RiftLibLinkerRegistry.registerEntityHitboxLinker(DragonEntity.class, new DragonHitboxLinker());
             RiftLibLinkerRegistry.registerDynamicRidePosLinker(DragonEntity.class, new DragonRidePosLinker());
@@ -74,6 +79,7 @@ public class ClientProxy extends ServerProxy {
         }
     }
 
+    @SideOnly(Side.CLIENT)
     @Override
     public <T extends RiftLibMessage<T>> void handleMessage(final T message, final MessageContext messageContext) {
         if (messageContext.side.isServer()) super.handleMessage(message, messageContext);

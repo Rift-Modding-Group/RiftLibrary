@@ -18,6 +18,8 @@ public interface IMultiHitboxUser extends IEntityMultiPart {
     //and must be the entity itself being entered
     default <T extends Entity & IAnimatable & IMultiHitboxUser> void initializeHitboxes(T entity) {
         EntityHitboxLinker hitboxLinker = RiftLibLinkerRegistry.INSTANCE.hitboxLinkerMap.get(entity.getClass());
+        if (hitboxLinker == null) return;
+
         for (HitboxDefinitionList.HitboxDefinition hitboxDefinition : hitboxLinker.getHitboxDefinitionList(entity).list) {
             //create the hitbox
             EntityHitbox hitbox = new EntityHitbox(

@@ -21,6 +21,7 @@ public interface IDynamicRideUser {
     //and must be the entity itself being entered
     default <T extends Entity & IAnimatable & IDynamicRideUser> void initializeRiderPositions(T entity) {
         DynamicRidePosLinker dynamicRidePosLinker = RiftLibLinkerRegistry.INSTANCE.dynamicRidePosLinkerMap.get(entity.getClass());
+        if (dynamicRidePosLinker == null) return;
         this.createRidePositions(dynamicRidePosLinker.getDynamicRideDefinitions(entity).finalOrderedRiderPositions());
     }
 

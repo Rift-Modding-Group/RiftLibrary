@@ -1,6 +1,7 @@
 package anightdazingzoroark.riftlib.ui;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.nbt.NBTTagCompound;
 
 //another helper class, this one allows for quick transfer of data
@@ -35,7 +36,7 @@ public class RiftLibUIData {
 
     public RiftLibUIData addEntity(String key, Entity entity) {
         NBTTagCompound dataToAdd = new NBTTagCompound();
-        entity.writeToNBT(dataToAdd);
+        entity.writeToNBTOptional(dataToAdd);
         this.nbtTagCompound.setTag(key, dataToAdd);
         return this;
     }

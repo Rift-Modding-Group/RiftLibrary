@@ -1,20 +1,13 @@
 package anightdazingzoroark.riftlib.internalMessage;
 
-import anightdazingzoroark.ClientProxy;
+import anightdazingzoroark.riftlib.ClientProxy;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
-import anightdazingzoroark.riftlib.message.RiftLibMessageSide;
-import anightdazingzoroark.riftlib.ui.RiftLibUI;
-import anightdazingzoroark.riftlib.ui.RiftLibUIHelper;
-import anightdazingzoroark.riftlib.ui.RiftLibUIRegistry;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;

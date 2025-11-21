@@ -1,7 +1,7 @@
 package anightdazingzoroark.example.client.model.item;
 
 import anightdazingzoroark.example.item.BombItem;
-import anightdazingzoroark.RiftLib;
+import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
 

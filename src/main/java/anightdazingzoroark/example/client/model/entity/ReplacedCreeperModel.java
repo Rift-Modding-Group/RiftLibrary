@@ -1,7 +1,7 @@
 package anightdazingzoroark.example.client.model.entity;
 
 import net.minecraft.util.ResourceLocation;
-import anightdazingzoroark.RiftLib;
+import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 
 @SuppressWarnings("rawtypes")

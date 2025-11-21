@@ -1,8 +1,5 @@
-package anightdazingzoroark;
+package anightdazingzoroark.riftlib;
 
-import anightdazingzoroark.example.client.renderer.entity.*;
-import anightdazingzoroark.example.entity.*;
-import anightdazingzoroark.riftlib.RiftLibConfig;
 import anightdazingzoroark.riftlib.command.RiftLibMobFamily;
 import anightdazingzoroark.riftlib.mobFamily.MobFamily;
 import anightdazingzoroark.riftlib.mobFamily.MobFamilyCreator;
@@ -23,7 +20,7 @@ import java.io.File;
 
 @Mod(modid = RiftLib.ModID, version = RiftLib.VERSION)
 public class RiftLibMod {
-    @SidedProxy(clientSide = "anightdazingzoroark.ClientProxy", serverSide = "anightdazingzoroark.ServerProxy")
+    @SidedProxy(clientSide = "anightdazingzoroark.riftlib.ClientProxy", serverSide = "anightdazingzoroark.riftlib.ServerProxy")
     public static ServerProxy PROXY;
 	public static Configuration configMain;
 	public static boolean DISABLE_IN_DEV = false;

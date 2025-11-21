@@ -6,7 +6,7 @@ package anightdazingzoroark.example.client.model.tile;
 
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.example.block.tile.BotariumTileEntity;
-import anightdazingzoroark.RiftLib;
+import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 
 public class BotariumModel extends AnimatedGeoModel<BotariumTileEntity> {

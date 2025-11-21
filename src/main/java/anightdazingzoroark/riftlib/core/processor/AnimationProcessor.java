@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import anightdazingzoroark.ServerProxy;
+import anightdazingzoroark.riftlib.ServerProxy;
 import anightdazingzoroark.riftlib.RiftLibConfig;
 import anightdazingzoroark.riftlib.file.RidePosDefinitionList;
 import anightdazingzoroark.riftlib.geo.render.built.GeoBone;

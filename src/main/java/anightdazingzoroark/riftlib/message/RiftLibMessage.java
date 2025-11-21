@@ -1,6 +1,6 @@
 package anightdazingzoroark.riftlib.message;
 
-import anightdazingzoroark.RiftLibMod;
+import anightdazingzoroark.riftlib.RiftLibMod;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;

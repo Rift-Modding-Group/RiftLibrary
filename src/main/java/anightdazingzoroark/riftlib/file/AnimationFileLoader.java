@@ -18,7 +18,7 @@ import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.util.JsonException;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
-import anightdazingzoroark.RiftLib;
+import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.util.json.JsonAnimationUtils;
 

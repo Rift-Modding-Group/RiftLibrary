@@ -1,7 +1,6 @@
-package anightdazingzoroark;
+package anightdazingzoroark.riftlib;
 
 import anightdazingzoroark.example.CommonListener;
-import anightdazingzoroark.riftlib.RiftLibEvent;
 import anightdazingzoroark.riftlib.internalMessage.*;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
 import anightdazingzoroark.riftlib.message.RiftLibMessageSide;

@@ -1,7 +1,7 @@
 package anightdazingzoroark.example.entity.ridePosLinker;
 
 import anightdazingzoroark.example.entity.DragonEntity;
-import anightdazingzoroark.RiftLib;
+import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosLinker;
 import net.minecraft.util.ResourceLocation;
 

@@ -1,4 +1,4 @@
-package anightdazingzoroark;
+package anightdazingzoroark.riftlib;
 
 import anightdazingzoroark.example.block.tile.BotariumTileEntity;
 import anightdazingzoroark.example.block.tile.FertilizerTileEntity;
@@ -18,7 +18,6 @@ import anightdazingzoroark.example.entity.hitboxLinker.FlyingPufferfishHitboxLin
 import anightdazingzoroark.example.entity.ridePosLinker.DragonRidePosLinker;
 import anightdazingzoroark.example.item.PotatoArmorItem;
 import anightdazingzoroark.example.ui.HelloWorldUI;
-import anightdazingzoroark.riftlib.RiftLibLinkerRegistry;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitbox;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitboxRenderer;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
@@ -32,7 +31,6 @@ import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;

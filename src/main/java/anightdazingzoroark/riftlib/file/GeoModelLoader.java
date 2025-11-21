@@ -2,7 +2,7 @@ package anightdazingzoroark.riftlib.file;
 
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
-import anightdazingzoroark.RiftLib;
+import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.geo.exception.GeoModelException;
 import anightdazingzoroark.riftlib.geo.raw.pojo.Converter;
 import anightdazingzoroark.riftlib.geo.raw.pojo.FormatVersion;

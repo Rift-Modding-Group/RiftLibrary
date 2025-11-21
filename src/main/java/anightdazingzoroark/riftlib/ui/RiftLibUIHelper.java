@@ -1,10 +1,8 @@
 package anightdazingzoroark.riftlib.ui;
 
-import anightdazingzoroark.ClientProxy;
-import anightdazingzoroark.ServerProxy;
+import anightdazingzoroark.riftlib.ClientProxy;
+import anightdazingzoroark.riftlib.ServerProxy;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibOpenUI;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;

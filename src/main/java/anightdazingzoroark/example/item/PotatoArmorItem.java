@@ -9,7 +9,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
-import anightdazingzoroark.RiftLibMod;
+import anightdazingzoroark.riftlib.RiftLibMod;
 import anightdazingzoroark.example.registry.ItemRegistry;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.PlayState;

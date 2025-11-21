@@ -24,7 +24,7 @@ import net.minecraft.client.resources.LegacyV2Adapter;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.client.FMLFolderResourcePack;
-import anightdazingzoroark.RiftLib;
+import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.geo.render.built.GeoModel;
 import anightdazingzoroark.riftlib.molang.MolangRegistrar;
 

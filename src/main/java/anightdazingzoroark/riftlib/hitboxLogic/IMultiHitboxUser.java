@@ -46,23 +46,24 @@ public interface IMultiHitboxUser extends IEntityMultiPart {
         }
     }
 
-    //an array of hitboxes associated with the entity is to be created
-    Entity[] getParts();
-
     void setParts(Entity[] hitboxes);
 
     default void addPart(EntityHitbox hitbox) {
-        Entity[] newHitboxArray = new Entity[this.getParts().length + 1];
+        if (this.getMultiHitboxUser() == null) return;
+        if (this.getMultiHitboxUser().getParts() == null) return;
+        Entity[] newHitboxArray = new Entity[this.getMultiHitboxUser().getParts().length + 1];
         for (int x = 0; x < newHitboxArray.length; x++) {
-            if (x < newHitboxArray.length - 1) newHitboxArray[x] = this.getParts()[x];
+            if (x < newHitboxArray.length - 1) newHitboxArray[x] = this.getMultiHitboxUser().getParts()[x];
             else newHitboxArray[x] = hitbox;
         }
         this.setParts(newHitboxArray);
     }
 
     default EntityHitbox getHitboxByName(String name) {
-        for (int x = 0; x < this.getParts().length; x++) {
-            EntityHitbox hitbox = (EntityHitbox) this.getParts()[x];
+        if (this.getMultiHitboxUser() == null) return null;
+        if (this.getMultiHitboxUser().getParts() == null) return null;
+        for (int x = 0; x < this.getMultiHitboxUser().getParts().length; x++) {
+            EntityHitbox hitbox = (EntityHitbox) this.getMultiHitboxUser().getParts()[x];
             if (hitbox.partName.equals(name)) return hitbox;
         }
         return null;
@@ -71,7 +72,9 @@ public interface IMultiHitboxUser extends IEntityMultiPart {
     //this is to be placed in a method like onUpdate() or onLivingUpdate()
     //to update all hitboxes every tick
     default void updateParts() {
-        for (Entity entity : this.getParts()) {
+        if (this.getMultiHitboxUser() == null) return;
+        if (this.getMultiHitboxUser().getParts() == null) return;
+        for (Entity entity : this.getMultiHitboxUser().getParts()) {
             if (entity instanceof EntityHitbox) {
                 entity.onUpdate();
                 ((EntityHitbox) entity).resize(((IAnimatable) this.getMultiHitboxUser()).scale());
@@ -95,18 +98,18 @@ public interface IMultiHitboxUser extends IEntityMultiPart {
     }
 
     default void updateHitboxPos(String hitboxName, float x, float y, float z) {
-        for (int i = 0; i < this.getParts().length; i++) {
-            if (((EntityHitbox) this.getParts()[i]).partName.equals(hitboxName)) {
-                EntityHitbox hitbox = (EntityHitbox) this.getParts()[i];
+        for (int i = 0; i < this.getMultiHitboxUser().getParts().length; i++) {
+            if (((EntityHitbox) this.getMultiHitboxUser().getParts()[i]).partName.equals(hitboxName)) {
+                EntityHitbox hitbox = (EntityHitbox) this.getMultiHitboxUser().getParts()[i];
                 hitbox.changeOffset(x, y, z);
             }
         }
     }
 
     default void updateHitboxScaleFromAnim(String hitboxName, float width, float height) {
-        for (int i = 0; i < this.getParts().length; i++) {
-            if (((EntityHitbox) this.getParts()[i]).partName.equals(hitboxName)) {
-                EntityHitbox hitbox = (EntityHitbox) this.getParts()[i];
+        for (int i = 0; i < this.getMultiHitboxUser().getParts().length; i++) {
+            if (((EntityHitbox) this.getMultiHitboxUser().getParts()[i]).partName.equals(hitboxName)) {
+                EntityHitbox hitbox = (EntityHitbox) this.getMultiHitboxUser().getParts()[i];
                 hitbox.resizeByAnim(width, height);
             }
         }

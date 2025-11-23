@@ -1,14 +1,12 @@
 package anightdazingzoroark.riftlib;
 
-import anightdazingzoroark.example.block.tile.BotariumTileEntity;
-import anightdazingzoroark.example.block.tile.FertilizerTileEntity;
+import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
 import anightdazingzoroark.example.client.renderer.armor.PotatoArmorRenderer;
 import anightdazingzoroark.example.client.renderer.entity.BombProjectileRenderer;
 import anightdazingzoroark.example.client.renderer.entity.DragonRenderer;
 import anightdazingzoroark.example.client.renderer.entity.FlyingPufferfishRenderer;
 import anightdazingzoroark.example.client.renderer.entity.ReplacedCreeperRenderer;
-import anightdazingzoroark.example.client.renderer.tile.BotariumTileRenderer;
-import anightdazingzoroark.example.client.renderer.tile.FertilizerTileRenderer;
+import anightdazingzoroark.example.client.renderer.tile.MerryGoRoundRenderer;
 import anightdazingzoroark.example.entity.BombProjectile;
 import anightdazingzoroark.example.entity.DragonEntity;
 import anightdazingzoroark.example.entity.FlyingPufferfishEntity;
@@ -61,8 +59,7 @@ public class ClientProxy extends ServerProxy {
 
             GeoArmorRenderer.registerArmorRenderer(PotatoArmorItem.class, new PotatoArmorRenderer());
 
-            ClientRegistry.bindTileEntitySpecialRenderer(BotariumTileEntity.class, new BotariumTileRenderer());
-            ClientRegistry.bindTileEntitySpecialRenderer(FertilizerTileEntity.class, new FertilizerTileRenderer());
+            ClientRegistry.bindTileEntitySpecialRenderer(MerryGoRoundTileEntity.class, new MerryGoRoundRenderer());
         }
     }
 

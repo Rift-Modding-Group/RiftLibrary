@@ -1,5 +1,8 @@
 package anightdazingzoroark.example;
 
+import anightdazingzoroark.example.block.MerryGoRoundBlock;
+import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
+import anightdazingzoroark.example.registry.BlockRegistry;
 import anightdazingzoroark.riftlib.RiftLibMod;
 import anightdazingzoroark.example.client.renderer.item.BombRenderer;
 import anightdazingzoroark.example.entity.*;
@@ -23,12 +26,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
-import anightdazingzoroark.example.block.BotariumBlock;
-import anightdazingzoroark.example.block.FertilizerBlock;
-import anightdazingzoroark.example.block.tile.BotariumTileEntity;
-import anightdazingzoroark.example.block.tile.FertilizerTileEntity;
 import anightdazingzoroark.example.item.PotatoArmorItem;
-import anightdazingzoroark.example.registry.BlockRegistry;
 import anightdazingzoroark.example.registry.ItemRegistry;
 import anightdazingzoroark.example.registry.SoundRegistry;
 import anightdazingzoroark.riftlib.RiftLib;
@@ -40,14 +38,9 @@ public class CommonListener {
 	@SubscribeEvent
 	public void onRegisterBlocks(RegistryEvent.Register<Block> event) {
 		blockRegistry = event.getRegistry();
-		BlockRegistry.BOTARIUM_BLOCK = new BotariumBlock();
-		BlockRegistry.FERTILIZER_BLOCK = new FertilizerBlock();
-
-		BlockRegistry.BOTARIUM_BLOCK.setCreativeTab(RiftLibMod.getRiftlibItemGroup());
-		BlockRegistry.FERTILIZER_BLOCK.setCreativeTab(RiftLibMod.getRiftlibItemGroup());
-
-		registerBlock(BlockRegistry.BOTARIUM_BLOCK, "botariumblock");
-		registerBlock(BlockRegistry.FERTILIZER_BLOCK, "fertilizerblock");
+        BlockRegistry.MERRY_GO_ROUND_BLOCK = new MerryGoRoundBlock();
+        BlockRegistry.MERRY_GO_ROUND_BLOCK.setCreativeTab(RiftLibMod.getRiftlibItemGroup());
+        registerBlock(BlockRegistry.MERRY_GO_ROUND_BLOCK, "merry_go_round_block");
 	}
 
 	@SubscribeEvent
@@ -82,9 +75,7 @@ public class CommonListener {
 		EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "flying_pufferfish"), 0xffae00, 0xbfc700);
 
 		//tile entity registry
-		GameRegistry.registerTileEntity(BotariumTileEntity.class, new ResourceLocation(RiftLib.ModID, "botariumtile"));
-		GameRegistry.registerTileEntity(FertilizerTileEntity.class,
-				new ResourceLocation(RiftLib.ModID, "fertilizertile"));
+		GameRegistry.registerTileEntity(MerryGoRoundTileEntity.class, new ResourceLocation(RiftLib.ModID, "merry_go_round_te"));
 	}
 
 	@SubscribeEvent
@@ -101,8 +92,7 @@ public class CommonListener {
 		ItemRegistry.POTATO_BOOTS = registerItem(
 				new PotatoArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.FEET), "potato_boots");
 
-		ItemRegistry.BOTARIUM = registerItem(new ItemBlock(BlockRegistry.BOTARIUM_BLOCK), "botarium");
-		ItemRegistry.FERTILIZER = registerItem(new ItemBlock(BlockRegistry.FERTILIZER_BLOCK), "fertilizer");
+        ItemRegistry.MERRY_GO_ROUND = registerItem(new ItemBlock(BlockRegistry.MERRY_GO_ROUND_BLOCK), "merry_go_round");
 	}
 
 	public static <T extends Item> T registerItem(T item, String name) {
@@ -140,10 +130,8 @@ public class CommonListener {
 				0,
 				new ModelResourceLocation(RiftLib.ModID+":bomb", "inventory")
 		);
-		ModelLoader.setCustomModelResourceLocation(ItemRegistry.BOTARIUM, 0,
-				new ModelResourceLocation(RiftLib.ModID + ":botarium", "inventory"));
-		ModelLoader.setCustomModelResourceLocation(ItemRegistry.FERTILIZER, 0,
-				new ModelResourceLocation(RiftLib.ModID + ":fertilizer", "inventory"));
+        ModelLoader.setCustomModelResourceLocation(ItemRegistry.MERRY_GO_ROUND, 0, new ModelResourceLocation(RiftLib.ModID+":merry_go_round", "inventory"));
+
 		ModelLoader.setCustomModelResourceLocation(ItemRegistry.POTATO_HEAD, 0,
 				new ModelResourceLocation(RiftLib.ModID + ":potato_head", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(ItemRegistry.POTATO_CHEST, 0,

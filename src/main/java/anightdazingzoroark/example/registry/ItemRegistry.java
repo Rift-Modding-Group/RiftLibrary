@@ -12,6 +12,5 @@ public class ItemRegistry {
 	public static PotatoArmorItem POTATO_LEGGINGS;
 	public static PotatoArmorItem POTATO_BOOTS;
 
-	public static Item BOTARIUM;
-	public static Item FERTILIZER;
+    public static Item MERRY_GO_ROUND;
 }

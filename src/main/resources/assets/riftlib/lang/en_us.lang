@@ -10,9 +10,7 @@ command.riftlib.mob_family_all=All mob families: %s
 command.riftlib.mob_family_all_members=Members of mob family %s: %s
 command.riftlib.mob_family_invalid_member=%s is not a valid mob family member!
 
-item.riftlib.jackintheboxitem.name=Jack In The Box
-tile.riftlib.botariumblock.name=Botarium
-tile.riftlib.fertilizerblock.name=Fertilizer
+tile.riftlib.merry_go_round_block.name=Merry-Go-Round
 
 entity.dragon.name=Red Dragon
 entity.flying_pufferfish.name=Flying Pufferfish

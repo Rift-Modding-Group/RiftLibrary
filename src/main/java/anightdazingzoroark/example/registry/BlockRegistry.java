@@ -1,9 +1,7 @@
 package anightdazingzoroark.example.registry;
 
-import anightdazingzoroark.example.block.BotariumBlock;
-import anightdazingzoroark.example.block.FertilizerBlock;
+import anightdazingzoroark.example.block.MerryGoRoundBlock;
 
 public class BlockRegistry {
-	public static BotariumBlock BOTARIUM_BLOCK;
-	public static FertilizerBlock FERTILIZER_BLOCK;
+    public static MerryGoRoundBlock MERRY_GO_ROUND_BLOCK;
 }

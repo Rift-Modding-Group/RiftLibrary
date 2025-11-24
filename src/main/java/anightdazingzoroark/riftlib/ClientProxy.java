@@ -1,7 +1,7 @@
 package anightdazingzoroark.riftlib;
 
 import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
-import anightdazingzoroark.example.client.renderer.armor.PotatoArmorRenderer;
+import anightdazingzoroark.example.client.renderer.armor.GreenArmorRenderer;
 import anightdazingzoroark.example.client.renderer.entity.BombProjectileRenderer;
 import anightdazingzoroark.example.client.renderer.entity.DragonRenderer;
 import anightdazingzoroark.example.client.renderer.entity.FlyingPufferfishRenderer;
@@ -14,7 +14,7 @@ import anightdazingzoroark.example.entity.ReplacedCreeperEntity;
 import anightdazingzoroark.example.entity.hitboxLinker.DragonHitboxLinker;
 import anightdazingzoroark.example.entity.hitboxLinker.FlyingPufferfishHitboxLinker;
 import anightdazingzoroark.example.entity.ridePosLinker.DragonRidePosLinker;
-import anightdazingzoroark.example.item.PotatoArmorItem;
+import anightdazingzoroark.example.item.GreenArmorItem;
 import anightdazingzoroark.example.ui.HelloWorldUI;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitbox;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitboxRenderer;
@@ -57,8 +57,10 @@ public class ClientProxy extends ServerProxy {
             RenderingRegistry.registerEntityRenderingHandler(FlyingPufferfishEntity.class, FlyingPufferfishRenderer::new);
             RenderingRegistry.registerEntityRenderingHandler(BombProjectile.class, BombProjectileRenderer::new);
 
-            GeoArmorRenderer.registerArmorRenderer(PotatoArmorItem.class, new PotatoArmorRenderer());
+            //armor renderer
+            GeoArmorRenderer.registerArmorRenderer(GreenArmorItem.class, new GreenArmorRenderer());
 
+            //block renderers
             ClientRegistry.bindTileEntitySpecialRenderer(MerryGoRoundTileEntity.class, new MerryGoRoundRenderer());
         }
     }

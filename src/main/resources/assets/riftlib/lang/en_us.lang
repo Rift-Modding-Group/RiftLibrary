@@ -1,8 +1,8 @@
 itemGroup.riftlib_examples=RiftLibrary Examples
-item.riftlib.potato_head.name=Potato Armor Helmet
-item.riftlib.potato_chest.name=Potato Armor Chestplate
-item.riftlib.potato_leggings.name=Potato Armor Leggings
-item.riftlib.potato_boots.name=Potato Armor Boots
+item.riftlib.green_helmet.name=Green Helmet
+item.riftlib.green_chest.name=Green Chestplate
+item.riftlib.green_leggings.name=Green Leggings
+item.riftlib.green_boots.name=Green Boots
 item.riftlib.bomb.name=Bomb
 
 command.riftlib.mob_family_usage=/riftlibmobfamily OR /riftlibmobfamily [name]

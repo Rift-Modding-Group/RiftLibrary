@@ -2,6 +2,7 @@ package anightdazingzoroark.example;
 
 import anightdazingzoroark.example.block.MerryGoRoundBlock;
 import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
+import anightdazingzoroark.example.item.GreenArmorItem;
 import anightdazingzoroark.example.registry.BlockRegistry;
 import anightdazingzoroark.riftlib.RiftLibMod;
 import anightdazingzoroark.example.client.renderer.item.BombRenderer;
@@ -26,7 +27,6 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
-import anightdazingzoroark.example.item.PotatoArmorItem;
 import anightdazingzoroark.example.registry.ItemRegistry;
 import anightdazingzoroark.example.registry.SoundRegistry;
 import anightdazingzoroark.riftlib.RiftLib;
@@ -83,14 +83,14 @@ public class CommonListener {
 		itemRegistry = event.getRegistry();
 		ItemRegistry.BOMB = registerItem(new BombItem(), "bomb");
 
-		ItemRegistry.POTATO_HEAD = registerItem(
-				new PotatoArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.HEAD), "potato_head");
-		ItemRegistry.POTATO_CHEST = registerItem(
-				new PotatoArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.CHEST), "potato_chest");
-		ItemRegistry.POTATO_LEGGINGS = registerItem(
-				new PotatoArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.LEGS), "potato_leggings");
-		ItemRegistry.POTATO_BOOTS = registerItem(
-				new PotatoArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.FEET), "potato_boots");
+		ItemRegistry.GREEN_HEAD = registerItem(
+				new GreenArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.HEAD), "green_helmet");
+		ItemRegistry.GREEN_CHEST = registerItem(
+				new GreenArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.CHEST), "green_chest");
+		ItemRegistry.GREEN_LEGGINGS = registerItem(
+				new GreenArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.LEGS), "green_leggings");
+		ItemRegistry.GREEN_BOOTS = registerItem(
+				new GreenArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.FEET), "green_boots");
 
         ItemRegistry.MERRY_GO_ROUND = registerItem(new ItemBlock(BlockRegistry.MERRY_GO_ROUND_BLOCK), "merry_go_round");
 	}
@@ -132,14 +132,14 @@ public class CommonListener {
 		);
         ModelLoader.setCustomModelResourceLocation(ItemRegistry.MERRY_GO_ROUND, 0, new ModelResourceLocation(RiftLib.ModID+":merry_go_round", "inventory"));
 
-		ModelLoader.setCustomModelResourceLocation(ItemRegistry.POTATO_HEAD, 0,
-				new ModelResourceLocation(RiftLib.ModID + ":potato_head", "inventory"));
-		ModelLoader.setCustomModelResourceLocation(ItemRegistry.POTATO_CHEST, 0,
-				new ModelResourceLocation(RiftLib.ModID + ":potato_chest", "inventory"));
-		ModelLoader.setCustomModelResourceLocation(ItemRegistry.POTATO_LEGGINGS, 0,
-				new ModelResourceLocation(RiftLib.ModID + ":potato_leggings", "inventory"));
-		ModelLoader.setCustomModelResourceLocation(ItemRegistry.POTATO_BOOTS, 0,
-				new ModelResourceLocation(RiftLib.ModID + ":potato_boots", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(ItemRegistry.GREEN_HEAD, 0,
+				new ModelResourceLocation(RiftLib.ModID + ":green_helmet", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(ItemRegistry.GREEN_CHEST, 0,
+				new ModelResourceLocation(RiftLib.ModID + ":green_chest", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(ItemRegistry.GREEN_LEGGINGS, 0,
+				new ModelResourceLocation(RiftLib.ModID + ":green_leggings", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(ItemRegistry.GREEN_BOOTS, 0,
+				new ModelResourceLocation(RiftLib.ModID + ":green_boots", "inventory"));
 
 		ItemRegistry.BOMB.setTileEntityItemStackRenderer(new BombRenderer());
 	}

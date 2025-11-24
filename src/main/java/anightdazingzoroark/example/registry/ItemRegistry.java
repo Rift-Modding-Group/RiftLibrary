@@ -1,16 +1,16 @@
 package anightdazingzoroark.example.registry;
 
 import anightdazingzoroark.example.item.BombItem;
+import anightdazingzoroark.example.item.GreenArmorItem;
 import net.minecraft.item.Item;
-import anightdazingzoroark.example.item.PotatoArmorItem;
 
 public class ItemRegistry {
 	public static BombItem BOMB;
 
-	public static PotatoArmorItem POTATO_HEAD;
-	public static PotatoArmorItem POTATO_CHEST;
-	public static PotatoArmorItem POTATO_LEGGINGS;
-	public static PotatoArmorItem POTATO_BOOTS;
+	public static GreenArmorItem GREEN_HEAD;
+	public static GreenArmorItem GREEN_CHEST;
+	public static GreenArmorItem GREEN_LEGGINGS;
+	public static GreenArmorItem GREEN_BOOTS;
 
     public static Item MERRY_GO_ROUND;
 }

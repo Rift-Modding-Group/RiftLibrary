@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import anightdazingzoroark.riftlib.geo.raw.pojo.ModelProperties;
+import anightdazingzoroark.riftlib.newGeo.modelRaw.RawGeoModel;
 
 public class GeoModel {
 	public List<GeoBone> topLevelBones = new ArrayList<>();
-	public ModelProperties properties;
+	public RawGeoModel.RawModelDescription description;
 
 	public Optional<GeoBone> getBone(String name) {
 		for (GeoBone bone : topLevelBones) {

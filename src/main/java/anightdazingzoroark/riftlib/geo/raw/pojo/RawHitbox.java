@@ -76,7 +76,7 @@ public class RawHitbox {
         this.rawHitboxDamageDefinitions = value;
     }
 
-    //hitbox properties can also be affected by animations
+    //hitbox description can also be affected by animations
     //this is where they're put in
     @JsonProperty("animations")
     public RawHitboxAnimations[] getRawHitboxAnimations() {

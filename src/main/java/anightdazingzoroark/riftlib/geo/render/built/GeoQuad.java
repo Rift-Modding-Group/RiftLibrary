@@ -54,7 +54,7 @@ public class GeoQuad {
 		this.normal = directionIn.getDirectionVec();
 	}
 
-	public GeoQuad(GeoVertex[] verticesIn, double[] uvCoords, double[] uvSize, float texWidth, float texHeight,
+	public GeoQuad(GeoVertex[] verticesIn, int[] uvCoords, int[] uvSize, float texWidth, float texHeight,
 			Boolean mirrorIn, EnumFacing directionIn) {
 		this(verticesIn, (float) uvCoords[0], (float) uvCoords[1], (float) uvSize[0], (float) uvSize[1], texWidth,
 				texHeight, mirrorIn, directionIn);

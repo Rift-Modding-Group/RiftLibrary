@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.newGeo.modelRaw;
+package anightdazingzoroark.riftlib.geo.raw;
 
 import anightdazingzoroark.riftlib.RiftLib;
 import net.minecraft.util.ResourceLocation;

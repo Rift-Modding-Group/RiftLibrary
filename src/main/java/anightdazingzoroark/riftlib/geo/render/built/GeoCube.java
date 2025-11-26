@@ -3,9 +3,9 @@ package anightdazingzoroark.riftlib.geo.render.built;
 import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 
-import anightdazingzoroark.riftlib.newGeo.modelRaw.RawFaceUVUser;
-import anightdazingzoroark.riftlib.newGeo.modelRaw.RawGeoModel;
-import anightdazingzoroark.riftlib.newGeo.modelRaw.RawUVUnion;
+import anightdazingzoroark.riftlib.geo.raw.RawFaceUVUser;
+import anightdazingzoroark.riftlib.geo.raw.RawGeoModel;
+import anightdazingzoroark.riftlib.geo.raw.RawUVUnion;
 import net.minecraft.util.EnumFacing;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 

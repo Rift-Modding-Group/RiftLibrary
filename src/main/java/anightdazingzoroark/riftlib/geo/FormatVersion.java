@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.newGeo;
+package anightdazingzoroark.riftlib.geo;
 
 import java.io.IOException;
 

@@ -22,7 +22,7 @@ import anightdazingzoroark.riftlib.core.event.predicate.AnimationEvent;
 import anightdazingzoroark.riftlib.core.manager.AnimationData;
 import anightdazingzoroark.riftlib.core.processor.AnimationProcessor;
 import anightdazingzoroark.riftlib.core.processor.IBone;
-import anightdazingzoroark.riftlib.geo.exception.GeoModelException;
+import anightdazingzoroark.riftlib.geo.GeoModelException;
 import anightdazingzoroark.riftlib.geo.render.built.GeoBone;
 import anightdazingzoroark.riftlib.geo.render.built.GeoModel;
 import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;

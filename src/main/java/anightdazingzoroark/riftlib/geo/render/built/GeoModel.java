@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import anightdazingzoroark.riftlib.newGeo.modelRaw.RawGeoModel;
+import anightdazingzoroark.riftlib.geo.raw.RawGeoModel;
 
 public class GeoModel {
 	public List<GeoBone> topLevelBones = new ArrayList<>();

@@ -1,8 +1,8 @@
 package anightdazingzoroark.riftlib.geo.render;
 
-import anightdazingzoroark.riftlib.newGeo.modelRaw.RawGeoModel;
-import anightdazingzoroark.riftlib.newGeo.modelRaw.RawModelBoneGroup;
-import anightdazingzoroark.riftlib.newGeo.modelRaw.RawGeometryTree;
+import anightdazingzoroark.riftlib.geo.raw.RawGeoModel;
+import anightdazingzoroark.riftlib.geo.raw.RawModelBoneGroup;
+import anightdazingzoroark.riftlib.geo.raw.RawGeometryTree;
 import anightdazingzoroark.riftlib.geo.render.built.GeoBone;
 import anightdazingzoroark.riftlib.geo.render.built.GeoModel;
 

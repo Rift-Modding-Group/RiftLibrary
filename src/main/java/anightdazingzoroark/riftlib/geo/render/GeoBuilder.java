@@ -6,10 +6,10 @@ import java.util.Map;
 import javax.vecmath.Vector3f;
 
 import anightdazingzoroark.riftlib.geo.render.built.GeoLocator;
-import anightdazingzoroark.riftlib.newGeo.modelRaw.RawGeoModel;
-import anightdazingzoroark.riftlib.newGeo.modelRaw.RawGeometryTree;
+import anightdazingzoroark.riftlib.geo.raw.RawGeoModel;
+import anightdazingzoroark.riftlib.geo.raw.RawGeometryTree;
 
-import anightdazingzoroark.riftlib.newGeo.modelRaw.RawModelBoneGroup;
+import anightdazingzoroark.riftlib.geo.raw.RawModelBoneGroup;
 import anightdazingzoroark.riftlib.geo.render.built.GeoBone;
 import anightdazingzoroark.riftlib.geo.render.built.GeoCube;
 import anightdazingzoroark.riftlib.geo.render.built.GeoModel;

@@ -3,7 +3,7 @@ package anightdazingzoroark.example.entity;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.PlayState;
 import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
-import anightdazingzoroark.riftlib.core.builder.ILoopType;
+import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.event.predicate.AnimationEvent;
 import anightdazingzoroark.riftlib.core.manager.AnimationData;
@@ -103,7 +103,7 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable,
                     return PlayState.STOP;
                 }
                 else {
-                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.flying_pufferfish.go_up", ILoopType.EDefaultLoopTypes.HOLD_ON_LAST_FRAME));
+                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.flying_pufferfish.go_up", LoopType.HOLD_ON_LAST_FRAME));
                     return PlayState.CONTINUE;
                 }
             }
@@ -112,7 +112,7 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable,
         data.addAnimationController(new AnimationController(this, "puff", 0, new AnimationController.IAnimationPredicate() {
             @Override
             public PlayState test(AnimationEvent event) {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.flying_pufferfish.inflate_loop", ILoopType.EDefaultLoopTypes.LOOP));
+                event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.flying_pufferfish.inflate_loop", LoopType.LOOP));
                 return PlayState.CONTINUE;
             }
         }));

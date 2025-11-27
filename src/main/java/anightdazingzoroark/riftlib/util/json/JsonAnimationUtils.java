@@ -5,13 +5,9 @@
 
 package anightdazingzoroark.riftlib.util.json;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import com.google.common.collect.ImmutableSet;
@@ -23,7 +19,6 @@ import com.google.gson.JsonPrimitive;
 
 import net.minecraft.client.util.JsonException;
 import anightdazingzoroark.riftlib.core.builder.Animation;
-import anightdazingzoroark.riftlib.core.builder.ILoopType.EDefaultLoopTypes;
 import anightdazingzoroark.riftlib.core.keyframe.BoneAnimation;
 import anightdazingzoroark.riftlib.core.keyframe.EventKeyFrame;
 import anightdazingzoroark.riftlib.core.keyframe.ParticleEventKeyFrame;
@@ -223,7 +218,7 @@ public class JsonAnimationUtils {
 				: AnimationUtils.convertSecondsToTicks(animation_length.getAsDouble());
 		animation.boneAnimations = new ArrayList();
 		JsonElement loop = animationJsonObject.get("loop");
-		animation.loop = (loop != null && loop.getAsString() == "true") ? EDefaultLoopTypes.LOOP : EDefaultLoopTypes.PLAY_ONCE;
+		animation.loop = (loop != null && Objects.equals(loop.getAsString(), "true")) ? LoopType.LOOP : LoopType.PLAY_ONCE;
 
 		// Handle parsing sound effect keyframes
 		ArrayList<Map.Entry<String, JsonElement>> soundEffectFrames = getSoundEffectFrames(animationJsonObject);

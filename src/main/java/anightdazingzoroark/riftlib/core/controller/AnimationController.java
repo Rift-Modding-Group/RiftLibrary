@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.easing.EasingManager;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -31,7 +32,6 @@ import anightdazingzoroark.riftlib.core.IAnimatableModel;
 import anightdazingzoroark.riftlib.core.PlayState;
 import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
-import anightdazingzoroark.riftlib.core.builder.ILoopType;
 import anightdazingzoroark.riftlib.core.easing.EasingType;
 import anightdazingzoroark.riftlib.core.event.CustomInstructionKeyframeEvent;
 import anightdazingzoroark.riftlib.core.event.ParticleKeyFrameEvent;
@@ -374,12 +374,12 @@ public class AnimationController<T extends IAnimatable> {
 			HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection, MolangParser parser,
 			boolean crashWhenCantFindBone) {
 		parser.setValue("query.life_time", tick / 20);
-		if (currentAnimation != null) {
+		if (this.currentAnimation != null) {
 			IAnimatableModel<T> model = getModel(this.animatable);
 			if (model != null) {
 				Animation animation = model.getAnimation(this.currentAnimation.animationName, this.animatable);
 				if (animation != null) {
-					ILoopType loop = currentAnimation.loop;
+					LoopType loop = currentAnimation.loop;
                     this.currentAnimation = animation;
                     this.currentAnimation.loop = loop;
 				}
@@ -542,7 +542,7 @@ public class AnimationController<T extends IAnimatable> {
 		assert currentAnimation != null;
 		//Animation has ended
 		if (tick >= currentAnimation.animationLength) {
-			if (this.currentAnimation.loop == ILoopType.EDefaultLoopTypes.PLAY_ONCE) {
+			if (this.currentAnimation.loop == LoopType.PLAY_ONCE) {
                 this.resetEventKeyFrames();
 
 				//pull the next animation from the queue
@@ -562,7 +562,7 @@ public class AnimationController<T extends IAnimatable> {
 			}
             //unlike other loop types, hold on last frame doesn't reset key frames
             //until a new animation in the queue shows up
-            else if (this.currentAnimation.loop == ILoopType.EDefaultLoopTypes.HOLD_ON_LAST_FRAME) {
+            else if (this.currentAnimation.loop == LoopType.HOLD_ON_LAST_FRAME) {
                 Animation peek = this.animationQueue.peek();
                 if (peek != null) {
                     this.resetEventKeyFrames();
@@ -573,7 +573,7 @@ public class AnimationController<T extends IAnimatable> {
             }
             //if the current animation is set to loop, keep it as the current animation and
             //just start over
-            else if (this.currentAnimation.loop == ILoopType.EDefaultLoopTypes.LOOP) {
+            else if (this.currentAnimation.loop == LoopType.LOOP) {
                 this.resetEventKeyFrames();
 
 				//Reset the adjusted tick so the next animation starts at tick 0

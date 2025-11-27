@@ -4,7 +4,7 @@ import anightdazingzoroark.example.entity.ai.DragonAttackAI;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.PlayState;
 import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
-import anightdazingzoroark.riftlib.core.builder.ILoopType;
+import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.event.predicate.AnimationEvent;
 import anightdazingzoroark.riftlib.core.manager.AnimationData;
@@ -197,7 +197,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable, IMultiH
         data.addAnimationController(new AnimationController(this, "movement", 0, new AnimationController.IAnimationPredicate() {
             @Override
             public PlayState test(AnimationEvent event) {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.dragon.flying", ILoopType.EDefaultLoopTypes.LOOP));
+                event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.dragon.flying", LoopType.LOOP));
                 return PlayState.CONTINUE;
             }
         }));
@@ -205,7 +205,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable, IMultiH
             @Override
             public PlayState test(AnimationEvent event) {
                 if (isAttacking()) {
-                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.dragon.attack_while_flying", ILoopType.EDefaultLoopTypes.LOOP));
+                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.dragon.attack_while_flying", LoopType.LOOP));
                     return PlayState.CONTINUE;
                 }
                 else {

@@ -7,8 +7,6 @@ package anightdazingzoroark.riftlib.core.builder;
 
 import java.util.Objects;
 
-import anightdazingzoroark.riftlib.core.builder.ILoopType.EDefaultLoopTypes;
-
 public class RawAnimation {
 	public String animationName;
 
@@ -16,7 +14,7 @@ public class RawAnimation {
 	 * If loop is null, the animation processor will use the loopByDefault boolean
 	 * to decide if the animation should loop.
 	 */
-	public final ILoopType loopType;
+	public final LoopType loopType;
 
 	/**
 	 * A raw animation only stores the animation name and if it should loop, nothing
@@ -25,14 +23,9 @@ public class RawAnimation {
 	 * @param animationName The name of the animation
 	 * @param loop          Whether it should loop
 	 */
-	public RawAnimation(String animationName, ILoopType loop) {
+	public RawAnimation(String animationName, LoopType loop) {
 		this.animationName = animationName;
 		this.loopType = loop;
-	}
-	
-	@Deprecated
-	public RawAnimation(String animationName, boolean loop) {
-		this(animationName, loop ? EDefaultLoopTypes.LOOP : EDefaultLoopTypes.PLAY_ONCE);
 	}
 
 	@Override

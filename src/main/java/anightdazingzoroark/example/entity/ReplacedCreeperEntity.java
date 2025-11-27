@@ -3,7 +3,7 @@ package anightdazingzoroark.example.entity;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.PlayState;
 import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
-import anightdazingzoroark.riftlib.core.builder.ILoopType;
+import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.event.predicate.AnimationEvent;
 import anightdazingzoroark.riftlib.core.manager.AnimationData;
@@ -20,9 +20,9 @@ public class ReplacedCreeperEntity implements IAnimatable {
 
 	private <P extends IAnimatable> PlayState predicate(AnimationEvent<P> event) {
 		if (!(event.getLimbSwingAmount() > -0.15F && event.getLimbSwingAmount() < 0.15F)) {
-			event.getController().setAnimation(new AnimationBuilder().addAnimation("creeper_walk", ILoopType.EDefaultLoopTypes.LOOP));
+			event.getController().setAnimation(new AnimationBuilder().addAnimation("creeper_walk", LoopType.LOOP));
 		} else {
-			event.getController().setAnimation(new AnimationBuilder().addAnimation("creeper_idle", ILoopType.EDefaultLoopTypes.LOOP));
+			event.getController().setAnimation(new AnimationBuilder().addAnimation("creeper_idle", LoopType.LOOP));
 		}
 		return PlayState.CONTINUE;
 	}

@@ -16,7 +16,7 @@ public class RawAnimation {
 	 * If loop is null, the animation processor will use the loopByDefault boolean
 	 * to decide if the animation should loop.
 	 */
-	public ILoopType loopType;
+	public final ILoopType loopType;
 
 	/**
 	 * A raw animation only stores the animation name and if it should loop, nothing
@@ -37,17 +37,12 @@ public class RawAnimation {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == this)
-			return true;
-		if (!(obj instanceof RawAnimation)) {
-			return false;
-		}
+		if (obj == this) return true;
+		if (!(obj instanceof RawAnimation)) return false;
+
 		RawAnimation animation = (RawAnimation) obj;
-		if (animation.loopType == this.loopType && animation.animationName.equals(this.animationName)) {
-			return true;
-		}
-		return false;
-	}
+        return animation.loopType == this.loopType && animation.animationName.equals(this.animationName);
+    }
 
 	@Override
 	public int hashCode() {

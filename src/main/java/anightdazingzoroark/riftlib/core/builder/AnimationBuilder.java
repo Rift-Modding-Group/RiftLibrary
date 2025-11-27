@@ -16,7 +16,7 @@ import anightdazingzoroark.riftlib.core.builder.ILoopType.EDefaultLoopTypes;
  * <code>new AnimationBuilder().addAnimation("jump").addRepeatingAnimation("run", 5");</code>
  */
 public class AnimationBuilder {
-	private List<RawAnimation> animationList = new ArrayList<>();
+	private final List<RawAnimation> animationList = new ArrayList<>();
 
 	/**
 	 * Add a single animation to the queue and overrides the loop setting
@@ -28,12 +28,6 @@ public class AnimationBuilder {
 	 */
 	public AnimationBuilder addAnimation(String animationName, ILoopType loopType) {
 		animationList.add(new RawAnimation(animationName, loopType));
-		return this;
-	}
-	
-	@Deprecated
-	public AnimationBuilder addAnimation(String animationName, Boolean shouldLoop) {
-		animationList.add(new RawAnimation(animationName, shouldLoop));
 		return this;
 	}
 

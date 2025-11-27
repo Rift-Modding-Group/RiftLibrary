@@ -23,7 +23,6 @@ import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.util.json.JsonAnimationUtils;
 
 public class AnimationFileLoader {
-
 	public AnimationFile loadAllAnimations(MolangParser parser, ResourceLocation location, IResourceManager manager) {
 		AnimationFile animationFile = new AnimationFile();
 		JsonObject jsonRepresentation = loadFile(location, manager);

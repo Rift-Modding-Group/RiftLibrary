@@ -11,11 +11,11 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.core.util.Color;
-import anightdazingzoroark.riftlib.geo.render.built.GeoBone;
-import anightdazingzoroark.riftlib.geo.render.built.GeoCube;
-import anightdazingzoroark.riftlib.geo.render.built.GeoModel;
-import anightdazingzoroark.riftlib.geo.render.built.GeoQuad;
-import anightdazingzoroark.riftlib.geo.render.built.GeoVertex;
+import anightdazingzoroark.riftlib.geo.render.GeoBone;
+import anightdazingzoroark.riftlib.geo.render.GeoCube;
+import anightdazingzoroark.riftlib.geo.render.GeoModel;
+import anightdazingzoroark.riftlib.geo.render.GeoQuad;
+import anightdazingzoroark.riftlib.geo.render.GeoVertex;
 import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 import anightdazingzoroark.riftlib.util.MatrixStack;
 

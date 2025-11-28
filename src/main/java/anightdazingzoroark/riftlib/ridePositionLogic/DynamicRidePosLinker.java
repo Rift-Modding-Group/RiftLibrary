@@ -2,8 +2,8 @@ package anightdazingzoroark.riftlib.ridePositionLogic;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.file.RidePosDefinitionList;
-import anightdazingzoroark.riftlib.geo.render.built.GeoLocator;
-import anightdazingzoroark.riftlib.geo.render.built.GeoModel;
+import anightdazingzoroark.riftlib.geo.render.GeoLocator;
+import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.resource.RiftLibCache;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;

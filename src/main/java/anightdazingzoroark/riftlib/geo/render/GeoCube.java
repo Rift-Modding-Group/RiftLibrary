@@ -1,11 +1,11 @@
-package anightdazingzoroark.riftlib.geo.render.built;
+package anightdazingzoroark.riftlib.geo.render;
 
 import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 
-import anightdazingzoroark.riftlib.geo.raw.RawFaceUVUser;
-import anightdazingzoroark.riftlib.geo.raw.RawGeoModel;
-import anightdazingzoroark.riftlib.geo.raw.RawUVUnion;
+import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawFaceUVUser;
+import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawGeoModel;
+import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawUVUnion;
 import net.minecraft.util.EnumFacing;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 

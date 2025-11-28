@@ -12,6 +12,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import anightdazingzoroark.riftlib.file.*;
+import anightdazingzoroark.riftlib.jsonParsing.RiftLibLoader;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 
 import net.minecraft.client.resources.AbstractResourcePack;
@@ -25,15 +26,13 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.client.FMLFolderResourcePack;
 import anightdazingzoroark.riftlib.RiftLib;
-import anightdazingzoroark.riftlib.geo.render.built.GeoModel;
+import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.molang.MolangRegistrar;
 
 @SuppressWarnings("deprecation")
 public class RiftLibCache implements IResourceManagerReloadListener {
 	private static RiftLibCache INSTANCE;
 
-	private final AnimationFileLoader animationLoader;
-	private final GeoModelLoader modelLoader;
 	private final HitboxLoader hitboxesLoader;
 
 	public final MolangParser parser = new MolangParser();
@@ -64,8 +63,6 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 	private HashMap<ResourceLocation, HitboxDefinitionList> hitboxDefinitions = new HashMap<>();
 
 	protected RiftLibCache() {
-		this.animationLoader = new AnimationFileLoader();
-		this.modelLoader = new GeoModelLoader();
 		this.hitboxesLoader = new HitboxLoader();
 		MolangRegistrar.registerVars(parser);
 	}
@@ -93,7 +90,7 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 			for (ResourceLocation location : this.getLocations(pack, "animations",
 					fileName -> fileName.endsWith(".json"))) {
 				try {
-					tempAnimations.put(location, animationLoader.loadAllAnimations(parser, location, resourceManager));
+					tempAnimations.put(location, RiftLibLoader.loadAllAnimations(parser, location, resourceManager));
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -104,7 +101,7 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 			//this must be where the model files are being loaded
 			for (ResourceLocation location : this.getLocations(pack, "geo", fileName -> fileName.endsWith(".json"))) {
 				try {
-					tempModels.put(location, modelLoader.loadModel(resourceManager, location));
+					tempModels.put(location, RiftLibLoader.loadGeoModel(resourceManager, location));
 				}
 				catch (Exception e) {
 					e.printStackTrace();

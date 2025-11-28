@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.geo.render.built;
+package anightdazingzoroark.riftlib.geo.render;
 
 import javax.vecmath.Vector3f;
 

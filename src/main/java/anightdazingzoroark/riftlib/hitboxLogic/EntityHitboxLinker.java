@@ -2,8 +2,8 @@ package anightdazingzoroark.riftlib.hitboxLogic;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.file.HitboxDefinitionList;
-import anightdazingzoroark.riftlib.geo.render.built.GeoLocator;
-import anightdazingzoroark.riftlib.geo.render.built.GeoModel;
+import anightdazingzoroark.riftlib.geo.render.GeoLocator;
+import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.resource.RiftLibCache;
 import anightdazingzoroark.riftlib.util.json.JsonHitboxUtils;
 import net.minecraft.util.ResourceLocation;

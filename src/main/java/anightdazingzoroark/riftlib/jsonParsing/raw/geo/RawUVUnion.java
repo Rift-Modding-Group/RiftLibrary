@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.geo.raw;
+package anightdazingzoroark.riftlib.jsonParsing.raw.geo;
 
 import com.google.gson.*;
 
@@ -19,17 +19,19 @@ public class RawUVUnion {
     public static class Deserializer implements JsonDeserializer<RawUVUnion> {
         @Override
         public RawUVUnion deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            RawUVUnion result = new RawUVUnion();
+            RawUVUnion toReturn = new RawUVUnion();
 
+            //is box uv
             if (json.isJsonArray()) {
-                result.boxUV = context.deserialize(json, int[].class);
+                toReturn.boxUV = context.deserialize(json, int[].class);
             }
+            //is face uv
             else if (json.isJsonObject()) {
-                result.faceUV = context.deserialize(json, RawFaceUVUser.class);
+                toReturn.faceUV = context.deserialize(json, RawFaceUVUser.class);
             }
             else throw new JsonParseException("Unexpected type: " + json.toString());
 
-            return result;
+            return toReturn;
         }
     }
 }

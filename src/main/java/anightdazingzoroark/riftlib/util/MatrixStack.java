@@ -8,8 +8,8 @@ import javax.vecmath.Vector3f;
 
 import org.lwjgl.util.vector.Quaternion;
 
-import anightdazingzoroark.riftlib.geo.render.built.GeoBone;
-import anightdazingzoroark.riftlib.geo.render.built.GeoCube;
+import anightdazingzoroark.riftlib.geo.render.GeoBone;
+import anightdazingzoroark.riftlib.geo.render.GeoCube;
 
 /**
  * Simple implementation of a matrix stack

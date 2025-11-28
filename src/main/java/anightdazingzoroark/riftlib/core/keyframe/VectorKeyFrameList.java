@@ -68,4 +68,8 @@ public class VectorKeyFrameList<T extends KeyFrame> {
 
 		return Math.max(xTime, Math.max(yTime, zTime));
 	}
+
+    public String toString() {
+        return "xKeyFrames: "+this.xKeyFrames+"\nyKeyFrames: "+this.yKeyFrames+"\nzKeyFrames: "+this.zKeyFrames;
+    }
 }

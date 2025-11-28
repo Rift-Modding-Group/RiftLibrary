@@ -1,7 +1,7 @@
 package anightdazingzoroark.riftlib.model.provider;
 
 import net.minecraft.util.ResourceLocation;
-import anightdazingzoroark.riftlib.geo.render.built.GeoModel;
+import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.resource.RiftLibCache;
 
 public abstract class GeoModelProvider<T> {

@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.geo.render.built;
+package anightdazingzoroark.riftlib.geo.render;
 
 import net.minecraft.util.math.Vec3d;
 

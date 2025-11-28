@@ -1,18 +1,18 @@
-package anightdazingzoroark.riftlib.geo.render;
+package anightdazingzoroark.riftlib.jsonParsing.builder;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.vecmath.Vector3f;
 
-import anightdazingzoroark.riftlib.geo.render.built.GeoLocator;
-import anightdazingzoroark.riftlib.geo.raw.RawGeoModel;
-import anightdazingzoroark.riftlib.geo.raw.RawGeometryTree;
+import anightdazingzoroark.riftlib.geo.render.GeoLocator;
+import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawGeoModel;
+import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawGeometryTree;
 
-import anightdazingzoroark.riftlib.geo.raw.RawModelBoneGroup;
-import anightdazingzoroark.riftlib.geo.render.built.GeoBone;
-import anightdazingzoroark.riftlib.geo.render.built.GeoCube;
-import anightdazingzoroark.riftlib.geo.render.built.GeoModel;
+import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawModelBoneGroup;
+import anightdazingzoroark.riftlib.geo.render.GeoBone;
+import anightdazingzoroark.riftlib.geo.render.GeoCube;
+import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 
 public class GeoBuilder implements IGeoBuilder {

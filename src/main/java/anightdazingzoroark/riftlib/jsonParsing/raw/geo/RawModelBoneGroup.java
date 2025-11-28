@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.geo.raw;
+package anightdazingzoroark.riftlib.jsonParsing.raw.geo;
 
 
 import java.util.HashMap;

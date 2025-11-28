@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.geo.raw;
+package anightdazingzoroark.riftlib.jsonParsing.raw.geo;
 
 import com.google.gson.annotations.SerializedName;
 

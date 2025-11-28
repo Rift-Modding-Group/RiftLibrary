@@ -1,10 +1,10 @@
-package anightdazingzoroark.riftlib.geo.render.built;
+package anightdazingzoroark.riftlib.geo.render;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import anightdazingzoroark.riftlib.geo.raw.RawGeoModel;
+import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawGeoModel;
 
 public class GeoModel {
 	public List<GeoBone> topLevelBones = new ArrayList<>();

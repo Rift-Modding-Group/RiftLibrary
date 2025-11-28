@@ -15,31 +15,17 @@ import anightdazingzoroark.riftlib.geo.render.GeoCube;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 
-public class GeoBuilder implements IGeoBuilder {
-	private static final Map<String, IGeoBuilder> moddedGeoBuilders = new HashMap<>();
-	private static final IGeoBuilder defaultBuilder = new GeoBuilder();
-
-	public static void registerGeoBuilder(String modID, IGeoBuilder builder) {
-		moddedGeoBuilders.put(modID, builder);
-	}
-
-	public static IGeoBuilder getGeoBuilder(String modID) {
-		IGeoBuilder builder = moddedGeoBuilders.get(modID);
-		return builder == null ? defaultBuilder : builder;
-	}
-
-	@Override
-	public GeoModel constructGeoModel(RawGeometryTree geometryTree) {
+public class GeoBuilder {
+	public static GeoModel constructGeoModel(RawGeometryTree geometryTree) {
 		GeoModel model = new GeoModel();
 		model.description = geometryTree.description;
 		for (RawModelBoneGroup rawBone : geometryTree.topLevelBones.values()) {
-			model.topLevelBones.add(this.constructBone(rawBone, geometryTree.description, null));
+			model.topLevelBones.add(constructBone(rawBone, geometryTree.description, null));
 		}
 		return model;
 	}
 
-	@Override
-	public GeoBone constructBone(RawModelBoneGroup bone, RawGeoModel.RawModelDescription description, GeoBone parent) {
+	public static GeoBone constructBone(RawModelBoneGroup bone, RawGeoModel.RawModelDescription description, GeoBone parent) {
 		GeoBone geoBone = new GeoBone();
 
 		RawGeoModel.RawModelBone rawBone = bone.selfBone;

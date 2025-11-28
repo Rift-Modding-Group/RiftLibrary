@@ -46,7 +46,7 @@ public class RiftLibLoader {
 
 			// Build the quads and cubes from the raw tree into a built and ready to be
 			// rendered GeoModel
-			return GeoBuilder.getGeoBuilder(location.getNamespace()).constructGeoModel(rawGeometryTree);
+			return GeoBuilder.constructGeoModel(rawGeometryTree);
 		}
         catch (Exception e) {
 			RiftLib.LOGGER.error(String.format("Error parsing %S", location), e);

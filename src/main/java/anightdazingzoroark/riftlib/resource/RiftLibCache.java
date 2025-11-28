@@ -82,15 +82,13 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 		HashMap<ResourceLocation, HitboxDefinitionList> tempHitboxes = new HashMap<>();
 		List<IResourcePack> packs = this.getPacks();
 
-		if (packs == null) {
-			return;
-		}
+		if (packs == null) return;
 
 		for (IResourcePack pack : packs) {
 			for (ResourceLocation location : this.getLocations(pack, "animations",
 					fileName -> fileName.endsWith(".json"))) {
 				try {
-					tempAnimations.put(location, RiftLibLoader.loadAllAnimations(parser, location, resourceManager));
+					tempAnimations.put(location, RiftLibLoader.loadAnimationFile(parser, resourceManager, location));
 				}
 				catch (Exception e) {
 					e.printStackTrace();

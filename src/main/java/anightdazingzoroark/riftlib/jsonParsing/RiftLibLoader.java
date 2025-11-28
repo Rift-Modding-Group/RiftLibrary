@@ -54,7 +54,7 @@ public class RiftLibLoader {
 		}
 	}
 
-    public static AnimationFile loadAllAnimations(MolangParser parser, ResourceLocation location, IResourceManager manager) {
+    public static AnimationFile loadAnimationFile(MolangParser parser, IResourceManager manager, ResourceLocation location) {
         try {
             AnimationFile animationFile = new AnimationFile();
 

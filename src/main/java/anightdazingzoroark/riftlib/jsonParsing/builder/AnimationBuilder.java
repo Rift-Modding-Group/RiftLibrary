@@ -12,7 +12,6 @@ import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationFile;
 import anightdazingzoroark.riftlib.molang.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.IValue;
-import anightdazingzoroark.riftlib.util.AnimationUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +25,45 @@ public class AnimationBuilder {
         toReturn.animationName = rawAnimation.getKey();
         toReturn.loop = rawAnimation.getValue().loop == Boolean.TRUE ? LoopType.LOOP : LoopType.PLAY_ONCE;
         toReturn.animationLength = rawAnimation.getValue().animationLength != null ? rawAnimation.getValue().animationLength * 20 : null; //if length is null, it will be calculated later based on the provided info
+
+        //until i figure out how to implement this later on, this will be left as a comment
+        //for reference when i add this back in somehow
+        /*
+        // Handle parsing sound effect keyframes
+		ArrayList<Map.Entry<String, JsonElement>> soundEffectFrames = getSoundEffectFrames(animationJsonObject);
+		if (soundEffectFrames != null) {
+			for (Map.Entry<String, JsonElement> keyFrame : soundEffectFrames) {
+				animation.soundKeyFrames.add(new EventKeyFrame(Double.parseDouble(keyFrame.getKey()) * 20,
+						keyFrame.getValue().getAsJsonObject().get("effect").getAsString()));
+			}
+		}
+
+		// Handle parsing particle effect keyframes
+		ArrayList<Map.Entry<String, JsonElement>> particleKeyFrames = getParticleEffectFrames(animationJsonObject);
+		if (particleKeyFrames != null) {
+			for (Map.Entry<String, JsonElement> keyFrame : particleKeyFrames) {
+				JsonObject object = keyFrame.getValue().getAsJsonObject();
+				JsonElement effect = object.get("effect");
+				JsonElement locator = object.get("locator");
+				JsonElement pre_effect_script = object.get("pre_effect_script");
+				animation.particleKeyFrames.add(new ParticleEventKeyFrame(Double.parseDouble(keyFrame.getKey()) * 20,
+						effect == null ? "" : effect.getAsString(), locator == null ? "" : locator.getAsString(),
+						pre_effect_script == null ? "" : pre_effect_script.getAsString()));
+			}
+		}
+
+		// Handle parsing custom instruction keyframes
+		ArrayList<Map.Entry<String, JsonElement>> customInstructionKeyFrames = getCustomInstructionKeyFrames(
+				animationJsonObject);
+		if (customInstructionKeyFrames != null) {
+			for (Map.Entry<String, JsonElement> keyFrame : customInstructionKeyFrames) {
+				animation.customInstructionKeyframes.add(new EventKeyFrame(Double.parseDouble(keyFrame.getKey()) * 20,
+						keyFrame.getValue() instanceof JsonArray
+								? convertJsonArrayToList(keyFrame.getValue().getAsJsonArray()).toString()
+								: keyFrame.getValue().getAsString()));
+			}
+		}
+         */
 
         //create bone animations
         Map<String, RawAnimationFile.RawBoneAnimations> rawBoneAnimations = rawAnimation.getValue().bones;

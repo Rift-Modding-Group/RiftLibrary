@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.file;
+package anightdazingzoroark.riftlib.ridePositionLogic;
 
 import net.minecraft.util.math.Vec3d;
 

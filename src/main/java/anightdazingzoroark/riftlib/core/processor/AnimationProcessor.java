@@ -9,7 +9,7 @@ import java.util.Set;
 
 import anightdazingzoroark.riftlib.ServerProxy;
 import anightdazingzoroark.riftlib.RiftLibConfig;
-import anightdazingzoroark.riftlib.file.RidePosDefinitionList;
+import anightdazingzoroark.riftlib.ridePositionLogic.RidePosDefinitionList;
 import anightdazingzoroark.riftlib.geo.render.GeoBone;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitbox;
@@ -19,7 +19,7 @@ import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateHitboxSize;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateRiderPos;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosUtils;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
-import anightdazingzoroark.riftlib.util.json.JsonHitboxUtils;
+import anightdazingzoroark.riftlib.util.HitboxUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 import org.apache.commons.lang3.tuple.Pair;
@@ -39,9 +39,9 @@ import anightdazingzoroark.riftlib.core.util.MathUtil;
 
 public class AnimationProcessor<T extends IAnimatable> {
 	public boolean reloadAnimations = false;
-	private List<IBone> modelRendererList = new ArrayList();
+	private final List<IBone> modelRendererList = new ArrayList();
 	private double lastTickValue = -1;
-	private Set<Integer> animatedEntities = new HashSet<>();
+	private final Set<Integer> animatedEntities = new HashSet<>();
 	private final IAnimatableModel animatedModel;
 
 	public AnimationProcessor(IAnimatableModel animatedModel) {
@@ -182,8 +182,8 @@ public class AnimationProcessor<T extends IAnimatable> {
 			if (entity instanceof IMultiHitboxUser) {
 				GeoBone geoBone = (GeoBone) bone;
 				for (GeoLocator locator : geoBone.childLocators) {
-					if (JsonHitboxUtils.locatorCanBeHitbox(locator.name)) {
-						String hitboxName = JsonHitboxUtils.locatorHitboxToHitbox(locator.name);
+					if (HitboxUtils.locatorCanBeHitbox(locator.name)) {
+						String hitboxName = HitboxUtils.locatorHitboxToHitbox(locator.name);
 
 						//get hitbox associated with the locator
 						EntityHitbox hitbox = ((IMultiHitboxUser) entity).getHitboxByName(hitboxName);

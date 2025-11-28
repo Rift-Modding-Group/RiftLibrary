@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.file;
+package anightdazingzoroark.riftlib.animation;
 
 import java.util.Collection;
 import java.util.HashMap;

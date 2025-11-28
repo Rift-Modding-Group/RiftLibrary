@@ -1,11 +1,10 @@
 package anightdazingzoroark.riftlib.hitboxLogic;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.file.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.resource.RiftLibCache;
-import anightdazingzoroark.riftlib.util.json.JsonHitboxUtils;
+import anightdazingzoroark.riftlib.util.HitboxUtils;
 import net.minecraft.util.ResourceLocation;
 
 //this class is, just like with the model classes for rendering an entity
@@ -25,8 +24,8 @@ public abstract class EntityHitboxLinker<T extends IAnimatable & IMultiHitboxUse
         if (toReturn != null) {
             //add positions to the hitboxes
             for (GeoLocator locator : model.getAllLocators()) {
-                if (JsonHitboxUtils.locatorCanBeHitbox(locator.name)) {
-                    String hitboxName = JsonHitboxUtils.locatorHitboxToHitbox(locator.name);
+                if (HitboxUtils.locatorCanBeHitbox(locator.name)) {
+                    String hitboxName = HitboxUtils.locatorHitboxToHitbox(locator.name);
                     toReturn.editHitboxDefinitionPosition(
                             hitboxName,
                             locator.positionX + (float) locator.getOffsetFromRotations().x,

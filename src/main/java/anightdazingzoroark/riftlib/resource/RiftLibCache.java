@@ -11,7 +11,8 @@ import java.util.function.Predicate;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import anightdazingzoroark.riftlib.file.*;
+import anightdazingzoroark.riftlib.animation.AnimationFile;
+import anightdazingzoroark.riftlib.hitboxLogic.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.jsonParsing.RiftLibLoader;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 
@@ -32,8 +33,6 @@ import anightdazingzoroark.riftlib.molang.MolangRegistrar;
 @SuppressWarnings("deprecation")
 public class RiftLibCache implements IResourceManagerReloadListener {
 	private static RiftLibCache INSTANCE;
-
-	private final HitboxLoader hitboxesLoader;
 
 	public final MolangParser parser = new MolangParser();
 
@@ -63,7 +62,6 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 	private HashMap<ResourceLocation, HitboxDefinitionList> hitboxDefinitions = new HashMap<>();
 
 	protected RiftLibCache() {
-		this.hitboxesLoader = new HitboxLoader();
 		MolangRegistrar.registerVars(parser);
 	}
 
@@ -110,7 +108,7 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 			//load the hitbox files
 			for (ResourceLocation location : this.getLocations(pack, "hitboxes", filename -> filename.endsWith(".json"))) {
 				try {
-					tempHitboxes.put(location, hitboxesLoader.loadHitboxes(resourceManager, location));
+					tempHitboxes.put(location, RiftLibLoader.loadHitboxDefinitionList(resourceManager, location));
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -119,9 +117,9 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 			}
 		}
 
-		animations = tempAnimations;
-		geoModels = tempModels;
-		hitboxDefinitions = tempHitboxes;
+		this.animations = tempAnimations;
+		this.geoModels = tempModels;
+		this.hitboxDefinitions = tempHitboxes;
 	}
 
 	@SuppressWarnings("unchecked")

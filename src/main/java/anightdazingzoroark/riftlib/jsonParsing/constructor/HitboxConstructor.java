@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.jsonParsing.builder;
+package anightdazingzoroark.riftlib.jsonParsing.constructor;
 
 import anightdazingzoroark.riftlib.hitboxLogic.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.jsonParsing.raw.hitbox.RawHitboxDefinition;
@@ -7,7 +7,7 @@ import anightdazingzoroark.riftlib.util.HitboxUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HitboxBuilder {
+public class HitboxConstructor {
     public static HitboxDefinitionList createHitboxDefinitionList(RawHitboxDefinition rawHitboxDefinition) {
         HitboxDefinitionList toReturn = new HitboxDefinitionList();
 

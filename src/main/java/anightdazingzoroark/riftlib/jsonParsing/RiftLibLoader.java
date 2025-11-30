@@ -4,8 +4,8 @@ import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.animation.AnimationFile;
 import anightdazingzoroark.riftlib.hitboxLogic.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.geo.GeoModelException;
-import anightdazingzoroark.riftlib.jsonParsing.builder.AnimationBuilder;
-import anightdazingzoroark.riftlib.jsonParsing.builder.HitboxBuilder;
+import anightdazingzoroark.riftlib.jsonParsing.constructor.AnimationConstructor;
+import anightdazingzoroark.riftlib.jsonParsing.constructor.HitboxConstructor;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationChannel;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationFile;
 import anightdazingzoroark.riftlib.jsonParsing.raw.geo.FormatVersion;
@@ -19,7 +19,7 @@ import com.google.gson.GsonBuilder;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.RiftLib;
-import anightdazingzoroark.riftlib.jsonParsing.builder.GeoBuilder;
+import anightdazingzoroark.riftlib.jsonParsing.constructor.GeoConstructor;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import org.apache.commons.io.IOUtils;
 
@@ -49,7 +49,7 @@ public class RiftLibLoader {
 
 			// Build the quads and cubes from the raw tree into a built and ready to be
 			// rendered GeoModel
-			return GeoBuilder.constructGeoModel(rawGeometryTree);
+			return GeoConstructor.constructGeoModel(rawGeometryTree);
 		}
         catch (Exception e) {
 			RiftLib.LOGGER.error(String.format("Error parsing %S", location), e);
@@ -64,7 +64,7 @@ public class RiftLibLoader {
             RawAnimationFile rawAnimationFile = gson.fromJson(getResourceAsString(location, manager), RawAnimationFile.class);
             Map<String, RawAnimationFile.RawAnimation> rawAnimationMap = rawAnimationFile.rawAnimations;
             for (Map.Entry<String, RawAnimationFile.RawAnimation> rawAnimation : rawAnimationMap.entrySet()) {
-                Animation animation = AnimationBuilder.getAnimationFromRawAnimationEntry(rawAnimation, parser);
+                Animation animation = AnimationConstructor.getAnimationFromRawAnimationEntry(rawAnimation, parser);
                 animationFile.putAnimation(rawAnimation.getKey(), animation);
             }
 
@@ -79,7 +79,7 @@ public class RiftLibLoader {
     public static HitboxDefinitionList loadHitboxDefinitionList(IResourceManager resourceManager, ResourceLocation location) {
         try {
             RawHitboxDefinition rawHitboxDefinition = gson.fromJson(getResourceAsString(location, resourceManager), RawHitboxDefinition.class);
-            return HitboxBuilder.createHitboxDefinitionList(rawHitboxDefinition);
+            return HitboxConstructor.createHitboxDefinitionList(rawHitboxDefinition);
         }
         catch (Exception e) {
             RiftLib.LOGGER.error(String.format("Error parsing %S", location), e);

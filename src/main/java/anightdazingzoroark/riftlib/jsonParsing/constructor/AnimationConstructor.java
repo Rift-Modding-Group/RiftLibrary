@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.jsonParsing.builder;
+package anightdazingzoroark.riftlib.jsonParsing.constructor;
 
 import anightdazingzoroark.riftlib.core.ConstantValue;
 import anightdazingzoroark.riftlib.core.builder.Animation;
@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class AnimationBuilder {
+public class AnimationConstructor {
     public static Animation getAnimationFromRawAnimationEntry(Map.Entry<String, RawAnimationFile.RawAnimation> rawAnimation, MolangParser parser) {
         Animation toReturn = new Animation();
 
@@ -67,46 +67,46 @@ public class AnimationBuilder {
 
         //create bone animations
         Map<String, RawAnimationFile.RawBoneAnimations> rawBoneAnimations = rawAnimation.getValue().bones;
-        List<BoneAnimation> boneAnimationList = new ArrayList<>();
-        for (Map.Entry<String, RawAnimationFile.RawBoneAnimations> rawBoneAnimation : rawBoneAnimations.entrySet()) {
-            BoneAnimation boneAnimation = new BoneAnimation();
-            boneAnimation.boneName = rawBoneAnimation.getKey();
+        if (rawBoneAnimations != null) {
+            for (Map.Entry<String, RawAnimationFile.RawBoneAnimations> rawBoneAnimation : rawBoneAnimations.entrySet()) {
+                BoneAnimation boneAnimation = new BoneAnimation();
+                boneAnimation.boneName = rawBoneAnimation.getKey();
 
-            //anti NPE protection
-            boneAnimation.positionKeyFrames = new VectorKeyFrameList<>();
-            boneAnimation.rotationKeyFrames = new VectorKeyFrameList<>();
-            boneAnimation.scaleKeyFrames = new VectorKeyFrameList<>();
+                //anti NPE protection
+                boneAnimation.positionKeyFrames = new VectorKeyFrameList<>();
+                boneAnimation.rotationKeyFrames = new VectorKeyFrameList<>();
+                boneAnimation.scaleKeyFrames = new VectorKeyFrameList<>();
 
-            //positions
-            if (rawBoneAnimation.getValue().position != null) {
-                try {
-                    RawAnimationChannel rawPositionChannel = rawBoneAnimation.getValue().position;
-                    boneAnimation.positionKeyFrames = convertRawChannelToFrameList(rawPositionChannel, false, parser);
+                //positions
+                if (rawBoneAnimation.getValue().position != null) {
+                    try {
+                        RawAnimationChannel rawPositionChannel = rawBoneAnimation.getValue().position;
+                        boneAnimation.positionKeyFrames = convertRawChannelToFrameList(rawPositionChannel, false, parser);
+                    }
+                    catch (Exception e) {}
                 }
-                catch (Exception e) {}
-            }
 
-            //rotations
-            if (rawBoneAnimation.getValue().rotation != null) {
-                try {
-                    RawAnimationChannel rawRotationChannel = rawBoneAnimation.getValue().rotation;
-                    boneAnimation.rotationKeyFrames = convertRawChannelToFrameList(rawRotationChannel, true, parser);
+                //rotations
+                if (rawBoneAnimation.getValue().rotation != null) {
+                    try {
+                        RawAnimationChannel rawRotationChannel = rawBoneAnimation.getValue().rotation;
+                        boneAnimation.rotationKeyFrames = convertRawChannelToFrameList(rawRotationChannel, true, parser);
+                    }
+                    catch (Exception e) {}
                 }
-                catch (Exception e) {}
-            }
 
-            //scaling
-            if (rawBoneAnimation.getValue().scale != null) {
-                try {
-                    RawAnimationChannel rawPositionChannel = rawBoneAnimation.getValue().scale;
-                    boneAnimation.scaleKeyFrames = convertRawChannelToFrameList(rawPositionChannel, false, parser);
+                //scaling
+                if (rawBoneAnimation.getValue().scale != null) {
+                    try {
+                        RawAnimationChannel rawPositionChannel = rawBoneAnimation.getValue().scale;
+                        boneAnimation.scaleKeyFrames = convertRawChannelToFrameList(rawPositionChannel, false, parser);
+                    }
+                    catch (Exception e) {}
                 }
-                catch (Exception e) {}
-            }
 
-            boneAnimationList.add(boneAnimation);
+                toReturn.boneAnimations.add(boneAnimation);
+            }
         }
-        toReturn.boneAnimations = boneAnimationList;
 
         //manually compute anim length based on above info
         if (toReturn.animationLength == null) toReturn.animationLength = calculateLength(toReturn.boneAnimations);

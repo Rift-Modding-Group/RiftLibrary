@@ -6,7 +6,7 @@ import java.util.HashMap;
 import anightdazingzoroark.riftlib.core.builder.Animation;
 
 public class AnimationFile {
-	private HashMap<String, Animation> animations = new HashMap<>();
+	private final HashMap<String, Animation> animations = new HashMap<>();
 
 	public Animation getAnimation(String name) {
 		return animations.get(name);

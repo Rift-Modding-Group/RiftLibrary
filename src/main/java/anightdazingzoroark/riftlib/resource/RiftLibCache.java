@@ -40,14 +40,14 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 		if (!RiftLib.isInitialized()) {
 			throw new RuntimeException("RiftLib was never initialized! Please read the documentation!");
 		}
-		return animations;
+		return this.animations;
 	}
 
 	public HashMap<ResourceLocation, GeoModel> getGeoModels() {
 		if (!RiftLib.isInitialized()) {
 			throw new RuntimeException("RiftLib was never initialized! Please read the documentation!");
 		}
-		return geoModels;
+		return this.geoModels;
 	}
 
 	public HashMap<ResourceLocation, HitboxDefinitionList> getHitboxDefinitions() {

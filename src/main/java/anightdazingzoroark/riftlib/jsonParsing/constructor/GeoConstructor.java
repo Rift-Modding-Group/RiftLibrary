@@ -1,6 +1,5 @@
-package anightdazingzoroark.riftlib.jsonParsing.builder;
+package anightdazingzoroark.riftlib.jsonParsing.constructor;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.vecmath.Vector3f;
@@ -15,7 +14,7 @@ import anightdazingzoroark.riftlib.geo.render.GeoCube;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 
-public class GeoBuilder {
+public class GeoConstructor {
 	public static GeoModel constructGeoModel(RawGeometryTree geometryTree) {
 		GeoModel model = new GeoModel();
 		model.description = geometryTree.description;

@@ -19,7 +19,7 @@ public class Animation {
 	public String animationName;
 	public Double animationLength;
 	public LoopType loop = LoopType.LOOP;
-	public List<BoneAnimation> boneAnimations;
+	public List<BoneAnimation> boneAnimations = new ArrayList<>();
 	public List<EventKeyFrame<String>> soundKeyFrames = new ArrayList<>();
 	public List<ParticleEventKeyFrame> particleKeyFrames = new ArrayList<>();
 	public List<EventKeyFrame<String>> customInstructionKeyframes = new ArrayList<>();

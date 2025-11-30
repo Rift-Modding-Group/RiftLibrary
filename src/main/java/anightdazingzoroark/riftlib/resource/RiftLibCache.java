@@ -62,7 +62,7 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 	private HashMap<ResourceLocation, HitboxDefinitionList> hitboxDefinitions = new HashMap<>();
 
 	protected RiftLibCache() {
-		MolangRegistrar.registerVars(parser);
+		MolangRegistrar.registerVars(this.parser);
 	}
 
 	public static RiftLibCache getInstance() {
@@ -86,7 +86,7 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 			for (ResourceLocation location : this.getLocations(pack, "animations",
 					fileName -> fileName.endsWith(".json"))) {
 				try {
-					tempAnimations.put(location, RiftLibLoader.loadAnimationFile(parser, resourceManager, location));
+					tempAnimations.put(location, RiftLibLoader.loadAnimationFile(this.parser, resourceManager, location));
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -115,6 +115,18 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 					RiftLib.LOGGER.error("Error loading hitbox file \""+location+"\"!", e);
 				}
 			}
+
+            //load the particle files
+            for (ResourceLocation location : this.getLocations(pack, "particles", filename -> filename.endsWith(".json"))) {
+                try {
+                    //temporarily like this coz it a print only void method
+                    RiftLibLoader.loadParticle(this.parser, resourceManager, location);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    RiftLib.LOGGER.error("Error loading particle file \""+location+"\"!", e);
+                }
+            }
 		}
 
 		this.animations = tempAnimations;

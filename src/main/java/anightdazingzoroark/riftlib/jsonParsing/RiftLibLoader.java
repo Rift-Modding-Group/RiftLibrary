@@ -13,6 +13,8 @@ import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawGeoModel;
 import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawGeometryTree;
 import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawUVUnion;
 import anightdazingzoroark.riftlib.jsonParsing.raw.hitbox.RawHitboxDefinition;
+import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticle;
+import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -32,6 +34,7 @@ public class RiftLibLoader {
     private static final Gson gson = new GsonBuilder()
             .registerTypeAdapter(RawUVUnion.class, new RawUVUnion.Deserializer())
             .registerTypeAdapter(RawAnimationChannel.class, new RawAnimationChannel.Deserializer())
+            .registerTypeAdapter(RawParticleComponent.class, new RawParticleComponent.Deserializer())
             .create();
 
 	public static GeoModel loadGeoModel(IResourceManager resourceManager, ResourceLocation location) {
@@ -80,6 +83,18 @@ public class RiftLibLoader {
         try {
             RawHitboxDefinition rawHitboxDefinition = gson.fromJson(getResourceAsString(location, resourceManager), RawHitboxDefinition.class);
             return HitboxConstructor.createHitboxDefinitionList(rawHitboxDefinition);
+        }
+        catch (Exception e) {
+            RiftLib.LOGGER.error(String.format("Error parsing %S", location), e);
+            throw (new RuntimeException(e));
+        }
+    }
+
+    //temporarily void because this will only print for now
+    public static void loadParticle(MolangParser parser, IResourceManager resourceManager, ResourceLocation location) {
+        try {
+            RawParticle rawParticle = gson.fromJson(getResourceAsString(location, resourceManager), RawParticle.class);
+            System.out.println(rawParticle.rawParticleEffect.components);
         }
         catch (Exception e) {
             RiftLib.LOGGER.error(String.format("Error parsing %S", location), e);

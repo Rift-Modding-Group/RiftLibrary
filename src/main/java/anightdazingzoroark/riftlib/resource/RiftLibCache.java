@@ -16,6 +16,7 @@ import anightdazingzoroark.riftlib.hitboxLogic.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.jsonParsing.RiftLibLoader;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 
+import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import net.minecraft.client.resources.AbstractResourcePack;
 import net.minecraft.client.resources.FileResourcePack;
 import net.minecraft.client.resources.FolderResourcePack;
@@ -57,9 +58,17 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 		return this.hitboxDefinitions;
 	}
 
+    public HashMap<ResourceLocation, ParticleBuilder> getParticleBuilders() {
+        if (!RiftLib.isInitialized()) {
+            throw new RuntimeException("RiftLib was never initialized! Please read the documentation!");
+        }
+        return this.particleBuilders;
+    }
+
 	private HashMap<ResourceLocation, AnimationFile> animations = new HashMap<>();
 	private HashMap<ResourceLocation, GeoModel> geoModels = new HashMap<>();
 	private HashMap<ResourceLocation, HitboxDefinitionList> hitboxDefinitions = new HashMap<>();
+    private HashMap<ResourceLocation, ParticleBuilder> particleBuilders = new HashMap<>();
 
 	protected RiftLibCache() {
 		MolangRegistrar.registerVars(this.parser);
@@ -78,6 +87,7 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 		HashMap<ResourceLocation, AnimationFile> tempAnimations = new HashMap<>();
 		HashMap<ResourceLocation, GeoModel> tempModels = new HashMap<>();
 		HashMap<ResourceLocation, HitboxDefinitionList> tempHitboxes = new HashMap<>();
+        HashMap<ResourceLocation, ParticleBuilder> tempParticleBuilders = new HashMap<>();
 		List<IResourcePack> packs = this.getPacks();
 
 		if (packs == null) return;
@@ -120,7 +130,7 @@ public class RiftLibCache implements IResourceManagerReloadListener {
             for (ResourceLocation location : this.getLocations(pack, "particles", filename -> filename.endsWith(".json"))) {
                 try {
                     //temporarily like this coz it a print only void method
-                    RiftLibLoader.loadParticle(this.parser, resourceManager, location);
+                    tempParticleBuilders.put(location, RiftLibLoader.loadParticle(this.parser, resourceManager, location));
                 }
                 catch (Exception e) {
                     e.printStackTrace();
@@ -132,6 +142,7 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 		this.animations = tempAnimations;
 		this.geoModels = tempModels;
 		this.hitboxDefinitions = tempHitboxes;
+        this.particleBuilders = tempParticleBuilders;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -166,8 +177,8 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 
 				try {
 					return this.getLocations((IResourcePack) packField.get(adapter), folder, predicate);
-				} catch (Exception e) {
 				}
+                catch (Exception e) {}
 			}
 		}
 

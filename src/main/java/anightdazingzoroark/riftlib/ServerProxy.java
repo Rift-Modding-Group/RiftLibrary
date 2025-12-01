@@ -44,4 +44,6 @@ public class ServerProxy {
                 messageContext
         ));
     }
+
+    public void spawnParticle(String name, double x, double y, double z) {}
 }

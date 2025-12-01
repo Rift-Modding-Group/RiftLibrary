@@ -3,9 +3,10 @@ package anightdazingzoroark.riftlib.jsonParsing;
 import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.animation.AnimationFile;
 import anightdazingzoroark.riftlib.hitboxLogic.HitboxDefinitionList;
-import anightdazingzoroark.riftlib.geo.GeoModelException;
+import anightdazingzoroark.riftlib.exceptions.GeoModelException;
 import anightdazingzoroark.riftlib.jsonParsing.constructor.AnimationConstructor;
 import anightdazingzoroark.riftlib.jsonParsing.constructor.HitboxConstructor;
+import anightdazingzoroark.riftlib.jsonParsing.constructor.ParticleConstructor;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationChannel;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationFile;
 import anightdazingzoroark.riftlib.jsonParsing.raw.geo.FormatVersion;
@@ -16,6 +17,7 @@ import anightdazingzoroark.riftlib.jsonParsing.raw.hitbox.RawHitboxDefinition;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticle;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.molang.MolangParser;
+import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.minecraft.client.resources.IResourceManager;
@@ -90,11 +92,10 @@ public class RiftLibLoader {
         }
     }
 
-    //temporarily void because this will only print for now
-    public static void loadParticle(MolangParser parser, IResourceManager resourceManager, ResourceLocation location) {
+    public static ParticleBuilder loadParticle(MolangParser parser, IResourceManager resourceManager, ResourceLocation location) {
         try {
             RawParticle rawParticle = gson.fromJson(getResourceAsString(location, resourceManager), RawParticle.class);
-            System.out.println(rawParticle.rawParticleEffect.components);
+            return ParticleConstructor.createParticleBuilder(parser, location.getNamespace(), rawParticle);
         }
         catch (Exception e) {
             RiftLib.LOGGER.error(String.format("Error parsing %S", location), e);

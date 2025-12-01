@@ -19,14 +19,21 @@ import anightdazingzoroark.example.ui.HelloWorldUI;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitbox;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitboxRenderer;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
+import anightdazingzoroark.riftlib.particle.ParticleBuilder;
+import anightdazingzoroark.riftlib.particle.ParticleTextureStitcher;
+import anightdazingzoroark.riftlib.particle.ParticleTicker;
+import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.renderers.geo.GeoArmorRenderer;
 import anightdazingzoroark.riftlib.renderers.geo.GeoReplacedEntityRenderer;
+import anightdazingzoroark.riftlib.resource.RiftLibCache;
 import anightdazingzoroark.riftlib.ui.RiftLibUI;
 import anightdazingzoroark.riftlib.ui.RiftLibUIRegistry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.ParticleEmitter;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -35,12 +42,19 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 public class ClientProxy extends ServerProxy {
+    public static final List<RiftLibParticleEmitter> EMITTER_LIST = new ArrayList<>();
+
     @SideOnly(Side.CLIENT)
     @Override
     public void preInit(FMLPreInitializationEvent e) {
         super.preInit(e);
         RenderingRegistry.registerEntityRenderingHandler(EntityHitbox.class, new EntityHitboxRenderer.Factory());
+        MinecraftForge.EVENT_BUS.register(new ParticleTicker());
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {
@@ -69,6 +83,8 @@ public class ClientProxy extends ServerProxy {
     @Override
     public void init(FMLInitializationEvent e) {
         super.init(e);
+
+        MinecraftForge.EVENT_BUS.register(new ParticleTextureStitcher());
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {
             RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
@@ -96,5 +112,25 @@ public class ClientProxy extends ServerProxy {
     public static void showUI(String id, NBTTagCompound nbtTagCompound, int x, int y, int z) {
         RiftLibUI ui = RiftLibUIRegistry.createUI(id, nbtTagCompound, x, y, z);
         if (ui != null) Minecraft.getMinecraft().displayGuiScreen(ui);
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void spawnParticle(String name, double x, double y, double z) {
+        //get particle builder
+        ParticleBuilder builder = this.getParticleBuilder(name);
+
+        //create an emitter
+        RiftLibParticleEmitter emitter = new RiftLibParticleEmitter(builder, x, y, z);
+        EMITTER_LIST.add(emitter);
+    }
+
+    private ParticleBuilder getParticleBuilder(String name) {
+        Collection<ParticleBuilder> particleBuilders = RiftLibCache.getInstance().getParticleBuilders().values();
+
+        for (ParticleBuilder particleBuilder : particleBuilders) {
+            if (particleBuilder.identifier != null && particleBuilder.identifier.equals(name)) return particleBuilder;
+        }
+        return null;
     }
 }

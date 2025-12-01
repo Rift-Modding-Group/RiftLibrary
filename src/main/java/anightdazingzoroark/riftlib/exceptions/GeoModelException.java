@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.geo;
+package anightdazingzoroark.riftlib.exceptions;
 
 import net.minecraft.util.ResourceLocation;
 

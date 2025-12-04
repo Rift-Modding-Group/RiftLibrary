@@ -5,6 +5,8 @@ import anightdazingzoroark.riftlib.internalMessage.*;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
 import anightdazingzoroark.riftlib.message.RiftLibMessageSide;
 import anightdazingzoroark.riftlib.message.RiftLibMessageWrapper;
+import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
+import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponentRegistry;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -16,12 +18,16 @@ public class ServerProxy {
     public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> MESSAGE_WRAPPER;
 
     public void preInit(FMLPreInitializationEvent e) {
+        //register particle component registry
+        RiftLibParticleComponentRegistry.initializeMap();
+
         //register internal messages
         MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID);
         MESSAGE_WRAPPER.registerMessage(RiftLibUpdateHitboxPos.class, RiftLibMessageSide.BOTH);
         MESSAGE_WRAPPER.registerMessage(RiftLibUpdateRiderPos.class, RiftLibMessageSide.BOTH);
         MESSAGE_WRAPPER.registerMessage(RiftLibUpdateHitboxSize.class, RiftLibMessageSide.BOTH);
         MESSAGE_WRAPPER.registerMessage(RiftLibOpenUI.class, RiftLibMessageSide.CLIENT);
+        MESSAGE_WRAPPER.registerMessage(RiftLibCreateParticle.class, RiftLibMessageSide.CLIENT);
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {

@@ -20,7 +20,6 @@ import anightdazingzoroark.riftlib.hitboxLogic.EntityHitbox;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitboxRenderer;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
-import anightdazingzoroark.riftlib.particle.ParticleTextureStitcher;
 import anightdazingzoroark.riftlib.particle.ParticleTicker;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.renderers.geo.GeoArmorRenderer;
@@ -29,7 +28,6 @@ import anightdazingzoroark.riftlib.resource.RiftLibCache;
 import anightdazingzoroark.riftlib.ui.RiftLibUI;
 import anightdazingzoroark.riftlib.ui.RiftLibUIRegistry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.particle.ParticleEmitter;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.nbt.NBTTagCompound;
@@ -84,7 +82,6 @@ public class ClientProxy extends ServerProxy {
     public void init(FMLInitializationEvent e) {
         super.init(e);
 
-        MinecraftForge.EVENT_BUS.register(new ParticleTextureStitcher());
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {
             RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
@@ -121,8 +118,10 @@ public class ClientProxy extends ServerProxy {
         ParticleBuilder builder = this.getParticleBuilder(name);
 
         //create an emitter
-        RiftLibParticleEmitter emitter = new RiftLibParticleEmitter(builder, x, y, z);
-        EMITTER_LIST.add(emitter);
+        if (builder != null) {
+            RiftLibParticleEmitter emitter = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, x, y, z);
+            EMITTER_LIST.add(emitter);
+        }
     }
 
     private ParticleBuilder getParticleBuilder(String name) {

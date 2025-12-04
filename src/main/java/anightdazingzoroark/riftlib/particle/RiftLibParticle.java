@@ -1,103 +1,94 @@
 package anightdazingzoroark.riftlib.particle;
 
-import net.minecraft.client.particle.Particle;
+import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class RiftLibParticle extends Particle {
-    private final TextureAtlasSprite texture;
-    private final int textureWidth, textureHeight;
-    private final int u, v, uvWidth, uvHeight;
-    private final ParticleBuilder builder;
-    private final double expirationValue;
+public class RiftLibParticle {
+    private final World world;
+    private final BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos();
 
-    public RiftLibParticle(ParticleBuilder builder, World worldIn, double xCoordIn, double yCoordIn, double zCoordIn) {
-        this(builder, worldIn, xCoordIn, yCoordIn, zCoordIn, 0, 0, 0);
+    public double x, y, z;
+    public double prevX, prevY, prevZ;
+    public double velX, velY, velZ;
+    public float uvXMin, uvYMin, uvXMax, uvYMax;
+    public int lifetime;
+    public float[] size;
+    public boolean isDead;
+
+    public RiftLibParticle(World world) {
+        this.world = world;
     }
 
-    public RiftLibParticle(ParticleBuilder builder, World worldIn, double xCoordIn, double yCoordIn, double zCoordIn, double xSpeedIn, double ySpeedIn, double zSpeedIn) {
-        super(worldIn, xCoordIn, yCoordIn, zCoordIn, xSpeedIn, ySpeedIn, zSpeedIn);
-        this.setSize((float) builder.size[0].get(), (float) builder.size[1].get());
-        this.setMaxAge((int) builder.particleExpirationValue.get());
-        this.texture = ParticleTextureStitcher.SPRITES.get(builder.texture);
-        this.textureWidth = builder.textureWidth;
-        this.textureHeight = builder.textureHeight;
-        this.u = (int) builder.uv[0].get();
-        this.v = (int) builder.uv[1].get();
-        this.uvWidth = (int) builder.uvSize[0].get();
-        this.uvHeight = (int) builder.uvSize[1].get();
-        this.expirationValue = builder.particleExpirationValue.get();
-        this.builder = builder;
+    public void update(RiftLibParticleEmitter emitter) {}
+
+    public void renderParticle(BufferBuilder buffer, Entity camera, float partialTicks, float red, float green, float blue, float alpha) {
+        //camera-relative position & rotations
+        double camX = camera.prevPosX + (camera.posX - camera.prevPosX) * partialTicks;
+        double camY = camera.prevPosY + (camera.posY - camera.prevPosY) * partialTicks;
+        double camZ = camera.prevPosZ + (camera.posZ - camera.prevPosZ) * partialTicks;
+
+        float rotX  = ActiveRenderInfo.getRotationX();
+        float rotZ  = ActiveRenderInfo.getRotationZ();
+        float rotYZ = ActiveRenderInfo.getRotationYZ();
+        float rotXY = ActiveRenderInfo.getRotationXY();
+        float rotXZ = ActiveRenderInfo.getRotationXZ();
+
+        //lerp position
+        double x = this.prevX + (this.x - this.prevX) * partialTicks - camX;
+        double y = this.prevY + (this.y - this.prevY) * partialTicks - camY;
+        double z = this.prevZ + (this.z - this.prevZ) * partialTicks - camZ;
+
+        //scale
+        float x1 = -rotX * this.size[0] - rotXY * this.size[0];
+        float y1 = -rotZ * this.size[1];
+        float z1 = -rotYZ * this.size[0] - rotXZ * this.size[0];
+        float x2 = -rotX * this.size[0] + rotXY * this.size[0];
+        float y2 = rotZ * this.size[1];
+        float z2 = -rotYZ * this.size[0] + rotXZ * this.size[0];
+        float x3 = rotX * this.size[0] + rotXY * this.size[0];
+        float y3 = rotZ * this.size[1];
+        float z3 = rotYZ * this.size[0] + rotXZ * this.size[0];
+        float x4 = rotX * this.size[0] - rotXY * this.size[0];
+        float y4 = -rotZ * this.size[1];
+        float z4 = rotYZ * this.size[0] - rotXZ * this.size[0];
+
+        int light = this.getBrightnessForRender(partialTicks);
+        int j = (light >> 16) & 0xFFFF;
+        int k = light & 0xFFFF;
+
+        buffer.pos(x + x1, y + y1, z + z1)
+                .tex(this.uvXMax, this.uvYMax)
+                .lightmap(j, k)
+                .color(red, green, blue, alpha)
+                .endVertex();
+        buffer.pos(x + x2, y + y2, z + z2)
+                .tex(this.uvXMax, this.uvYMax)
+                .lightmap(j, k)
+                .color(red, green, blue, alpha)
+                .endVertex();
+        buffer.pos(x + x3, y + y3, z + z3)
+                .tex(this.uvXMax, this.uvYMax)
+                .lightmap(j, k)
+                .color(red, green, blue, alpha)
+                .endVertex();
+        buffer.pos(x + x4, y + y4, z + z4)
+                .tex(this.uvXMax, this.uvYMax)
+                .lightmap(j, k)
+                .color(red, green, blue, alpha)
+                .endVertex();
     }
 
-    /*
-    @Override
-    public void onUpdate() {
-        super.onUpdate();
+    private int getBrightnessForRender(float partialTicks) {
+        if (this.world == null) return 15728880;
 
-        if (this.expirationValue > 0) this.setExpired();
-    }
-     */
+        double x = this.prevX + (this.x - this.prevX) * partialTicks;
+        double y = this.prevY + (this.y - this.prevY) * partialTicks;
+        double z = this.prevZ + (this.z - this.prevZ) * partialTicks;
 
-    @Override
-    public void renderParticle(BufferBuilder buffer, Entity entityIn, float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ) {
-        // lerped position relative to camera
-        double x = this.prevPosX + (this.posX - this.prevPosX) * partialTicks - interpPosX;
-        double y = this.prevPosY + (this.posY - this.prevPosY) * partialTicks - interpPosY;
-        double z = this.prevPosZ + (this.posZ - this.prevPosZ) * partialTicks - interpPosZ;
-
-        float scale = this.particleScale; // or from builder/expressions
-
-        // compute UVs from JSON+sprite
-        float spriteMinU = this.texture.getMinU();
-        float spriteMaxU = this.texture.getMaxU();
-        float spriteMinV = this.texture.getMinV();
-        float spriteMaxV = this.texture.getMaxV();
-
-        float spriteWidthU  = spriteMaxU - spriteMinU;
-        float spriteHeightV = spriteMaxV - spriteMinV;
-
-        float u0 = spriteMinU + (this.u       / (float) this.textureWidth)  * spriteWidthU;
-        float v0 = spriteMinV + (this.v       / (float) this.textureHeight) * spriteHeightV;
-        float u1 = spriteMinU + ((this.u + this.uvWidth) / (float) this.textureWidth)  * spriteWidthU;
-        float v1 = spriteMinV + ((this.v + this.uvHeight) / (float) this.textureHeight) * spriteHeightV;
-
-        // standard billboard math from Particle#renderParticle
-        float x1 = (float)(-rotationX * scale - rotationXY * scale);
-        float y1 = (float)(-rotationZ * scale);
-        float z1 = (float)(-rotationYZ * scale - rotationXZ * scale);
-        float x2 = (float)(-rotationX * scale + rotationXY * scale);
-        float y2 = (float)( rotationZ * scale);
-        float z2 = (float)(-rotationYZ * scale + rotationXZ * scale);
-        float x3 = (float)( rotationX * scale + rotationXY * scale);
-        float y3 = (float)( rotationZ * scale);
-        float z3 = (float)( rotationYZ * scale + rotationXZ * scale);
-        float x4 = (float)( rotationX * scale - rotationXY * scale);
-        float y4 = (float)(-rotationZ * scale);
-        float z4 = (float)( rotationYZ * scale - rotationXZ * scale);
-
-        int brightness = this.getBrightnessForRender(partialTicks);
-        int j = brightness >> 16 & 65535;
-        int k = brightness & 65535;
-
-        buffer.pos(x + x1, y + y1, z + z1).tex(u1, v1)
-                .color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
-                .lightmap(j, k).endVertex();
-        buffer.pos(x + x2, y + y2, z + z2).tex(u1, v0)
-                .color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
-                .lightmap(j, k).endVertex();
-        buffer.pos(x + x3, y + y3, z + z3).tex(u0, v0)
-                .color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
-                .lightmap(j, k).endVertex();
-        buffer.pos(x + x4, y + y4, z + z4).tex(u0, v1)
-                .color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha)
-                .lightmap(j, k).endVertex();
-    }
-
-    @Override
-    public int getFXLayer() {
-        return 1;
+        this.mutableBlockPos.setPos(x, y, z);
+        return this.world.isBlockLoaded(this.mutableBlockPos) ? this.world.getCombinedLight(this.mutableBlockPos, 0): 0;
     }
 }

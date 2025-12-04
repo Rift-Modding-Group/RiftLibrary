@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib;
 
+import anightdazingzoroark.riftlib.command.RiftLibCommandParticle;
 import anightdazingzoroark.riftlib.command.RiftLibMobFamily;
 import anightdazingzoroark.riftlib.mobFamily.MobFamily;
 import anightdazingzoroark.riftlib.mobFamily.MobFamilyCreator;
@@ -128,5 +129,6 @@ public class RiftLibMod {
     @Mod.EventHandler
     public void serverLoad(FMLServerStartingEvent event) {
         event.registerServerCommand(new RiftLibMobFamily());
+        event.registerServerCommand(new RiftLibCommandParticle());
     }
 }

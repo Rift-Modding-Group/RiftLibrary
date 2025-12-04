@@ -1,32 +1,72 @@
 package anightdazingzoroark.riftlib.particle;
 
+import anightdazingzoroark.riftlib.molang.math.IValue;
+import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
+import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.EmitterInstantComponent;
+import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.RiftLibEmitterRateComponent;
+import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.EmitterShapeSphereComponent;
+import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.RiftLibEmitterShapeComponent;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ActiveRenderInfo;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 //emitters are what spawn particles
 @SideOnly(Side.CLIENT)
 public class RiftLibParticleEmitter {
+    private final List<RiftLibParticle> particles = new ArrayList<>();
+    private final World world;
     private final ParticleBuilder particleBuilder;
+    private final ResourceLocation textureLocation;
     private final Random random = new Random();
     private final double x, y, z;
     private boolean isDead;
     private int particleCount;
     private int age;
+    public RiftLibEmitterShapeComponent emitterShape;
+    public RiftLibEmitterRateComponent emitterRate;
 
     //this only matters if the EmitterRate is an instance of InstantEmitterRate
-    private int maxParticleCount;
+    public IValue maxParticleCount;
+    private Integer defMaxParticleCount;
 
-    public RiftLibParticleEmitter(ParticleBuilder particleBuilder, double x, double y, double z) {
+    //particle appearance stuff
+    public IValue[] particleSize;
+    public int particleTextureWidth, particleTextureHeight;
+    public IValue[] particleUV;
+    public IValue[] particleUVSize;
+
+    //for lifetime stuff
+    public IValue emitterActivation;
+    public IValue emitterExpiration;
+    public IValue particleExpiration;
+    public IValue particleMaxLifetime;
+
+    public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, double x, double y, double z) {
         this.particleBuilder = particleBuilder;
+        this.textureLocation = particleBuilder.texture;
+        this.world = world;
         this.x = x;
         this.y = y;
         this.z = z;
 
-        if (this.particleBuilder.emitterRate instanceof ParticleBuilder.InstantEmitterRate) this.maxParticleCount = this.defineMaxParticleCount();
+        //apply components from components in the builder
+        for (RiftLibParticleComponent component : this.particleBuilder.particleComponents) {
+            component.applyComponent(this);
+        }
     }
 
     //emitter is updated here, particles r created here too
@@ -34,47 +74,97 @@ public class RiftLibParticleEmitter {
         if (this.isDead) return;
         this.age++;
 
-        for (int i = 0; i < this.maxParticleCount; i++) {
-            this.spawnOneParticle();
+        //create particles based on rate
+        if (this.emitterRate instanceof EmitterInstantComponent) {
+            //get max particle count first
+            if (this.defMaxParticleCount != null) {
+                for (int i = 0; i < this.defMaxParticleCount; i++) {
+                    this.particles.add(this.createParticle());
+                }
+            }
+            else this.defMaxParticleCount = (int) this.maxParticleCount.get();
+        }
+
+        //update existing particles
+        Iterator<RiftLibParticle> it = particles.iterator();
+        while (it.hasNext()) {
+            RiftLibParticle particle = it.next();
+            particle.update(this);
+            if (particle.isDead) it.remove();
         }
     }
 
-    private void spawnOneParticle() {
-        Minecraft mc = Minecraft.getMinecraft();
-        World world = mc.world;
-        if (world == null || mc.effectRenderer == null) return;
+    private RiftLibParticle createParticle() {
+        RiftLibParticle toReturn = new RiftLibParticle(this.world);
 
-        // 1) Where it is emitted
+        //set particle init position
         double[] offset = this.findParticleOffset();
-        double px = this.x + offset[0];
-        double py = this.y + offset[1];
-        double pz = this.z + offset[2];
+        toReturn.x = this.x + offset[0];
+        toReturn.y = this.y + offset[1];
+        toReturn.z = this.z + offset[2];
+        toReturn.prevX = toReturn.x;
+        toReturn.prevY = toReturn.y;
+        toReturn.prevZ = toReturn.z;
 
-        // 2) Direction
-        double[] dir = this.particleVelocity(new double[]{px, py, pz});
+        //set particle velocity
+        double[] vel = this.particleVelocity(new double[]{toReturn.x, toReturn.y, toReturn.z});
+        toReturn.velX = vel[0];
+        toReturn.velY = vel[1];
+        toReturn.velZ = vel[2];
 
-        // 3) Speed (if you parsed minecraft:particle_initial_speed into builder)
-        double speed = 1;
+        //set particle lifetime
+        float lifetimeSeconds = (float) this.particleMaxLifetime.get();
+        toReturn.lifetime = (int) (lifetimeSeconds * 20);
 
-        double vx = dir[0] * speed;
-        double vy = dir[1] * speed;
-        double vz = dir[2] * speed;
+        //set particle scale
+        toReturn.size = new float[]{(float) this.particleSize[0].get(), (float) this.particleSize[1].get()};
 
-        // 4) Create particle instance
-        RiftLibParticle particle = new RiftLibParticle(
-                this.particleBuilder,
-                world,
-                px, py, pz,
-                vx, vy, vz
-        );
+        //set particle uvs
+        float textureWidth = this.particleTextureWidth;
+        float textureHeight = this.particleTextureHeight;
+        float uvX = (float) this.particleUV[0].get();
+        float uvY = (float) this.particleUV[1].get();
+        float uvWidth  = (float) this.particleUVSize[0].get();
+        float uvHeight  = (float) this.particleUVSize[1].get();
 
-        mc.effectRenderer.addEffect(particle);
+        toReturn.uvXMin = uvX / textureWidth;
+        toReturn.uvYMin = uvY / textureHeight;
+        toReturn.uvXMax = (uvX + uvWidth) / textureWidth;
+        toReturn.uvYMax = (uvY + uvHeight) / textureHeight;
+
+        return toReturn;
+    }
+
+    public void render(float partialTicks) {
+        if (this.world == null || this.textureLocation == null || this.particles.isEmpty()) return;
+
+        Minecraft mc = Minecraft.getMinecraft();
+        Entity camera = mc.getRenderViewEntity();
+        if (camera == null) return;
+
+        //bind particle texture directly
+        mc.getTextureManager().bindTexture(this.textureLocation);
+        System.out.println("particle emitter found");
+        GlStateManager.enableBlend();
+        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+        GlStateManager.disableCull();
+
+        Tessellator tess = Tessellator.getInstance();
+        BufferBuilder buffer = tess.getBuffer();
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_LMAP_COLOR);
+
+        for (RiftLibParticle particle : this.particles) particle.renderParticle(buffer, camera, partialTicks, 1f, 1f, 1f, 1f);
+
+        tess.draw();
+
+        GlStateManager.enableCull();
+        GlStateManager.disableBlend();
     }
 
     //this creates a position based on the emitter shape and provided offset
     private double[] findParticleOffset() {
-        if (this.particleBuilder.emitterShape instanceof ParticleBuilder.SphereEmitterShape) {
-            ParticleBuilder.SphereEmitterShape sphereEmitterShape = (ParticleBuilder.SphereEmitterShape) this.particleBuilder.emitterShape;
+        if (this.emitterShape instanceof EmitterShapeSphereComponent) {
+            EmitterShapeSphereComponent sphereEmitterShape = (EmitterShapeSphereComponent) this.emitterShape;
             //sphere formula is x² + y² + z² = r²,
             //this offset creator uses the radius to generate the x, y, and z positions of particles to create
             double radius = sphereEmitterShape.surfaceOnly ? sphereEmitterShape.radius.get() : (2 * this.random.nextDouble() - 1) * sphereEmitterShape.radius.get();
@@ -95,8 +185,8 @@ public class RiftLibParticleEmitter {
     //this creates the velocity to go to based on the emitter shape and initial pos
     //for now the velocity will be 1
     private double[] particleVelocity(double[] particleEmissionPos) {
-        if (this.particleBuilder.emitterShape instanceof ParticleBuilder.SphereEmitterShape) {
-            ParticleBuilder.SphereEmitterShape sphereEmitterShape = (ParticleBuilder.SphereEmitterShape) this.particleBuilder.emitterShape;
+        if (this.emitterShape instanceof EmitterShapeSphereComponent) {
+            EmitterShapeSphereComponent sphereEmitterShape = (EmitterShapeSphereComponent) this.emitterShape;
 
             //if it has custom particle direction, just return it instead
             if (sphereEmitterShape.customParticleDirection != null) {
@@ -124,15 +214,6 @@ public class RiftLibParticleEmitter {
             }
         }
         else return new double[]{0, 0, 0};
-    }
-
-    //this only matters if the EmitterRate is an instance of InstantEmitterRate
-    private int defineMaxParticleCount() {
-        if (this.particleBuilder.emitterRate instanceof ParticleBuilder.InstantEmitterRate) {
-            ParticleBuilder.InstantEmitterRate instantEmitterRate = (ParticleBuilder.InstantEmitterRate) this.particleBuilder.emitterRate;
-            return (int) instantEmitterRate.particleCount.get();
-        }
-        return 0;
     }
 
     public boolean isDead() {

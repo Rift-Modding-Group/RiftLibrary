@@ -7,7 +7,6 @@ import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.RiftLi
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.EmitterShapeSphereComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.RiftLibEmitterShapeComponent;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -72,25 +71,32 @@ public class RiftLibParticleEmitter {
     //emitter is updated here, particles r created here too
     public void update() {
         if (this.isDead) return;
-        this.age++;
+
+        //somehow find a way to implement this that doesn't fuck with particle rendering
+        /*
+        if (this.age < this.emitterExpiration.get() && !this.isDead) this.age++;
+        else this.isDead = true;
+         */
 
         //create particles based on rate
         if (this.emitterRate instanceof EmitterInstantComponent) {
             //get max particle count first
             if (this.defMaxParticleCount != null) {
-                for (int i = 0; i < this.defMaxParticleCount; i++) {
-                    this.particles.add(this.createParticle());
+                if (this.particles.size() < this.defMaxParticleCount) {
+                    for (int i = 0; i < this.defMaxParticleCount; i++) {
+                        this.particles.add(this.createParticle());
+                    }
                 }
             }
             else this.defMaxParticleCount = (int) this.maxParticleCount.get();
         }
 
         //update existing particles
-        Iterator<RiftLibParticle> it = particles.iterator();
+        Iterator<RiftLibParticle> it = this.particles.iterator();
         while (it.hasNext()) {
             RiftLibParticle particle = it.next();
             particle.update(this);
-            if (particle.isDead) it.remove();
+            if (particle.isDead()) it.remove();
         }
     }
 
@@ -126,7 +132,6 @@ public class RiftLibParticleEmitter {
         float uvY = (float) this.particleUV[1].get();
         float uvWidth  = (float) this.particleUVSize[0].get();
         float uvHeight  = (float) this.particleUVSize[1].get();
-
         toReturn.uvXMin = uvX / textureWidth;
         toReturn.uvYMin = uvY / textureHeight;
         toReturn.uvXMax = (uvX + uvWidth) / textureWidth;
@@ -144,7 +149,7 @@ public class RiftLibParticleEmitter {
 
         //bind particle texture directly
         mc.getTextureManager().bindTexture(this.textureLocation);
-        System.out.println("particle emitter found");
+
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         GlStateManager.disableCull();

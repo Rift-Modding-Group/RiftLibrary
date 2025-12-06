@@ -1,6 +1,8 @@
 package anightdazingzoroark.riftlib.particle;
 
+import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.IValue;
+import anightdazingzoroark.riftlib.molang.math.Variable;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.EmitterInstantComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.RiftLibEmitterRateComponent;
@@ -28,15 +30,26 @@ import java.util.Random;
 public class RiftLibParticleEmitter {
     private final List<RiftLibParticle> particles = new ArrayList<>();
     private final World world;
-    private final ParticleBuilder particleBuilder;
     private final ResourceLocation textureLocation;
+    private final MolangParser molangParser;
     private final Random random = new Random();
     private final double x, y, z;
     private boolean isDead;
     private int particleCount;
-    private int age;
     public RiftLibEmitterShapeComponent emitterShape;
     public RiftLibEmitterRateComponent emitterRate;
+
+    //molang emitter variables
+    private Variable varEmitterAge;
+    private Variable varEmitterLifetime;
+    private Variable varEmitterRandomOne;
+    private Variable varEmitterRandomTwo;
+    private Variable varEmitterRandomThree;
+    private Variable varEmitterRandomFour;
+
+    //runtime data, are parsed molang variables
+    private int age, lifetime;
+    private float emitterRandomOne, emitterRandomTwo, emitterRandomThree, emitterRandomFour;
 
     //this only matters if the EmitterRate is an instance of InstantEmitterRate
     public IValue maxParticleCount;
@@ -55,28 +68,62 @@ public class RiftLibParticleEmitter {
     public IValue particleMaxLifetime;
 
     public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, double x, double y, double z) {
-        this.particleBuilder = particleBuilder;
         this.textureLocation = particleBuilder.texture;
+        this.molangParser = particleBuilder.molangParser;
         this.world = world;
         this.x = x;
         this.y = y;
         this.z = z;
 
+        //init molang stuff
+        this.setupMolangVariables();
+        this.initEmitterRandoms();
+
         //apply components from components in the builder
-        for (RiftLibParticleComponent component : this.particleBuilder.particleComponents) {
+        for (RiftLibParticleComponent component : particleBuilder.particleComponents) {
             component.applyComponent(this);
         }
+    }
+
+    //all molang variables are created here
+    private void setupMolangVariables() {
+        this.varEmitterAge = this.getOrCreateVar("variable.emitter_age");
+        this.varEmitterLifetime = this.getOrCreateVar("variable.emitter_lifetime");
+        this.varEmitterRandomOne = this.getOrCreateVar("variable.emitter_random_1");
+        this.varEmitterRandomTwo = this.getOrCreateVar("variable.emitter_random_2");
+        this.varEmitterRandomThree = this.getOrCreateVar("variable.emitter_random_3");
+        this.varEmitterRandomFour = this.getOrCreateVar("variable.emitter_random_4");
+    }
+
+    private Variable getOrCreateVar(String name) {
+        Variable v = this.molangParser.variables.get(name);
+        if (v == null) {
+            System.out.println("create new "+name);
+            v = new Variable(name, 0.0);
+            this.molangParser.register(v);
+        }
+        else System.out.println(name+" already exists");
+        return v;
+    }
+
+    private void initEmitterRandoms() {
+        this.emitterRandomOne = (float) Math.random();
+        this.emitterRandomTwo = (float) Math.random();
+        this.emitterRandomThree = (float) Math.random();
+        this.emitterRandomFour = (float) Math.random();
     }
 
     //emitter is updated here, particles r created here too
     public void update() {
         if (this.isDead) return;
 
-        //somehow find a way to implement this that doesn't fuck with particle rendering
-        /*
-        if (this.age < this.emitterExpiration.get() && !this.isDead) this.age++;
-        else this.isDead = true;
-         */
+        //dynamically set molang variables
+        if (this.varEmitterAge != null) this.varEmitterAge.set(this.age / 20D);
+        if (this.varEmitterLifetime != null) this.varEmitterLifetime.set(this.lifetime / 20D);
+        if (this.varEmitterRandomOne != null) this.varEmitterRandomOne.set(this.emitterRandomOne);
+        if (this.varEmitterRandomTwo != null) this.varEmitterRandomTwo.set(this.emitterRandomTwo);
+        if (this.varEmitterRandomThree != null) this.varEmitterRandomThree.set(this.emitterRandomThree);
+        if (this.varEmitterRandomFour != null) this.varEmitterRandomFour.set(this.emitterRandomFour);
 
         //create particles based on rate
         if (this.emitterRate instanceof EmitterInstantComponent) {
@@ -101,7 +148,7 @@ public class RiftLibParticleEmitter {
     }
 
     private RiftLibParticle createParticle() {
-        RiftLibParticle toReturn = new RiftLibParticle(this.world);
+        RiftLibParticle toReturn = new RiftLibParticle(this.world, this.molangParser);
 
         //set particle init position
         double[] offset = this.findParticleOffset();
@@ -123,7 +170,7 @@ public class RiftLibParticleEmitter {
         toReturn.lifetime = (int) (lifetimeSeconds * 20);
 
         //set particle scale
-        toReturn.size = new float[]{(float) this.particleSize[0].get(), (float) this.particleSize[1].get()};
+        toReturn.size = this.particleSize;
 
         //set particle uvs
         float textureWidth = this.particleTextureWidth;

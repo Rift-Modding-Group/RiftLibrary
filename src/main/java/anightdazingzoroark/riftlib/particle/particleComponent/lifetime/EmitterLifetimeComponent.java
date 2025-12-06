@@ -11,9 +11,9 @@ import java.util.Map;
 
 public class EmitterLifetimeComponent extends RiftLibParticleComponent {
     //condition in which emitter activates
-    public IValue emitterActivationValue;
+    public IValue emitterActivationValue = MolangParser.ONE;
     //condition in which emitter expires
-    public IValue emitterExpirationValue;
+    public IValue emitterExpirationValue = MolangParser.ZERO;
 
     @Override
     public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {

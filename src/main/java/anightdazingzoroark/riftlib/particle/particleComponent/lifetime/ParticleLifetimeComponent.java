@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class ParticleLifetimeComponent extends RiftLibParticleComponent {
     //condition in which a particle expires
-    public IValue particleExpirationValue;
+    public IValue particleExpirationValue = MolangParser.ZERO;
     //time until particle expires
     public IValue particleLifetimeValue;
 
@@ -33,7 +33,7 @@ public class ParticleLifetimeComponent extends RiftLibParticleComponent {
 
     @Override
     public void applyComponent(RiftLibParticleEmitter emitter) {
-        emitter.emitterExpiration = this.particleExpirationValue;
+        emitter.particleExpiration = this.particleExpirationValue;
         emitter.particleMaxLifetime = this.particleLifetimeValue;
     }
 }

@@ -30,6 +30,9 @@ public class ParticleConstructor {
         //get material
         toReturn.material = ParticleMaterial.getMaterialFromString(rawParticle.rawParticleEffect.description.basicRenderParameters.material);
 
+        //get molang parser
+        toReturn.molangParser = parser;
+
         //get components
         Map<String, RawParticleComponent> particleComponents = rawParticle.rawParticleEffect.components;
         for (Map.Entry<String, RawParticleComponent> rawComponent : particleComponents.entrySet()) {

@@ -1,11 +1,13 @@
 package anightdazingzoroark.riftlib.particle;
 
+import anightdazingzoroark.riftlib.ClientProxy;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.molang.math.Variable;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.EmitterInstantComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.RiftLibEmitterRateComponent;
+import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.EmitterShapeCustomComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.EmitterShapeSphereComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.RiftLibEmitterShapeComponent;
 import net.minecraft.client.Minecraft;
@@ -30,6 +32,7 @@ import java.util.Random;
 public class RiftLibParticleEmitter {
     private final List<RiftLibParticle> particles = new ArrayList<>();
     private final World world;
+    private final int emitterId;
     private final ResourceLocation textureLocation;
     private final MolangParser molangParser;
     private final Random random = new Random();
@@ -38,6 +41,10 @@ public class RiftLibParticleEmitter {
     private int particleCount;
     public RiftLibEmitterShapeComponent emitterShape;
     public RiftLibEmitterRateComponent emitterRate;
+
+    //particle motion
+    public IValue[] particleInitialSpeed = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
+    public IValue[] particleLinearAcceleration = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
 
     //molang emitter variables
     private Variable varEmitterAge;
@@ -60,6 +67,14 @@ public class RiftLibParticleEmitter {
     public int particleTextureWidth, particleTextureHeight;
     public IValue[] particleUV;
     public IValue[] particleUVSize;
+    //these only matter if the particle is flipbook mode
+    public boolean particleFlipbook;
+    public IValue[] particleUVStepSize;
+    public float particleFPS;
+    public IValue particleMaxFrame;
+    public boolean particleFlipbookStretchToLifetime;
+    public boolean particleFlipbookLoop;
+    public boolean particleUseLocalLighting; //for if the particle must be tinted by local lighting conditions in-game
 
     //for lifetime stuff
     public IValue emitterActivation;
@@ -67,9 +82,14 @@ public class RiftLibParticleEmitter {
     public IValue particleExpiration;
     public IValue particleMaxLifetime;
 
+    //for color
+    public IValue[] colorArray = new IValue[]{MolangParser.ONE, MolangParser.ONE, MolangParser.ONE};
+    public IValue colorAlpha = MolangParser.ONE;
+
     public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, double x, double y, double z) {
         this.textureLocation = particleBuilder.texture;
         this.molangParser = particleBuilder.molangParser;
+        this.emitterId = ClientProxy.EMITTER_ID++;
         this.world = world;
         this.x = x;
         this.y = y;
@@ -80,6 +100,7 @@ public class RiftLibParticleEmitter {
         this.initEmitterRandoms();
 
         //apply components from components in the builder
+        System.out.println(particleBuilder.identifier);
         for (RiftLibParticleComponent component : particleBuilder.particleComponents) {
             component.applyComponent(this);
         }
@@ -98,11 +119,9 @@ public class RiftLibParticleEmitter {
     private Variable getOrCreateVar(String name) {
         Variable v = this.molangParser.variables.get(name);
         if (v == null) {
-            System.out.println("create new "+name);
             v = new Variable(name, 0.0);
             this.molangParser.register(v);
         }
-        else System.out.println(name+" already exists");
         return v;
     }
 
@@ -124,6 +143,9 @@ public class RiftLibParticleEmitter {
         if (this.varEmitterRandomTwo != null) this.varEmitterRandomTwo.set(this.emitterRandomTwo);
         if (this.varEmitterRandomThree != null) this.varEmitterRandomThree.set(this.emitterRandomThree);
         if (this.varEmitterRandomFour != null) this.varEmitterRandomFour.set(this.emitterRandomFour);
+
+        //update emitter age
+        this.age++;
 
         //create particles based on rate
         if (this.emitterRate instanceof EmitterInstantComponent) {
@@ -160,10 +182,22 @@ public class RiftLibParticleEmitter {
         toReturn.prevZ = toReturn.z;
 
         //set particle velocity
-        double[] vel = this.particleVelocity(new double[]{toReturn.x, toReturn.y, toReturn.z});
-        toReturn.velX = vel[0];
-        toReturn.velY = vel[1];
-        toReturn.velZ = vel[2];
+        double[] velocityFromShape = this.particleVelocityFromShape(new double[]{toReturn.x, toReturn.y, toReturn.z});
+        double[] velocity = new double[]{
+                this.particleInitialSpeed[0].get(),
+                this.particleInitialSpeed[1].get(),
+                this.particleInitialSpeed[2].get()
+        };
+        //divide all by 20 to turn them into blocks per tick from blocks per second
+        toReturn.velX = (velocityFromShape[0] + velocity[0]) / 20D;
+        toReturn.velY = (velocityFromShape[1] + velocity[1]) / 20D;
+        toReturn.velZ = (velocityFromShape[2] + velocity[2]) / 20D;
+
+        //set particle acceleration
+        //divide all by 400 to turn them into blocks per tick sq from blocks per second sq
+        toReturn.accelX = this.particleLinearAcceleration[0].get() / 400D;
+        toReturn.accelY = this.particleLinearAcceleration[1].get() / 400D;
+        toReturn.accelZ = this.particleLinearAcceleration[2].get() / 400D;
 
         //set particle lifetime
         float lifetimeSeconds = (float) this.particleMaxLifetime.get();
@@ -172,17 +206,50 @@ public class RiftLibParticleEmitter {
         //set particle scale
         toReturn.size = this.particleSize;
 
-        //set particle uvs
-        float textureWidth = this.particleTextureWidth;
-        float textureHeight = this.particleTextureHeight;
-        float uvX = (float) this.particleUV[0].get();
-        float uvY = (float) this.particleUV[1].get();
-        float uvWidth  = (float) this.particleUVSize[0].get();
-        float uvHeight  = (float) this.particleUVSize[1].get();
-        toReturn.uvXMin = uvX / textureWidth;
-        toReturn.uvYMin = uvY / textureHeight;
-        toReturn.uvXMax = (uvX + uvWidth) / textureWidth;
-        toReturn.uvYMax = (uvY + uvHeight) / textureHeight;
+        //set particle colors
+        toReturn.colorArray = this.colorArray;
+        toReturn.colorAlpha = this.colorAlpha;
+
+        //set particle lighting
+        toReturn.particleUseLocalLighting = this.particleUseLocalLighting;
+
+        //flipbook vs static UVs
+        toReturn.texWidth  = this.particleTextureWidth;
+        toReturn.texHeight = this.particleTextureHeight;
+
+        //flipbook UV behaviour
+        if (this.particleFlipbook) {
+            toReturn.flipbook = true;
+            toReturn.flipbookStretchToLifetime = this.particleFlipbookStretchToLifetime;
+            toReturn.flipbookLoop = this.particleFlipbookLoop;
+            toReturn.fps = this.particleFPS;
+            toReturn.maxFrame = (int) this.particleMaxFrame.get();
+
+            //store UV info in pixels
+            toReturn.baseUVX = (float) this.particleUV[0].get();
+            toReturn.baseUVY = (float) this.particleUV[1].get();
+            toReturn.sizeUVX = (float) this.particleUVSize[0].get();
+            toReturn.sizeUVY = (float) this.particleUVSize[1].get();
+            toReturn.stepUVX = (float) this.particleUVStepSize[0].get();
+            toReturn.stepUVY = (float) this.particleUVStepSize[1].get();
+
+            //initialise UVs for frame 0
+            toReturn.updateFlipbookUV();
+        }
+        //static UV behaviour
+        else {
+            float texW = this.particleTextureWidth;
+            float texH = this.particleTextureHeight;
+            float uvX = (float) this.particleUV[0].get();
+            float uvY = (float) this.particleUV[1].get();
+            float uvW = (float) this.particleUVSize[0].get();
+            float uvH = (float) this.particleUVSize[1].get();
+
+            toReturn.uvXMin = uvX / texW;
+            toReturn.uvYMin = uvY / texH;
+            toReturn.uvXMax = (uvX + uvW) / texW;
+            toReturn.uvYMax = (uvY + uvH) / texH;
+        }
 
         return toReturn;
     }
@@ -205,7 +272,10 @@ public class RiftLibParticleEmitter {
         BufferBuilder buffer = tess.getBuffer();
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_LMAP_COLOR);
 
-        for (RiftLibParticle particle : this.particles) particle.renderParticle(buffer, camera, partialTicks, 1f, 1f, 1f, 1f);
+        for (RiftLibParticle particle : this.particles) {
+            if (particle == null) continue;
+            particle.renderParticle(buffer, camera, partialTicks);
+        }
 
         tess.draw();
 
@@ -231,12 +301,20 @@ public class RiftLibParticleEmitter {
                     offsetZ + sphereEmitterShape.offset[2].get()
             };
         }
+        else if (this.emitterShape instanceof EmitterShapeCustomComponent) {
+            EmitterShapeCustomComponent customEmitterShape = (EmitterShapeCustomComponent) this.emitterShape;
+            return new double[]{
+                    customEmitterShape.offset[0].get(),
+                    customEmitterShape.offset[1].get(),
+                    customEmitterShape.offset[2].get()
+            };
+        }
         else return new double[]{0, 0, 0};
     }
 
     //this creates the velocity to go to based on the emitter shape and initial pos
     //for now the velocity will be 1
-    private double[] particleVelocity(double[] particleEmissionPos) {
+    private double[] particleVelocityFromShape(double[] particleEmissionPos) {
         if (this.emitterShape instanceof EmitterShapeSphereComponent) {
             EmitterShapeSphereComponent sphereEmitterShape = (EmitterShapeSphereComponent) this.emitterShape;
 
@@ -264,6 +342,15 @@ public class RiftLibParticleEmitter {
 
                 return new double[]{xDirectionNormalized, yDirectionNormalized, zDirectionNormalized};
             }
+        }
+        else if (this.emitterShape instanceof EmitterShapeCustomComponent) {
+            EmitterShapeCustomComponent customEmitterShape = (EmitterShapeCustomComponent) this.emitterShape;
+            return new double[]{
+                    customEmitterShape.customParticleDirection[0].get(),
+                    customEmitterShape.customParticleDirection[1].get(),
+                    customEmitterShape.customParticleDirection[2].get()
+            };
+
         }
         else return new double[]{0, 0, 0};
     }

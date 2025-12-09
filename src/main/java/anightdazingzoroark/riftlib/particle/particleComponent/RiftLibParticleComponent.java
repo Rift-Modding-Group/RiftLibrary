@@ -24,13 +24,22 @@ public abstract class RiftLibParticleComponent {
     }
 
     protected IValue[] parseExpressionArray(MolangParser parser, int intendedSize, RawParticleComponent.ComponentValue componentValue) throws MolangException {
+        return this.parseExpressionArray(parser, intendedSize, componentValue, false);
+    }
+
+    protected IValue[] parseExpressionArray(MolangParser parser, int intendedSize, RawParticleComponent.ComponentValue componentValue, boolean floatOnly) throws MolangException {
         if (componentValue.valueType == RawParticleComponent.ComponentValueType.ARRAY) {
             if (componentValue.array.size() != intendedSize) throw new InvalidValueException("Invalid array length!");
 
             IValue[] toReturn = new IValue[componentValue.array.size()];
             for (int i = 0; i < toReturn.length; i++) {
                 RawParticleComponent.ComponentValue value = componentValue.array.get(i);
-                toReturn[i] = parseExpression(parser, value);
+                if (floatOnly) {
+                    //this assumes that the value was a string, in this case return an exception
+                    if (value.string != null) throw new InvalidValueException("Expected float but got string!");
+                    else toReturn[i] = parseExpression(parser, value);
+                }
+                else toReturn[i] = parseExpression(parser, value);
             }
             return toReturn;
         }

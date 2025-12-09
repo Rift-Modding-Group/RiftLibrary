@@ -25,6 +25,7 @@ public class ParticleTicker {
         float partialTicks = event.getPartialTicks();
 
         for (RiftLibParticleEmitter emitter : ClientProxy.EMITTER_LIST) {
+            if (emitter == null) continue;
             emitter.render(partialTicks);
         }
     }

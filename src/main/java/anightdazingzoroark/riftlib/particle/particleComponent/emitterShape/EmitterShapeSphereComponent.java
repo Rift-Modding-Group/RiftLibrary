@@ -42,9 +42,4 @@ public class EmitterShapeSphereComponent extends RiftLibEmitterShapeComponent {
             }
         }
     }
-
-    @Override
-    public void applyComponent(RiftLibParticleEmitter emitter) {
-        emitter.emitterShape = this;
-    }
 }

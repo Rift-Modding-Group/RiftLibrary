@@ -36,7 +36,7 @@ public class ParticleConstructor {
         //get components
         Map<String, RawParticleComponent> particleComponents = rawParticle.rawParticleEffect.components;
         for (Map.Entry<String, RawParticleComponent> rawComponent : particleComponents.entrySet()) {
-            RiftLibParticleComponent component = RiftLibParticleComponentRegistry.componentMap.get(rawComponent.getKey());
+            RiftLibParticleComponent component = RiftLibParticleComponentRegistry.createComponent(rawComponent.getKey());
             if (component != null) {
                 component.parseRawComponent(rawComponent, parser);
                 toReturn.particleComponents.add(component);

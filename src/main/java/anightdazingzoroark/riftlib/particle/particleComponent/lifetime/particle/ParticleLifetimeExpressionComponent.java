@@ -1,19 +1,20 @@
-package anightdazingzoroark.riftlib.particle.particleComponent.lifetime;
+package anightdazingzoroark.riftlib.particle.particleComponent.lifetime.particle;
 
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.molang.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
+import anightdazingzoroark.riftlib.molang.math.Constant;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 
 import java.util.Map;
 
-public class ParticleLifetimeComponent extends RiftLibParticleComponent {
+public class ParticleLifetimeExpressionComponent extends RiftLibParticleComponent {
     //condition in which a particle expires
     public IValue particleExpirationValue = MolangParser.ZERO;
     //time until particle expires
-    public IValue particleLifetimeValue;
+    public IValue particleLifetimeValue = new Constant(Integer.MAX_VALUE);
 
     @Override
     public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {

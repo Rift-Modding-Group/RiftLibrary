@@ -44,6 +44,10 @@ public class RiftLibParticle {
     private Variable varParticleRandomThree;
     private Variable varParticleRandomFour;
 
+    //IValue lifetime info
+    public IValue lifetimeExpression;
+    public IValue expirationExpression;
+
     //runtime data, are parsed molang variables
     public int lifetime, age; //REMEMBER THAT THESE ARE IN TICKS
     public float randomOne, randomTwo, randomThree, randomFour;
@@ -88,6 +92,9 @@ public class RiftLibParticle {
     }
 
     public void update() {
+        //set the lifetime from expression
+        this.lifetime = (int) (this.lifetimeExpression.get() * 20);
+
         //dynamically set molang variables
         if (this.varParticleAge != null) this.varParticleAge.set(this.age / 20D);
         if (this.varParticleLifetime != null) this.varParticleLifetime.set(this.lifetime / 20D);
@@ -96,9 +103,11 @@ public class RiftLibParticle {
         if (this.varParticleRandomThree != null) this.varParticleRandomThree.set(this.randomThree);
         if (this.varParticleRandomFour != null) this.varParticleRandomFour.set(this.randomFour);
 
-        //update life
-        if (this.age < this.lifetime && !this.isDead) this.age++;
-        else this.isDead = true;
+        //update life based on age and expiration
+        if (!this.isDead) {
+            if (this.age < this.lifetime) this.age++;
+            if (this.age >= this.lifetime || this.expirationExpression.get() != 0) this.isDead = true;
+        }
 
         //update flipbook
         if (this.flipbook) this.updateFlipbookUV();

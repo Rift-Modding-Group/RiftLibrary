@@ -1,15 +1,13 @@
-package anightdazingzoroark.riftlib.particle.particleComponent.lifetime;
+package anightdazingzoroark.riftlib.particle.particleComponent.lifetime.emiter;
 
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.molang.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.IValue;
-import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
-import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 
 import java.util.Map;
 
-public class EmitterLifetimeComponent extends RiftLibParticleComponent {
+public class EmitterLifetimeExpressionComponent extends RiftLibEmitterLifetimeComponent {
     //condition in which emitter activates
     public IValue emitterActivationValue = MolangParser.ONE;
     //condition in which emitter expires
@@ -29,11 +27,5 @@ public class EmitterLifetimeComponent extends RiftLibParticleComponent {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("expiration_expression");
             this.emitterExpirationValue = parseExpression(parser, componentValue);
         }
-    }
-
-    @Override
-    public void applyComponent(RiftLibParticleEmitter emitter) {
-        emitter.emitterActivation = this.emitterActivationValue;
-        emitter.emitterExpiration = this.emitterExpirationValue;
     }
 }

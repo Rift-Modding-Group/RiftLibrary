@@ -2,6 +2,7 @@ package anightdazingzoroark.riftlib.particle;
 
 import anightdazingzoroark.riftlib.ClientProxy;
 import anightdazingzoroark.riftlib.molang.MolangParser;
+import anightdazingzoroark.riftlib.molang.math.Constant;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.molang.math.Variable;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
@@ -10,6 +11,8 @@ import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.RiftLi
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.EmitterShapeCustomComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.EmitterShapeSphereComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.RiftLibEmitterShapeComponent;
+import anightdazingzoroark.riftlib.particle.particleComponent.lifetime.emiter.EmitterLifetimeExpressionComponent;
+import anightdazingzoroark.riftlib.particle.particleComponent.lifetime.emiter.RiftLibEmitterLifetimeComponent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -79,10 +82,9 @@ public class RiftLibParticleEmitter {
     public boolean particleUseLocalLighting; //for if the particle must be tinted by local lighting conditions in-game
 
     //for lifetime stuff
-    public IValue emitterActivation;
-    public IValue emitterExpiration;
-    public IValue particleExpiration;
-    public IValue particleMaxLifetime;
+    public RiftLibEmitterLifetimeComponent emitterLifetime;
+    public IValue particleExpiration = MolangParser.ZERO;
+    public IValue particleMaxLifetime = new Constant(Integer.MAX_VALUE);
 
     //for color
     public IValue[] colorArray = new IValue[]{MolangParser.ONE, MolangParser.ONE, MolangParser.ONE};
@@ -149,17 +151,22 @@ public class RiftLibParticleEmitter {
         //update emitter age
         this.age++;
 
-        //create particles based on rate
-        if (this.emitterRate instanceof EmitterInstantComponent) {
-            //get max particle count first
-            if (this.defMaxParticleCount != null) {
-                if (this.particles.size() < this.defMaxParticleCount) {
-                    for (int i = 0; i < this.defMaxParticleCount; i++) {
-                        this.particles.add(this.createParticle());
+        //set death based on expiry and if theres no particles left
+        this.isDead = this.canExpire() && this.particles.isEmpty();
+
+        //create particles based on rate and ability to create them
+        if (this.canCreateParticles()) {
+            if (this.emitterRate instanceof EmitterInstantComponent) {
+                //get max particle count first
+                if (this.defMaxParticleCount != null) {
+                    if (this.particles.size() < this.defMaxParticleCount) {
+                        for (int i = 0; i < this.defMaxParticleCount; i++) {
+                            this.particles.add(this.createParticle());
+                        }
                     }
                 }
+                else this.defMaxParticleCount = (int) this.maxParticleCount.get();
             }
-            else this.defMaxParticleCount = (int) this.maxParticleCount.get();
         }
 
         //update existing particles
@@ -204,8 +211,9 @@ public class RiftLibParticleEmitter {
         toReturn.accelY = this.particleLinearAcceleration[1].get() / 400D;
         toReturn.accelZ = this.particleLinearAcceleration[2].get() / 400D;
 
-        //set particle lifetime
-        toReturn.lifetime = (int) (this.particleMaxLifetime.get() * 20);
+        //set particle lifetime info
+        toReturn.lifetimeExpression = this.particleMaxLifetime;
+        toReturn.expirationExpression = this.particleExpiration;
 
         //set particle scale
         toReturn.size = this.particleSize;
@@ -402,6 +410,27 @@ public class RiftLibParticleEmitter {
                 GlStateManager.SourceFactor.SRC_ALPHA,
                 GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
         );
+    }
+
+    //this utilizes the emitter lifetime component to return whether or not particles can be made
+    private boolean canCreateParticles() {
+        if (this.emitterLifetime instanceof EmitterLifetimeExpressionComponent) {
+            EmitterLifetimeExpressionComponent lifetimeExpression = (EmitterLifetimeExpressionComponent) this.emitterLifetime;
+            IValue canMakeParticles = lifetimeExpression.emitterActivationValue;
+            return canMakeParticles.get() != 0;
+        }
+        return false;
+    }
+
+    //this utilizes the emitter lifetime component to return whether or not the emitter can
+    //continue existing
+    private boolean canExpire() {
+        if (this.emitterLifetime instanceof EmitterLifetimeExpressionComponent) {
+            EmitterLifetimeExpressionComponent lifetimeExpression = (EmitterLifetimeExpressionComponent) this.emitterLifetime;
+            IValue canExpire = lifetimeExpression.emitterExpirationValue;
+            return canExpire.get() != 0;
+        }
+        return false;
     }
 
     public boolean isDead() {

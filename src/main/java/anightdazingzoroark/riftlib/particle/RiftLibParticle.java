@@ -44,6 +44,14 @@ public class RiftLibParticle {
     private Variable varParticleRandomThree;
     private Variable varParticleRandomFour;
 
+    //molang emitter variables, which the emitter shares with its particles
+    public Variable varEmitterAge;
+    public Variable varEmitterLifetime;
+    public Variable varEmitterRandomOne;
+    public Variable varEmitterRandomTwo;
+    public Variable varEmitterRandomThree;
+    public Variable varEmitterRandomFour;
+
     //IValue lifetime info
     public IValue lifetimeExpression;
     public IValue expirationExpression;

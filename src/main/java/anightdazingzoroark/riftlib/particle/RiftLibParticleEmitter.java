@@ -211,6 +211,14 @@ public class RiftLibParticleEmitter {
         toReturn.accelY = this.particleLinearAcceleration[1].get() / 400D;
         toReturn.accelZ = this.particleLinearAcceleration[2].get() / 400D;
 
+        //give molang variables to the particle
+        toReturn.varEmitterAge = this.varEmitterAge;
+        toReturn.varEmitterLifetime = this.varEmitterLifetime;
+        toReturn.varEmitterRandomOne = this.varEmitterRandomOne;
+        toReturn.varEmitterRandomTwo = this.varEmitterRandomTwo;
+        toReturn.varEmitterRandomThree = this.varEmitterRandomThree;
+        toReturn.varEmitterRandomFour = this.varEmitterRandomFour;
+
         //set particle lifetime info
         toReturn.lifetimeExpression = this.particleMaxLifetime;
         toReturn.expirationExpression = this.particleExpiration;

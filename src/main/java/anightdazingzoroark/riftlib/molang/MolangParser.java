@@ -63,7 +63,6 @@ public class MolangParser extends MathBuilder {
         if (variable != null) {
             variable.set(value);
         }
-
     }
 
     protected Variable getVariable(String name) {
@@ -78,23 +77,6 @@ public class MolangParser extends MathBuilder {
         }
 
         return variable;
-    }
-
-    public MolangExpression parseJson(JsonElement element) throws anightdazingzoroark.riftlib.molang.MolangException {
-        if (element.isJsonPrimitive()) {
-            JsonPrimitive primitive = element.getAsJsonPrimitive();
-            if (primitive.isString()) {
-                try {
-                    return new MolangValue(this, new Constant((double)Float.parseFloat(primitive.getAsString())));
-                } catch (Exception var4) {
-                    return this.parseExpression(primitive.getAsString());
-                }
-            } else {
-                return new MolangValue(this, new Constant(primitive.getAsDouble()));
-            }
-        } else {
-            return ZERO;
-        }
     }
 
     public MolangExpression parseExpression(String expression) throws anightdazingzoroark.riftlib.molang.MolangException {
@@ -131,10 +113,12 @@ public class MolangParser extends MathBuilder {
         if (expression.startsWith("return ")) {
             try {
                 return (new MolangValue(this, this.parse(expression.substring("return ".length())))).addReturn();
-            } catch (Exception var5) {
+            }
+            catch (Exception var5) {
                 throw new anightdazingzoroark.riftlib.molang.MolangException("Couldn't parse return '" + expression + "' expression!");
             }
-        } else {
+        }
+        else {
             try {
                 List<Object> symbols = this.breakdownChars(this.breakdown(expression));
                 if (symbols.size() >= 3 && symbols.get(0) instanceof String && this.isVariable(symbols.get(0)) && symbols.get(1).equals("=")) {

@@ -37,20 +37,19 @@ public class AppearanceTintingComponent extends RiftLibParticleComponent {
 
                 //perform operations based on length
                 if (colorAsString.length() == 6) {
-                    this.red = new Constant(stringAsHex >> 16);
-                    this.green = new Constant((stringAsHex >> 8) & 0xFF);
-                    this.blue = new Constant(stringAsHex & 0xFF);
+                    this.red = new Constant((stringAsHex >> 16) / 255f);
+                    this.green = new Constant(((stringAsHex >> 8) & 0xFF) / 255f);
+                    this.blue = new Constant((stringAsHex & 0xFF) / 255f);
                 }
                 else if (colorAsString.length() == 8) {
-                    this.alpha = new Constant(stringAsHex >> 24);
-                    this.red = new Constant((stringAsHex >> 16) & 0xFF);
-                    this.green = new Constant((stringAsHex >> 8) & 0xFF);
-                    this.blue = new Constant(stringAsHex & 0xFF);
+                    this.alpha = new Constant((stringAsHex >> 24) / 255f);
+                    this.red = new Constant(((stringAsHex >> 16) & 0xFF) / 255f);
+                    this.green = new Constant(((stringAsHex >> 8) & 0xFF) / 255f);
+                    this.blue = new Constant((stringAsHex & 0xFF) / 255f);
                 }
             }
             //if its an array, each value in the array will correspond to a color
             else if (componentValue.valueType == RawParticleComponent.ComponentValueType.ARRAY) {
-                System.out.println("applied array tinting");
                 //check length first
                 if (componentValue.array.size() < 3) throw new InvalidValueException("Insufficient size for color array");
                 if (componentValue.array.size() > 4) throw new InvalidValueException("Size exceeded for color array");

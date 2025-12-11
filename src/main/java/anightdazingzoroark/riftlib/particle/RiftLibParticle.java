@@ -3,9 +3,11 @@ package anightdazingzoroark.riftlib.particle;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.molang.math.Variable;
+import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -20,6 +22,8 @@ public class RiftLibParticle {
     public IValue[] size;
     private boolean isDead;
     public boolean particleUseLocalLighting;
+
+    public ParticleCameraMode cameraMode;
 
     //flipbook data (in pixels)
     public boolean flipbook;
@@ -83,7 +87,7 @@ public class RiftLibParticle {
         return v;
     }
 
-    public void update(RiftLibParticleEmitter emitter) {
+    public void update() {
         //dynamically set molang variables
         if (this.varParticleAge != null) this.varParticleAge.set(this.age / 20D);
         if (this.varParticleLifetime != null) this.varParticleLifetime.set(this.lifetime / 20D);
@@ -114,78 +118,128 @@ public class RiftLibParticle {
         this.velZ += this.accelZ;
     }
 
-    //note: this is stricly when "facing_camera_mode" in "minecraft:particle_appearance_billboard" is "lookat_xyz"
-    //must be edited to take into account all camera facing modes
     public void renderParticle(BufferBuilder buffer, Entity camera, float partialTicks) {
         //camera position (lerped)
-        double camX = camera.prevPosX + (camera.posX - camera.prevPosX) * partialTicks;
-        double camY = camera.prevPosY + (camera.posY - camera.prevPosY) * partialTicks;
-        double camZ = camera.prevPosZ + (camera.posZ - camera.prevPosZ) * partialTicks;
+        double camX = camera.lastTickPosX + (camera.posX - camera.lastTickPosX) * partialTicks;
+        double camY = camera.lastTickPosY + (camera.posY - camera.lastTickPosY) * partialTicks;
+        double camZ = camera.lastTickPosZ + (camera.posZ - camera.lastTickPosZ) * partialTicks;
 
         //particle position (lerped) in camera space
         double px = this.prevX + (this.x - this.prevX) * partialTicks;
         double py = this.prevY + (this.y - this.prevY) * partialTicks;
         double pz = this.prevZ + (this.z - this.prevZ) * partialTicks;
 
-        double x = px - camX;
-        double y = py - camY;
-        double z = pz - camZ;
+        //origin
+        Vec3d pointOrigin = new Vec3d(px - camX, py - camY, pz - camZ);
 
         //half sizes
-        float halfX = (float) (this.size[0].get()) * 0.5f;
-        float halfY = (float) (this.size[1].get()) * 0.5f;
+        float halfScaleX = (float) (this.size[0].get()) * 0.5f;
+        float halfScaleY = (float) (this.size[1].get()) * 0.5f;
 
-        //build billboard basis from camera look direction (rotation)
-        Vec3d look = camera.getLook(partialTicks); // camera rotation in world space
+        //camera look direction
+        Vec3d look = camera.getLook(partialTicks);
 
-        //world up
-        Vec3d upWorld = new Vec3d(0.0, 1.0, 0.0);
+        //everything from here on out will depend on the camera mode
+        //rotate xyz emulates vanilla particle rendering
+        if (this.cameraMode == ParticleCameraMode.ROTATE_XYZ) {
+            float rotationX = ActiveRenderInfo.getRotationX();
+            float rotationZ = ActiveRenderInfo.getRotationZ();
+            float rotationYZ = ActiveRenderInfo.getRotationYZ();
+            float rotationXY = ActiveRenderInfo.getRotationXY();
+            float rotationXZ = ActiveRenderInfo.getRotationXZ();
 
-        //right = forward x upWorld
-        Vec3d rightVec = look.crossProduct(upWorld);
-        double rightLenSq = rightVec.lengthSquared();
+            //compute 4 corners (in camera space)
+            Vec3d pointOne = new Vec3d(
+                    -rotationX * halfScaleX - rotationYZ * halfScaleX,
+                    -rotationXZ * halfScaleY,
+                    -rotationZ * halfScaleX - rotationXY * halfScaleX
+            );
+            Vec3d pointTwo = new Vec3d(
+                    -rotationX * halfScaleX + rotationYZ * halfScaleX,
+                    rotationXZ * halfScaleY,
+                    -rotationZ * halfScaleX + rotationXY * halfScaleX
+            );
+            Vec3d pointThree = new Vec3d(
+                    rotationX * halfScaleX + rotationYZ * halfScaleX,
+                    rotationXZ * halfScaleY,
+                    rotationZ * halfScaleX + rotationXY * halfScaleX
+            );
+            Vec3d pointFour = new Vec3d(
+                    rotationX * halfScaleX - rotationYZ * halfScaleX,
+                    -rotationXZ * halfScaleY,
+                    rotationZ * halfScaleX - rotationXY * halfScaleX
+            );
 
-        if (rightLenSq < 1.0e-6) {
-            //camera is looking almost straight up/down → use a different up basis
-            upWorld = new Vec3d(0.0, 0.0, 1.0);
-            rightVec = look.crossProduct(upWorld);
-            rightLenSq = rightVec.lengthSquared();
-            if (rightLenSq < 1.0e-6) {
-                // super-degenerate fallback: just use X axis
-                rightVec = new Vec3d(1.0, 0.0, 0.0);
-            }
+            this.emitQuad(buffer, pointOrigin, pointOne, pointTwo, pointThree, pointFour, partialTicks);
         }
+        //some camera modes that share common code go here
+        else {
+            //common vectors
+            Vec3d upWorld = new Vec3d(0, 1, 0);
+            Vec3d horizontalVec = Vec3d.ZERO;
+            Vec3d verticalVec = Vec3d.ZERO;
 
-        rightVec = rightVec.normalize();
+            //rotate only around world Y (billboard stands upright)
+            if (this.cameraMode == ParticleCameraMode.ROTATE_Y) {
+                float yaw = (float) Math.toRadians(camera.prevRotationYaw + (camera.rotationYaw - camera.prevRotationYaw) * partialTicks);
 
-        //up = right x forward (orthonormal basis)
-        Vec3d upVec = rightVec.crossProduct(look).normalize();
+                float cos = MathHelper.cos(yaw);
+                float sin = MathHelper.sin(yaw);
 
-        float rightX = (float) rightVec.x;
-        float rightY = (float) rightVec.y;
-        float rightZ = (float) rightVec.z;
+                horizontalVec = new Vec3d(-cos, 0, -sin);
+                verticalVec = new Vec3d(0,  1,  0);
+            }
+            //face camera only in XZ plane, keep Y upright
+            else if (this.cameraMode == ParticleCameraMode.LOOKAT_Y) {
+                horizontalVec = look.crossProduct(upWorld).normalize();
+                verticalVec = new Vec3d(0, 1, 0);
+            }
+            //face camera in XYZ plane, biased towards world y up
+            else if (this.cameraMode == ParticleCameraMode.LOOKAT_XYZ) {
+                horizontalVec = look.crossProduct(upWorld);
 
-        float upX = (float) upVec.x;
-        float upY = (float) upVec.y;
-        float upZ = (float) upVec.z;
+                //mainly to make the particle be visible from above
+                double rightLenSq = horizontalVec.lengthSquared();
+                if (rightLenSq < 1e-6) {
+                    upWorld = new Vec3d(0, 0, 1);
+                    horizontalVec = look.crossProduct(upWorld);
+                    rightLenSq = horizontalVec.lengthSquared();
+                    if (rightLenSq < 1e-6) {
+                        horizontalVec = new Vec3d(1, 0, 0);
+                    }
+                }
 
-        //compute 4 corners (in camera space)
-        float xOne = -rightX * halfX + upX * halfY;
-        float yOne = -rightY * halfX + upY * halfY;
-        float zOne = -rightZ * halfX + upZ * halfY;
+                horizontalVec = horizontalVec.normalize();
+                verticalVec = horizontalVec.crossProduct(look).normalize();
+            }
 
-        float xTwo = -rightX * halfX - upX * halfY;
-        float yTwo = -rightY * halfX - upY * halfY;
-        float zTwo = -rightZ * halfX - upZ * halfY;
+            //compute 4 corners (in camera space)
+            Vec3d pointOne = new Vec3d(
+                    -horizontalVec.x * halfScaleX + verticalVec.x * halfScaleY,
+                    -horizontalVec.y * halfScaleX + verticalVec.y * halfScaleY,
+                    -horizontalVec.z * halfScaleX + verticalVec.z * halfScaleY
+            );
+            Vec3d pointTwo = new Vec3d(
+                    -horizontalVec.x * halfScaleX - verticalVec.x * halfScaleY,
+                    -horizontalVec.y * halfScaleX - verticalVec.y * halfScaleY,
+                    -horizontalVec.z * halfScaleX - verticalVec.z * halfScaleY
+            );
+            Vec3d pointThree = new Vec3d(
+                    horizontalVec.x * halfScaleX - verticalVec.x * halfScaleY,
+                    horizontalVec.y * halfScaleX - verticalVec.y * halfScaleY,
+                    horizontalVec.z * halfScaleX - verticalVec.z * halfScaleY
+            );
+            Vec3d pointFour = new Vec3d(
+                    horizontalVec.x * halfScaleX + verticalVec.x * halfScaleY,
+                    horizontalVec.y * halfScaleX + verticalVec.y * halfScaleY,
+                    horizontalVec.z * halfScaleX + verticalVec.z * halfScaleY
+            );
 
-        float xThree =  rightX * halfX - upX * halfY;
-        float yThree =  rightY * halfX - upY * halfY;
-        float zThree =  rightZ * halfX - upZ * halfY;
+            this.emitQuad(buffer, pointOrigin, pointOne, pointTwo, pointThree, pointFour, partialTicks);
+        }
+    }
 
-        float xFour =  rightX * halfX + upX * halfY;
-        float yFour =  rightY * halfX + upY * halfY;
-        float zFour =  rightZ * halfX + upZ * halfY;
-
+    private void emitQuad(BufferBuilder buffer, Vec3d pointOrigin, Vec3d pointOne, Vec3d pointTwo, Vec3d pointThree, Vec3d pointFour, float partialTicks) {
         //lighting
         int light = this.getBrightnessForRender(partialTicks);
         int j = (light >> 16) & 0xFFFF;
@@ -197,30 +251,57 @@ public class RiftLibParticle {
         float blue = (float) this.colorArray[2].get();
         float alpha = (float) this.colorAlpha.get();
 
-        //emit vertices
-        buffer.pos(x + xOne, y + yOne, z + zOne)
-                .tex(this.uvXMax, this.uvYMin)
-                .lightmap(j, k)
-                .color(red, green, blue, alpha)
-                .endVertex();
+        //emit vertices based on camera mode too
+        if (this.cameraMode == ParticleCameraMode.ROTATE_XYZ) {
+            buffer.pos(pointOrigin.x + pointOne.x, pointOrigin.y + pointOne.y, pointOrigin.z + pointOne.z)
+                    .tex(this.uvXMax, this.uvYMax)
+                    .lightmap(j, k)
+                    .color(red, green, blue, alpha)
+                    .endVertex();
 
-        buffer.pos(x + xTwo, y + yTwo, z + zTwo)
-                .tex(this.uvXMax, this.uvYMax)
-                .lightmap(j, k)
-                .color(red, green, blue, alpha)
-                .endVertex();
+            buffer.pos(pointOrigin.x + pointTwo.x, pointOrigin.y + pointTwo.y, pointOrigin.z + pointTwo.z)
+                    .tex(this.uvXMax, this.uvYMin)
+                    .lightmap(j, k)
+                    .color(red, green, blue, alpha)
+                    .endVertex();
 
-        buffer.pos(x + xThree, y + yThree, z + zThree)
-                .tex(this.uvXMin, this.uvYMax)
-                .lightmap(j, k)
-                .color(red, green, blue, alpha)
-                .endVertex();
+            buffer.pos(pointOrigin.x + pointThree.x, pointOrigin.y + pointThree.y, pointOrigin.z + pointThree.z)
+                    .tex(this.uvXMin, this.uvYMin)
+                    .lightmap(j, k)
+                    .color(red, green, blue, alpha)
+                    .endVertex();
 
-        buffer.pos(x + xFour, y + yFour, z + zFour)
-                .tex(this.uvXMin, this.uvYMin)
-                .lightmap(j, k)
-                .color(red, green, blue, alpha)
-                .endVertex();
+            buffer.pos(pointOrigin.x + pointFour.x, pointOrigin.y + pointFour.y, pointOrigin.z + pointFour.z)
+                    .tex(this.uvXMin, this.uvYMax)
+                    .lightmap(j, k)
+                    .color(red, green, blue, alpha)
+                    .endVertex();
+        }
+        else {
+            buffer.pos(pointOrigin.x + pointOne.x, pointOrigin.y + pointOne.y, pointOrigin.z + pointOne.z)
+                    .tex(this.uvXMax, this.uvYMin)
+                    .lightmap(j, k)
+                    .color(red, green, blue, alpha)
+                    .endVertex();
+
+            buffer.pos(pointOrigin.x + pointTwo.x, pointOrigin.y + pointTwo.y, pointOrigin.z + pointTwo.z)
+                    .tex(this.uvXMax, this.uvYMax)
+                    .lightmap(j, k)
+                    .color(red, green, blue, alpha)
+                    .endVertex();
+
+            buffer.pos(pointOrigin.x + pointThree.x, pointOrigin.y + pointThree.y, pointOrigin.z + pointThree.z)
+                    .tex(this.uvXMin, this.uvYMax)
+                    .lightmap(j, k)
+                    .color(red, green, blue, alpha)
+                    .endVertex();
+
+            buffer.pos(pointOrigin.x + pointFour.x, pointOrigin.y + pointFour.y, pointOrigin.z + pointFour.z)
+                    .tex(this.uvXMin, this.uvYMin)
+                    .lightmap(j, k)
+                    .color(red, green, blue, alpha)
+                    .endVertex();
+        }
     }
 
     private int getBrightnessForRender(float partialTicks) {
@@ -238,9 +319,9 @@ public class RiftLibParticle {
     public void updateFlipbookUV() {
         if (!this.flipbook || this.maxFrame <= 0 || this.texWidth <= 0 || this.texHeight <= 0) return;
 
+        //compute frame
         float timePercentage = this.age / (float) this.lifetime;
         float ageSeconds = this.age / 20.0f;
-
         float frame = this.flipbookStretchToLifetime && this.lifetime > 0 ? timePercentage * this.maxFrame : ageSeconds * this.fps;
 
         //wrap around

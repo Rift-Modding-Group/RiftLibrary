@@ -34,6 +34,7 @@ public class RiftLibParticleEmitter {
     private final World world;
     private final int emitterId;
     private final ResourceLocation textureLocation;
+    private final ParticleMaterial material;
     private final MolangParser molangParser;
     private final Random random = new Random();
     private final double x, y, z;
@@ -64,6 +65,7 @@ public class RiftLibParticleEmitter {
 
     //particle appearance stuff
     public IValue[] particleSize;
+    public ParticleCameraMode cameraMode;
     public int particleTextureWidth, particleTextureHeight;
     public IValue[] particleUV;
     public IValue[] particleUVSize;
@@ -88,6 +90,7 @@ public class RiftLibParticleEmitter {
 
     public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, double x, double y, double z) {
         this.textureLocation = particleBuilder.texture;
+        this.material = particleBuilder.material;
         this.molangParser = particleBuilder.molangParser;
         this.emitterId = ClientProxy.EMITTER_ID++;
         this.world = world;
@@ -100,7 +103,6 @@ public class RiftLibParticleEmitter {
         this.initEmitterRandoms();
 
         //apply components from components in the builder
-        System.out.println(particleBuilder.identifier);
         for (RiftLibParticleComponent component : particleBuilder.particleComponents) {
             component.applyComponent(this);
         }
@@ -164,7 +166,7 @@ public class RiftLibParticleEmitter {
         Iterator<RiftLibParticle> it = this.particles.iterator();
         while (it.hasNext()) {
             RiftLibParticle particle = it.next();
-            particle.update(this);
+            particle.update();
             if (particle.isDead()) it.remove();
         }
     }
@@ -181,6 +183,9 @@ public class RiftLibParticleEmitter {
         toReturn.prevY = toReturn.y;
         toReturn.prevZ = toReturn.z;
 
+        //set particle camera mode
+        toReturn.cameraMode = this.cameraMode;
+
         //set particle velocity
         double[] velocityFromShape = this.particleVelocityFromShape(new double[]{toReturn.x, toReturn.y, toReturn.z});
         double[] velocity = new double[]{
@@ -188,20 +193,19 @@ public class RiftLibParticleEmitter {
                 this.particleInitialSpeed[1].get(),
                 this.particleInitialSpeed[2].get()
         };
-        //divide all by 20 to turn them into blocks per tick from blocks per second
+        //divide all by 20 to turn them from blocks per second into blocks per tick
         toReturn.velX = (velocityFromShape[0] + velocity[0]) / 20D;
         toReturn.velY = (velocityFromShape[1] + velocity[1]) / 20D;
         toReturn.velZ = (velocityFromShape[2] + velocity[2]) / 20D;
 
         //set particle acceleration
-        //divide all by 400 to turn them into blocks per tick sq from blocks per second sq
+        //divide all by 400 to turn them from blocks per second sq into blocks per tick sq
         toReturn.accelX = this.particleLinearAcceleration[0].get() / 400D;
         toReturn.accelY = this.particleLinearAcceleration[1].get() / 400D;
         toReturn.accelZ = this.particleLinearAcceleration[2].get() / 400D;
 
         //set particle lifetime
-        float lifetimeSeconds = (float) this.particleMaxLifetime.get();
-        toReturn.lifetime = (int) (lifetimeSeconds * 20);
+        toReturn.lifetime = (int) (this.particleMaxLifetime.get() * 20);
 
         //set particle scale
         toReturn.size = this.particleSize;
@@ -264,10 +268,8 @@ public class RiftLibParticleEmitter {
         //bind particle texture directly
         mc.getTextureManager().bindTexture(this.textureLocation);
 
-        GlStateManager.enableBlend();
-        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        GlStateManager.disableCull();
-
+        //render particle, start by using info from material to change how it renders
+        this.beginMaterialDraw();
         Tessellator tess = Tessellator.getInstance();
         BufferBuilder buffer = tess.getBuffer();
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_LMAP_COLOR);
@@ -278,9 +280,7 @@ public class RiftLibParticleEmitter {
         }
 
         tess.draw();
-
-        GlStateManager.enableCull();
-        GlStateManager.disableBlend();
+        this.finishMaterialDraw();
     }
 
     //this creates a position based on the emitter shape and provided offset
@@ -350,9 +350,58 @@ public class RiftLibParticleEmitter {
                     customEmitterShape.customParticleDirection[1].get(),
                     customEmitterShape.customParticleDirection[2].get()
             };
-
         }
         else return new double[]{0, 0, 0};
+    }
+
+    private void beginMaterialDraw() {
+        if (this.material == ParticleMaterial.ALPHA) {
+            GlStateManager.enableBlend();
+            GlStateManager.enableAlpha();
+            GlStateManager.blendFunc(
+                    GlStateManager.SourceFactor.SRC_ALPHA,
+                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
+            );
+            GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
+            GlStateManager.depthMask(true);
+        }
+        else if (this.material == ParticleMaterial.ADD) {
+            GlStateManager.enableBlend();
+            GlStateManager.disableAlpha();
+            // Additive blending: gl_FragColor.rgb += src.rgb * src.a
+            GlStateManager.blendFunc(
+                    GlStateManager.SourceFactor.SRC_ALPHA,
+                    GlStateManager.DestFactor.ONE
+            );
+            // Usually you don’t want additive particles to write to depth
+            GlStateManager.depthMask(false);
+        }
+        else if (this.material == ParticleMaterial.BLEND) {
+            GlStateManager.enableBlend();
+            GlStateManager.enableAlpha();
+            // Plain “normal” blend, no hard discard
+            GlStateManager.blendFunc(
+                    GlStateManager.SourceFactor.SRC_ALPHA,
+                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
+            );
+            GlStateManager.alphaFunc(GL11.GL_GREATER, 0.003921569F);
+            GlStateManager.depthMask(true);
+        }
+    }
+
+    private void finishMaterialDraw() {
+        if (this.material == ParticleMaterial.ALPHA) {
+            GlStateManager.disableAlpha();
+            GlStateManager.disableBlend();
+        }
+        else if (this.material == ParticleMaterial.ADD) {
+            GlStateManager.depthMask(true);
+            GlStateManager.disableBlend();
+        }
+        else if (this.material == ParticleMaterial.BLEND) {
+            GlStateManager.disableAlpha();
+            GlStateManager.disableBlend();
+        }
     }
 
     public boolean isDead() {

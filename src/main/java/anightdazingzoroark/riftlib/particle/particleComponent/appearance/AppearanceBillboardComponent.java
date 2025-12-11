@@ -4,23 +4,25 @@ import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent
 import anightdazingzoroark.riftlib.molang.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.IValue;
+import anightdazingzoroark.riftlib.particle.ParticleCameraMode;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 
 import java.util.Map;
 
 public class AppearanceBillboardComponent extends RiftLibParticleComponent {
-    public IValue[] size;
-    public int textureWidth, textureHeight;
-    public IValue[] uv;
-    public IValue[] uvSize;
+    private IValue[] size;
+    private ParticleCameraMode cameraMode;
+    private int textureWidth, textureHeight;
+    private IValue[] uv;
+    private IValue[] uvSize;
     //these only matter if the particle is flipbook mode
-    public boolean particleFlipbook;
-    public IValue[] particleUVStepSize;
-    public float particleFPS;
-    public IValue particleMaxFrame;
-    public boolean particleFlipbookStretchToLifetime;
-    public boolean particleFlipbookLoop;
+    private boolean particleFlipbook;
+    private IValue[] particleUVStepSize;
+    private float particleFPS;
+    private IValue particleMaxFrame;
+    private boolean particleFlipbookStretchToLifetime;
+    private boolean particleFlipbookLoop;
 
     @Override
     public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
@@ -31,6 +33,11 @@ public class AppearanceBillboardComponent extends RiftLibParticleComponent {
         if (rawComponent.getValue().componentValues.containsKey("size")) {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("size");
             this.size = this.parseExpressionArray(parser, 2, componentValue);
+        }
+        //get camera mode
+        if (rawComponent.getValue().componentValues.containsKey("facing_camera_mode")) {
+            RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("facing_camera_mode");
+            this.cameraMode = ParticleCameraMode.getCameraModeFromString(componentValue.string);
         }
         //get UV information
         if (rawComponent.getValue().componentValues.containsKey("uv")) {
@@ -95,6 +102,7 @@ public class AppearanceBillboardComponent extends RiftLibParticleComponent {
     @Override
     public void applyComponent(RiftLibParticleEmitter emitter) {
         emitter.particleSize = this.size;
+        emitter.cameraMode = this.cameraMode;
         emitter.particleTextureWidth = this.textureWidth;
         emitter.particleTextureHeight = this.textureHeight;
         emitter.particleUV = this.uv;

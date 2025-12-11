@@ -356,52 +356,52 @@ public class RiftLibParticleEmitter {
 
     private void beginMaterialDraw() {
         if (this.material == ParticleMaterial.ALPHA) {
-            GlStateManager.enableBlend();
+            GlStateManager.disableBlend();
             GlStateManager.enableAlpha();
-            GlStateManager.blendFunc(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-            );
-            GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1F);
-            GlStateManager.depthMask(true);
+            GlStateManager.alphaFunc(GL11.GL_GREATER, 0.99f);
+            GlStateManager.disableCull();
         }
         else if (this.material == ParticleMaterial.ADD) {
             GlStateManager.enableBlend();
             GlStateManager.disableAlpha();
-            // Additive blending: gl_FragColor.rgb += src.rgb * src.a
             GlStateManager.blendFunc(
                     GlStateManager.SourceFactor.SRC_ALPHA,
                     GlStateManager.DestFactor.ONE
             );
-            // Usually you don’t want additive particles to write to depth
             GlStateManager.depthMask(false);
         }
         else if (this.material == ParticleMaterial.BLEND) {
             GlStateManager.enableBlend();
             GlStateManager.enableAlpha();
-            // Plain “normal” blend, no hard discard
             GlStateManager.blendFunc(
                     GlStateManager.SourceFactor.SRC_ALPHA,
                     GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
             );
-            GlStateManager.alphaFunc(GL11.GL_GREATER, 0.003921569F);
+            GlStateManager.alphaFunc(GL11.GL_GREATER, 0.003921569f);
+            GlStateManager.depthMask(true);
+        }
+        else if (this.material == ParticleMaterial.OPAQUE) {
+            GlStateManager.disableBlend();
+            GlStateManager.enableAlpha();
+            GlStateManager.alphaFunc(GL11.GL_ALWAYS, 0f);
+            GlStateManager.disableCull();
             GlStateManager.depthMask(true);
         }
     }
 
     private void finishMaterialDraw() {
-        if (this.material == ParticleMaterial.ALPHA) {
-            GlStateManager.disableAlpha();
-            GlStateManager.disableBlend();
-        }
-        else if (this.material == ParticleMaterial.ADD) {
-            GlStateManager.depthMask(true);
-            GlStateManager.disableBlend();
-        }
-        else if (this.material == ParticleMaterial.BLEND) {
-            GlStateManager.disableAlpha();
-            GlStateManager.disableBlend();
-        }
+        //reset default global state
+        GlStateManager.depthMask(true);
+        GlStateManager.enableAlpha();
+        GlStateManager.disableBlend();
+        GlStateManager.enableCull();
+
+        //restore default alpha test and blend func
+        GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1f);
+        GlStateManager.blendFunc(
+                GlStateManager.SourceFactor.SRC_ALPHA,
+                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
+        );
     }
 
     public boolean isDead() {

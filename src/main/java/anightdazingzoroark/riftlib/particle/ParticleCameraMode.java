@@ -1,6 +1,8 @@
 package anightdazingzoroark.riftlib.particle;
 
+import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.exceptions.InvalidValueException;
+import org.apache.logging.log4j.Level;
 
 public enum ParticleCameraMode {
     ROTATE_XYZ,
@@ -25,6 +27,14 @@ public enum ParticleCameraMode {
                 return LOOKAT_XYZ;
             case "lookat_y":
                 return LOOKAT_Y;
+            case "direction_x":
+            case "direction_y":
+            case "direction_z":
+            case "emitter_transform_xy":
+            case "emitter_transform_xz":
+            case "emitter_transform_yz":
+                RiftLib.LOGGER.log(Level.INFO, "Unsupported particle camera mode, defaulting to rotate_xyz");
+                return ROTATE_XYZ;
             default:
                 throw new InvalidValueException("Invalid particle camera mode");
         }

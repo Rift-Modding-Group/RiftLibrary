@@ -2,16 +2,20 @@ package anightdazingzoroark.riftlib.particle;
 
 import anightdazingzoroark.riftlib.ClientProxy;
 import anightdazingzoroark.riftlib.molang.MolangParser;
+import anightdazingzoroark.riftlib.molang.expressions.MolangAssignment;
+import anightdazingzoroark.riftlib.molang.expressions.MolangExpression;
 import anightdazingzoroark.riftlib.molang.math.Constant;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.molang.math.Variable;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.EmitterInstantComponent;
+import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.EmitterSteadyComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.RiftLibEmitterRateComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.EmitterShapeCustomComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.EmitterShapeSphereComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.RiftLibEmitterShapeComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.lifetime.emiter.EmitterLifetimeExpressionComponent;
+import anightdazingzoroark.riftlib.particle.particleComponent.lifetime.emiter.EmitterLifetimeLoopingComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.lifetime.emiter.RiftLibEmitterLifetimeComponent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -58,13 +62,13 @@ public class RiftLibParticleEmitter {
     private Variable varEmitterRandomThree;
     private Variable varEmitterRandomFour;
 
+    //additional molang operations and variables
+    private final List<Variable> additionalVariables = new ArrayList<>();
+    public List<MolangExpression> repeatingOperations = new ArrayList<>();
+
     //runtime data, are parsed molang variables
     private int age, lifetime;
     private float emitterRandomOne, emitterRandomTwo, emitterRandomThree, emitterRandomFour;
-
-    //this only matters if the EmitterRate is an instance of InstantEmitterRate
-    public IValue maxParticleCount;
-    private Integer defMaxParticleCount;
 
     //particle appearance stuff
     public IValue[] particleSize;
@@ -140,6 +144,16 @@ public class RiftLibParticleEmitter {
     public void update() {
         if (this.isDead) return;
 
+        //(debug) check variables
+        /*
+        for (Variable variable : this.additionalVariables) {
+            System.out.println(variable.getName()+": "+variable.get());
+        }
+         */
+        if (this.molangParser.variables.get("variable.test_one") != null) {
+            System.out.println("variable.test_one: "+this.molangParser.variables.get("variable.test_one").get());
+        }
+
         //dynamically set molang variables
         if (this.varEmitterAge != null) this.varEmitterAge.set(this.age / 20D);
         if (this.varEmitterLifetime != null) this.varEmitterLifetime.set(this.lifetime / 20D);
@@ -147,6 +161,21 @@ public class RiftLibParticleEmitter {
         if (this.varEmitterRandomTwo != null) this.varEmitterRandomTwo.set(this.emitterRandomTwo);
         if (this.varEmitterRandomThree != null) this.varEmitterRandomThree.set(this.emitterRandomThree);
         if (this.varEmitterRandomFour != null) this.varEmitterRandomFour.set(this.emitterRandomFour);
+
+        //apply repeating operations
+        for (MolangExpression expression : this.repeatingOperations) {
+            if (!(expression instanceof MolangAssignment)) continue;
+            MolangAssignment assignment = (MolangAssignment) expression;
+
+            //add new variables if they're defined here for some reason
+            this.createAdditionalVariableFromExpression(assignment);
+
+            //update existing variables
+            for (Variable variable : this.additionalVariables) {
+                if (!assignment.variable.getName().equals(variable.getName())) continue;
+                variable.set(assignment.get());
+            }
+        }
 
         //update emitter age
         this.age++;
@@ -157,15 +186,24 @@ public class RiftLibParticleEmitter {
         //create particles based on rate and ability to create them
         if (this.canCreateParticles()) {
             if (this.emitterRate instanceof EmitterInstantComponent) {
-                //get max particle count first
-                if (this.defMaxParticleCount != null) {
-                    if (this.particles.size() < this.defMaxParticleCount) {
-                        for (int i = 0; i < this.defMaxParticleCount; i++) {
-                            this.particles.add(this.createParticle());
-                        }
-                    }
+                EmitterInstantComponent emitterInstant = (EmitterInstantComponent) this.emitterRate;
+                double particleCount = emitterInstant.particleCount.get();
+                while (this.particles.size() < particleCount) {
+                    this.particles.add(this.createParticle());
                 }
-                else this.defMaxParticleCount = (int) this.maxParticleCount.get();
+            }
+            else if (this.emitterRate instanceof EmitterSteadyComponent) {
+                EmitterSteadyComponent emitterSteady = (EmitterSteadyComponent) this.emitterRate;
+                int maxParticleCount = (int) emitterSteady.maxParticleCount.get();
+                //turn particles per second into particles per tick
+                double particleRate = emitterSteady.spawnRate.get() / 20D;
+                int maxParticleCountCurrentTick = (int) (this.age * particleRate) % 20;
+
+                int particleCountCurrentTick = 0;
+                while (this.particles.size() < maxParticleCount && particleCountCurrentTick < maxParticleCountCurrentTick) {
+                    this.particles.add(this.createParticle());
+                    particleCountCurrentTick++;
+                }
             }
         }
 
@@ -176,6 +214,17 @@ public class RiftLibParticleEmitter {
             particle.update();
             if (particle.isDead()) it.remove();
         }
+    }
+
+    public void createAdditionalVariableFromExpression(MolangAssignment assignment) {
+        //check if variable exists in the additional variable list first
+        for (Variable variable : this.additionalVariables) {
+            if (assignment.variable.getName().equals(variable.getName())) return;
+        }
+
+        assignment.variable.set(assignment.get());
+        this.molangParser.register(assignment.variable);
+        this.additionalVariables.add(assignment.variable);
     }
 
     private RiftLibParticle createParticle() {
@@ -224,6 +273,7 @@ public class RiftLibParticleEmitter {
         toReturn.expirationExpression = this.particleExpiration;
 
         //set particle scale
+        System.out.println("size: ("+this.particleSize[0].get()+", "+this.particleSize[1].get()+")");
         toReturn.size = this.particleSize;
 
         //set particle colors
@@ -426,6 +476,19 @@ public class RiftLibParticleEmitter {
             EmitterLifetimeExpressionComponent lifetimeExpression = (EmitterLifetimeExpressionComponent) this.emitterLifetime;
             IValue canMakeParticles = lifetimeExpression.emitterActivationValue;
             return canMakeParticles.get() != 0;
+        }
+        else if (this.emitterLifetime instanceof EmitterLifetimeLoopingComponent) {
+            EmitterLifetimeLoopingComponent lifetimeLooping = (EmitterLifetimeLoopingComponent) this.emitterLifetime;
+            IValue activeTime = lifetimeLooping.emitterActiveTime;
+            double activeTimeValue = activeTime.get();
+            IValue sleepTime = lifetimeLooping.emitterSleepTime;
+            double sleepTimeValue = sleepTime.get();
+
+            double totalTimeValue = activeTimeValue + sleepTimeValue;
+            double sleepTimePercent = activeTimeValue / totalTimeValue;
+            double currentTimePercent = (this.age % totalTimeValue) / totalTimeValue;
+
+            return currentTimePercent <= sleepTimePercent;
         }
         return false;
     }

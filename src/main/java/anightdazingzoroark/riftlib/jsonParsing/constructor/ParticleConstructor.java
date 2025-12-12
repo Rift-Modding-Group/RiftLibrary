@@ -1,7 +1,5 @@
 package anightdazingzoroark.riftlib.jsonParsing.constructor;
 
-import anightdazingzoroark.riftlib.core.ConstantValue;
-import anightdazingzoroark.riftlib.exceptions.InvalidValueException;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticle;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.molang.MolangException;
@@ -10,6 +8,7 @@ import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.ParticleMaterial;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponentRegistry;
+import anightdazingzoroark.riftlib.particle.particleComponent.emitterInitialState.EmitterInitializationComponent;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.Map;
@@ -39,6 +38,16 @@ public class ParticleConstructor {
             if (component != null) {
                 component.parseRawComponent(rawComponent, parser);
                 toReturn.particleComponents.add(component);
+            }
+        }
+
+        //change components so that emitter initialization component always goes first
+        for (int i = 0; i < toReturn.particleComponents.size(); i++) {
+            RiftLibParticleComponent component = toReturn.particleComponents.get(i);
+            if (component instanceof EmitterInitializationComponent) {
+                RiftLibParticleComponent componentToSwap = toReturn.particleComponents.get(0);
+                toReturn.particleComponents.set(0, component);
+                toReturn.particleComponents.set(i, componentToSwap);
             }
         }
 

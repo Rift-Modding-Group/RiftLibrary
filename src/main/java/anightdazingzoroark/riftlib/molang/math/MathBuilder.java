@@ -50,36 +50,33 @@ public class MathBuilder {
         this.functions.put("random_integer", RandomInteger.class);
     }
 
-    public void register(anightdazingzoroark.riftlib.molang.math.Variable variable) {
+    public void register(Variable variable) {
         this.variables.put(variable.getName(), variable);
     }
 
-    public anightdazingzoroark.riftlib.molang.math.IValue parse(String expression) throws Exception {
+    public IValue parse(String expression) throws Exception {
         return this.parseSymbols(this.breakdownChars(this.breakdown(expression)));
     }
 
     public String[] breakdown(String expression) throws Exception {
         if (!expression.matches("^[\\w\\d\\s_+-/*%^&|<>=!?:.,()]+$")) {
             throw new Exception("Given expression '" + expression + "' contains illegal characters!");
-        } else {
+        }
+        else {
             expression = expression.replaceAll("\\s+", "");
             String[] chars = expression.split("(?!^)");
             int left = 0;
             int right = 0;
 
             for(String s : chars) {
-                if (s.equals("(")) {
-                    ++left;
-                } else if (s.equals(")")) {
-                    ++right;
-                }
+                if (s.equals("(")) ++left;
+                else if (s.equals(")")) ++right;
             }
 
             if (left != right) {
                 throw new Exception("Given expression '" + expression + "' has more uneven amount of parenthesis, there are " + left + " open and " + right + " closed!");
-            } else {
-                return chars;
             }
+            else return chars;
         }
     }
 
@@ -152,8 +149,8 @@ public class MathBuilder {
         return symbols;
     }
 
-    public anightdazingzoroark.riftlib.molang.math.IValue parseSymbols(List<Object> symbols) throws Exception {
-        anightdazingzoroark.riftlib.molang.math.IValue ternary = this.tryTernary(symbols);
+    public IValue parseSymbols(List<Object> symbols) throws Exception {
+        IValue ternary = this.tryTernary(symbols);
         if (ternary != null) {
             return ternary;
         } else {
@@ -178,21 +175,21 @@ public class MathBuilder {
                         Operation left = this.operationForOperator((String)symbols.get(leftOp));
                         Operation right = this.operationForOperator((String)symbols.get(op));
                         if (right.value > left.value) {
-                            anightdazingzoroark.riftlib.molang.math.IValue leftValue = this.parseSymbols(symbols.subList(0, leftOp));
-                            anightdazingzoroark.riftlib.molang.math.IValue rightValue = this.parseSymbols(symbols.subList(leftOp + 1, size));
+                            IValue leftValue = this.parseSymbols(symbols.subList(0, leftOp));
+                            IValue rightValue = this.parseSymbols(symbols.subList(leftOp + 1, size));
                             return new Operator(left, leftValue, rightValue);
                         }
 
                         if (left.value > right.value) {
                             Operation initial = this.operationForOperator((String)symbols.get(lastOp));
                             if (initial.value < left.value) {
-                                anightdazingzoroark.riftlib.molang.math.IValue leftValue = this.parseSymbols(symbols.subList(0, lastOp));
-                                anightdazingzoroark.riftlib.molang.math.IValue rightValue = this.parseSymbols(symbols.subList(lastOp + 1, size));
+                                IValue leftValue = this.parseSymbols(symbols.subList(0, lastOp));
+                                IValue rightValue = this.parseSymbols(symbols.subList(lastOp + 1, size));
                                 return new Operator(initial, leftValue, rightValue);
                             }
 
-                            anightdazingzoroark.riftlib.molang.math.IValue leftValue = this.parseSymbols(symbols.subList(0, op));
-                            anightdazingzoroark.riftlib.molang.math.IValue rightValue = this.parseSymbols(symbols.subList(op + 1, size));
+                            IValue leftValue = this.parseSymbols(symbols.subList(0, op));
+                            IValue rightValue = this.parseSymbols(symbols.subList(op + 1, size));
                             return new Operator(right, leftValue, rightValue);
                         }
                     }
@@ -236,7 +233,7 @@ public class MathBuilder {
         return -1;
     }
 
-    protected anightdazingzoroark.riftlib.molang.math.IValue tryTernary(List<Object> symbols) throws Exception {
+    protected IValue tryTernary(List<Object> symbols) throws Exception {
         int question = -1;
         int questions = 0;
         int colon = -1;
@@ -269,7 +266,7 @@ public class MathBuilder {
         }
     }
 
-    protected anightdazingzoroark.riftlib.molang.math.IValue createFunction(String first, List<Object> args) throws Exception {
+    protected IValue createFunction(String first, List<Object> args) throws Exception {
         if (first.equals("!")) {
             return new Negate(this.parseSymbols(args));
         } else if (first.startsWith("!") && first.length() > 1) {
@@ -281,7 +278,7 @@ public class MathBuilder {
         } else if (!this.functions.containsKey(first)) {
             throw new Exception("Function '" + first + "' couldn't be found!");
         } else {
-            List<anightdazingzoroark.riftlib.molang.math.IValue> values = new ArrayList();
+            List<IValue> values = new ArrayList();
             List<Object> buffer = new ArrayList();
 
             for(Object o : args) {
@@ -298,13 +295,13 @@ public class MathBuilder {
             }
 
             Class<? extends Function> function = (Class)this.functions.get(first);
-            Constructor<? extends Function> ctor = function.getConstructor(anightdazingzoroark.riftlib.molang.math.IValue[].class, String.class);
-            Function func = (Function)ctor.newInstance(values.toArray(new anightdazingzoroark.riftlib.molang.math.IValue[values.size()]), first);
+            Constructor<? extends Function> ctor = function.getConstructor(IValue[].class, String.class);
+            Function func = (Function)ctor.newInstance(values.toArray(new IValue[values.size()]), first);
             return func;
         }
     }
 
-    public anightdazingzoroark.riftlib.molang.math.IValue valueFromObject(Object object) throws Exception {
+    public IValue valueFromObject(Object object) throws Exception {
         if (object instanceof String) {
             String symbol = (String)object;
             if (symbol.startsWith("!")) {

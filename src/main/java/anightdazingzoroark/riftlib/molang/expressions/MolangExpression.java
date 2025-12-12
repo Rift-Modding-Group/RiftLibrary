@@ -10,30 +10,28 @@ import com.google.gson.JsonPrimitive;
 public abstract class MolangExpression implements IValue {
     public MolangParser context;
 
-    public static boolean isZero(anightdazingzoroark.riftlib.molang.expressions.MolangExpression expression) {
-        return isConstant(expression, (double)0.0F);
+    public static boolean isZero(MolangExpression expression) {
+        return isConstant(expression, 0f);
     }
 
-    public static boolean isOne(anightdazingzoroark.riftlib.molang.expressions.MolangExpression expression) {
-        return isConstant(expression, (double)1.0F);
+    public static boolean isOne(MolangExpression expression) {
+        return isConstant(expression, 1f);
     }
 
-    public static boolean isConstant(anightdazingzoroark.riftlib.molang.expressions.MolangExpression expression, double x) {
-        if (!(expression instanceof MolangValue)) {
-            return false;
-        } else {
+    public static boolean isConstant(MolangExpression expression, double x) {
+        if (expression instanceof MolangValue) {
             MolangValue value = (MolangValue)expression;
             return value.value instanceof Constant && Operation.equals(value.value.get(), x);
         }
+        return false;
     }
 
-    public static boolean isExpressionConstant(anightdazingzoroark.riftlib.molang.expressions.MolangExpression expression) {
+    public static boolean isExpressionConstant(MolangExpression expression) {
         if (expression instanceof MolangValue) {
             MolangValue value = (MolangValue)expression;
             return value.value instanceof Constant;
-        } else {
-            return false;
         }
+        return false;
     }
 
     public MolangExpression(MolangParser context) {

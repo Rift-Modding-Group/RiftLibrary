@@ -6,7 +6,7 @@ import anightdazingzoroark.riftlib.molang.MolangParser;
 import java.util.*;
 
 public class MolangMultiStatement extends MolangExpression {
-    public List<anightdazingzoroark.riftlib.molang.expressions.MolangExpression> expressions = new ArrayList();
+    public List<MolangExpression> expressions = new ArrayList();
     public Map<String, Variable> locals = new HashMap();
 
     public MolangMultiStatement(MolangParser context) {
@@ -14,9 +14,9 @@ public class MolangMultiStatement extends MolangExpression {
     }
 
     public double get() {
-        double value = (double)0.0F;
+        double value = 0;
 
-        for(anightdazingzoroark.riftlib.molang.expressions.MolangExpression expression : this.expressions) {
+        for (MolangExpression expression : this.expressions) {
             value = expression.get();
         }
 
@@ -26,7 +26,7 @@ public class MolangMultiStatement extends MolangExpression {
     public String toString() {
         StringJoiner builder = new StringJoiner("; ");
 
-        for(MolangExpression expression : this.expressions) {
+        for (MolangExpression expression : this.expressions) {
             builder.add(expression.toString());
             if (expression instanceof MolangValue && ((MolangValue)expression).returns) {
                 break;

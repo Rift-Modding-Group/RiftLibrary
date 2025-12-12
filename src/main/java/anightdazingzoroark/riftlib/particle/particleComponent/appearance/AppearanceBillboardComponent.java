@@ -26,8 +26,6 @@ public class AppearanceBillboardComponent extends RiftLibParticleComponent {
 
     @Override
     public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
-        System.out.println("parse");
-
         //specifies the x/y size of the billboard
         //evaluated every frame
         if (rawComponent.getValue().componentValues.containsKey("size")) {
@@ -55,7 +53,6 @@ public class AppearanceBillboardComponent extends RiftLibParticleComponent {
                 //for flipbook particles
                 RawParticleComponent.ComponentValue flipbookVal = uvComponents.get("flipbook");
                 if (flipbookVal != null && flipbookVal.object != null) {
-                    System.out.println("has flipbook");
                     this.particleFlipbook = true;
 
                     Map<String, RawParticleComponent.ComponentValue> flip = flipbookVal.object;
@@ -84,8 +81,6 @@ public class AppearanceBillboardComponent extends RiftLibParticleComponent {
                 }
                 //for static particles
                 else {
-                    System.out.println("has no flipbook");
-                    // NON-flipbook mode: UV / UV_SIZE at top level
                     this.particleFlipbook = false;
 
                     if (uvComponents.containsKey("uv")) {

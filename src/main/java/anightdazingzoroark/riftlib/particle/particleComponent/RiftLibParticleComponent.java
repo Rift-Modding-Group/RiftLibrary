@@ -19,7 +19,7 @@ public abstract class RiftLibParticleComponent {
     protected IValue parseExpression(MolangParser parser, RawParticleComponent.ComponentValue componentValue) throws MolangException {
         //component value was a string
         if (componentValue.valueType == RawParticleComponent.ComponentValueType.STRING) return parser.parseExpression(componentValue.string);
-            //component value was a double
+        //component value was a double
         else return ConstantValue.fromDouble(componentValue.number);
     }
 
@@ -37,9 +37,9 @@ public abstract class RiftLibParticleComponent {
                 if (floatOnly) {
                     //this assumes that the value was a string, in this case return an exception
                     if (value.string != null) throw new InvalidValueException("Expected float but got string!");
-                    else toReturn[i] = parseExpression(parser, value);
+                    else toReturn[i] = this.parseExpression(parser, value);
                 }
-                else toReturn[i] = parseExpression(parser, value);
+                else toReturn[i] = this.parseExpression(parser, value);
             }
             return toReturn;
         }

@@ -10,8 +10,6 @@ import anightdazingzoroark.riftlib.molang.expressions.MolangMultiStatement;
 import anightdazingzoroark.riftlib.molang.expressions.MolangValue;
 import anightdazingzoroark.riftlib.molang.functions.CosDegrees;
 import anightdazingzoroark.riftlib.molang.functions.SinDegrees;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,10 +64,8 @@ public class MolangParser extends MathBuilder {
     }
 
     protected Variable getVariable(String name) {
-        Variable variable = this.currentStatement == null ? null : (Variable)this.currentStatement.locals.get(name);
-        if (variable == null) {
-            variable = super.getVariable(name);
-        }
+        Variable variable = this.currentStatement == null ? null : this.currentStatement.locals.get(name);
+        if (variable == null) variable = super.getVariable(name);
 
         if (variable == null) {
             variable = new Variable(name, (double)0.0F);
@@ -79,18 +75,17 @@ public class MolangParser extends MathBuilder {
         return variable;
     }
 
-    public MolangExpression parseExpression(String expression) throws anightdazingzoroark.riftlib.molang.MolangException {
-        List<String> lines = new ArrayList();
+    public MolangExpression parseExpression(String expression) throws MolangException {
+        List<String> lines = new ArrayList<>();
 
-        for(String split : expression.toLowerCase().trim().split(";")) {
-            if (!split.trim().isEmpty()) {
-                lines.add(split);
-            }
+        for (String split : expression.toLowerCase().trim().split(";")) {
+            if (!split.trim().isEmpty()) lines.add(split);
         }
 
-        if (lines.size() == 0) {
-            throw new anightdazingzoroark.riftlib.molang.MolangException("Molang expression cannot be blank!");
-        } else {
+        if (lines.isEmpty()) {
+            throw new MolangException("Molang expression cannot be blank!");
+        }
+        else {
             MolangMultiStatement result = new MolangMultiStatement(this);
             this.currentStatement = result;
 
@@ -98,7 +93,8 @@ public class MolangParser extends MathBuilder {
                 for(String line : lines) {
                     result.expressions.add(this.parseOneLine(line));
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 this.currentStatement = null;
                 throw e;
             }
@@ -108,44 +104,44 @@ public class MolangParser extends MathBuilder {
         }
     }
 
-    protected MolangExpression parseOneLine(String expression) throws anightdazingzoroark.riftlib.molang.MolangException {
+    protected MolangExpression parseOneLine(String expression) throws MolangException {
         expression = expression.trim();
         if (expression.startsWith("return ")) {
             try {
                 return (new MolangValue(this, this.parse(expression.substring("return ".length())))).addReturn();
             }
             catch (Exception var5) {
-                throw new anightdazingzoroark.riftlib.molang.MolangException("Couldn't parse return '" + expression + "' expression!");
+                throw new MolangException("Couldn't parse return '" + expression + "' expression!");
             }
         }
         else {
             try {
                 List<Object> symbols = this.breakdownChars(this.breakdown(expression));
                 if (symbols.size() >= 3 && symbols.get(0) instanceof String && this.isVariable(symbols.get(0)) && symbols.get(1).equals("=")) {
-                    String name = (String)symbols.get(0);
+                    String name = (String) symbols.get(0);
                     symbols = symbols.subList(2, symbols.size());
                     Variable variable = null;
                     if (!this.variables.containsKey(name) && !this.currentStatement.locals.containsKey(name)) {
-                        variable = new Variable(name, (double)0.0F);
+                        variable = new Variable(name, 0f);
                         this.currentStatement.locals.put(name, variable);
-                    } else {
-                        variable = this.getVariable(name);
                     }
+                    else variable = this.getVariable(name);
 
                     return new MolangAssignment(this, variable, this.parseSymbolsMolang(symbols));
-                } else {
-                    return new MolangValue(this, this.parseSymbolsMolang(symbols));
                 }
-            } catch (Exception var6) {
-                throw new anightdazingzoroark.riftlib.molang.MolangException("Couldn't parse '" + expression + "' expression!");
+                else return new MolangValue(this, this.parseSymbolsMolang(symbols));
+            }
+            catch (Exception var6) {
+                throw new MolangException("Couldn't parse '" + expression + "' expression!");
             }
         }
     }
 
-    private IValue parseSymbolsMolang(List<Object> symbols) throws anightdazingzoroark.riftlib.molang.MolangException {
+    private IValue parseSymbolsMolang(List<Object> symbols) throws MolangException {
         try {
             return this.parseSymbols(symbols);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
             throw new MolangException("Couldn't parse an expression!");
         }

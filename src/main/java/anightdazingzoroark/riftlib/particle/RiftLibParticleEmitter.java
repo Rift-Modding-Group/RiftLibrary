@@ -144,16 +144,6 @@ public class RiftLibParticleEmitter {
     public void update() {
         if (this.isDead) return;
 
-        //(debug) check variables
-        /*
-        for (Variable variable : this.additionalVariables) {
-            System.out.println(variable.getName()+": "+variable.get());
-        }
-         */
-        if (this.molangParser.variables.get("variable.test_one") != null) {
-            System.out.println("variable.test_one: "+this.molangParser.variables.get("variable.test_one").get());
-        }
-
         //dynamically set molang variables
         if (this.varEmitterAge != null) this.varEmitterAge.set(this.age / 20D);
         if (this.varEmitterLifetime != null) this.varEmitterLifetime.set(this.lifetime / 20D);
@@ -174,6 +164,7 @@ public class RiftLibParticleEmitter {
             for (Variable variable : this.additionalVariables) {
                 if (!assignment.variable.getName().equals(variable.getName())) continue;
                 variable.set(assignment.get());
+                this.molangParser.variables.put(variable.getName(), variable);
             }
         }
 
@@ -230,6 +221,15 @@ public class RiftLibParticleEmitter {
     private RiftLibParticle createParticle() {
         RiftLibParticle toReturn = new RiftLibParticle(this.world, this.molangParser);
 
+        //give molang info to the particle
+        toReturn.varEmitterAge = this.varEmitterAge;
+        toReturn.varEmitterLifetime = this.varEmitterLifetime;
+        toReturn.varEmitterRandomOne = this.varEmitterRandomOne;
+        toReturn.varEmitterRandomTwo = this.varEmitterRandomTwo;
+        toReturn.varEmitterRandomThree = this.varEmitterRandomThree;
+        toReturn.varEmitterRandomFour = this.varEmitterRandomFour;
+        toReturn.additionalVariables = this.additionalVariables;
+
         //set particle init position
         double[] offset = this.findParticleOffset();
         toReturn.x = this.x + offset[0];
@@ -260,20 +260,11 @@ public class RiftLibParticleEmitter {
         toReturn.accelY = this.particleLinearAcceleration[1].get() / 400D;
         toReturn.accelZ = this.particleLinearAcceleration[2].get() / 400D;
 
-        //give molang variables to the particle
-        toReturn.varEmitterAge = this.varEmitterAge;
-        toReturn.varEmitterLifetime = this.varEmitterLifetime;
-        toReturn.varEmitterRandomOne = this.varEmitterRandomOne;
-        toReturn.varEmitterRandomTwo = this.varEmitterRandomTwo;
-        toReturn.varEmitterRandomThree = this.varEmitterRandomThree;
-        toReturn.varEmitterRandomFour = this.varEmitterRandomFour;
-
         //set particle lifetime info
         toReturn.lifetimeExpression = this.particleMaxLifetime;
         toReturn.expirationExpression = this.particleExpiration;
 
         //set particle scale
-        System.out.println("size: ("+this.particleSize[0].get()+", "+this.particleSize[1].get()+")");
         toReturn.size = this.particleSize;
 
         //set particle colors

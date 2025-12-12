@@ -120,12 +120,11 @@ public class MolangParser extends MathBuilder {
                 if (symbols.size() >= 3 && symbols.get(0) instanceof String && this.isVariable(symbols.get(0)) && symbols.get(1).equals("=")) {
                     String name = (String) symbols.get(0);
                     symbols = symbols.subList(2, symbols.size());
-                    Variable variable = null;
-                    if (!this.variables.containsKey(name) && !this.currentStatement.locals.containsKey(name)) {
+                    Variable variable = this.getVariable(name);
+                    if (variable == null) {
                         variable = new Variable(name, 0f);
-                        this.currentStatement.locals.put(name, variable);
+                        this.register(variable);
                     }
-                    else variable = this.getVariable(name);
 
                     return new MolangAssignment(this, variable, this.parseSymbolsMolang(symbols));
                 }

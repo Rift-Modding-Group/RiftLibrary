@@ -9,10 +9,6 @@
       }
     },
     "components": {
-      "minecraft:emitter_initialization": {
-        "creation_expression": "variable.test_one = 1; variable.test_two = 2;",
-        "per_update_expression": "variable.test_one = variable.test_one + 0.125; variable.test_two = variable.test_two + 0.25;"
-      },
       "minecraft:emitter_rate_instant": {
         "num_particles": 1
       },

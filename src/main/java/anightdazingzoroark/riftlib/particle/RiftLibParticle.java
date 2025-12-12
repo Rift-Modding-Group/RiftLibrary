@@ -11,6 +11,9 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class RiftLibParticle {
     private final World world;
     private final MolangParser molangParser;
@@ -55,6 +58,9 @@ public class RiftLibParticle {
     //IValue lifetime info
     public IValue lifetimeExpression;
     public IValue expirationExpression;
+
+    //additional molang variables
+    public List<Variable> additionalVariables = new ArrayList<>();
 
     //runtime data, are parsed molang variables
     public int lifetime, age; //REMEMBER THAT THESE ARE IN TICKS

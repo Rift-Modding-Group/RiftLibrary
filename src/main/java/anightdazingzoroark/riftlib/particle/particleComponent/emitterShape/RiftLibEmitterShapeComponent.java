@@ -7,8 +7,6 @@ import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleCom
 
 public abstract class RiftLibEmitterShapeComponent extends RiftLibParticleComponent {
     public IValue[] offset = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
-    public String particleDirection;
-    public IValue[] customParticleDirection = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
 
     public void applyComponent(RiftLibParticleEmitter emitter) {
         emitter.emitterShape = this;

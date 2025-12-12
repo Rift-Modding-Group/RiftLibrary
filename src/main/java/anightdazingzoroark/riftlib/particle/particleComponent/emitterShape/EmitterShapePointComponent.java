@@ -7,8 +7,8 @@ import anightdazingzoroark.riftlib.molang.math.IValue;
 
 import java.util.Map;
 
-public class EmitterShapeCustomComponent extends RiftLibEmitterShapeComponent {
-    public IValue[] customParticleDirection = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
+public class EmitterShapePointComponent extends RiftLibEmitterShapeComponent {
+    public IValue[] particleDirection = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
 
     @Override
     public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
@@ -18,10 +18,7 @@ public class EmitterShapeCustomComponent extends RiftLibEmitterShapeComponent {
         }
         if (rawComponent.getValue().componentValues.containsKey("direction")) {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("direction");
-            //direction as string
-            if (componentValue.valueType == RawParticleComponent.ComponentValueType.ARRAY) {
-                this.customParticleDirection = parseExpressionArray(parser, 3, componentValue);
-            }
+            this.particleDirection = parseExpressionArray(parser, 3, componentValue);
         }
     }
 }

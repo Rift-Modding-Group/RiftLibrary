@@ -7,6 +7,7 @@ import anightdazingzoroark.riftlib.particle.particleComponent.emitterInitialStat
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.EmitterInstantComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.EmitterSteadyComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.EmitterShapeCustomComponent;
+import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.EmitterShapePointComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.EmitterShapeSphereComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.lifetime.emiter.EmitterLifetimeLoopingComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleInitialState.ParticleInitialSpeedComponent;
@@ -30,6 +31,7 @@ public class RiftLibParticleComponentRegistry {
         componentMap.put("minecraft:emitter_rate_instant", EmitterInstantComponent.class);
         componentMap.put("minecraft:emitter_rate_steady", EmitterSteadyComponent.class);
         componentMap.put("minecraft:emitter_shape_sphere", EmitterShapeSphereComponent.class);
+        componentMap.put("minecraft:emitter_shape_point", EmitterShapePointComponent.class);
         componentMap.put("minecraft:emitter_shape_custom", EmitterShapeCustomComponent.class);
         componentMap.put("minecraft:emitter_initialization", EmitterInitializationComponent.class);
         componentMap.put("minecraft:particle_initial_speed", ParticleInitialSpeedComponent.class);

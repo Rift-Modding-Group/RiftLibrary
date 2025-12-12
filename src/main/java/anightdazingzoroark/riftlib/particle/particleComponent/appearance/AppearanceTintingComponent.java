@@ -55,11 +55,12 @@ public class AppearanceTintingComponent extends RiftLibParticleComponent {
                 if (componentValue.array.size() > 4) throw new InvalidValueException("Size exceeded for color array");
 
                 this.red = this.parseExpression(parser, componentValue.array.get(0));
-                this.blue = this.parseExpression(parser, componentValue.array.get(1));
-                this.green = this.parseExpression(parser, componentValue.array.get(2));
+                this.green = this.parseExpression(parser, componentValue.array.get(1));
+                this.blue = this.parseExpression(parser, componentValue.array.get(2));
                 if (componentValue.array.size() == 4) this.alpha = this.parseExpression(parser, componentValue.array.get(3));
             }
-            //interpolation based color... aaaaaaa
+            //interpolation based color
+            //todo in the near future
             else if (componentValue.object != null) {}
         }
     }

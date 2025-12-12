@@ -11,6 +11,7 @@ import java.util.Map;
 
 public class ParticleMotionDynamicComponent extends RiftLibParticleComponent {
     private IValue[] particleLinearAcceleration = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
+    private IValue linearDragCoefficient = MolangParser.ZERO; //TODO: implement this somehow
 
     @Override
     public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {

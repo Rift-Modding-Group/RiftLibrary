@@ -12,6 +12,7 @@ import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.Emitte
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.EmitterSteadyComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.RiftLibEmitterRateComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.EmitterShapeCustomComponent;
+import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.EmitterShapePointComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.EmitterShapeSphereComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.RiftLibEmitterShapeComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.lifetime.emiter.EmitterLifetimeExpressionComponent;
@@ -358,6 +359,14 @@ public class RiftLibParticleEmitter {
                     offsetZ + sphereEmitterShape.offset[2].get()
             };
         }
+        else if (this.emitterShape instanceof EmitterShapePointComponent) {
+            EmitterShapePointComponent customEmitterShape = (EmitterShapePointComponent) this.emitterShape;
+            return new double[]{
+                    customEmitterShape.offset[0].get(),
+                    customEmitterShape.offset[1].get(),
+                    customEmitterShape.offset[2].get()
+            };
+        }
         else if (this.emitterShape instanceof EmitterShapeCustomComponent) {
             EmitterShapeCustomComponent customEmitterShape = (EmitterShapeCustomComponent) this.emitterShape;
             return new double[]{
@@ -400,6 +409,14 @@ public class RiftLibParticleEmitter {
                 return new double[]{xDirectionNormalized, yDirectionNormalized, zDirectionNormalized};
             }
         }
+        else if (this.emitterShape instanceof EmitterShapePointComponent) {
+            EmitterShapePointComponent customEmitterShape = (EmitterShapePointComponent) this.emitterShape;
+            return new double[]{
+                    customEmitterShape.particleDirection[0].get(),
+                    customEmitterShape.particleDirection[1].get(),
+                    customEmitterShape.particleDirection[2].get()
+            };
+        }
         else if (this.emitterShape instanceof EmitterShapeCustomComponent) {
             EmitterShapeCustomComponent customEmitterShape = (EmitterShapeCustomComponent) this.emitterShape;
             return new double[]{
@@ -408,7 +425,7 @@ public class RiftLibParticleEmitter {
                     customEmitterShape.customParticleDirection[2].get()
             };
         }
-        else return new double[]{0, 0, 0};
+        return new double[]{0, 0, 0};
     }
 
     private void beginMaterialDraw() {

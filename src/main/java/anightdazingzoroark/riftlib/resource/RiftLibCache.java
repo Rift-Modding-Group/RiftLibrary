@@ -35,6 +35,7 @@ import anightdazingzoroark.riftlib.molang.MolangRegistrar;
 public class RiftLibCache implements IResourceManagerReloadListener {
 	private static RiftLibCache INSTANCE;
 
+    //todo: each instance of IAnimatable is to have their own parser instead of sharing this one parser
 	public final MolangParser parser = new MolangParser();
 
 	public HashMap<ResourceLocation, AnimationFile> getAnimations() {
@@ -130,7 +131,7 @@ public class RiftLibCache implements IResourceManagerReloadListener {
             for (ResourceLocation location : this.getLocations(pack, "particles", filename -> filename.endsWith(".json"))) {
                 try {
                     //temporarily like this coz it a print only void method
-                    tempParticleBuilders.put(location, RiftLibLoader.loadParticle(this.parser, resourceManager, location));
+                    tempParticleBuilders.put(location, RiftLibLoader.loadParticle(resourceManager, location));
                 }
                 catch (Exception e) {
                     e.printStackTrace();

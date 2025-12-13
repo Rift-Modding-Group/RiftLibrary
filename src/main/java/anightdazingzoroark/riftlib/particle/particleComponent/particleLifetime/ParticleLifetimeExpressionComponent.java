@@ -1,20 +1,20 @@
-package anightdazingzoroark.riftlib.particle.particleComponent.lifetime.particle;
+package anightdazingzoroark.riftlib.particle.particleComponent.particleLifetime;
 
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.molang.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.Constant;
 import anightdazingzoroark.riftlib.molang.math.IValue;
-import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
+import anightdazingzoroark.riftlib.particle.RiftLibParticle;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 
 import java.util.Map;
 
 public class ParticleLifetimeExpressionComponent extends RiftLibParticleComponent {
-    //condition in which a particle expires
-    public IValue particleExpirationValue = MolangParser.ZERO;
     //time until particle expires
-    public IValue particleLifetimeValue = new Constant(Integer.MAX_VALUE);
+    public IValue expirationValue = MolangParser.ZERO;
+    //condition in which a particle expires
+    public IValue lifetimeValue = new Constant(Integer.MAX_VALUE);
 
     @Override
     public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
@@ -23,18 +23,18 @@ public class ParticleLifetimeExpressionComponent extends RiftLibParticleComponen
         //evaluated every frame
         if (rawComponent.getValue().componentValues.containsKey("expiration_expression")) {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("expiration_expression");
-            this.particleExpirationValue = parseExpression(parser, componentValue);
+            this.expirationValue = parseExpression(parser, componentValue);
         }
         //particle will expire after this much time, evaluated once
         if (rawComponent.getValue().componentValues.containsKey("max_lifetime")) {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("max_lifetime");
-            this.particleLifetimeValue = parseExpression(parser, componentValue);
+            this.lifetimeValue = parseExpression(parser, componentValue);
         }
     }
 
     @Override
-    public void applyComponent(RiftLibParticleEmitter emitter) {
-        emitter.particleExpiration = this.particleExpirationValue;
-        emitter.particleMaxLifetime = this.particleLifetimeValue;
+    public void applyComponent(RiftLibParticle particle) {
+        particle.lifetimeExpression = this.lifetimeValue;
+        particle.expirationExpression = this.expirationValue;
     }
 }

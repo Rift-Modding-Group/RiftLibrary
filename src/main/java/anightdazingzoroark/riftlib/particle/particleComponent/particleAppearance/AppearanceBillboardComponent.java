@@ -1,10 +1,11 @@
-package anightdazingzoroark.riftlib.particle.particleComponent.appearance;
+package anightdazingzoroark.riftlib.particle.particleComponent.particleAppearance;
 
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.molang.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.particle.ParticleCameraMode;
+import anightdazingzoroark.riftlib.particle.RiftLibParticle;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 
@@ -95,20 +96,29 @@ public class AppearanceBillboardComponent extends RiftLibParticleComponent {
     }
 
     @Override
-    public void applyComponent(RiftLibParticleEmitter emitter) {
-        emitter.particleSize = this.size;
-        emitter.cameraMode = this.cameraMode;
-        emitter.particleTextureWidth = this.textureWidth;
-        emitter.particleTextureHeight = this.textureHeight;
-        emitter.particleUV = this.uv;
-        emitter.particleUVSize = this.uvSize;
+    public void applyComponent(RiftLibParticle particle) {
+        particle.textureWidth = this.textureWidth;
+        particle.textureHeight = this.textureHeight;
+        particle.cameraMode = this.cameraMode;
+        particle.size = this.size;
 
-        //flipbook mode values
-        emitter.particleFlipbook = this.particleFlipbook;
-        emitter.particleUVStepSize = this.particleUVStepSize;
-        emitter.particleFPS = this.particleFPS;
-        emitter.particleMaxFrame = this.particleMaxFrame;
-        emitter.particleFlipbookStretchToLifetime = this.particleFlipbookStretchToLifetime;
-        emitter.particleFlipbookLoop = this.particleFlipbookLoop;
+        //differentiate between particle flipbook or not
+        if (this.particleFlipbook) {
+            particle.flipbook = true;
+            particle.flipbookStretchToLifetime = this.particleFlipbookStretchToLifetime;
+            particle.flipbookLoop = this.particleFlipbookLoop;
+            particle.fps = this.particleFPS;
+            particle.maxFrame = (int) this.particleMaxFrame.get();
+
+            //store UV info
+            particle.particleUV = this.uv;
+            particle.particleUVSize = this.uvSize;
+            particle.particleUVStepSize = this.particleUVStepSize;
+        }
+        else {
+            particle.flipbook = false;
+            particle.particleUV = this.uv;
+            particle.particleUVSize = this.uvSize;
+        }
     }
 }

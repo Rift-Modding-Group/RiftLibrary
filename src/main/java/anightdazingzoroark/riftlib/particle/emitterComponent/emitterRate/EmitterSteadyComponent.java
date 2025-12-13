@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.particle.particleComponent.emitterRate;
+package anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate;
 
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.molang.MolangException;

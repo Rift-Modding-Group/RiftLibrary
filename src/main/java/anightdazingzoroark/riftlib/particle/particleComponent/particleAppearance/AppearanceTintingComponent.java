@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.particle.particleComponent.appearance;
+package anightdazingzoroark.riftlib.particle.particleComponent.particleAppearance;
 
 import anightdazingzoroark.riftlib.exceptions.InvalidValueException;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
@@ -6,6 +6,7 @@ import anightdazingzoroark.riftlib.molang.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.Constant;
 import anightdazingzoroark.riftlib.molang.math.IValue;
+import anightdazingzoroark.riftlib.particle.RiftLibParticle;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 
@@ -66,8 +67,8 @@ public class AppearanceTintingComponent extends RiftLibParticleComponent {
     }
 
     @Override
-    public void applyComponent(RiftLibParticleEmitter emitter) {
-        emitter.colorArray = new IValue[]{this.red, this.green, this.blue};
-        emitter.colorAlpha = this.alpha;
+    public void applyComponent(RiftLibParticle particle) {
+        particle.colorArray = new IValue[]{this.red, this.green, this.blue};
+        particle.colorAlpha = this.alpha;
     }
 }

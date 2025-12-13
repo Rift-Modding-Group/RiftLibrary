@@ -1,23 +1,25 @@
 package anightdazingzoroark.riftlib.particle;
 
 import anightdazingzoroark.riftlib.ClientProxy;
+import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
+import anightdazingzoroark.riftlib.molang.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.expressions.MolangAssignment;
 import anightdazingzoroark.riftlib.molang.expressions.MolangExpression;
-import anightdazingzoroark.riftlib.molang.math.Constant;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.molang.math.Variable;
+import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
-import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.EmitterInstantComponent;
-import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.EmitterSteadyComponent;
-import anightdazingzoroark.riftlib.particle.particleComponent.emitterRate.RiftLibEmitterRateComponent;
-import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.EmitterShapeCustomComponent;
-import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.EmitterShapePointComponent;
-import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.EmitterShapeSphereComponent;
-import anightdazingzoroark.riftlib.particle.particleComponent.emitterShape.RiftLibEmitterShapeComponent;
-import anightdazingzoroark.riftlib.particle.particleComponent.lifetime.emiter.EmitterLifetimeExpressionComponent;
-import anightdazingzoroark.riftlib.particle.particleComponent.lifetime.emiter.EmitterLifetimeLoopingComponent;
-import anightdazingzoroark.riftlib.particle.particleComponent.lifetime.emiter.RiftLibEmitterLifetimeComponent;
+import anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate.EmitterInstantComponent;
+import anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate.EmitterSteadyComponent;
+import anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate.RiftLibEmitterRateComponent;
+import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.EmitterShapeCustomComponent;
+import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.EmitterShapePointComponent;
+import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.EmitterShapeSphereComponent;
+import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.RiftLibEmitterShapeComponent;
+import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeExpressionComponent;
+import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeLoopingComponent;
+import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.RiftLibEmitterLifetimeComponent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -30,30 +32,26 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 //emitters are what spawn particles
 @SideOnly(Side.CLIENT)
 public class RiftLibParticleEmitter {
     private final List<RiftLibParticle> particles = new ArrayList<>();
     private final World world;
-    private final int emitterId;
+    private final int emitterId; //this is mostly for debugging
+    private int particleId; //this too is for debugging, mainly of individual particles, increment this after assignment
     private final ResourceLocation textureLocation;
     private final ParticleMaterial material;
     private final MolangParser molangParser;
     private final Random random = new Random();
     private final double x, y, z;
     private boolean isDead;
-    private int particleCount;
     public RiftLibEmitterShapeComponent emitterShape;
     public RiftLibEmitterRateComponent emitterRate;
 
-    //particle motion
-    public IValue[] particleInitialSpeed = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
-    public IValue[] particleLinearAcceleration = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
+    //unparsed particle components
+    public final List<Map.Entry<String, RawParticleComponent>> rawParticleComponents;
 
     //molang emitter variables
     private Variable varEmitterAge;
@@ -71,34 +69,14 @@ public class RiftLibParticleEmitter {
     private int age, lifetime;
     private float emitterRandomOne, emitterRandomTwo, emitterRandomThree, emitterRandomFour;
 
-    //particle appearance stuff
-    public IValue[] particleSize;
-    public ParticleCameraMode cameraMode;
-    public int particleTextureWidth, particleTextureHeight;
-    public IValue[] particleUV;
-    public IValue[] particleUVSize;
-    //these only matter if the particle is flipbook mode
-    public boolean particleFlipbook;
-    public IValue[] particleUVStepSize;
-    public float particleFPS;
-    public IValue particleMaxFrame;
-    public boolean particleFlipbookStretchToLifetime;
-    public boolean particleFlipbookLoop;
-    public boolean particleUseLocalLighting; //for if the particle must be tinted by local lighting conditions in-game
-
     //for lifetime stuff
     public RiftLibEmitterLifetimeComponent emitterLifetime;
-    public IValue particleExpiration = MolangParser.ZERO;
-    public IValue particleMaxLifetime = new Constant(Integer.MAX_VALUE);
-
-    //for color
-    public IValue[] colorArray = new IValue[]{MolangParser.ONE, MolangParser.ONE, MolangParser.ONE};
-    public IValue colorAlpha = MolangParser.ONE;
 
     public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, double x, double y, double z) {
         this.textureLocation = particleBuilder.texture;
         this.material = particleBuilder.material;
         this.molangParser = particleBuilder.molangParser;
+        this.rawParticleComponents = particleBuilder.rawParticleComponents;
         this.emitterId = ClientProxy.EMITTER_ID++;
         this.world = world;
         this.x = x;
@@ -110,7 +88,7 @@ public class RiftLibParticleEmitter {
         this.initEmitterRandoms();
 
         //apply components from components in the builder
-        for (RiftLibParticleComponent component : particleBuilder.particleComponents) {
+        for (RiftLibEmitterComponent component : particleBuilder.emitterComponents) {
             component.applyComponent(this);
         }
     }
@@ -142,7 +120,7 @@ public class RiftLibParticleEmitter {
     }
 
     //emitter is updated here, particles r created here too
-    public void update() {
+    public void update() throws MolangException {
         if (this.isDead) return;
 
         //dynamically set molang variables
@@ -219,8 +197,12 @@ public class RiftLibParticleEmitter {
         this.additionalVariables.add(assignment.variable);
     }
 
-    private RiftLibParticle createParticle() {
+    private RiftLibParticle createParticle() throws MolangException {
         RiftLibParticle toReturn = new RiftLibParticle(this.world, this.molangParser);
+
+        //debug info
+        toReturn.emitterId = this.emitterId;
+        toReturn.particleId = this.particleId++;
 
         //give molang info to the particle
         toReturn.varEmitterAge = this.varEmitterAge;
@@ -231,7 +213,22 @@ public class RiftLibParticleEmitter {
         toReturn.varEmitterRandomFour = this.varEmitterRandomFour;
         toReturn.additionalVariables = this.additionalVariables;
 
+        //parse init particle components, these mostly apply info that apply every tick
+        for (Map.Entry<String, RawParticleComponent> rawParticleComponent : this.rawParticleComponents) {
+            //init and parse the component
+            RiftLibParticleComponent component = RiftLibParticleComponentRegistry.createParticleComponent(rawParticleComponent.getKey());
+            if (component != null) {
+                component.parseRawComponent(rawParticleComponent, toReturn.molangParser);
+                component.applyComponent(toReturn);
+            }
+        }
+
+        //initialize lifetime here to prevent it from being 0
+        //when first created
+        toReturn.lifetime = (int) (toReturn.lifetimeExpression.get() * 20D);
+
         //set particle init position
+        //position is only evaluated when the moment a particle is created, it should be ok to define it here
         double[] offset = this.findParticleOffset();
         toReturn.x = this.x + offset[0];
         toReturn.y = this.y + offset[1];
@@ -240,77 +237,32 @@ public class RiftLibParticleEmitter {
         toReturn.prevY = toReturn.y;
         toReturn.prevZ = toReturn.z;
 
-        //set particle camera mode
-        toReturn.cameraMode = this.cameraMode;
-
         //set particle velocity
+        //velocity is only evaluated when the moment a particle is created, it should be ok to define it here
         double[] velocityFromShape = this.particleVelocityFromShape(new double[]{toReturn.x, toReturn.y, toReturn.z});
-        double[] velocity = new double[]{
-                this.particleInitialSpeed[0].get(),
-                this.particleInitialSpeed[1].get(),
-                this.particleInitialSpeed[2].get()
-        };
-        //divide all by 20 to turn them from blocks per second into blocks per tick
-        toReturn.velX = (velocityFromShape[0] + velocity[0]) / 20D;
-        toReturn.velY = (velocityFromShape[1] + velocity[1]) / 20D;
-        toReturn.velZ = (velocityFromShape[2] + velocity[2]) / 20D;
+        toReturn.initializeVelocity(velocityFromShape);
 
-        //set particle acceleration
-        //divide all by 400 to turn them from blocks per second sq into blocks per tick sq
-        toReturn.accelX = this.particleLinearAcceleration[0].get() / 400D;
-        toReturn.accelY = this.particleLinearAcceleration[1].get() / 400D;
-        toReturn.accelZ = this.particleLinearAcceleration[2].get() / 400D;
-
-        //set particle lifetime info
-        toReturn.lifetimeExpression = this.particleMaxLifetime;
-        toReturn.expirationExpression = this.particleExpiration;
-
-        //set particle scale
-        toReturn.size = this.particleSize;
-
-        //set particle colors
-        toReturn.colorArray = this.colorArray;
-        toReturn.colorAlpha = this.colorAlpha;
-
-        //set particle lighting
-        toReturn.particleUseLocalLighting = this.particleUseLocalLighting;
-
-        //flipbook vs static UVs
-        toReturn.texWidth  = this.particleTextureWidth;
-        toReturn.texHeight = this.particleTextureHeight;
-
+        //particle texturing and uv application is only evaluated when the moment a particle is created
+        //it should be ok to define it here
         //flipbook UV behaviour
-        if (this.particleFlipbook) {
-            toReturn.flipbook = true;
-            toReturn.flipbookStretchToLifetime = this.particleFlipbookStretchToLifetime;
-            toReturn.flipbookLoop = this.particleFlipbookLoop;
-            toReturn.fps = this.particleFPS;
-            toReturn.maxFrame = (int) this.particleMaxFrame.get();
-
+        if (toReturn.flipbook) {
             //store UV info in pixels
-            toReturn.baseUVX = (float) this.particleUV[0].get();
-            toReturn.baseUVY = (float) this.particleUV[1].get();
-            toReturn.sizeUVX = (float) this.particleUVSize[0].get();
-            toReturn.sizeUVY = (float) this.particleUVSize[1].get();
-            toReturn.stepUVX = (float) this.particleUVStepSize[0].get();
-            toReturn.stepUVY = (float) this.particleUVStepSize[1].get();
+            toReturn.baseUVX = (float) toReturn.particleUV[0].get();
+            toReturn.baseUVY = (float) toReturn.particleUV[1].get();
+            toReturn.sizeUVX = (float) toReturn.particleUVSize[0].get();
+            toReturn.sizeUVY = (float) toReturn.particleUVSize[1].get();
+            toReturn.stepUVX = (float) toReturn.particleUVStepSize[0].get();
+            toReturn.stepUVY = (float) toReturn.particleUVStepSize[1].get();
 
             //initialise UVs for frame 0
             toReturn.updateFlipbookUV();
         }
         //static UV behaviour
         else {
-            float texW = this.particleTextureWidth;
-            float texH = this.particleTextureHeight;
-            float uvX = (float) this.particleUV[0].get();
-            float uvY = (float) this.particleUV[1].get();
-            float uvW = (float) this.particleUVSize[0].get();
-            float uvH = (float) this.particleUVSize[1].get();
-
-            toReturn.uvXMin = uvX / texW;
-            toReturn.uvYMin = uvY / texH;
-            toReturn.uvXMax = (uvX + uvW) / texW;
-            toReturn.uvYMax = (uvY + uvH) / texH;
+            toReturn.uvXMin = (float) (toReturn.particleUV[0].get() / toReturn.textureWidth);
+            toReturn.uvYMin = (float) (toReturn.particleUV[1].get() / toReturn.textureHeight);
+            toReturn.uvXMax = (float) ((toReturn.particleUV[0].get() + toReturn.particleUVSize[0].get()) / toReturn.textureWidth);
+            toReturn.uvYMax = (float) ((toReturn.particleUV[1].get() + toReturn.particleUVSize[1].get()) / toReturn.textureHeight);
         }
 
         return toReturn;

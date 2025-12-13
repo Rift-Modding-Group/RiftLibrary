@@ -1,6 +1,7 @@
 package anightdazingzoroark.riftlib.particle;
 
 import anightdazingzoroark.riftlib.ClientProxy;
+import anightdazingzoroark.riftlib.molang.MolangException;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -10,7 +11,7 @@ import java.util.Iterator;
 
 public class ParticleTicker {
     @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event) {
+    public void onClientTick(TickEvent.ClientTickEvent event) throws MolangException {
         if (event.phase != TickEvent.Phase.END) return;
 
         Iterator<RiftLibParticleEmitter> it = ClientProxy.EMITTER_LIST.iterator();

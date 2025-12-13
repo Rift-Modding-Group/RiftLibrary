@@ -92,10 +92,10 @@ public class RiftLibLoader {
         }
     }
 
-    public static ParticleBuilder loadParticle(MolangParser parser, IResourceManager resourceManager, ResourceLocation location) {
+    public static ParticleBuilder loadParticle(IResourceManager resourceManager, ResourceLocation location) {
         try {
             RawParticle rawParticle = gson.fromJson(getResourceAsString(location, resourceManager), RawParticle.class);
-            return ParticleConstructor.createParticleBuilder(parser, location.getNamespace(), rawParticle);
+            return ParticleConstructor.createParticleBuilder(location.getNamespace(), rawParticle);
         }
         catch (Exception e) {
             RiftLib.LOGGER.error(String.format("Error parsing %S", location), e);

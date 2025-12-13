@@ -1,9 +1,10 @@
-package anightdazingzoroark.riftlib.particle.particleComponent.emitterRate;
+package anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate;
 
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
+import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 
-public abstract class RiftLibEmitterRateComponent extends RiftLibParticleComponent {
+public abstract class RiftLibEmitterRateComponent extends RiftLibEmitterComponent {
 
     @Override
     public void applyComponent(RiftLibParticleEmitter emitter) {

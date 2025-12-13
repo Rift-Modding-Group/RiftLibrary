@@ -16,23 +16,35 @@ import java.util.List;
 
 public class RiftLibParticle {
     private final World world;
-    private final MolangParser molangParser;
+    public final MolangParser molangParser;
     public double x, y, z;
     public double prevX, prevY, prevZ;
     public double velX, velY, velZ;
-    public double accelX, accelY, accelZ;
     public float uvXMin, uvYMin, uvXMax, uvYMax;
     public IValue[] size;
     private boolean isDead;
-    public boolean particleUseLocalLighting;
-
+    public boolean useLocalLighting;
     public ParticleCameraMode cameraMode;
 
-    //flipbook data (in pixels)
+    //debug info
+    public int emitterId; //this is mostly for debugging
+    public int particleId; //this too is for debugging, mainly of individual particles
+
+    //speed
+    public IValue[] initialSpeed = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
+    public IValue[] linearAcceleration = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
+
+    //flipbook data
     public boolean flipbook;
     public boolean flipbookStretchToLifetime;
     public boolean flipbookLoop;
-    public int texWidth, texHeight;
+    public int textureWidth, textureHeight;
+    public IValue[] particleUV;
+    public IValue[] particleUVSize;
+    //only matters if the particle is flipbook mode
+    public IValue[] particleUVStepSize;
+
+    //parsed flipbook data
     public float baseUVX, baseUVY;
     public float sizeUVX, sizeUVY;
     public float stepUVX, stepUVY;
@@ -70,9 +82,9 @@ public class RiftLibParticle {
     public IValue[] colorArray = new IValue[]{MolangParser.ONE, MolangParser.ONE, MolangParser.ONE};
     public IValue colorAlpha = MolangParser.ONE;
 
-    public RiftLibParticle(World world, MolangParser molangParser) {
+    public RiftLibParticle(World world, MolangParser parser) {
         this.world = world;
-        this.molangParser = molangParser;
+        this.molangParser = parser;
 
         //init molang stuff
         this.setupMolangVariables();
@@ -105,9 +117,24 @@ public class RiftLibParticle {
         return v;
     }
 
+    public void initializeVelocity(double[] velocityFromShape) {
+        double[] velocity = new double[]{
+                this.initialSpeed[0].get(),
+                this.initialSpeed[1].get(),
+                this.initialSpeed[2].get()
+        };
+
+        //divide all by 20 to turn them from blocks/second into blocks/tick
+        this.velX = (velocityFromShape[0] + velocity[0]) / 20D;
+        this.velY = (velocityFromShape[1] + velocity[1]) / 20D;
+        this.velZ = (velocityFromShape[2] + velocity[2]) / 20D;
+    }
+
     public void update() {
         //set the lifetime from expression
         this.lifetime = (int) (this.lifetimeExpression.get() * 20);
+        //System.out.println("this.lifetime: "+this.lifetime);
+        //System.out.println(this.emitterId+", "+this.particleId+" age: "+this.age);
 
         //dynamically set molang variables
         if (this.varParticleAge != null) this.varParticleAge.set(this.age / 20D);
@@ -136,9 +163,10 @@ public class RiftLibParticle {
         this.z += this.velZ;
 
         //change velocity based on acceleration
-        this.velX += this.accelX;
-        this.velY += this.accelY;
-        this.velZ += this.accelZ;
+        //the division by 400 is to convert from blocks/sec^2 to blocks/tick^2
+        this.velX += this.linearAcceleration[0].get() / 400D;
+        this.velY += this.linearAcceleration[1].get() / 400D;
+        this.velZ += this.linearAcceleration[2].get() / 4000D;
     }
 
     public void renderParticle(BufferBuilder buffer, Entity camera, float partialTicks) {
@@ -156,8 +184,11 @@ public class RiftLibParticle {
         Vec3d pointOrigin = new Vec3d(px - camX, py - camY, pz - camZ);
 
         //half sizes
-        float halfScaleX = (float) (this.size[0].get()) * 0.5f;
-        float halfScaleY = (float) (this.size[1].get()) * 0.5f;
+        float halfScaleX = (float) this.size[0].get();
+        float halfScaleY = (float) this.size[1].get();
+
+        //size debug
+        //System.out.println(this.emitterId+", "+this.particleId+" size: ("+halfScaleX+", "+halfScaleY+")");
 
         //camera look direction
         Vec3d look = camera.getLook(partialTicks);
@@ -329,7 +360,7 @@ public class RiftLibParticle {
 
     private int getBrightnessForRender(float partialTicks) {
         //fullbright when lighting component is NOT present
-        if (!this.particleUseLocalLighting || this.world == null) return 0xF000F0;
+        if (!this.useLocalLighting || this.world == null) return 0xF000F0;
 
         double x = this.prevX + (this.x - this.prevX) * partialTicks;
         double y = this.prevY + (this.y - this.prevY) * partialTicks;
@@ -340,7 +371,7 @@ public class RiftLibParticle {
     }
 
     public void updateFlipbookUV() {
-        if (!this.flipbook || this.maxFrame <= 0 || this.texWidth <= 0 || this.texHeight <= 0) return;
+        if (!this.flipbook || this.maxFrame <= 0 || this.textureWidth <= 0 || this.textureHeight <= 0) return;
 
         //compute frame
         float timePercentage = this.age / (float) this.lifetime;
@@ -361,10 +392,10 @@ public class RiftLibParticle {
         float uPixels = this.baseUVX + this.stepUVX * (float) Math.floor(frame);
         float vPixels = this.baseUVY + this.stepUVY * (float) Math.floor(frame);
 
-        this.uvXMin = uPixels / this.texWidth;
-        this.uvYMin = vPixels / this.texHeight;
-        this.uvXMax = (uPixels + this.sizeUVX) / this.texWidth;
-        this.uvYMax = (vPixels + this.sizeUVY) / this.texHeight;
+        this.uvXMin = uPixels / this.textureWidth;
+        this.uvYMin = vPixels / this.textureHeight;
+        this.uvXMax = (uPixels + this.sizeUVX) / this.textureWidth;
+        this.uvYMax = (vPixels + this.sizeUVY) / this.textureHeight;
     }
 
     public boolean isDead() {

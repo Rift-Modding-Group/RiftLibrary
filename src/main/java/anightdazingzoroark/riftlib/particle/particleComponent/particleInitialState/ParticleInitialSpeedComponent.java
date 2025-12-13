@@ -4,13 +4,13 @@ import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent
 import anightdazingzoroark.riftlib.molang.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.IValue;
-import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
+import anightdazingzoroark.riftlib.particle.RiftLibParticle;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 
 import java.util.Map;
 
 public class ParticleInitialSpeedComponent extends RiftLibParticleComponent {
-    private IValue[] particleInitialSpeed = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
+    private IValue[] initialSpeed = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
 
     @Override
     public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
@@ -19,7 +19,7 @@ public class ParticleInitialSpeedComponent extends RiftLibParticleComponent {
             //check if its a singular value
             //if its singular value, thats its y speed
             if (componentValue.number != null) {
-                this.particleInitialSpeed = new IValue[]{
+                this.initialSpeed = new IValue[]{
                         MolangParser.ZERO,
                         this.parseExpression(parser, componentValue),
                         MolangParser.ZERO
@@ -27,13 +27,13 @@ public class ParticleInitialSpeedComponent extends RiftLibParticleComponent {
             }
             //if its an array, those define its speed on each axis
             else if (componentValue.array != null) {
-                this.particleInitialSpeed = this.parseExpressionArray(parser, 3, componentValue);
+                this.initialSpeed = this.parseExpressionArray(parser, 3, componentValue);
             }
         }
     }
 
     @Override
-    public void applyComponent(RiftLibParticleEmitter emitter) {
-        emitter.particleInitialSpeed = this.particleInitialSpeed;
+    public void applyComponent(RiftLibParticle particle) {
+        particle.initialSpeed = this.initialSpeed;
     }
 }

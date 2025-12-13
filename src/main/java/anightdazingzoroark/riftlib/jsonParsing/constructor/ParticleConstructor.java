@@ -14,11 +14,8 @@ import net.minecraft.util.ResourceLocation;
 import java.util.Map;
 
 public class ParticleConstructor {
-    public static ParticleBuilder createParticleBuilder(String namespace, RawParticle rawParticle) throws NumberFormatException, MolangException {
+    public static ParticleBuilder createParticleBuilder(String namespace, RawParticle rawParticle, MolangParser parser) throws NumberFormatException, MolangException {
         ParticleBuilder toReturn = new ParticleBuilder();
-
-        //make a molang parser
-        MolangParser molangParser = new MolangParser();
 
         //get name
         toReturn.identifier = rawParticle.rawParticleEffect.description.identifier;
@@ -32,7 +29,7 @@ public class ParticleConstructor {
         toReturn.material = ParticleMaterial.getMaterialFromString(rawParticle.rawParticleEffect.description.basicRenderParameters.material);
 
         //make a molang parser
-        toReturn.molangParser = molangParser;
+        toReturn.molangParser = parser;
 
         //get raw components
         Map<String, RawParticleComponent> particleComponents = rawParticle.rawParticleEffect.components;
@@ -43,7 +40,7 @@ public class ParticleConstructor {
             if (RiftLibParticleComponentRegistry.isEmitterComponent(rawComponent.getKey())) {
                 RiftLibEmitterComponent component = RiftLibParticleComponentRegistry.createEmitterComponent(rawComponent.getKey());
                 if (component != null) {
-                    component.parseRawComponent(rawComponent, molangParser);
+                    component.parseRawComponent(rawComponent, parser);
                     toReturn.emitterComponents.add(component);
                 }
             }

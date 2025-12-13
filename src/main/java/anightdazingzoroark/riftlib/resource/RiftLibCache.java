@@ -131,7 +131,7 @@ public class RiftLibCache implements IResourceManagerReloadListener {
             for (ResourceLocation location : this.getLocations(pack, "particles", filename -> filename.endsWith(".json"))) {
                 try {
                     //temporarily like this coz it a print only void method
-                    tempParticleBuilders.put(location, RiftLibLoader.loadParticle(resourceManager, location));
+                    tempParticleBuilders.put(location, RiftLibLoader.loadParticle(this.parser, resourceManager, location));
                 }
                 catch (Exception e) {
                     e.printStackTrace();

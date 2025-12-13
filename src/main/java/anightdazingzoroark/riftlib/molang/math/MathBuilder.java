@@ -1,5 +1,7 @@
 package anightdazingzoroark.riftlib.molang.math;
 
+import anightdazingzoroark.riftlib.molang.functions.CosDegrees;
+import anightdazingzoroark.riftlib.molang.functions.SinDegrees;
 import anightdazingzoroark.riftlib.molang.math.functions.Function;
 import anightdazingzoroark.riftlib.molang.math.functions.classic.*;
 import anightdazingzoroark.riftlib.molang.math.functions.limit.*;
@@ -22,32 +24,32 @@ public class MathBuilder {
     public MathBuilder() {
         this.register(new Variable("PI", Math.PI));
         this.register(new Variable("E", Math.E));
-        this.functions.put("floor", Floor.class);
-        this.functions.put("round", Round.class);
-        this.functions.put("ceil", Ceil.class);
-        this.functions.put("trunc", Trunc.class);
-        this.functions.put("clamp", Clamp.class);
-        this.functions.put("max", Max.class);
-        this.functions.put("min", Min.class);
-        this.functions.put("abs", Abs.class);
-        this.functions.put("acos", ACos.class);
-        this.functions.put("asin", ASin.class);
-        this.functions.put("atan", ATan.class);
-        this.functions.put("atan2", ATan2.class);
-        this.functions.put("cos", Cos.class);
-        this.functions.put("sin", Sin.class);
-        this.functions.put("exp", Exp.class);
-        this.functions.put("ln", Ln.class);
-        this.functions.put("sqrt", Sqrt.class);
-        this.functions.put("mod", Mod.class);
-        this.functions.put("pow", Pow.class);
-        this.functions.put("lerp", Lerp.class);
-        this.functions.put("lerprotate", LerpRotate.class);
-        this.functions.put("hermite_blend", HermiteBlend.class);
-        this.functions.put("die_roll", DieRoll.class);
-        this.functions.put("die_roll_integer", DieRollInteger.class);
-        this.functions.put("random", Random.class);
-        this.functions.put("random_integer", RandomInteger.class);
+        this.functions.put("math.floor", Floor.class);
+        this.functions.put("math.round", Round.class);
+        this.functions.put("math.ceil", Ceil.class);
+        this.functions.put("math.trunc", Trunc.class);
+        this.functions.put("math.clamp", Clamp.class);
+        this.functions.put("math.max", Max.class);
+        this.functions.put("math.min", Min.class);
+        this.functions.put("math.abs", Abs.class);
+        this.functions.put("math.acos", ACos.class);
+        this.functions.put("math.asin", ASin.class);
+        this.functions.put("math.atan", ATan.class);
+        this.functions.put("math.atan2", ATan2.class);
+        this.functions.put("math.cos", CosDegrees.class);
+        this.functions.put("math.sin", SinDegrees.class);
+        this.functions.put("math.exp", Exp.class);
+        this.functions.put("math.ln", Ln.class);
+        this.functions.put("math.sqrt", Sqrt.class);
+        this.functions.put("math.mod", Mod.class);
+        this.functions.put("math.pow", Pow.class);
+        this.functions.put("math.lerp", Lerp.class);
+        this.functions.put("math.lerprotate", LerpRotate.class);
+        this.functions.put("math.hermite_blend", HermiteBlend.class);
+        this.functions.put("math.die_roll", DieRoll.class);
+        this.functions.put("math.die_roll_integer", DieRollInteger.class);
+        this.functions.put("math.random", Random.class);
+        this.functions.put("math.random_integer", RandomInteger.class);
     }
 
     public void register(Variable variable) {

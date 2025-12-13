@@ -4,6 +4,7 @@ import anightdazingzoroark.riftlib.ClientProxy;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.molang.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
+import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.molang.expressions.MolangAssignment;
 import anightdazingzoroark.riftlib.molang.expressions.MolangExpression;
 import anightdazingzoroark.riftlib.molang.math.IValue;
@@ -38,6 +39,7 @@ import java.util.*;
 @SideOnly(Side.CLIENT)
 public class RiftLibParticleEmitter {
     private final List<RiftLibParticle> particles = new ArrayList<>();
+    private double particleCount;
     private final World world;
     private final int emitterId; //this is mostly for debugging
     private int particleId; //this too is for debugging, mainly of individual particles, increment this after assignment
@@ -49,6 +51,8 @@ public class RiftLibParticleEmitter {
     private boolean isDead;
     public RiftLibEmitterShapeComponent emitterShape;
     public RiftLibEmitterRateComponent emitterRate;
+
+    public final MolangScope emitterScope = new MolangScope();
 
     //unparsed particle components
     public final List<Map.Entry<String, RawParticleComponent>> rawParticleComponents;
@@ -63,7 +67,9 @@ public class RiftLibParticleEmitter {
 
     //additional molang operations and variables
     private final List<Variable> additionalVariables = new ArrayList<>();
+    public List<MolangExpression> initialOperations = new ArrayList<>();
     public List<MolangExpression> repeatingOperations = new ArrayList<>();
+    private boolean initRan = false;
 
     //runtime data, are parsed molang variables
     private int age, lifetime;
@@ -91,25 +97,24 @@ public class RiftLibParticleEmitter {
         for (RiftLibEmitterComponent component : particleBuilder.emitterComponents) {
             component.applyComponent(this);
         }
+
+        //execute initial operations
+        this.molangParser.withScope(this.emitterScope, () -> {
+            for (MolangExpression expression : this.initialOperations) expression.get();
+        });
+        this.initRan = true;
     }
 
     //all molang variables are created here
     private void setupMolangVariables() {
-        this.varEmitterAge = this.getOrCreateVar("variable.emitter_age");
-        this.varEmitterLifetime = this.getOrCreateVar("variable.emitter_lifetime");
-        this.varEmitterRandomOne = this.getOrCreateVar("variable.emitter_random_1");
-        this.varEmitterRandomTwo = this.getOrCreateVar("variable.emitter_random_2");
-        this.varEmitterRandomThree = this.getOrCreateVar("variable.emitter_random_3");
-        this.varEmitterRandomFour = this.getOrCreateVar("variable.emitter_random_4");
-    }
-
-    private Variable getOrCreateVar(String name) {
-        Variable v = this.molangParser.variables.get(name);
-        if (v == null) {
-            v = new Variable(name, 0.0);
-            this.molangParser.register(v);
-        }
-        return v;
+        this.molangParser.withScope(this.emitterScope, () -> {
+            this.varEmitterAge = this.molangParser.getVariable("variable.emitter_age");
+            this.varEmitterLifetime = this.molangParser.getVariable("variable.emitter_lifetime");
+            this.varEmitterRandomOne = this.molangParser.getVariable("variable.emitter_random_1");
+            this.varEmitterRandomTwo = this.molangParser.getVariable("variable.emitter_random_2");
+            this.varEmitterRandomThree = this.molangParser.getVariable("variable.emitter_random_3");
+            this.varEmitterRandomFour = this.molangParser.getVariable("variable.emitter_random_4");
+        });
     }
 
     private void initEmitterRandoms() {
@@ -123,29 +128,18 @@ public class RiftLibParticleEmitter {
     public void update() throws MolangException {
         if (this.isDead) return;
 
-        //dynamically set molang variables
-        if (this.varEmitterAge != null) this.varEmitterAge.set(this.age / 20D);
-        if (this.varEmitterLifetime != null) this.varEmitterLifetime.set(this.lifetime / 20D);
-        if (this.varEmitterRandomOne != null) this.varEmitterRandomOne.set(this.emitterRandomOne);
-        if (this.varEmitterRandomTwo != null) this.varEmitterRandomTwo.set(this.emitterRandomTwo);
-        if (this.varEmitterRandomThree != null) this.varEmitterRandomThree.set(this.emitterRandomThree);
-        if (this.varEmitterRandomFour != null) this.varEmitterRandomFour.set(this.emitterRandomFour);
+        this.molangParser.withScope(this.emitterScope, () -> {
+            //dynamically set molang variables
+            if (this.varEmitterAge != null) this.varEmitterAge.set(this.age / 20D);
+            if (this.varEmitterLifetime != null) this.varEmitterLifetime.set(this.lifetime / 20D);
+            if (this.varEmitterRandomOne != null) this.varEmitterRandomOne.set(this.emitterRandomOne);
+            if (this.varEmitterRandomTwo != null) this.varEmitterRandomTwo.set(this.emitterRandomTwo);
+            if (this.varEmitterRandomThree != null) this.varEmitterRandomThree.set(this.emitterRandomThree);
+            if (this.varEmitterRandomFour != null) this.varEmitterRandomFour.set(this.emitterRandomFour);
 
-        //apply repeating operations
-        for (MolangExpression expression : this.repeatingOperations) {
-            if (!(expression instanceof MolangAssignment)) continue;
-            MolangAssignment assignment = (MolangAssignment) expression;
-
-            //add new variables if they're defined here for some reason
-            this.createAdditionalVariableFromExpression(assignment);
-
-            //update existing variables
-            for (Variable variable : this.additionalVariables) {
-                if (!assignment.variable.getName().equals(variable.getName())) continue;
-                variable.set(assignment.get());
-                this.molangParser.variables.put(variable.getName(), variable);
-            }
-        }
+            //apply repeating operations
+            for (MolangExpression expression : this.repeatingOperations) expression.get();
+        });
 
         //update emitter age
         this.age++;
@@ -158,8 +152,9 @@ public class RiftLibParticleEmitter {
             if (this.emitterRate instanceof EmitterInstantComponent) {
                 EmitterInstantComponent emitterInstant = (EmitterInstantComponent) this.emitterRate;
                 double particleCount = emitterInstant.particleCount.get();
-                while (this.particles.size() < particleCount) {
+                while (this.particleCount < particleCount) {
                     this.particles.add(this.createParticle());
+                    this.particleCount++;
                 }
             }
             else if (this.emitterRate instanceof EmitterSteadyComponent) {
@@ -167,13 +162,14 @@ public class RiftLibParticleEmitter {
                 int maxParticleCount = (int) emitterSteady.maxParticleCount.get();
                 //turn particles per second into particles per tick
                 double particleRate = emitterSteady.spawnRate.get() / 20D;
-                int maxParticleCountCurrentTick = (int) (this.age * particleRate) % 20;
 
-                int particleCountCurrentTick = 0;
-                while (this.particles.size() < maxParticleCount && particleCountCurrentTick < maxParticleCountCurrentTick) {
+                this.particleCount += particleRate;
+                while (this.particleCount >= 1 && this.particles.size() < maxParticleCount) {
                     this.particles.add(this.createParticle());
-                    particleCountCurrentTick++;
+                    this.particleCount -= 1;
                 }
+
+                if (this.particles.size() >= maxParticleCount) this.particleCount = Math.min(this.particleCount, 1.0);
             }
         }
 
@@ -186,32 +182,12 @@ public class RiftLibParticleEmitter {
         }
     }
 
-    public void createAdditionalVariableFromExpression(MolangAssignment assignment) {
-        //check if variable exists in the additional variable list first
-        for (Variable variable : this.additionalVariables) {
-            if (assignment.variable.getName().equals(variable.getName())) return;
-        }
-
-        assignment.variable.set(assignment.get());
-        this.molangParser.register(assignment.variable);
-        this.additionalVariables.add(assignment.variable);
-    }
-
     private RiftLibParticle createParticle() throws MolangException {
-        RiftLibParticle toReturn = new RiftLibParticle(this.world, this.molangParser);
+        RiftLibParticle toReturn = new RiftLibParticle(this.world, this.molangParser, this.emitterScope);
 
         //debug info
         toReturn.emitterId = this.emitterId;
         toReturn.particleId = this.particleId++;
-
-        //give molang info to the particle
-        toReturn.varEmitterAge = this.varEmitterAge;
-        toReturn.varEmitterLifetime = this.varEmitterLifetime;
-        toReturn.varEmitterRandomOne = this.varEmitterRandomOne;
-        toReturn.varEmitterRandomTwo = this.varEmitterRandomTwo;
-        toReturn.varEmitterRandomThree = this.varEmitterRandomThree;
-        toReturn.varEmitterRandomFour = this.varEmitterRandomFour;
-        toReturn.additionalVariables = this.additionalVariables;
 
         //parse init particle components, these mostly apply info that apply every tick
         for (Map.Entry<String, RawParticleComponent> rawParticleComponent : this.rawParticleComponents) {
@@ -223,13 +199,23 @@ public class RiftLibParticleEmitter {
             }
         }
 
-        //initialize lifetime here to prevent it from being 0
-        //when first created
-        toReturn.lifetime = (int) (toReturn.lifetimeExpression.get() * 20D);
+        //molang side operations to pass to the particle go here
+        double[] offset = new double[3];
+        double[] velFromShape = new double[3];
+        this.molangParser.withScope(this.emitterScope, () -> {
+            double[] o = this.findParticleOffset();
+            offset[0] = o[0];
+            offset[1] = o[1];
+            offset[2] = o[2];
+
+            double[] v = this.particleVelocityFromShape(new double[]{this.x + offset[0], this.y + offset[1], this.z + offset[2]});
+            velFromShape[0] = v[0];
+            velFromShape[1] = v[1];
+            velFromShape[2] = v[2];
+        });
 
         //set particle init position
         //position is only evaluated when the moment a particle is created, it should be ok to define it here
-        double[] offset = this.findParticleOffset();
         toReturn.x = this.x + offset[0];
         toReturn.y = this.y + offset[1];
         toReturn.z = this.z + offset[2];
@@ -239,11 +225,11 @@ public class RiftLibParticleEmitter {
 
         //set particle velocity
         //velocity is only evaluated when the moment a particle is created, it should be ok to define it here
-        double[] velocityFromShape = this.particleVelocityFromShape(new double[]{toReturn.x, toReturn.y, toReturn.z});
-        toReturn.initializeVelocity(velocityFromShape);
+        toReturn.initializeVelocity(velFromShape);
 
         //particle texturing and uv application is only evaluated when the moment a particle is created
-        //it should be ok to define it here
+        //it should be ok to define it here, though i need to figure out how to make them within scope of
+        //the emitterScope
         //flipbook UV behaviour
         if (toReturn.flipbook) {
             //store UV info in pixels

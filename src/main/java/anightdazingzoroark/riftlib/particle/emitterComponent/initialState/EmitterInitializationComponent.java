@@ -43,12 +43,7 @@ public class EmitterInitializationComponent extends RiftLibEmitterComponent {
 
     @Override
     public void applyComponent(RiftLibParticleEmitter emitter) {
-        for (MolangExpression expression : this.initialOperations) {
-            if (!(expression instanceof MolangAssignment)) continue;
-            MolangAssignment assignment = (MolangAssignment) expression;
-            emitter.createAdditionalVariableFromExpression(assignment);
-        }
-
+        emitter.initialOperations = this.initialOperations;
         emitter.repeatingOperations = this.repeatingOperations;
     }
 }

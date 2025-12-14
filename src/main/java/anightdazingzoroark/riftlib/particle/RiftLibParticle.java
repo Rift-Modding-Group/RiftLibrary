@@ -4,6 +4,8 @@ import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.molang.math.Variable;
+import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
@@ -30,6 +32,10 @@ public class RiftLibParticle {
     //debug info
     public int emitterId; //this is mostly for debugging
     public int particleId; //this too is for debugging, mainly of individual particles
+
+    //expire/not expire within certain blocks of said strings
+    public List<ParticleBlockRule> blocksExpireIfNotIn = new ArrayList<>();
+    private final BlockPos.MutableBlockPos tempPos = new BlockPos.MutableBlockPos();
 
     //speed
     public IValue initialSpeed = MolangParser.ZERO;
@@ -128,7 +134,7 @@ public class RiftLibParticle {
             //update life based on age and expiration
             if (!this.isDead) {
                 if (this.age < this.lifetime) this.age++;
-                if (this.age >= this.lifetime || this.expirationExpression.get() != 0) this.isDead = true;
+                if (this.age >= this.lifetime || this.expirationExpression.get() != 0 || !this.isWithinValidBlock()) this.isDead = true;
             }
 
             //update flipbook
@@ -384,5 +390,18 @@ public class RiftLibParticle {
 
     public boolean isDead() {
         return this.isDead;
+    }
+
+    private boolean isWithinValidBlock() {
+        //if blocksExpireIfNotIn and blocksExpireIfIn are empty, skip
+        if (this.blocksExpireIfNotIn.isEmpty()) return true;
+        this.tempPos.setPos(this.x, this.y, this.z);
+        IBlockState blockState = this.world.getBlockState(this.tempPos);
+
+        for (ParticleBlockRule blockRule : this.blocksExpireIfNotIn) {
+            if (!blockRule.matches(blockState)) return false;
+        }
+
+        return true;
     }
 }

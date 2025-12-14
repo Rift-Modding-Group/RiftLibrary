@@ -1,6 +1,7 @@
 package anightdazingzoroark.riftlib.particle;
 
 import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
+import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.EmitterShapeBoxComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleAppearance.AppearanceBillboardComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleAppearance.AppearanceLightingComponent;
@@ -14,6 +15,7 @@ import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.Emitte
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeLoopingComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleInitialState.ParticleInitialSpeedComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeExpressionComponent;
+import anightdazingzoroark.riftlib.particle.particleComponent.particleLifetime.ParticleExpireNotInBlockComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleLifetime.ParticleLifetimeExpressionComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleMotion.ParticleMotionDynamicComponent;
 
@@ -28,9 +30,12 @@ public class RiftLibParticleComponentRegistry {
         //-----initialize the emitter component map-----
         emitterComponentMap.put("minecraft:emitter_rate_instant", EmitterInstantComponent.class);
         emitterComponentMap.put("minecraft:emitter_rate_steady", EmitterSteadyComponent.class);
+
         emitterComponentMap.put("minecraft:emitter_shape_sphere", EmitterShapeSphereComponent.class);
+        emitterComponentMap.put("minecraft:emitter_shape_box", EmitterShapeBoxComponent.class);
         emitterComponentMap.put("minecraft:emitter_shape_point", EmitterShapePointComponent.class);
         emitterComponentMap.put("minecraft:emitter_shape_custom", EmitterShapeCustomComponent.class);
+
         emitterComponentMap.put("minecraft:emitter_initialization", EmitterInitializationComponent.class);
 
         emitterComponentMap.put("minecraft:emitter_lifetime_expression", EmitterLifetimeExpressionComponent.class);
@@ -42,6 +47,7 @@ public class RiftLibParticleComponentRegistry {
         particleComponentMap.put("minecraft:particle_appearance_lighting", AppearanceLightingComponent.class);
 
         particleComponentMap.put("minecraft:particle_lifetime_expression", ParticleLifetimeExpressionComponent.class);
+        particleComponentMap.put("minecraft:particle_expire_if_not_in_blocks", ParticleExpireNotInBlockComponent.class);
 
         particleComponentMap.put("minecraft:particle_initial_speed", ParticleInitialSpeedComponent.class);
         particleComponentMap.put("minecraft:particle_motion_dynamic", ParticleMotionDynamicComponent.class);

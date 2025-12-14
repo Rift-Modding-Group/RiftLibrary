@@ -9,14 +9,11 @@ import anightdazingzoroark.riftlib.molang.expressions.MolangExpression;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.molang.math.Variable;
 import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
+import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.*;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate.EmitterInstantComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate.EmitterSteadyComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate.RiftLibEmitterRateComponent;
-import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.EmitterShapeCustomComponent;
-import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.EmitterShapePointComponent;
-import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.EmitterShapeSphereComponent;
-import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.RiftLibEmitterShapeComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeExpressionComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeLoopingComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.RiftLibEmitterLifetimeComponent;
@@ -168,7 +165,7 @@ public class RiftLibParticleEmitter {
                     this.particleCount -= 1;
                 }
 
-                if (this.particles.size() >= maxParticleCount) this.particleCount = Math.min(this.particleCount, 1.0);
+                if (this.particles.size() >= maxParticleCount) this.particleCount = Math.min(this.particleCount, 1);
             }
         }
 
@@ -203,7 +200,7 @@ public class RiftLibParticleEmitter {
         AtomicReference<Vec3d> directionFromShape = new AtomicReference<>(Vec3d.ZERO);
         this.molangParser.withScope(this.emitterScope, () -> {
             Vec3d obtainedOffset = this.particleOffset();
-            directionFromShape.set(obtainedOffset);
+            offset.set(obtainedOffset);
             directionFromShape.set(this.particleDirectionFromShape(
                     this.x + obtainedOffset.x,
                     this.y + obtainedOffset.y,
@@ -292,6 +289,64 @@ public class RiftLibParticleEmitter {
                     offsetZ + sphereEmitterShape.offset[2].get()
             );
         }
+        else if (this.emitterShape instanceof EmitterShapeBoxComponent) {
+            EmitterShapeBoxComponent boxEmitterShape = (EmitterShapeBoxComponent) this.emitterShape;
+
+            //in cubes, |x|, |y|, and |z| are less than or equal to a
+            //separate them however between
+            double randomX = this.random.nextDouble() * boxEmitterShape.halfDimensions[0].get() * 2 - boxEmitterShape.halfDimensions[0].get();
+            double randomY = this.random.nextDouble() * boxEmitterShape.halfDimensions[1].get() * 2 - boxEmitterShape.halfDimensions[1].get();
+            double randomZ = this.random.nextDouble() * boxEmitterShape.halfDimensions[2].get() * 2 - boxEmitterShape.halfDimensions[2].get();
+
+            if (boxEmitterShape.surfaceOnly) {
+                int face = this.random.nextInt(6);
+
+                switch (face) {
+                    //positive x
+                    case 0: return new Vec3d(
+                                boxEmitterShape.halfDimensions[0].get() + boxEmitterShape.offset[0].get(),
+                                randomY + boxEmitterShape.offset[1].get(),
+                                randomZ + boxEmitterShape.offset[2].get()
+                        );
+                    //negative x
+                    case 1: return new Vec3d(
+                                -boxEmitterShape.halfDimensions[0].get() + boxEmitterShape.offset[0].get(),
+                                randomY + boxEmitterShape.offset[1].get(),
+                                randomZ + boxEmitterShape.offset[2].get()
+                        );
+                    //positive y
+                    case 2: return new Vec3d(
+                                randomX + boxEmitterShape.offset[0].get(),
+                                boxEmitterShape.halfDimensions[1].get() + boxEmitterShape.offset[1].get(),
+                                randomZ + boxEmitterShape.offset[2].get()
+                        );
+                    //negative y
+                    case 3: return new Vec3d(
+                                randomX + boxEmitterShape.offset[0].get(),
+                                -boxEmitterShape.halfDimensions[1].get() + boxEmitterShape.offset[1].get(),
+                                randomZ + boxEmitterShape.offset[2].get()
+                        );
+                    //positive z
+                    case 4: return new Vec3d(
+                                randomX + boxEmitterShape.offset[0].get(),
+                                randomY + boxEmitterShape.offset[1].get(),
+                                boxEmitterShape.halfDimensions[2].get() + boxEmitterShape.offset[2].get()
+                        );
+                    //negative z
+                    case 5: return new Vec3d(
+                                randomX + boxEmitterShape.offset[0].get(),
+                                randomY + boxEmitterShape.offset[1].get(),
+                                -boxEmitterShape.halfDimensions[2].get() + boxEmitterShape.offset[2].get()
+                        );
+                    default: return Vec3d.ZERO;
+                }
+            }
+            else return new Vec3d(
+                    randomX + boxEmitterShape.offset[0].get(),
+                    randomY + boxEmitterShape.offset[1].get(),
+                    randomZ + boxEmitterShape.offset[2].get()
+            );
+        }
         else if (this.emitterShape instanceof EmitterShapePointComponent) {
             EmitterShapePointComponent customEmitterShape = (EmitterShapePointComponent) this.emitterShape;
             return new Vec3d(
@@ -328,6 +383,27 @@ public class RiftLibParticleEmitter {
             else {
                 //generally the direction to go towards should be the same as its xyz offset from the center of sphere emitter
                 int pointer = sphereEmitterShape.particleDirection.equals("outwards") ? 1 : sphereEmitterShape.particleDirection.equals("inwards") ? -1 : 0;
+                return new Vec3d(
+                        pointer * (emissionX - this.x),
+                        pointer * (emissionY - this.y),
+                        pointer * (emissionZ - this.z)
+                ).normalize();
+            }
+        }
+        else if (this.emitterShape instanceof EmitterShapeBoxComponent) {
+            EmitterShapeBoxComponent boxEmitterShape = (EmitterShapeBoxComponent) this.emitterShape;
+
+            //if it has custom particle direction, just return it instead
+            if (boxEmitterShape.customParticleDirection != null) {
+                return new Vec3d(
+                        boxEmitterShape.customParticleDirection[0].get(),
+                        boxEmitterShape.customParticleDirection[1].get(),
+                        boxEmitterShape.customParticleDirection[2].get()
+                ).normalize();
+            }
+            else {
+                //generally the direction to go towards should be the same as its xyz offset from the center of sphere emitter
+                int pointer = boxEmitterShape.particleDirection.equals("outwards") ? 1 : boxEmitterShape.particleDirection.equals("inwards") ? -1 : 0;
                 return new Vec3d(
                         pointer * (emissionX - this.x),
                         pointer * (emissionY - this.y),

@@ -23,6 +23,13 @@ public abstract class RiftLibParticleComponent {
         else return ConstantValue.fromDouble(componentValue.number);
     }
 
+    protected IValue parseBooleanExpression(MolangParser parser, RawParticleComponent.ComponentValue componentValue) throws MolangException {
+        //component value was a string
+        if (componentValue.valueType == RawParticleComponent.ComponentValueType.STRING) return parser.parseExpression(componentValue.string);
+        //component value was a boolean
+        else return componentValue.bool ? MolangParser.ONE : MolangParser.ZERO;
+    }
+
     protected IValue[] parseExpressionArray(MolangParser parser, int intendedSize, RawParticleComponent.ComponentValue componentValue) throws MolangException {
         return this.parseExpressionArray(parser, intendedSize, componentValue, false);
     }

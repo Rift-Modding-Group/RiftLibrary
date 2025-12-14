@@ -12,7 +12,7 @@ public class EmitterShapeSphereComponent extends RiftLibEmitterShapeComponent {
     public IValue radius = MolangParser.ONE;
     public String particleDirection;
     public boolean surfaceOnly;
-    public IValue[] customParticleDirection = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
+    public IValue[] customParticleDirection;
 
     @Override
     public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {

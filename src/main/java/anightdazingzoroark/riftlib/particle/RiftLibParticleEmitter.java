@@ -5,7 +5,6 @@ import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent
 import anightdazingzoroark.riftlib.molang.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
-import anightdazingzoroark.riftlib.molang.expressions.MolangAssignment;
 import anightdazingzoroark.riftlib.molang.expressions.MolangExpression;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.molang.math.Variable;
@@ -28,12 +27,14 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 //emitters are what spawn particles
 @SideOnly(Side.CLIENT)
@@ -69,7 +70,6 @@ public class RiftLibParticleEmitter {
     private final List<Variable> additionalVariables = new ArrayList<>();
     public List<MolangExpression> initialOperations = new ArrayList<>();
     public List<MolangExpression> repeatingOperations = new ArrayList<>();
-    private boolean initRan = false;
 
     //runtime data, are parsed molang variables
     private int age, lifetime;
@@ -102,7 +102,6 @@ public class RiftLibParticleEmitter {
         this.molangParser.withScope(this.emitterScope, () -> {
             for (MolangExpression expression : this.initialOperations) expression.get();
         });
-        this.initRan = true;
     }
 
     //all molang variables are created here
@@ -200,32 +199,28 @@ public class RiftLibParticleEmitter {
         }
 
         //molang side operations to pass to the particle go here
-        double[] offset = new double[3];
-        double[] velFromShape = new double[3];
+        AtomicReference<Vec3d> offset = new AtomicReference<>(Vec3d.ZERO);
+        AtomicReference<Vec3d> directionFromShape = new AtomicReference<>(Vec3d.ZERO);
         this.molangParser.withScope(this.emitterScope, () -> {
-            double[] o = this.findParticleOffset();
-            offset[0] = o[0];
-            offset[1] = o[1];
-            offset[2] = o[2];
-
-            double[] v = this.particleVelocityFromShape(new double[]{this.x + offset[0], this.y + offset[1], this.z + offset[2]});
-            velFromShape[0] = v[0];
-            velFromShape[1] = v[1];
-            velFromShape[2] = v[2];
+            Vec3d obtainedOffset = this.particleOffset();
+            directionFromShape.set(obtainedOffset);
+            directionFromShape.set(this.particleDirectionFromShape(
+                    this.x + obtainedOffset.x,
+                    this.y + obtainedOffset.y,
+                    this.z + obtainedOffset.z
+            ));
         });
 
         //set particle init position
         //position is only evaluated when the moment a particle is created, it should be ok to define it here
-        toReturn.x = this.x + offset[0];
-        toReturn.y = this.y + offset[1];
-        toReturn.z = this.z + offset[2];
-        toReturn.prevX = toReturn.x;
-        toReturn.prevY = toReturn.y;
-        toReturn.prevZ = toReturn.z;
+        Vec3d finalOffset = offset.get();
+        toReturn.x = toReturn.prevX = this.x + finalOffset.x;
+        toReturn.y = toReturn.prevY = this.y + finalOffset.y;
+        toReturn.z = toReturn.prevZ = this.z + finalOffset.z;
 
         //set particle velocity
         //velocity is only evaluated when the moment a particle is created, it should be ok to define it here
-        toReturn.initializeVelocity(velFromShape);
+        toReturn.initializeVelocity(directionFromShape.get());
 
         //particle texturing and uv application is only evaluated when the moment a particle is created
         //it should be ok to define it here, though i need to figure out how to make them within scope of
@@ -280,7 +275,7 @@ public class RiftLibParticleEmitter {
     }
 
     //this creates a position based on the emitter shape and provided offset
-    private double[] findParticleOffset() {
+    private Vec3d particleOffset() {
         if (this.emitterShape instanceof EmitterShapeSphereComponent) {
             EmitterShapeSphereComponent sphereEmitterShape = (EmitterShapeSphereComponent) this.emitterShape;
             //sphere formula is x² + y² + z² = r²,
@@ -291,79 +286,72 @@ public class RiftLibParticleEmitter {
             double theta = 2 * Math.PI * this.random.nextDouble();
             double offsetX = radiusAtY * Math.cos(theta);
             double offsetZ = radiusAtY * Math.sin(theta);
-            return new double[]{
+            return new Vec3d(
                     offsetX + sphereEmitterShape.offset[0].get(),
                     offsetY + sphereEmitterShape.offset[1].get(),
                     offsetZ + sphereEmitterShape.offset[2].get()
-            };
+            );
         }
         else if (this.emitterShape instanceof EmitterShapePointComponent) {
             EmitterShapePointComponent customEmitterShape = (EmitterShapePointComponent) this.emitterShape;
-            return new double[]{
+            return new Vec3d(
                     customEmitterShape.offset[0].get(),
                     customEmitterShape.offset[1].get(),
                     customEmitterShape.offset[2].get()
-            };
+            );
         }
         else if (this.emitterShape instanceof EmitterShapeCustomComponent) {
             EmitterShapeCustomComponent customEmitterShape = (EmitterShapeCustomComponent) this.emitterShape;
-            return new double[]{
+            return new Vec3d(
                     customEmitterShape.offset[0].get(),
                     customEmitterShape.offset[1].get(),
                     customEmitterShape.offset[2].get()
-            };
+            );
         }
-        else return new double[]{0, 0, 0};
+        else return Vec3d.ZERO;
     }
 
-    //this creates the velocity to go to based on the emitter shape and initial pos
-    //for now the velocity will be 1
-    private double[] particleVelocityFromShape(double[] particleEmissionPos) {
+    //this creates a normalized vector that serves as the direction in which
+    //a particle must travel
+    private Vec3d particleDirectionFromShape(double emissionX, double emissionY, double emissionZ) {
         if (this.emitterShape instanceof EmitterShapeSphereComponent) {
             EmitterShapeSphereComponent sphereEmitterShape = (EmitterShapeSphereComponent) this.emitterShape;
 
             //if it has custom particle direction, just return it instead
             if (sphereEmitterShape.customParticleDirection != null) {
-                return new double[]{
+                return new Vec3d(
                         sphereEmitterShape.customParticleDirection[0].get(),
                         sphereEmitterShape.customParticleDirection[1].get(),
                         sphereEmitterShape.customParticleDirection[2].get()
-                };
+                ).normalize();
             }
             else {
                 //generally the direction to go towards should be the same as its xyz offset from the center of sphere emitter
                 int pointer = sphereEmitterShape.particleDirection.equals("outwards") ? 1 : sphereEmitterShape.particleDirection.equals("inwards") ? -1 : 0;
-
-                double xDirection = pointer * (particleEmissionPos[0] - this.x);
-                double yDirection = pointer * (particleEmissionPos[1] - this.y);
-                double zDirection = pointer * (particleEmissionPos[2] - this.z);
-
-                //normalize
-                double magnitude = Math.sqrt(xDirection * xDirection + yDirection * yDirection + zDirection * zDirection);
-                double xDirectionNormalized = xDirection / magnitude;
-                double yDirectionNormalized = yDirection / magnitude;
-                double zDirectionNormalized = zDirection / magnitude;
-
-                return new double[]{xDirectionNormalized, yDirectionNormalized, zDirectionNormalized};
+                return new Vec3d(
+                        pointer * (emissionX - this.x),
+                        pointer * (emissionY - this.y),
+                        pointer * (emissionZ - this.z)
+                ).normalize();
             }
         }
         else if (this.emitterShape instanceof EmitterShapePointComponent) {
             EmitterShapePointComponent customEmitterShape = (EmitterShapePointComponent) this.emitterShape;
-            return new double[]{
+            return new Vec3d(
                     customEmitterShape.particleDirection[0].get(),
                     customEmitterShape.particleDirection[1].get(),
                     customEmitterShape.particleDirection[2].get()
-            };
+            ).normalize();
         }
         else if (this.emitterShape instanceof EmitterShapeCustomComponent) {
             EmitterShapeCustomComponent customEmitterShape = (EmitterShapeCustomComponent) this.emitterShape;
-            return new double[]{
+            return new Vec3d(
                     customEmitterShape.customParticleDirection[0].get(),
                     customEmitterShape.customParticleDirection[1].get(),
                     customEmitterShape.customParticleDirection[2].get()
-            };
+            ).normalize();
         }
-        return new double[]{0, 0, 0};
+        return Vec3d.ZERO;
     }
 
     private void beginMaterialDraw() {

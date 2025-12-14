@@ -32,7 +32,7 @@ public class RiftLibParticle {
     public int particleId; //this too is for debugging, mainly of individual particles
 
     //speed
-    public IValue[] initialSpeed = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
+    public IValue initialSpeed = MolangParser.ZERO;
     public IValue[] linearAcceleration = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
 
     //flipbook data
@@ -103,17 +103,13 @@ public class RiftLibParticle {
         this.randomFour = (float) Math.random();
     }
 
-    public void initializeVelocity(double[] velocityFromShape) {
-        double[] velocity = new double[]{
-                this.initialSpeed[0].get(),
-                this.initialSpeed[1].get(),
-                this.initialSpeed[2].get()
-        };
+    public void initializeVelocity(Vec3d direction) {
+        Vec3d finalVelocity = direction.scale(this.initialSpeed.get());
 
         //divide all by 20 to turn them from blocks/second into blocks/tick
-        this.velX = (velocityFromShape[0] + velocity[0]) / 20D;
-        this.velY = (velocityFromShape[1] + velocity[1]) / 20D;
-        this.velZ = (velocityFromShape[2] + velocity[2]) / 20D;
+        this.velX = finalVelocity.x / 20D;
+        this.velY = finalVelocity.y / 20D;
+        this.velZ = finalVelocity.z / 20D;
     }
 
     public void update() {

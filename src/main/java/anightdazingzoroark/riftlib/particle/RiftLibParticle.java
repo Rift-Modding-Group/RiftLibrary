@@ -18,6 +18,7 @@ import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class RiftLibParticle {
     private final World world;
@@ -26,6 +27,7 @@ public class RiftLibParticle {
     public double x, y, z;
     public double prevX, prevY, prevZ;
     public double velX, velY, velZ;
+    public double rotation;
     public float uvXMin, uvYMin, uvXMax, uvYMax;
     public IValue[] size;
     private boolean isDead;
@@ -51,6 +53,10 @@ public class RiftLibParticle {
     //speed
     public IValue initialSpeed = MolangParser.ZERO;
     public IValue[] linearAcceleration = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
+
+    //rotation
+    public IValue initialRotation = MolangParser.ZERO;
+    public IValue rotationRate = MolangParser.ZERO;
 
     //flipbook data
     public boolean flipbook;
@@ -119,12 +125,21 @@ public class RiftLibParticle {
     }
 
     public void initializeVelocity(Vec3d direction) {
-        Vec3d finalVelocity = direction.scale(this.initialSpeed.get());
+        AtomicReference<Vec3d> toFinalVelocity = new AtomicReference<>(Vec3d.ZERO);
+        this.molangParser.withScope(this.particleScope, () -> {
+            toFinalVelocity.set(direction.scale(this.initialSpeed.get()));
+        });
+
+        Vec3d finalVelocity = toFinalVelocity.get();
 
         //divide all by 20 to turn them from blocks/second into blocks/tick
         this.velX = finalVelocity.x / 20D;
         this.velY = finalVelocity.y / 20D;
         this.velZ = finalVelocity.z / 20D;
+    }
+
+    public void initializeRotation() {
+        this.molangParser.withScope(this.particleScope, () -> this.rotation = this.initialRotation.get());
     }
 
     public void update() {
@@ -154,6 +169,17 @@ public class RiftLibParticle {
 
             //update flipbook
             if (this.flipbook) this.updateFlipbookUV();
+
+            //rotate
+            double rotationRate = this.rotationRate.get();
+            if (rotationRate != 0) {
+                //turn degrees per sec into degrees per tick
+                this.rotation += this.rotationRate.get() / 20;
+
+                //clamp between -180 and 180 degrees
+                if (this.rotation > 180) this.rotation -= 360;
+                if (this.rotation < -180) this.rotation += 360;
+            }
 
             //move based on velocity (w collision)
             this.prevX = this.x;
@@ -203,11 +229,8 @@ public class RiftLibParticle {
             Vec3d pointOrigin = new Vec3d(px - camX, py - camY, pz - camZ);
 
             //half sizes
-            float halfScaleX = (float) this.size[0].get();
-            float halfScaleY = (float) this.size[1].get();
-
-            //size debug
-            //System.out.println(this.emitterId+", "+this.particleId+" size: ("+halfScaleX+", "+halfScaleY+")");
+            float scaleX = (float) this.size[0].get();
+            float scaleY = (float) this.size[1].get();
 
             //camera look direction
             Vec3d look = camera.getLook(partialTicks);
@@ -223,25 +246,35 @@ public class RiftLibParticle {
 
                 //compute 4 corners (in camera space)
                 Vec3d pointOne = new Vec3d(
-                        -rotationX * halfScaleX - rotationYZ * halfScaleX,
-                        -rotationXZ * halfScaleY,
-                        -rotationZ * halfScaleX - rotationXY * halfScaleX
+                        -rotationX * scaleX - rotationYZ * scaleX,
+                        -rotationXZ * scaleY,
+                        -rotationZ * scaleX - rotationXY * scaleX
                 );
                 Vec3d pointTwo = new Vec3d(
-                        -rotationX * halfScaleX + rotationYZ * halfScaleX,
-                        rotationXZ * halfScaleY,
-                        -rotationZ * halfScaleX + rotationXY * halfScaleX
+                        -rotationX * scaleX + rotationYZ * scaleX,
+                        rotationXZ * scaleY,
+                        -rotationZ * scaleX + rotationXY * scaleX
                 );
                 Vec3d pointThree = new Vec3d(
-                        rotationX * halfScaleX + rotationYZ * halfScaleX,
-                        rotationXZ * halfScaleY,
-                        rotationZ * halfScaleX + rotationXY * halfScaleX
+                        rotationX * scaleX + rotationYZ * scaleX,
+                        rotationXZ * scaleY,
+                        rotationZ * scaleX + rotationXY * scaleX
                 );
                 Vec3d pointFour = new Vec3d(
-                        rotationX * halfScaleX - rotationYZ * halfScaleX,
-                        -rotationXZ * halfScaleY,
-                        rotationZ * halfScaleX - rotationXY * halfScaleX
+                        rotationX * scaleX - rotationYZ * scaleX,
+                        -rotationXZ * scaleY,
+                        rotationZ * scaleX - rotationXY * scaleX
                 );
+
+                //edit points further based on rotation
+                if (this.rotation != 0) {
+                    Vec3d axis = new Vec3d(0, 0, 1);
+
+                    pointOne = this.rotateAroundAxis(pointOne, axis);
+                    pointTwo = this.rotateAroundAxis(pointTwo, axis);
+                    pointThree = this.rotateAroundAxis(pointThree, axis);
+                    pointFour = this.rotateAroundAxis(pointFour, axis);
+                }
 
                 this.emitQuad(buffer, pointOrigin, pointOne, pointTwo, pointThree, pointFour, partialTicks);
             }
@@ -288,26 +321,39 @@ public class RiftLibParticle {
 
                 //compute 4 corners (in camera space)
                 Vec3d pointOne = new Vec3d(
-                        -horizontalVec.x * halfScaleX + verticalVec.x * halfScaleY,
-                        -horizontalVec.y * halfScaleX + verticalVec.y * halfScaleY,
-                        -horizontalVec.z * halfScaleX + verticalVec.z * halfScaleY
+                        -horizontalVec.x * scaleX + verticalVec.x * scaleY,
+                        -horizontalVec.y * scaleX + verticalVec.y * scaleY,
+                        -horizontalVec.z * scaleX + verticalVec.z * scaleY
                 );
                 Vec3d pointTwo = new Vec3d(
-                        -horizontalVec.x * halfScaleX - verticalVec.x * halfScaleY,
-                        -horizontalVec.y * halfScaleX - verticalVec.y * halfScaleY,
-                        -horizontalVec.z * halfScaleX - verticalVec.z * halfScaleY
+                        -horizontalVec.x * scaleX - verticalVec.x * scaleY,
+                        -horizontalVec.y * scaleX - verticalVec.y * scaleY,
+                        -horizontalVec.z * scaleX - verticalVec.z * scaleY
                 );
                 Vec3d pointThree = new Vec3d(
-                        horizontalVec.x * halfScaleX - verticalVec.x * halfScaleY,
-                        horizontalVec.y * halfScaleX - verticalVec.y * halfScaleY,
-                        horizontalVec.z * halfScaleX - verticalVec.z * halfScaleY
+                        horizontalVec.x * scaleX - verticalVec.x * scaleY,
+                        horizontalVec.y * scaleX - verticalVec.y * scaleY,
+                        horizontalVec.z * scaleX - verticalVec.z * scaleY
                 );
                 Vec3d pointFour = new Vec3d(
-                        horizontalVec.x * halfScaleX + verticalVec.x * halfScaleY,
-                        horizontalVec.y * halfScaleX + verticalVec.y * halfScaleY,
-                        horizontalVec.z * halfScaleX + verticalVec.z * halfScaleY
+                        horizontalVec.x * scaleX + verticalVec.x * scaleY,
+                        horizontalVec.y * scaleX + verticalVec.y * scaleY,
+                        horizontalVec.z * scaleX + verticalVec.z * scaleY
                 );
 
+
+                //edit points further based on rotation
+                if (this.rotation != 0) {
+                    Vec3d axis = horizontalVec.crossProduct(verticalVec);
+                    double lenSq = axis.lengthSquared();
+                    if (lenSq > 1e-8) axis = axis.normalize();
+                    else axis = new Vec3d(0, 0, 1);
+
+                    pointOne = this.rotateAroundAxis(pointOne, axis);
+                    pointTwo = this.rotateAroundAxis(pointTwo, axis);
+                    pointThree = this.rotateAroundAxis(pointThree, axis);
+                    pointFour = this.rotateAroundAxis(pointFour, axis);
+                }
                 this.emitQuad(buffer, pointOrigin, pointOne, pointTwo, pointThree, pointFour, partialTicks);
             }
         });
@@ -443,10 +489,7 @@ public class RiftLibParticle {
             collided = true;
             xTry = this.x;
 
-            // bounce X
             this.velX = -this.velX * this.coeffOfRestitution;
-
-            // apply collision drag to tangent axes (Y/Z)
             this.applyCollisionDrag(false, true, true);
         }
         this.x = xTry;
@@ -457,10 +500,7 @@ public class RiftLibParticle {
             collided = true;
             yTry = this.y;
 
-            // bounce Y
             this.velY = -this.velY * this.coeffOfRestitution;
-
-            // apply collision drag to tangent axes (X/Z)
             this.applyCollisionDrag(true, false, true);
         }
         this.y = yTry;
@@ -471,10 +511,7 @@ public class RiftLibParticle {
             collided = true;
             zTry = this.z;
 
-            // bounce Z
             this.velZ = -this.velZ * this.coeffOfRestitution;
-
-            // apply collision drag to tangent axes (X/Y)
             this.applyCollisionDrag(true, true, false);
         }
         this.z = zTry;
@@ -535,5 +572,18 @@ public class RiftLibParticle {
         if (v > 0) return Math.max(0, v - amount);
         if (v < 0) return Math.min(0, v + amount);
         return 0;
+    }
+
+    private Vec3d rotateAroundAxis(Vec3d vec, Vec3d axisUnit) {
+        //convert current rotation into rads
+        double radians = Math.toRadians(this.rotation);
+
+        double cos = Math.cos(radians);
+        double sin = Math.sin(radians);
+
+        Vec3d termOne = vec.scale(cos);
+        Vec3d termTwo = axisUnit.crossProduct(vec).scale(sin);
+        Vec3d termThree = axisUnit.scale(axisUnit.dotProduct(vec) * (1 - cos));
+        return termOne.add(termTwo).add(termThree);
     }
 }

@@ -16,6 +16,7 @@ import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.Emitte
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeLoopingComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleInitialState.ParticleInitialSpeedComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeExpressionComponent;
+import anightdazingzoroark.riftlib.particle.particleComponent.particleInitialState.ParticleInitialSpinComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleLifetime.ParticleExpireNotInBlockComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleLifetime.ParticleLifetimeExpressionComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleMotion.ParticleMotionCollisionComponent;
@@ -53,6 +54,8 @@ public class RiftLibParticleComponentRegistry {
         particleComponentMap.put("minecraft:particle_expire_if_not_in_blocks", ParticleExpireNotInBlockComponent.class);
 
         particleComponentMap.put("minecraft:particle_initial_speed", ParticleInitialSpeedComponent.class);
+        particleComponentMap.put("minecraft:particle_initial_spin", ParticleInitialSpinComponent.class);
+
         particleComponentMap.put("minecraft:particle_motion_dynamic", ParticleMotionDynamicComponent.class);
         particleComponentMap.put("minecraft:particle_motion_collision", ParticleMotionCollisionComponent.class);
     }

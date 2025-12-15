@@ -220,6 +220,9 @@ public class RiftLibParticleEmitter {
         //velocity is only evaluated when the moment a particle is created, it should be ok to define it here
         toReturn.initializeVelocity(directionFromShape.get());
 
+        //init particle rotation
+        toReturn.initializeRotation();
+
         //particle texturing and uv application is only evaluated when the moment a particle is created
         //it should be ok to define it here, though i need to figure out how to make them within scope of
         //the emitterScope

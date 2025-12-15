@@ -9,6 +9,7 @@ import anightdazingzoroark.riftlib.molang.expressions.MolangExpression;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.molang.math.Variable;
 import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
+import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeOnceComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.*;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate.EmitterInstantComponent;
@@ -293,7 +294,6 @@ public class RiftLibParticleEmitter {
             EmitterShapeBoxComponent boxEmitterShape = (EmitterShapeBoxComponent) this.emitterShape;
 
             //in cubes, |x|, |y|, and |z| are less than or equal to a
-            //separate them however between
             double randomX = this.random.nextDouble() * boxEmitterShape.halfDimensions[0].get() * 2 - boxEmitterShape.halfDimensions[0].get();
             double randomY = this.random.nextDouble() * boxEmitterShape.halfDimensions[1].get() * 2 - boxEmitterShape.halfDimensions[1].get();
             double randomZ = this.random.nextDouble() * boxEmitterShape.halfDimensions[2].get() * 2 - boxEmitterShape.halfDimensions[2].get();
@@ -500,6 +500,10 @@ public class RiftLibParticleEmitter {
 
             return currentTimePercent <= sleepTimePercent;
         }
+        else if (this.emitterLifetime instanceof EmitterLifetimeOnceComponent) {
+            EmitterLifetimeOnceComponent lifetimeOnce = (EmitterLifetimeOnceComponent) this.emitterLifetime;
+            return this.age < lifetimeOnce.activeTime.get() * 20;
+        }
         return false;
     }
 
@@ -510,6 +514,10 @@ public class RiftLibParticleEmitter {
             EmitterLifetimeExpressionComponent lifetimeExpression = (EmitterLifetimeExpressionComponent) this.emitterLifetime;
             IValue canExpire = lifetimeExpression.emitterExpirationValue;
             return canExpire.get() != 0;
+        }
+        else if (this.emitterLifetime instanceof EmitterLifetimeOnceComponent) {
+            EmitterLifetimeOnceComponent lifetimeOnce = (EmitterLifetimeOnceComponent) this.emitterLifetime;
+            return this.age >= lifetimeOnce.activeTime.get() * 20;
         }
         return false;
     }

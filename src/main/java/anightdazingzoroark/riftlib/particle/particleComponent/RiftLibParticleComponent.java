@@ -8,7 +8,6 @@ import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.particle.RiftLibParticle;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public abstract class RiftLibParticleComponent {

@@ -1,6 +1,7 @@
 package anightdazingzoroark.riftlib.particle;
 
 import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
+import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeOnceComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.EmitterShapeBoxComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleAppearance.AppearanceBillboardComponent;
@@ -17,6 +18,7 @@ import anightdazingzoroark.riftlib.particle.particleComponent.particleInitialSta
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeExpressionComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleLifetime.ParticleExpireNotInBlockComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleLifetime.ParticleLifetimeExpressionComponent;
+import anightdazingzoroark.riftlib.particle.particleComponent.particleMotion.ParticleMotionCollisionComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleMotion.ParticleMotionDynamicComponent;
 
 import java.util.HashMap;
@@ -40,6 +42,7 @@ public class RiftLibParticleComponentRegistry {
 
         emitterComponentMap.put("minecraft:emitter_lifetime_expression", EmitterLifetimeExpressionComponent.class);
         emitterComponentMap.put("minecraft:emitter_lifetime_looping", EmitterLifetimeLoopingComponent.class);
+        emitterComponentMap.put("minecraft:emitter_lifetime_once", EmitterLifetimeOnceComponent.class);
 
         //-----initialize the particle component map-----
         particleComponentMap.put("minecraft:particle_appearance_billboard", AppearanceBillboardComponent.class);
@@ -51,6 +54,7 @@ public class RiftLibParticleComponentRegistry {
 
         particleComponentMap.put("minecraft:particle_initial_speed", ParticleInitialSpeedComponent.class);
         particleComponentMap.put("minecraft:particle_motion_dynamic", ParticleMotionDynamicComponent.class);
+        particleComponentMap.put("minecraft:particle_motion_collision", ParticleMotionCollisionComponent.class);
     }
 
     public static boolean isEmitterComponent(String id) {

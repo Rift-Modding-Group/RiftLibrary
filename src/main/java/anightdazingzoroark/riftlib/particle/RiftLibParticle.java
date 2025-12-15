@@ -4,11 +4,13 @@ import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.molang.math.Variable;
+import anightdazingzoroark.riftlib.util.MutableAxisAlignedBB;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -20,6 +22,7 @@ import java.util.List;
 public class RiftLibParticle {
     private final World world;
     public final MolangParser molangParser;
+    public final MolangScope particleScope;
     public double x, y, z;
     public double prevX, prevY, prevZ;
     public double velX, velY, velZ;
@@ -37,6 +40,14 @@ public class RiftLibParticle {
     public List<ParticleBlockRule> blocksExpireIfNotIn = new ArrayList<>();
     private final BlockPos.MutableBlockPos tempPos = new BlockPos.MutableBlockPos();
 
+    //other collision related stuff
+    private final MutableAxisAlignedBB tempAABB = new MutableAxisAlignedBB();
+    public IValue collisionEnabled = MolangParser.ZERO;
+    public float collisionDrag;
+    public float coeffOfRestitution;
+    public Float collisionRadius;
+    public boolean expireOnContact;
+
     //speed
     public IValue initialSpeed = MolangParser.ZERO;
     public IValue[] linearAcceleration = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
@@ -50,8 +61,6 @@ public class RiftLibParticle {
     public IValue[] particleUVSize;
     //only matters if the particle is flipbook mode
     public IValue[] particleUVStepSize;
-
-    public final MolangScope particleScope;
 
     //parsed flipbook data
     public float baseUVX, baseUVY;
@@ -131,29 +140,50 @@ public class RiftLibParticle {
             if (this.varParticleRandomThree != null) this.varParticleRandomThree.set(this.randomThree);
             if (this.varParticleRandomFour != null) this.varParticleRandomFour.set(this.randomFour);
 
+            //update temp pos
+            this.tempPos.setPos(this.x, this.y, this.z);
+
             //update life based on age and expiration
             if (!this.isDead) {
                 if (this.age < this.lifetime) this.age++;
-                if (this.age >= this.lifetime || this.expirationExpression.get() != 0 || !this.isWithinValidBlock()) this.isDead = true;
+                if (this.age >= this.lifetime
+                        || this.expirationExpression.get() != 0
+                        || !this.isWithinValidBlock()
+                ) this.isDead = true;
             }
 
             //update flipbook
             if (this.flipbook) this.updateFlipbookUV();
 
-            //move based on velocity
+            //move based on velocity (w collision)
             this.prevX = this.x;
             this.prevY = this.y;
             this.prevZ = this.z;
 
-            this.x += this.velX;
-            this.y += this.velY;
-            this.z += this.velZ;
+            double nextX = this.x + this.velX;
+            double nextY = this.y + this.velY;
+            double nextZ = this.z + this.velZ;
+
+            boolean collided = false;
+            if (this.collisionEnabled.get() != 0 && this.collisionRadius != null && this.collisionRadius > 0) {
+                collided = this.resolveCollision(nextX, nextY, nextZ);
+            }
+            else {
+                this.x = nextX;
+                this.y = nextY;
+                this.z = nextZ;
+            }
+
+            //expire on contact should be driven by actual collision response
+            if (this.expireOnContact && collided) {
+                this.isDead = true;
+            }
 
             //change velocity based on acceleration
             //the division by 400 is to convert from blocks/sec^2 to blocks/tick^2
             this.velX += this.linearAcceleration[0].get() / 400D;
             this.velY += this.linearAcceleration[1].get() / 400D;
-            this.velZ += this.linearAcceleration[2].get() / 4000D;
+            this.velZ += this.linearAcceleration[2].get() / 400D;
         });
     }
 
@@ -395,7 +425,6 @@ public class RiftLibParticle {
     private boolean isWithinValidBlock() {
         //if blocksExpireIfNotIn and blocksExpireIfIn are empty, skip
         if (this.blocksExpireIfNotIn.isEmpty()) return true;
-        this.tempPos.setPos(this.x, this.y, this.z);
         IBlockState blockState = this.world.getBlockState(this.tempPos);
 
         for (ParticleBlockRule blockRule : this.blocksExpireIfNotIn) {
@@ -403,5 +432,108 @@ public class RiftLibParticle {
         }
 
         return true;
+    }
+
+    private boolean resolveCollision(double nextX, double nextY, double nextZ) {
+        boolean collided = false;
+
+        //x axis
+        double xTry = nextX;
+        if (this.isCollided(xTry, this.y, this.z)) {
+            collided = true;
+            xTry = this.x;
+
+            // bounce X
+            this.velX = -this.velX * this.coeffOfRestitution;
+
+            // apply collision drag to tangent axes (Y/Z)
+            this.applyCollisionDrag(false, true, true);
+        }
+        this.x = xTry;
+
+        //y axis
+        double yTry = nextY;
+        if (this.isCollided(this.x, yTry, this.z)) {
+            collided = true;
+            yTry = this.y;
+
+            // bounce Y
+            this.velY = -this.velY * this.coeffOfRestitution;
+
+            // apply collision drag to tangent axes (X/Z)
+            this.applyCollisionDrag(true, false, true);
+        }
+        this.y = yTry;
+
+        //z axis
+        double zTry = nextZ;
+        if (this.isCollided(this.x, this.y, zTry)) {
+            collided = true;
+            zTry = this.z;
+
+            // bounce Z
+            this.velZ = -this.velZ * this.coeffOfRestitution;
+
+            // apply collision drag to tangent axes (X/Y)
+            this.applyCollisionDrag(true, true, false);
+        }
+        this.z = zTry;
+
+        return collided;
+    }
+
+    private boolean isCollided(double xTest, double yTest, double zTest) {
+        if (this.collisionRadius == null || this.collisionEnabled.get() == 0) return false;
+
+        this.tempAABB.set(
+                xTest - this.collisionRadius, yTest - this.collisionRadius, zTest - this.collisionRadius,
+                xTest + this.collisionRadius, yTest + this.collisionRadius, zTest + this.collisionRadius
+        );
+
+        int minX = MathHelper.floor(this.tempAABB.getMinX());
+        int minY = MathHelper.floor(this.tempAABB.getMinY());
+        int minZ = MathHelper.floor(this.tempAABB.getMinZ());
+        int maxX = MathHelper.floor(this.tempAABB.getMaxX());
+        int maxY = MathHelper.floor(this.tempAABB.getMaxY());
+        int maxZ = MathHelper.floor(this.tempAABB.getMaxZ());
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    this.tempPos.setPos(x, y, z);
+                    if (!this.world.isBlockLoaded(this.tempPos)) continue;
+
+                    IBlockState state = this.world.getBlockState(this.tempPos);
+                    if (state.getMaterial().isReplaceable()) continue;
+
+                    AxisAlignedBB blockBox = state.getCollisionBoundingBox(this.world, this.tempPos);
+                    if (blockBox == Block.NULL_AABB) continue;
+
+                    if (this.tempAABB.intersects(
+                            blockBox.minX + x, blockBox.minY + y, blockBox.minZ + z,
+                            blockBox.maxX + x, blockBox.maxY + y, blockBox.maxZ + z
+                    )) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private void applyCollisionDrag(boolean dragX, boolean dragY, boolean dragZ) {
+        if (this.collisionDrag <= 0f) return;
+
+        double dragPerTick = this.collisionDrag / 20.0;
+
+        if (dragX) this.velX = this.approachZero(this.velX, dragPerTick);
+        if (dragY) this.velY = this.approachZero(this.velY, dragPerTick);
+        if (dragZ) this.velZ = this.approachZero(this.velZ, dragPerTick);
+    }
+
+    private double approachZero(double v, double amount) {
+        if (v > 0) return Math.max(0, v - amount);
+        if (v < 0) return Math.min(0, v + amount);
+        return 0;
     }
 }

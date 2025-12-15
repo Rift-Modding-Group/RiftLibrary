@@ -8,21 +8,14 @@ import anightdazingzoroark.riftlib.molang.math.IValue;
 
 import java.util.Map;
 
-public class EmitterLifetimeLoopingComponent extends RiftLibEmitterLifetimeComponent {
-    public IValue emitterActiveTime = new Constant(10);
-    public IValue emitterSleepTime = MolangParser.ZERO;
+public class EmitterLifetimeOnceComponent extends RiftLibEmitterLifetimeComponent {
+    public IValue activeTime = new Constant(10);
 
     @Override
     public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
-        //amount of time the looping emitter will be active
         if (rawComponent.getValue().componentValues.containsKey("active_time")) {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("active_time");
-            this.emitterActiveTime = this.parseExpression(parser, componentValue);
-        }
-        //when emitter active time ends, it will sleep for time as defined here
-        if (rawComponent.getValue().componentValues.containsKey("sleep_time")) {
-            RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("sleep_time");
-            this.emitterSleepTime = this.parseExpression(parser, componentValue);
+            this.activeTime = this.parseExpression(parser, componentValue);
         }
     }
 }

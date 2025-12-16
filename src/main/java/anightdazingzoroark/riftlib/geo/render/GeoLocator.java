@@ -11,6 +11,8 @@ public class GeoLocator {
     public float positionY;
     public float positionZ;
 
+    private String particleEmitterName = "";
+
     public GeoLocator(GeoBone parent, String name, float x, float y, float z) {
         this.parent = parent;
         this.name = name;
@@ -72,6 +74,15 @@ public class GeoLocator {
         }
 
         return toReturn.subtract(this.positionX, this.positionY, this.positionZ);
+    }
+
+    public void setParticleEmitterName(String name) {
+        if (name == null) this.particleEmitterName = "";
+        else this.particleEmitterName = name;
+    }
+
+    public String getParticleEmitterName() {
+        return this.particleEmitterName;
     }
 
     public String toString() {

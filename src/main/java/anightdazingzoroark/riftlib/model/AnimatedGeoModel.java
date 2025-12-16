@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import javax.annotation.Nullable;
 
+import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 
 import net.minecraft.client.Minecraft;
@@ -94,6 +95,17 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 				.getAnimation(name);
 	}
 
+    @Override
+    public GeoLocator getLocator(String name) {
+        if (this.currentModel == null) return null;
+
+        for (GeoLocator locator : this.currentModel.getAllLocators()) {
+            if (locator.name.equals(name)) return locator;
+        }
+
+        return null;
+    }
+
 	//this must be where the model is attached to the entity
 	@Override
 	public GeoModel getModel(ResourceLocation location) {
@@ -101,7 +113,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 		if (model == null) {
 			throw new GeoModelException(location, "Could not find model.");
 		}
-		if (model != currentModel) {
+		if (model != this.currentModel) {
 			this.animationProcessor.clearModelRendererList();
 			for (GeoBone bone : model.topLevelBones) {
 				registerBone(bone);

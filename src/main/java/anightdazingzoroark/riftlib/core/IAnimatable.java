@@ -19,4 +19,6 @@ public interface IAnimatable {
 	default float scale() {
 		return 1f;
 	}
+
+    //todo: from now on molang variables are to be initialized here
 }

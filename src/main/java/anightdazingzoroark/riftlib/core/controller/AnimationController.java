@@ -20,6 +20,9 @@ import java.util.stream.Collectors;
 
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.easing.EasingManager;
+import anightdazingzoroark.riftlib.geo.render.GeoLocator;
+import anightdazingzoroark.riftlib.geo.render.GeoModel;
+import anightdazingzoroark.riftlib.resource.RiftLibCache;
 import org.apache.commons.lang3.tuple.Pair;
 
 import anightdazingzoroark.riftlib.molang.math.IValue;
@@ -510,9 +513,7 @@ public class AnimationController<T extends IAnimatable> {
 	private IAnimatableModel<T> getModel(T animatable) {
 		for (ModelFetcher<?> modelFetcher : modelFetchers) {
 			IAnimatableModel<T> model = (IAnimatableModel<T>) modelFetcher.apply(animatable);
-			if (model != null) {
-				return model;
-			}
+			if (model != null) return model;
 		}
 		System.out.printf(
 				"Could not find suitable model for animatable of type %s. Did you register a Model Fetcher?%n",
@@ -627,6 +628,21 @@ public class AnimationController<T extends IAnimatable> {
 			}
 		}
 
+        //create a riftlibrary particle emitter that's attached to a locator
+        for (ParticleEventKeyFrame particleEventKeyFrame : this.currentAnimation.particleKeyFrames) {
+            if (!this.executedKeyFrames.contains(particleEventKeyFrame) && tick >= particleEventKeyFrame.getStartTick()) {
+                //add particle information to a locator
+                IAnimatableModel<T> model = getModel(this.animatable);
+                if (model != null) {
+                    GeoLocator locator = model.getLocator(particleEventKeyFrame.locator);
+                    if (locator != null) locator.setParticleEmitterName(particleEventKeyFrame.effect);
+                }
+
+                this.executedKeyFrames.add(particleEventKeyFrame);
+            }
+        }
+
+        //TODO: this if block will be deprecated soon :tm:
 		if (this.soundListener != null || this.particleListener != null || this.customInstructionListener != null) {
 			for (EventKeyFrame<String> soundKeyFrame : this.currentAnimation.soundKeyFrames) {
 				if (!this.executedKeyFrames.contains(soundKeyFrame) && tick >= soundKeyFrame.getStartTick()) {
@@ -635,18 +651,6 @@ public class AnimationController<T extends IAnimatable> {
 					soundListener.playSound(event);
 
 					this.executedKeyFrames.add(soundKeyFrame);
-				}
-			}
-
-			for (ParticleEventKeyFrame particleEventKeyFrame : this.currentAnimation.particleKeyFrames) {
-				if (!this.executedKeyFrames.contains(particleEventKeyFrame)
-						&& tick >= particleEventKeyFrame.getStartTick()) {
-					ParticleKeyFrameEvent<T> event = new ParticleKeyFrameEvent<>(this.animatable, tick,
-							particleEventKeyFrame.effect, particleEventKeyFrame.locator, particleEventKeyFrame.script,
-							this);
-                    this.particleListener.summonParticle(event);
-
-					this.executedKeyFrames.add(particleEventKeyFrame);
 				}
 			}
 

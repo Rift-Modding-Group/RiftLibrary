@@ -4,6 +4,7 @@ import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.core.event.predicate.AnimationEvent;
 import anightdazingzoroark.riftlib.core.processor.AnimationProcessor;
 import anightdazingzoroark.riftlib.core.processor.IBone;
+import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 
 public interface IAnimatableModel<E> {
 	default double getCurrentTick() {
@@ -19,6 +20,8 @@ public interface IAnimatableModel<E> {
 	AnimationProcessor getAnimationProcessor();
 
 	Animation getAnimation(String name, IAnimatable animatable);
+
+    GeoLocator getLocator(String name);
 
 	/**
 	 * Gets a bone by name.

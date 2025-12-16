@@ -2,7 +2,7 @@ package anightdazingzoroark.riftlib.particle;
 
 import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeOnceComponent;
-import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.EmitterShapeBoxComponent;
+import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.*;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleAppearance.AppearanceBillboardComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleAppearance.AppearanceLightingComponent;
@@ -10,13 +10,11 @@ import anightdazingzoroark.riftlib.particle.particleComponent.particleAppearance
 import anightdazingzoroark.riftlib.particle.emitterComponent.initialState.EmitterInitializationComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate.EmitterInstantComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate.EmitterSteadyComponent;
-import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.EmitterShapeCustomComponent;
-import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.EmitterShapePointComponent;
-import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.EmitterShapeSphereComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeLoopingComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleInitialState.ParticleInitialSpeedComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeExpressionComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleInitialState.ParticleInitialSpinComponent;
+import anightdazingzoroark.riftlib.particle.particleComponent.particleLifetime.ParticleExpireInBlockComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleLifetime.ParticleExpireNotInBlockComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleLifetime.ParticleLifetimeExpressionComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleMotion.ParticleMotionCollisionComponent;
@@ -37,6 +35,7 @@ public class RiftLibParticleComponentRegistry {
         emitterComponentMap.put("minecraft:emitter_shape_sphere", EmitterShapeSphereComponent.class);
         emitterComponentMap.put("minecraft:emitter_shape_box", EmitterShapeBoxComponent.class);
         emitterComponentMap.put("minecraft:emitter_shape_point", EmitterShapePointComponent.class);
+        emitterComponentMap.put("minecraft:emitter_shape_disc", EmitterShapeDiscComponent.class);
         emitterComponentMap.put("minecraft:emitter_shape_custom", EmitterShapeCustomComponent.class);
 
         emitterComponentMap.put("minecraft:emitter_initialization", EmitterInitializationComponent.class);
@@ -51,6 +50,7 @@ public class RiftLibParticleComponentRegistry {
         particleComponentMap.put("minecraft:particle_appearance_lighting", AppearanceLightingComponent.class);
 
         particleComponentMap.put("minecraft:particle_lifetime_expression", ParticleLifetimeExpressionComponent.class);
+        particleComponentMap.put("minecraft:particle_expire_if_in_blocks", ParticleExpireInBlockComponent.class);
         particleComponentMap.put("minecraft:particle_expire_if_not_in_blocks", ParticleExpireNotInBlockComponent.class);
 
         particleComponentMap.put("minecraft:particle_initial_speed", ParticleInitialSpeedComponent.class);

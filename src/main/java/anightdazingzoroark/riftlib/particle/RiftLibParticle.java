@@ -28,6 +28,8 @@ public class RiftLibParticle {
     public double prevX, prevY, prevZ;
     public double velX, velY, velZ;
     public double rotation;
+    public double velRotation;
+    public double accelRotation;
     public float uvXMin, uvYMin, uvXMax, uvYMax;
     public IValue[] size;
     private boolean isDead;
@@ -40,6 +42,7 @@ public class RiftLibParticle {
 
     //expire/not expire within certain blocks of said strings
     public List<ParticleBlockRule> blocksExpireIfNotIn = new ArrayList<>();
+    public List<ParticleBlockRule> blocksExpireIfIn = new ArrayList<>();
     private final BlockPos.MutableBlockPos tempPos = new BlockPos.MutableBlockPos();
 
     //other collision related stuff
@@ -53,10 +56,13 @@ public class RiftLibParticle {
     //speed
     public IValue initialSpeed = MolangParser.ZERO;
     public IValue[] linearAcceleration = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
+    public IValue linearDragCoefficient = MolangParser.ZERO;
 
     //rotation
     public IValue initialRotation = MolangParser.ZERO;
     public IValue rotationRate = MolangParser.ZERO;
+    public IValue rotationAcceleration = MolangParser.ZERO;
+    public IValue rotationDragCoefficient = MolangParser.ZERO;
 
     //flipbook data
     public boolean flipbook;
@@ -139,7 +145,10 @@ public class RiftLibParticle {
     }
 
     public void initializeRotation() {
-        this.molangParser.withScope(this.particleScope, () -> this.rotation = this.initialRotation.get());
+        this.molangParser.withScope(this.particleScope, () -> {
+            this.rotation = this.initialRotation.get();
+            this.velRotation = this.rotationRate.get() / 20D;
+        });
     }
 
     public void update() {
@@ -170,17 +179,30 @@ public class RiftLibParticle {
             //update flipbook
             if (this.flipbook) this.updateFlipbookUV();
 
-            //rotate
-            double rotationRate = this.rotationRate.get();
-            if (rotationRate != 0) {
-                //turn degrees per sec into degrees per tick
-                this.rotation += this.rotationRate.get() / 20;
+            //-----rotation modification-----
+            if (this.velRotation != 0) {
+                this.rotation += this.velRotation;
 
                 //clamp between -180 and 180 degrees
                 if (this.rotation > 180) this.rotation -= 360;
                 if (this.rotation < -180) this.rotation += 360;
             }
 
+            //get rotation acceleration
+            //turn degrees per sec^2 into degrees per second^2
+            this.accelRotation = this.rotationAcceleration.get() / 400;
+
+            //apply to rotation velocity
+            if (this.accelRotation != 0) this.velRotation += this.accelRotation;
+
+            //apply rotational linearDrag
+            double rotationalDrag = this.rotationDragCoefficient.get();
+            if (rotationalDrag > 0) {
+                double factor = Math.max(0, 1 - (rotationalDrag / 20));
+                this.velRotation *= factor;
+            }
+
+            //-----position modification-----
             //move based on velocity (w collision)
             this.prevX = this.x;
             this.prevY = this.y;
@@ -210,6 +232,15 @@ public class RiftLibParticle {
             this.velX += this.linearAcceleration[0].get() / 400D;
             this.velY += this.linearAcceleration[1].get() / 400D;
             this.velZ += this.linearAcceleration[2].get() / 400D;
+
+            //apply linear drag
+            double linearDrag = this.linearDragCoefficient.get();
+            if (linearDrag > 0) {
+                double factor = Math.max(0, 1 - (linearDrag / 20));
+                this.velX *= factor;
+                this.velY *= factor;
+                this.velZ *= factor;
+            }
         });
     }
 
@@ -470,11 +501,14 @@ public class RiftLibParticle {
 
     private boolean isWithinValidBlock() {
         //if blocksExpireIfNotIn and blocksExpireIfIn are empty, skip
-        if (this.blocksExpireIfNotIn.isEmpty()) return true;
+        if (this.blocksExpireIfNotIn.isEmpty() && this.blocksExpireIfIn.isEmpty()) return true;
         IBlockState blockState = this.world.getBlockState(this.tempPos);
 
         for (ParticleBlockRule blockRule : this.blocksExpireIfNotIn) {
             if (!blockRule.matches(blockState)) return false;
+        }
+        for (ParticleBlockRule blockRule : this.blocksExpireIfIn) {
+            if (blockRule.matches(blockState)) return false;
         }
 
         return true;

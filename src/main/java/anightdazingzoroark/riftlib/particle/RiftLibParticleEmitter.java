@@ -279,7 +279,7 @@ public class RiftLibParticleEmitter {
     private Vec3d particleOffset() {
         if (this.emitterShape instanceof EmitterShapeSphereComponent) {
             EmitterShapeSphereComponent sphereEmitterShape = (EmitterShapeSphereComponent) this.emitterShape;
-            //sphere formula is x² + y² + z² = r²,
+            //sphere formula is x^2 + y^2 + z^2 = r^2,
             //this offset creator uses the radius to generate the x, y, and z positions of particles to create
             double radius = sphereEmitterShape.surfaceOnly ? sphereEmitterShape.radius.get() : (2 * this.random.nextDouble() - 1) * sphereEmitterShape.radius.get();
             double offsetY = (2 * this.random.nextDouble() - 1) * radius;
@@ -296,7 +296,7 @@ public class RiftLibParticleEmitter {
         else if (this.emitterShape instanceof EmitterShapeBoxComponent) {
             EmitterShapeBoxComponent boxEmitterShape = (EmitterShapeBoxComponent) this.emitterShape;
 
-            //in cubes, |x|, |y|, and |z| are less than or equal to a
+            //in cubes, |x|, |y|, and |z| are less than or equal to associated dimension length
             double randomX = this.random.nextDouble() * boxEmitterShape.halfDimensions[0].get() * 2 - boxEmitterShape.halfDimensions[0].get();
             double randomY = this.random.nextDouble() * boxEmitterShape.halfDimensions[1].get() * 2 - boxEmitterShape.halfDimensions[1].get();
             double randomZ = this.random.nextDouble() * boxEmitterShape.halfDimensions[2].get() * 2 - boxEmitterShape.halfDimensions[2].get();
@@ -358,6 +358,32 @@ public class RiftLibParticleEmitter {
                     customEmitterShape.offset[2].get()
             );
         }
+        else if (this.emitterShape instanceof EmitterShapeDiscComponent) {
+            EmitterShapeDiscComponent discEmitterShape = (EmitterShapeDiscComponent) this.emitterShape;
+
+            //disc formula is x^2 + y^2 = r^2
+            Vec3d vecNormal = new Vec3d(
+                    discEmitterShape.planeNormal[0].get(),
+                    discEmitterShape.planeNormal[1].get(),
+                    discEmitterShape.planeNormal[2].get()
+            ).normalize();
+
+            //orthonormal basis spanning the disc plane
+            Vec3d helper = (Math.abs(vecNormal.y) < 1) ? new Vec3d(0, 1, 0) : new Vec3d(1, 0, 0);
+            Vec3d vecX = vecNormal.crossProduct(helper).normalize();
+            Vec3d vecY = vecNormal.crossProduct(vecX).normalize();
+
+            double radius = discEmitterShape.surfaceOnly ? discEmitterShape.radius.get() : this.random.nextDouble() * discEmitterShape.radius.get();
+            double theta = 2 * Math.PI * this.random.nextDouble();
+
+            Vec3d inPlane = vecX.scale(radius * Math.cos(theta)).add(vecY.scale(radius * Math.sin(theta)));
+
+            return new Vec3d(
+                    inPlane.x + discEmitterShape.offset[0].get(),
+                    inPlane.y + discEmitterShape.offset[1].get(),
+                    inPlane.z + discEmitterShape.offset[2].get()
+            );
+        }
         else if (this.emitterShape instanceof EmitterShapeCustomComponent) {
             EmitterShapeCustomComponent customEmitterShape = (EmitterShapeCustomComponent) this.emitterShape;
             return new Vec3d(
@@ -366,7 +392,7 @@ public class RiftLibParticleEmitter {
                     customEmitterShape.offset[2].get()
             );
         }
-        else return Vec3d.ZERO;
+        return Vec3d.ZERO;
     }
 
     //this creates a normalized vector that serves as the direction in which
@@ -407,6 +433,27 @@ public class RiftLibParticleEmitter {
             else {
                 //generally the direction to go towards should be the same as its xyz offset from the center of sphere emitter
                 int pointer = boxEmitterShape.particleDirection.equals("outwards") ? 1 : boxEmitterShape.particleDirection.equals("inwards") ? -1 : 0;
+                return new Vec3d(
+                        pointer * (emissionX - this.x),
+                        pointer * (emissionY - this.y),
+                        pointer * (emissionZ - this.z)
+                ).normalize();
+            }
+        }
+        else if (this.emitterShape instanceof EmitterShapeDiscComponent) {
+            EmitterShapeDiscComponent discEmitterShape = (EmitterShapeDiscComponent) this.emitterShape;
+
+            //if it has custom particle direction, just return it instead
+            if (discEmitterShape.customParticleDirection != null) {
+                return new Vec3d(
+                        discEmitterShape.customParticleDirection[0].get(),
+                        discEmitterShape.customParticleDirection[1].get(),
+                        discEmitterShape.customParticleDirection[2].get()
+                ).normalize();
+            }
+            else {
+                //generally the direction to go towards should be the same as its xyz offset from the center of sphere emitter
+                int pointer = discEmitterShape.particleDirection.equals("outwards") ? 1 : discEmitterShape.particleDirection.equals("inwards") ? -1 : 0;
                 return new Vec3d(
                         pointer * (emissionX - this.x),
                         pointer * (emissionY - this.y),

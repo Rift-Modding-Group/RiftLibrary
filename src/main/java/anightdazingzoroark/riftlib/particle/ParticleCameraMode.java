@@ -33,7 +33,7 @@ public enum ParticleCameraMode {
             case "emitter_transform_xy":
             case "emitter_transform_xz":
             case "emitter_transform_yz":
-                RiftLib.LOGGER.log(Level.INFO, "Unsupported particle camera mode, defaulting to rotate_xyz");
+                RiftLib.LOGGER.warn("Unsupported particle camera mode, defaulting to rotate_xyz");
                 return ROTATE_XYZ;
             default:
                 throw new InvalidValueException("Invalid particle camera mode");

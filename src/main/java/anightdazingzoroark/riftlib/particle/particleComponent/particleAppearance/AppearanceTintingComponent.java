@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.particle.particleComponent.particleAppearance;
 
+import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.exceptions.InvalidValueException;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.molang.MolangException;
@@ -62,7 +63,9 @@ public class AppearanceTintingComponent extends RiftLibParticleComponent {
             }
             //interpolation based color
             //todo in the near future
-            else if (componentValue.object != null) {}
+            else if (componentValue.valueType == RawParticleComponent.ComponentValueType.OBJECT) {
+                RiftLib.LOGGER.warn("Color gradient is unsupported, defaulting to argb value #FFFFFFFF");
+            }
         }
     }
 

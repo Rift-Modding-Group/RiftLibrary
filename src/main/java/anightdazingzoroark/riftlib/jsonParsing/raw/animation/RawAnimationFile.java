@@ -17,6 +17,9 @@ public class RawAnimationFile {
 
         @SerializedName("bones")
         public Map<String, RawBoneAnimations> bones;
+
+        @SerializedName("particle_effects")
+        public Map<String, RawParticleEffectAnimations> particleEffects;
     }
 
     public static class RawBoneAnimations {
@@ -28,5 +31,16 @@ public class RawAnimationFile {
 
         @SerializedName("position")
         public RawAnimationChannel position;
+    }
+
+    public static class RawParticleEffectAnimations {
+        @SerializedName("effect")
+        public String effect;
+
+        @SerializedName("locator")
+        public String locator;
+
+        @SerializedName("pre_effect_script")
+        public String preEffectScript;
     }
 }

@@ -149,7 +149,10 @@
 					"pivot": [0, 14, -27],
 					"cubes": [
 						{"origin": [-2, 12.5, -37], "size": [4, 2, 11], "uv": [78, 55]}
-					]
+					],
+					"locators": {
+						"fireLocator": [0, 14, -29]
+					}
 				},
 				{
 					"name": "leftHeadHorn",

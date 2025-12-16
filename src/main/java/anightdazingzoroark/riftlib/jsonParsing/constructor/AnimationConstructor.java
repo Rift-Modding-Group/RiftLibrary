@@ -6,6 +6,7 @@ import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.easing.EasingType;
 import anightdazingzoroark.riftlib.core.keyframe.BoneAnimation;
 import anightdazingzoroark.riftlib.core.keyframe.KeyFrame;
+import anightdazingzoroark.riftlib.core.keyframe.ParticleEventKeyFrame;
 import anightdazingzoroark.riftlib.core.keyframe.VectorKeyFrameList;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationChannel;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationFile;
@@ -38,20 +39,6 @@ public class AnimationConstructor {
 			}
 		}
 
-		// Handle parsing particle effect keyframes
-		ArrayList<Map.Entry<String, JsonElement>> particleKeyFrames = getParticleEffectFrames(animationJsonObject);
-		if (particleKeyFrames != null) {
-			for (Map.Entry<String, JsonElement> keyFrame : particleKeyFrames) {
-				JsonObject object = keyFrame.getValue().getAsJsonObject();
-				JsonElement effect = object.get("effect");
-				JsonElement locator = object.get("locator");
-				JsonElement pre_effect_script = object.get("pre_effect_script");
-				animation.particleKeyFrames.add(new ParticleEventKeyFrame(Double.parseDouble(keyFrame.getKey()) * 20,
-						effect == null ? "" : effect.getAsString(), locator == null ? "" : locator.getAsString(),
-						pre_effect_script == null ? "" : pre_effect_script.getAsString()));
-			}
-		}
-
 		// Handle parsing custom instruction keyframes
 		ArrayList<Map.Entry<String, JsonElement>> customInstructionKeyFrames = getCustomInstructionKeyFrames(
 				animationJsonObject);
@@ -64,6 +51,19 @@ public class AnimationConstructor {
 			}
 		}
          */
+        //create particle animations
+        Map<String, RawAnimationFile.RawParticleEffectAnimations> rawParticleEffectAnimations = rawAnimation.getValue().particleEffects;
+        if (rawParticleEffectAnimations != null) {
+            for (Map.Entry<String, RawAnimationFile.RawParticleEffectAnimations> rawParticleEffectAnim : rawParticleEffectAnimations.entrySet()) {
+                ParticleEventKeyFrame particleEventKeyFrame = new ParticleEventKeyFrame(
+                        Double.parseDouble(rawParticleEffectAnim.getKey()) * 20,
+                        rawParticleEffectAnim.getValue().effect,
+                        rawParticleEffectAnim.getValue().locator,
+                        rawParticleEffectAnim.getValue().preEffectScript
+                );
+                toReturn.particleKeyFrames.add(particleEventKeyFrame);
+            }
+        }
 
         //create bone animations
         Map<String, RawAnimationFile.RawBoneAnimations> rawBoneAnimations = rawAnimation.getValue().bones;

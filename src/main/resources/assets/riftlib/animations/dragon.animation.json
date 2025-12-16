@@ -50,6 +50,12 @@
 						"1.0": [0, 0, 0]
 					}
 				}
+			},
+			"particle_effects": {
+				"0.0": {
+					"effect": "myEffect",
+					"locator": "fireLocator"
+				}
 			}
 		},
 		"animation.dragon.attack_while_flying": {

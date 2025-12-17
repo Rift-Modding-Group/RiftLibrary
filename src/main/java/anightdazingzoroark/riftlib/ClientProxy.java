@@ -45,7 +45,6 @@ import java.util.Collection;
 import java.util.List;
 
 public class ClientProxy extends ServerProxy {
-    //todo: make this reset when world is restarted
     public static final List<RiftLibParticleEmitter> EMITTER_LIST = new ArrayList<>();
     public static int EMITTER_ID = 0;
 

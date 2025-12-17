@@ -19,8 +19,4 @@ public class RiftLibParticleHelper {
     public static void createParticle(String name, double x, double y, double z) {
         ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibCreateParticle(name, x, y, z));
     }
-
-    public static void createParticleAttachedToEntity(String particleName, Entity entity, double xOffset, double yOffset, double zOffset) {}
-
-    public static void removeParticleAttachedToEntity(String particleName, Entity entity) {}
 }

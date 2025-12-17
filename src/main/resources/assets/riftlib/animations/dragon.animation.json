@@ -53,7 +53,7 @@
 			},
 			"particle_effects": {
 				"0.0": {
-					"effect": "myEffect",
+					"effect": "riftlib:fire_emission",
 					"locator": "fireLocator"
 				}
 			}

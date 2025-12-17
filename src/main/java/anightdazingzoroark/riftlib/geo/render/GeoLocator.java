@@ -7,9 +7,9 @@ public class GeoLocator {
 
     public final String name;
 
-    public float positionX;
-    public float positionY;
-    public float positionZ;
+    private final float positionX;
+    private final float positionY;
+    private final float positionZ;
 
     private String particleEmitterName = "";
 
@@ -21,7 +21,15 @@ public class GeoLocator {
         this.positionZ = z;
     }
 
-    public Vec3d getOffsetFromDisplacements() {
+    public Vec3d getPosition() {
+        return new Vec3d(
+                this.positionX + this.getOffsetFromDisplacements().x + this.getOffsetFromRotations().x,
+                this.positionY + this.getOffsetFromDisplacements().y + this.getOffsetFromRotations().y,
+                this.positionZ + this.getOffsetFromDisplacements().z + this.getOffsetFromRotations().z
+        );
+    }
+
+    private Vec3d getOffsetFromDisplacements() {
         Vec3d toReturn = Vec3d.ZERO;
         GeoBone boneToTest = this.parent;
 
@@ -32,7 +40,7 @@ public class GeoLocator {
         return toReturn;
     }
 
-    public Vec3d getOffsetFromRotations() {
+    private Vec3d getOffsetFromRotations() {
         Vec3d toReturn = new Vec3d(this.positionX, this.positionY, this.positionZ);
         GeoBone boneToTest = this.parent;
 

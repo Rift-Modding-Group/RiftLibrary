@@ -61,7 +61,6 @@ public class AnimationConstructor {
                         rawParticleEffectAnim.getValue().locator,
                         rawParticleEffectAnim.getValue().preEffectScript
                 );
-                System.out.println("has particle keyframe");
                 toReturn.particleKeyFrames.add(particleEventKeyFrame);
             }
         }

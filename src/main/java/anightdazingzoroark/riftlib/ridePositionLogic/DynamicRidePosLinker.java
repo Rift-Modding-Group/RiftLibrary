@@ -20,11 +20,7 @@ public abstract class DynamicRidePosLinker<T extends IAnimatable & IDynamicRideU
                 int ridePosIndex = DynamicRidePosUtils.locatorRideIndex(locator.name);
                 toReturn.map.put(
                         ridePosIndex,
-                        new Vec3d(
-                                locator.positionX + (float) locator.getOffsetFromRotations().x + (float) locator.getOffsetFromDisplacements().x,
-                                locator.positionY + (float) locator.getOffsetFromRotations().y + (float) locator.getOffsetFromDisplacements().y,
-                                -locator.positionZ - (float) locator.getOffsetFromRotations().z - (float) locator.getOffsetFromDisplacements().z
-                        )
+                        new Vec3d(locator.getPosition().x, locator.getPosition().y, -locator.getPosition().z)
                 );
             }
         }

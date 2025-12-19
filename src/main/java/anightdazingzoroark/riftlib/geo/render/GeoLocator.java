@@ -45,9 +45,9 @@ public class GeoLocator {
         GeoBone boneToTest = this.parent;
 
         while (boneToTest != null) {
-            double pivotX = boneToTest.getPivotX() / 16.0;
-            double pivotY = boneToTest.getPivotY() / 16.0;
-            double pivotZ = boneToTest.getPivotZ() / 16.0;
+            double pivotX = boneToTest.getPivotX() / 16D;
+            double pivotY = boneToTest.getPivotY() / 16D;
+            double pivotZ = boneToTest.getPivotZ() / 16D;
 
             double relX = toReturn.x - pivotX;
             double relY = toReturn.y - pivotY;

@@ -2,6 +2,7 @@ package anightdazingzoroark.riftlib.particle;
 
 import anightdazingzoroark.riftlib.ClientProxy;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.molang.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
@@ -38,6 +39,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @SideOnly(Side.CLIENT)
 public class RiftLibParticleEmitter {
     private final List<RiftLibParticle> particles = new ArrayList<>();
+    private AnimatedLocator animatedLocator;
     private double particleCount;
     private final World world;
     private final int emitterId; //this is mostly for debugging
@@ -46,7 +48,7 @@ public class RiftLibParticleEmitter {
     private final ParticleMaterial material;
     private final MolangParser molangParser;
     private final Random random = new Random();
-    private final double x, y, z;
+    private double x, y, z;
     private boolean isDead;
     public RiftLibEmitterShapeComponent emitterShape;
     public RiftLibEmitterRateComponent emitterRate;
@@ -75,6 +77,11 @@ public class RiftLibParticleEmitter {
 
     //for lifetime stuff
     public RiftLibEmitterLifetimeComponent emitterLifetime;
+
+    public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, AnimatedLocator animatedLocator) {
+        this(particleBuilder, world, animatedLocator.getLocatorWorldPosition().x, animatedLocator.getLocatorWorldPosition().y, animatedLocator.getLocatorWorldPosition().z);
+        this.animatedLocator = animatedLocator;
+    }
 
     public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, double x, double y, double z) {
         this.textureLocation = particleBuilder.texture;
@@ -142,7 +149,15 @@ public class RiftLibParticleEmitter {
         this.age++;
 
         //set death based on expiry and if theres no particles left
-        this.isDead = this.canExpire() && this.particles.isEmpty();
+        if (this.canExpire() && this.particles.isEmpty()) this.killEmitter();
+
+        //update location based on animatedLocator if there is
+        if (this.animatedLocator != null) {
+            Vec3d animatedLocatorPos = this.animatedLocator.getLocatorWorldPosition();
+            this.x = animatedLocatorPos.x;
+            this.y = animatedLocatorPos.y;
+            this.z = animatedLocatorPos.z;
+        }
 
         //create particles based on rate and ability to create them
         if (this.canCreateParticles()) {
@@ -572,7 +587,15 @@ public class RiftLibParticleEmitter {
         return false;
     }
 
+    public void killEmitter() {
+        this.isDead = true;
+    }
+
     public boolean isDead() {
         return this.isDead;
+    }
+
+    public AnimatedLocator getLocator() {
+        return this.animatedLocator;
     }
 }

@@ -48,16 +48,16 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 
 	protected final AnimatedGeoModel<T> modelProvider;
 	protected final List<GeoLayerRenderer<T>> layerRenderers = Lists.newArrayList();
-	private GeoModel model;
 
-	public GeoEntityRenderer(RenderManager renderManager, AnimatedGeoModel<T> modelProvider) {
+    public GeoEntityRenderer(RenderManager renderManager, AnimatedGeoModel<T> modelProvider) {
 		super(renderManager);
 		this.modelProvider = modelProvider;
 	}
 
 	@Override
 	public void doRender(T entity, double x, double y, double z, float entityYaw, float partialTicks) {
-		this.model = modelProvider.getModel(modelProvider.getModelLocation(entity));
+        GeoModel model = this.modelProvider.getModel(entity, this.modelProvider.getModelLocation(entity));
+
 		//rest is good ol rendering code
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(x, y, z);
@@ -122,11 +122,9 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 
 		AnimationEvent predicate = new AnimationEvent(entity, limbSwing, limbSwingAmount, partialTicks,
 				!(limbSwingAmount > -0.15F && limbSwingAmount < 0.15F), Collections.singletonList(entityModelData));
-		if (modelProvider instanceof IAnimatableModel) {
-			((IAnimatableModel<T>) modelProvider).setLivingAnimations(entity, this.getUniqueID(entity), predicate);
-		}
+        this.modelProvider.setLivingAnimations(entity, this.getUniqueID(entity), predicate);
 
-		GlStateManager.pushMatrix();
+        GlStateManager.pushMatrix();
 		GlStateManager.scale(entity.scale(), entity.scale(), entity.scale());
 		GlStateManager.translate(0, 0.01f, 0);
 		Minecraft.getMinecraft().renderEngine.bindTexture(getEntityTexture(entity));

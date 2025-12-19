@@ -22,6 +22,7 @@ import anightdazingzoroark.riftlib.message.RiftLibMessage;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.ParticleTicker;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
+import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
 import anightdazingzoroark.riftlib.renderers.geo.GeoArmorRenderer;
 import anightdazingzoroark.riftlib.renderers.geo.GeoReplacedEntityRenderer;
 import anightdazingzoroark.riftlib.resource.RiftLibCache;
@@ -116,21 +117,12 @@ public class ClientProxy extends ServerProxy {
     @Override
     public void spawnParticle(String name, double x, double y, double z) {
         //get particle builder
-        ParticleBuilder builder = this.getParticleBuilder(name);
+        ParticleBuilder builder = RiftLibParticleHelper.getParticleBuilder(name);
 
         //create an emitter
         if (builder != null) {
             RiftLibParticleEmitter emitter = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, x, y, z);
             EMITTER_LIST.add(emitter);
         }
-    }
-
-    private ParticleBuilder getParticleBuilder(String name) {
-        Collection<ParticleBuilder> particleBuilders = RiftLibCache.getInstance().getParticleBuilders().values();
-
-        for (ParticleBuilder particleBuilder : particleBuilders) {
-            if (particleBuilder.identifier != null && particleBuilder.identifier.equals(name)) return particleBuilder;
-        }
-        return null;
     }
 }

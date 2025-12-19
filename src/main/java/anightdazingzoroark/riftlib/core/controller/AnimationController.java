@@ -18,11 +18,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import anightdazingzoroark.riftlib.ClientProxy;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.easing.EasingManager;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
-import anightdazingzoroark.riftlib.geo.render.GeoModel;
-import anightdazingzoroark.riftlib.resource.RiftLibCache;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
+import anightdazingzoroark.riftlib.particle.ParticleBuilder;
+import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
+import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
+import net.minecraft.client.Minecraft;
 import org.apache.commons.lang3.tuple.Pair;
 
 import anightdazingzoroark.riftlib.molang.math.IValue;
@@ -632,10 +636,26 @@ public class AnimationController<T extends IAnimatable> {
         for (ParticleEventKeyFrame particleEventKeyFrame : this.currentAnimation.particleKeyFrames) {
             if (!this.executedKeyFrames.contains(particleEventKeyFrame) && tick >= particleEventKeyFrame.getStartTick()) {
                 //add particle information to a locator
-                IAnimatableModel<T> model = getModel(this.animatable);
+                IAnimatableModel<T> model = this.getModel(this.animatable);
                 if (model != null) {
-                    GeoLocator locator = model.getLocator(particleEventKeyFrame.locator);
-                    if (locator != null) locator.setParticleEmitterName(particleEventKeyFrame.effect);
+                    AnimatedLocator locator = model.getLocator(particleEventKeyFrame.locator);
+                    if (locator != null) {
+                        //first check if the locator is used by another particle in ClientProxy.EMITTER_LIST
+                        //if there is, remove it
+                        for (RiftLibParticleEmitter emitter : ClientProxy.EMITTER_LIST) {
+                            if (emitter.getLocator() == locator) emitter.killEmitter();
+                        }
+
+                        //add emitter to locator and put it in ClientProxy.EMITTER_LIST
+                        ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(particleEventKeyFrame.effect);
+                        if (particleBuilder != null)  {
+                            ClientProxy.EMITTER_LIST.add(new RiftLibParticleEmitter(
+                                    particleBuilder,
+                                    Minecraft.getMinecraft().world,
+                                    locator
+                            ));
+                        }
+                    }
                 }
 
                 this.executedKeyFrames.add(particleEventKeyFrame);

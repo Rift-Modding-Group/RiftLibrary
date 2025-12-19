@@ -1,6 +1,8 @@
 package anightdazingzoroark.riftlib.model;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -36,16 +38,17 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 		implements IAnimatableModel<T>, IAnimatableModelProvider<T> {
 	private final AnimationProcessor animationProcessor;
 	protected GeoModel currentModel;
+    protected List<AnimatedLocator> animatedLocators = new ArrayList<>();
 
 	protected AnimatedGeoModel() {
 		this.animationProcessor = new AnimationProcessor(this);
 	}
 
 	public void registerBone(GeoBone bone) {
-		registerModelRenderer(bone);
+        this.registerModelRenderer(bone);
 
 		for (GeoBone childBone : bone.childBones) {
-			registerBone(childBone);
+			this.registerBone(childBone);
 		}
 	}
 
@@ -60,19 +63,19 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 			MinecraftForge.EVENT_BUS.register(ticker);
 		}
 		if (!Minecraft.getMinecraft().isGamePaused() || manager.shouldPlayWhilePaused) {
-			seekTime = manager.tick + Minecraft.getMinecraft().getRenderPartialTicks();
-		} else {
-			seekTime = manager.tick;
+            this.seekTime = manager.tick + Minecraft.getMinecraft().getRenderPartialTicks();
 		}
+        else this.seekTime = manager.tick;
 
 		AnimationEvent<T> predicate;
 		if (customPredicate == null) {
 			predicate = new AnimationEvent<T>(entity, 0, 0, (float) (manager.tick - lastGameTickTime), false, Collections.emptyList());
-		} else {
+		}
+        else {
 			predicate = customPredicate;
 		}
 
-		predicate.animationTick = seekTime;
+		predicate.animationTick = this.seekTime;
 		animationProcessor.preAnimationSetup(predicate.getAnimatable(), seekTime);
 		if (!this.animationProcessor.getModelRendererList().isEmpty()) {
 			animationProcessor.tickAnimation(entity, uniqueID, seekTime, predicate, RiftLibCache.getInstance().parser,
@@ -86,7 +89,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 	}
 
 	public void registerModelRenderer(IBone modelRenderer) {
-		animationProcessor.registerModelRenderer(modelRenderer);
+        this.animationProcessor.registerModelRenderer(modelRenderer);
 	}
 
 	@Override
@@ -96,29 +99,32 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 	}
 
     @Override
-    public GeoLocator getLocator(String name) {
-        if (this.currentModel == null) return null;
-
-        for (GeoLocator locator : this.currentModel.getAllLocators()) {
-            if (locator.name.equals(name)) return locator;
+    public AnimatedLocator getLocator(String name) {
+        for (AnimatedLocator locator : this.animatedLocators) {
+            if (locator.getLocatorName().equals(name)) return locator;
         }
-
         return null;
     }
 
 	//this must be where the model is attached to the entity
-	@Override
-	public GeoModel getModel(ResourceLocation location) {
-		GeoModel model = super.getModel(location);
+	public GeoModel getModel(T entity, ResourceLocation location) {
+		GeoModel model = this.getModel(location);
 		if (model == null) {
 			throw new GeoModelException(location, "Could not find model.");
 		}
 		if (model != this.currentModel) {
+            //change current model
 			this.animationProcessor.clearModelRendererList();
 			for (GeoBone bone : model.topLevelBones) {
-				registerBone(bone);
+                this.registerBone(bone);
 			}
 			this.currentModel = model;
+
+            //change animated locators
+            this.animatedLocators.clear();
+            for (GeoLocator locator : model.getAllLocators()) {
+                this.animatedLocators.add(new AnimatedLocator(entity, locator));
+            }
 		}
 		return model;
 	}

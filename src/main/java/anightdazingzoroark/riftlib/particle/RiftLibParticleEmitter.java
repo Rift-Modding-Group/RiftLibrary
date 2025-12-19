@@ -39,6 +39,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @SideOnly(Side.CLIENT)
 public class RiftLibParticleEmitter {
     private final List<RiftLibParticle> particles = new ArrayList<>();
+    public final String particleIdentifier;
     private AnimatedLocator animatedLocator;
     private double particleCount;
     private final World world;
@@ -85,6 +86,7 @@ public class RiftLibParticleEmitter {
 
     public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, double x, double y, double z) {
         this.textureLocation = particleBuilder.texture;
+        this.particleIdentifier = particleBuilder.identifier;
         this.material = particleBuilder.material;
         this.molangParser = particleBuilder.molangParser;
         this.rawParticleComponents = particleBuilder.rawParticleComponents;
@@ -130,7 +132,7 @@ public class RiftLibParticleEmitter {
 
     //emitter is updated here, particles r created here too
     public void update() throws MolangException {
-        if (this.isDead) return;
+        if (this.isDead()) return;
 
         this.molangParser.withScope(this.emitterScope, () -> {
             //dynamically set molang variables
@@ -151,6 +153,9 @@ public class RiftLibParticleEmitter {
         //set death based on expiry and if theres no particles left
         if (this.canExpire() && this.particles.isEmpty()) this.killEmitter();
 
+        //set death based on if it has an animated locator and if said animatedlocator is dead
+        if (this.animatedLocator != null && this.animatedLocator.isDead()) this.killEmitter();
+
         //update location based on animatedLocator if there is
         if (this.animatedLocator != null) {
             Vec3d animatedLocatorPos = this.animatedLocator.getLocatorWorldPosition();
@@ -160,7 +165,7 @@ public class RiftLibParticleEmitter {
         }
 
         //create particles based on rate and ability to create them
-        if (this.canCreateParticles()) {
+        if (this.canCreateParticles() && !this.isDead) {
             if (this.emitterRate instanceof EmitterInstantComponent) {
                 EmitterInstantComponent emitterInstant = (EmitterInstantComponent) this.emitterRate;
                 double particleCount = emitterInstant.particleCount.get();
@@ -592,7 +597,7 @@ public class RiftLibParticleEmitter {
     }
 
     public boolean isDead() {
-        return this.isDead;
+        return this.isDead && this.particles.isEmpty();
     }
 
     public AnimatedLocator getLocator() {

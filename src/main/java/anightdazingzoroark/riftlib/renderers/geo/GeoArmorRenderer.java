@@ -79,7 +79,7 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 	public void render(float partialTicks) {
 		GlStateManager.translate(0.0D, 1.501F, 0.0D);
 		GlStateManager.scale(-1.0F, -1.0F, 1.0F);
-		GeoModel model = modelProvider.getModel(null, modelProvider.getModelLocation(currentArmorItem));
+		GeoModel model = modelProvider.getModel(modelProvider.getModelLocation(currentArmorItem));
 
 		AnimationEvent itemEvent = new AnimationEvent(this.currentArmorItem, 0, 0, 0, false,
 				Arrays.asList(this.itemStack, this.entityLiving, this.armorSlot));
@@ -184,7 +184,7 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 
 	@SuppressWarnings("incomplete-switch")
 	public GeoArmorRenderer applySlot(EntityEquipmentSlot slot) {
-		modelProvider.getModel(null, modelProvider.getModelLocation(currentArmorItem));
+		modelProvider.getModel(modelProvider.getModelLocation(currentArmorItem));
 
 		IBone headBone = this.modelProvider.getBone(this.headBone);
 		IBone bodyBone = this.modelProvider.getBone(this.bodyBone);

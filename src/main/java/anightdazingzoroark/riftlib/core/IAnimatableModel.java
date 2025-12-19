@@ -22,8 +22,6 @@ public interface IAnimatableModel<E> {
 
 	Animation getAnimation(String name, IAnimatable animatable);
 
-    AnimatedLocator getLocator(String name);
-
 	/**
 	 * Gets a bone by name.
 	 *

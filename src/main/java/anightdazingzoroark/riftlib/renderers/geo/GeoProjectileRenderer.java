@@ -41,7 +41,7 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile & IAnimatable> ex
 	public void doRender(T entity, double x, double y, double z, float entityYaw, float partialTicks) {
 		GlStateManager.pushMatrix();
 		GlStateManager.pushMatrix();
-		GeoModel model = modelProvider.getModel(null, modelProvider.getModelLocation(entity));
+		GeoModel model = modelProvider.getModel(modelProvider.getModelLocation(entity));
 		GlStateManager.translate(x, y, z);
 		GlStateManager.rotate(
 				entity.prevRotationYaw + (entity.rotationYaw - entity.prevRotationYaw) * partialTicks - 90.0F, 0.0F,

@@ -1,8 +1,6 @@
 package anightdazingzoroark.riftlib.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
@@ -38,7 +36,6 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 		implements IAnimatableModel<T>, IAnimatableModelProvider<T> {
 	private final AnimationProcessor animationProcessor;
 	protected GeoModel currentModel;
-    protected List<AnimatedLocator> animatedLocators = new ArrayList<>();
 
 	protected AnimatedGeoModel() {
 		this.animationProcessor = new AnimationProcessor(this);
@@ -83,6 +80,11 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 		}
 	}
 
+    public void tickAnimatedLocators(T entity, GeoModel model) {
+        //create animated locator list for animatable if it doesn't exist yet
+        entity.getFactory().createAnimatedLocators(model);
+    }
+
 	@Override
 	public AnimationProcessor getAnimationProcessor() {
 		return this.animationProcessor;
@@ -98,17 +100,10 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 				.getAnimation(name);
 	}
 
+	//this is where the model is attached to the entity
     @Override
-    public AnimatedLocator getLocator(String name) {
-        for (AnimatedLocator locator : this.animatedLocators) {
-            if (locator.getLocatorName().equals(name)) return locator;
-        }
-        return null;
-    }
-
-	//this must be where the model is attached to the entity
-	public GeoModel getModel(T entity, ResourceLocation location) {
-		GeoModel model = this.getModel(location);
+	public GeoModel getModel(ResourceLocation location) {
+		GeoModel model = super.getModel(location);
 		if (model == null) {
 			throw new GeoModelException(location, "Could not find model.");
 		}
@@ -119,12 +114,6 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
                 this.registerBone(bone);
 			}
 			this.currentModel = model;
-
-            //change animated locators
-            this.animatedLocators.clear();
-            for (GeoLocator locator : model.getAllLocators()) {
-                this.animatedLocators.add(new AnimatedLocator(entity, locator));
-            }
 		}
 		return model;
 	}

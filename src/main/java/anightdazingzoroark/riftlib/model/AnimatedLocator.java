@@ -20,6 +20,14 @@ public class AnimatedLocator {
         return this.locator.name;
     }
 
+    public boolean isDead() {
+        if (this.animatable instanceof Entity) {
+            Entity entity = (Entity) this.animatable;
+            return !entity.isEntityAlive();
+        }
+        return false;
+    }
+
     public Vec3d getLocatorWorldPosition() {
         Vec3d animatableWorldPos = this.getAnimatableWorldPosition();
         Vec3d locatorPos = this.locator.getPosition();

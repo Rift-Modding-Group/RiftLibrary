@@ -3,7 +3,6 @@ package anightdazingzoroark.riftlib.jsonParsing.raw.geo;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
-import java.util.Map;
 
 public class RawGeoModel {
     @SerializedName("format_version")
@@ -63,7 +62,7 @@ public class RawGeoModel {
         public List<RawModelCube> cubes;
 
         @SerializedName("locators")
-        public Map<String, double[]> locators;
+        public RawModelLocatorList locators;
     }
 
     public static class RawModelCube {
@@ -88,6 +87,4 @@ public class RawGeoModel {
         @SerializedName("uv")
         public RawUVUnion uv;
     }
-
-    public static class RawModelLocatorList {}
 }

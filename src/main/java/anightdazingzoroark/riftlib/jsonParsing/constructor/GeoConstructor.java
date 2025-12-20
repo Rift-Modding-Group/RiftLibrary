@@ -1,7 +1,5 @@
 package anightdazingzoroark.riftlib.jsonParsing.constructor;
 
-import java.util.Map;
-
 import javax.vecmath.Vector3f;
 
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
@@ -12,6 +10,7 @@ import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawModelBoneGroup;
 import anightdazingzoroark.riftlib.geo.render.GeoBone;
 import anightdazingzoroark.riftlib.geo.render.GeoCube;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
+import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawModelLocatorList;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 
 public class GeoConstructor {
@@ -61,14 +60,21 @@ public class GeoConstructor {
 		}
 
 		//add locators
-		if (rawBone.locators != null && !rawBone.locators.isEmpty()) {
-			for (Map.Entry<String, double[]> entry: rawBone.locators.entrySet()) {
+		if (rawBone.locators != null && !rawBone.locators.list.isEmpty()) {
+			for (RawModelLocatorList.RawModelLocator rawLocator : rawBone.locators.list) {
+                System.out.println(geoBone);
+                System.out.println(rawLocator);
+                System.out.println(rawLocator.name);
+
 				geoBone.childLocators.add(new GeoLocator(
 						geoBone,
-						entry.getKey(),
-						(float) entry.getValue()[0] / 16f,
-						(float) entry.getValue()[1] / 16f,
-						(float) entry.getValue()[2] / 16f
+                        rawLocator.name,
+						(float) rawLocator.offset[0] / 16f,
+						(float) rawLocator.offset[1] / 16f,
+						(float) rawLocator.offset[2] / 16f,
+                        (float) rawLocator.rotation[0],
+                        (float) rawLocator.rotation[1],
+                        (float) rawLocator.rotation[2]
 				));
 			}
 		}

@@ -640,34 +640,19 @@ public class AnimationController<T extends IAnimatable> {
                 AnimatedLocator locator = this.animatable.getFactory().getAnimatedLocator(particleEventKeyFrame.locator);
                 if (locator != null) {
                     //first check if the locator is used by another particle in ClientProxy.EMITTER_LIST
-                    //if there is, ignore
-                    boolean flag = true;
+                    //if there is, kill it
                     for (RiftLibParticleEmitter emitter : ClientProxy.EMITTER_LIST) {
-                        /*
-                        if (emitter.getLocator() == locator && emitter.particleIdentifier.equals(particleEventKeyFrame.effect)) {
-                            flag = false;
-                            break;
-                        }
-                        else if (emitter.getLocator() == locator) {
-                            emitter.killEmitter();
-                        }
-                         */
-
-                        if (emitter.getLocator() == locator) {
-                            emitter.killEmitter();
-                        }
+                        if (emitter.getLocator() == locator) emitter.killEmitter();
                     }
 
                     //add emitter to locator and put it in ClientProxy.EMITTER_LIST
-                    if (flag) {
-                        ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(particleEventKeyFrame.effect);
-                        if (particleBuilder != null)  {
-                            ClientProxy.EMITTER_LIST.add(new RiftLibParticleEmitter(
-                                    particleBuilder,
-                                    Minecraft.getMinecraft().world,
-                                    locator
-                            ));
-                        }
+                    ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(particleEventKeyFrame.effect);
+                    if (particleBuilder != null)  {
+                        ClientProxy.EMITTER_LIST.add(new RiftLibParticleEmitter(
+                                particleBuilder,
+                                Minecraft.getMinecraft().world,
+                                locator
+                        ));
                     }
                 }
 

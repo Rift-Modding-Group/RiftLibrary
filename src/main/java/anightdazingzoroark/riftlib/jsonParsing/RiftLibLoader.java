@@ -9,10 +9,7 @@ import anightdazingzoroark.riftlib.jsonParsing.constructor.HitboxConstructor;
 import anightdazingzoroark.riftlib.jsonParsing.constructor.ParticleConstructor;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationChannel;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationFile;
-import anightdazingzoroark.riftlib.jsonParsing.raw.geo.FormatVersion;
-import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawGeoModel;
-import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawGeometryTree;
-import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawUVUnion;
+import anightdazingzoroark.riftlib.jsonParsing.raw.geo.*;
 import anightdazingzoroark.riftlib.jsonParsing.raw.hitbox.RawHitboxDefinition;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticle;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
@@ -37,6 +34,7 @@ public class RiftLibLoader {
             .registerTypeAdapter(RawUVUnion.class, new RawUVUnion.Deserializer())
             .registerTypeAdapter(RawAnimationChannel.class, new RawAnimationChannel.Deserializer())
             .registerTypeAdapter(RawParticleComponent.class, new RawParticleComponent.Deserializer())
+            .registerTypeAdapter(RawModelLocatorList.class, new RawModelLocatorList.Deserialize())
             .create();
 
 	public static GeoModel loadGeoModel(IResourceManager resourceManager, ResourceLocation location) {

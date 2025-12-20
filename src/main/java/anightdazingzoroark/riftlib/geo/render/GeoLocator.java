@@ -4,21 +4,23 @@ import net.minecraft.util.math.Vec3d;
 
 public class GeoLocator {
     public final GeoBone parent;
-
     public final String name;
-
     private final float positionX;
     private final float positionY;
     private final float positionZ;
+    private final float rotationX;
+    private final float rotationY;
+    private final float rotationZ;
 
-    private String particleEmitterName = "";
-
-    public GeoLocator(GeoBone parent, String name, float x, float y, float z) {
+    public GeoLocator(GeoBone parent, String name, float x, float y, float z, float rotationX, float rotationY, float rotationZ) {
         this.parent = parent;
         this.name = name;
         this.positionX = x;
         this.positionY = y;
         this.positionZ = z;
+        this.rotationX = rotationX;
+        this.rotationY = rotationY;
+        this.rotationZ = rotationZ;
     }
 
     public Vec3d getPosition() {
@@ -84,16 +86,7 @@ public class GeoLocator {
         return toReturn.subtract(this.positionX, this.positionY, this.positionZ);
     }
 
-    public void setParticleEmitterName(String name) {
-        if (name == null) this.particleEmitterName = "";
-        else this.particleEmitterName = name;
-    }
-
-    public String getParticleEmitterName() {
-        return this.particleEmitterName;
-    }
-
     public String toString() {
-        return "[name="+this.name+", position=("+this.positionX+", "+this.positionY+", "+this.positionZ+")]";
+        return "[name="+this.name+", offset=("+this.positionX+", "+this.positionY+", "+this.positionZ+")]";
     }
 }

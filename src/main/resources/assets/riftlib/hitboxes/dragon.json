@@ -143,6 +143,20 @@
 			"height": 0.6,
 			"damageMultiplier": 1,
 			"affectedByAnim": true
+		},
+		{
+			"locator": "hitbox_left_wing",
+			"width": 1,
+			"height": 0.1,
+			"damageMultiplier": 1,
+			"affectedByAnim": true
+		},
+		{
+			"locator": "hitbox_right_wing",
+			"width": 1,
+			"height": 0.1,
+			"damageMultiplier": 1,
+			"affectedByAnim": true
 		}
 	]
 }

@@ -35,7 +35,7 @@ public class GeoLocator {
         );
     }
 
-    //todo: change hitbox and dynamic ride positions to use this eventually
+    //todo: change hitbox and dynamic ride positions to use this eventually (?)
     public Quaternion computeQuaternion() {
         Quaternion toReturn = new Quaternion();
 
@@ -43,6 +43,7 @@ public class GeoLocator {
         ArrayList<GeoBone> chain = new ArrayList<>();
         for (GeoBone boneToTest = this.parent; boneToTest != null; boneToTest = boneToTest.parent) chain.add(boneToTest);
 
+        //get info from ancestor to child
         for (int i = chain.size() - 1; i >= 0; i--) {
             GeoBone boneToTest = chain.get(i);
             Quaternion quatBone = quatFromEulerXYZ(boneToTest.getRotationX(), -boneToTest.getRotationY(), -boneToTest.getRotationZ());

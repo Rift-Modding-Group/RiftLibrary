@@ -4,6 +4,8 @@ import net.minecraft.util.math.Vec3d;
 import org.lwjgl.util.vector.Quaternion;
 import org.lwjgl.util.vector.Vector4f;
 
+import java.util.ArrayList;
+
 public class GeoLocator {
     public final GeoBone parent;
     public final String name;
@@ -36,14 +38,16 @@ public class GeoLocator {
     //todo: change hitbox and dynamic ride positions to use this eventually
     public Quaternion computeQuaternion() {
         Quaternion toReturn = new Quaternion();
-        GeoBone boneToTest = this.parent;
 
-        while (boneToTest != null) {
-            Quaternion boneQuaternion = this.quatFromEulerXYZ(boneToTest.getRotationX(), boneToTest.getRotationY(), -boneToTest.getRotationZ());
-            Quaternion.mul(toReturn, boneQuaternion, toReturn);
+        //setup for getting from ancestor -> from child
+        ArrayList<GeoBone> chain = new ArrayList<>();
+        for (GeoBone boneToTest = this.parent; boneToTest != null; boneToTest = boneToTest.parent) chain.add(boneToTest);
+
+        for (int i = chain.size() - 1; i >= 0; i--) {
+            GeoBone boneToTest = chain.get(i);
+            Quaternion quatBone = quatFromEulerXYZ(boneToTest.getRotationX(), -boneToTest.getRotationY(), -boneToTest.getRotationZ());
+            Quaternion.mul(toReturn, quatBone, toReturn);
             Quaternion.normalise(toReturn, toReturn);
-
-            boneToTest = boneToTest.parent;
         }
 
         Quaternion quatLoc = this.quatFromEulerXYZ(this.rotationX, this.rotationY, -this.rotationZ);

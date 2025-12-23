@@ -15,7 +15,6 @@ public class SprinklerTileEntity extends TileEntity implements IAnimatable {
 
     @Override
     public void registerControllers(AnimationData data) {
-        /*
         data.addAnimationController(new AnimationController<>(this, "sprinker_spin", 0, new AnimationController.IAnimationPredicate<SprinklerTileEntity>() {
             @Override
             public PlayState test(AnimationEvent<SprinklerTileEntity> event) {
@@ -23,7 +22,6 @@ public class SprinklerTileEntity extends TileEntity implements IAnimatable {
                 return PlayState.CONTINUE;
             }
         }));
-         */
         data.addAnimationController(new AnimationController<>(this, "sprinker_water_zero", 0, new AnimationController.IAnimationPredicate<SprinklerTileEntity>() {
             @Override
             public PlayState test(AnimationEvent<SprinklerTileEntity> event) {

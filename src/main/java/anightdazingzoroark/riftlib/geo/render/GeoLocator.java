@@ -75,6 +75,7 @@ public class GeoLocator {
         return toReturn;
     }
 
+    //todo: change summing of bone data so that its parent -> child
     private Vec3d getPositionOffsetFromBoneDisplacements() {
         Vec3d toReturn = Vec3d.ZERO;
         GeoBone boneToTest = this.parent;
@@ -86,6 +87,7 @@ public class GeoLocator {
         return toReturn;
     }
 
+    //todo: change summing of bone data so that its parent -> child
     private Vec3d getPositionOffsetFromBoneRotations() {
         Vec3d toReturn = new Vec3d(this.positionX, this.positionY, this.positionZ);
         GeoBone boneToTest = this.parent;

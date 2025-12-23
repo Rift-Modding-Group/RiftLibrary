@@ -51,6 +51,7 @@ public abstract class GeoBlockRenderer<T extends TileEntity & IAnimatable> exten
 	public void render(T tile, double x, double y, double z, float partialTicks, int destroyStage) {
 		GeoModel model = modelProvider.getModel(modelProvider.getModelLocation(tile));
 		modelProvider.setLivingAnimations(tile, this.getUniqueID(tile));
+        this.modelProvider.tickAnimatedLocators(tile, model);
 
 		int light = tile.getWorld().getCombinedLight(tile.getPos(), 0);
 		int lx = light % 65536;

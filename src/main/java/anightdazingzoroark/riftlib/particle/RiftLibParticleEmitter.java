@@ -222,7 +222,7 @@ public class RiftLibParticleEmitter {
         this.molangParser.withScope(this.emitterScope, () -> {
             Vec3d obtainedOffset = this.particleOffset();
             offset.set(obtainedOffset);
-            directionFromShape.set(this.particleDirectionFromShape(
+            directionFromShape.set(this.particleDirection(
                     this.x + obtainedOffset.x,
                     this.y + obtainedOffset.y,
                     this.z + obtainedOffset.z
@@ -413,6 +413,19 @@ public class RiftLibParticleEmitter {
             );
         }
         return Vec3d.ZERO;
+    }
+
+    private Vec3d particleDirection(double emissionX, double emissionY, double emissionZ) {
+        Vec3d directionFromShape = this.particleDirectionFromShape(emissionX, emissionY, emissionZ);
+        if (this.animatedLocator != null) {
+            Vec3d rotatedLocator = this.animatedLocator.rotateVecByQuaternion(directionFromShape);
+            return new Vec3d(
+                    rotatedLocator.x,
+                    rotatedLocator.y,
+                    -rotatedLocator.z
+            );
+        }
+        return directionFromShape;
     }
 
     //this creates a normalized vector that serves as the direction in which

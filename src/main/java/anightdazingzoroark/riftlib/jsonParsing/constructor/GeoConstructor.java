@@ -62,10 +62,6 @@ public class GeoConstructor {
 		//add locators
 		if (rawBone.locators != null && !rawBone.locators.list.isEmpty()) {
 			for (RawModelLocatorList.RawModelLocator rawLocator : rawBone.locators.list) {
-                System.out.println(geoBone);
-                System.out.println(rawLocator);
-                System.out.println(rawLocator.name);
-
 				geoBone.childLocators.add(new GeoLocator(
 						geoBone,
                         rawLocator.name,

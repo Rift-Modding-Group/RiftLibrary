@@ -30,9 +30,6 @@ public class RawModelLocatorList {
                 if (element.isJsonArray()) {
                     rawModelLocator.name = entry.getKey();
                     rawModelLocator.offset = context.deserialize(element, double[].class);
-
-                    System.out.println("rawModelLocator.name: "+rawModelLocator.name);
-                    System.out.println("rawModelLocator.offset: "+ Arrays.toString(rawModelLocator.offset));
                 }
                 //otherwise, it must be an object, so read it up
                 else if (element.isJsonObject()) {

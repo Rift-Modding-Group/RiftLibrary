@@ -1,7 +1,9 @@
 package anightdazingzoroark.example;
 
 import anightdazingzoroark.example.block.MerryGoRoundBlock;
+import anightdazingzoroark.example.block.SprinklerBlock;
 import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
+import anightdazingzoroark.example.block.tile.SprinklerTileEntity;
 import anightdazingzoroark.example.item.GreenArmorItem;
 import anightdazingzoroark.example.registry.BlockRegistry;
 import anightdazingzoroark.riftlib.RiftLibMod;
@@ -38,9 +40,14 @@ public class CommonListener {
 	@SubscribeEvent
 	public void onRegisterBlocks(RegistryEvent.Register<Block> event) {
 		blockRegistry = event.getRegistry();
+
         BlockRegistry.MERRY_GO_ROUND_BLOCK = new MerryGoRoundBlock();
         BlockRegistry.MERRY_GO_ROUND_BLOCK.setCreativeTab(RiftLibMod.getRiftlibItemGroup());
         registerBlock(BlockRegistry.MERRY_GO_ROUND_BLOCK, "merry_go_round_block");
+
+        BlockRegistry.SPRINKLER_BLOCK = new SprinklerBlock();
+        BlockRegistry.SPRINKLER_BLOCK.setCreativeTab(RiftLibMod.getRiftlibItemGroup());
+        registerBlock(BlockRegistry.SPRINKLER_BLOCK, "sprinkler");
 	}
 
 	@SubscribeEvent
@@ -75,7 +82,8 @@ public class CommonListener {
 		EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "flying_pufferfish"), 0xffae00, 0xbfc700);
 
 		//tile entity registry
-		GameRegistry.registerTileEntity(MerryGoRoundTileEntity.class, new ResourceLocation(RiftLib.ModID, "merry_go_round_te"));
+        GameRegistry.registerTileEntity(MerryGoRoundTileEntity.class, new ResourceLocation(RiftLib.ModID, "merry_go_round_te"));
+        GameRegistry.registerTileEntity(SprinklerTileEntity.class, new ResourceLocation(RiftLib.ModID, "sprinkler_te"));
 	}
 
 	@SubscribeEvent
@@ -93,6 +101,7 @@ public class CommonListener {
 				new GreenArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.FEET), "green_boots");
 
         ItemRegistry.MERRY_GO_ROUND = registerItem(new ItemBlock(BlockRegistry.MERRY_GO_ROUND_BLOCK), "merry_go_round");
+        ItemRegistry.SPRINKLER = registerItem(new ItemBlock(BlockRegistry.SPRINKLER_BLOCK), "sprinkler");
 	}
 
 	public static <T extends Item> T registerItem(T item, String name) {
@@ -131,8 +140,9 @@ public class CommonListener {
 				new ModelResourceLocation(RiftLib.ModID+":bomb", "inventory")
 		);
         ModelLoader.setCustomModelResourceLocation(ItemRegistry.MERRY_GO_ROUND, 0, new ModelResourceLocation(RiftLib.ModID+":merry_go_round", "inventory"));
+        ModelLoader.setCustomModelResourceLocation(ItemRegistry.SPRINKLER, 0, new ModelResourceLocation(RiftLib.ModID+":sprinkler", "inventory"));
 
-		ModelLoader.setCustomModelResourceLocation(ItemRegistry.GREEN_HEAD, 0,
+        ModelLoader.setCustomModelResourceLocation(ItemRegistry.GREEN_HEAD, 0,
 				new ModelResourceLocation(RiftLib.ModID + ":green_helmet", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(ItemRegistry.GREEN_CHEST, 0,
 				new ModelResourceLocation(RiftLib.ModID + ":green_chest", "inventory"));

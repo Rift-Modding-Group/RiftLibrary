@@ -1,6 +1,8 @@
 package anightdazingzoroark.riftlib.geo.render;
 
 import net.minecraft.util.math.Vec3d;
+import org.lwjgl.util.vector.Quaternion;
+import org.lwjgl.util.vector.Vector4f;
 
 public class GeoLocator {
     public final GeoBone parent;
@@ -18,20 +20,57 @@ public class GeoLocator {
         this.positionX = x;
         this.positionY = y;
         this.positionZ = z;
-        this.rotationX = rotationX;
-        this.rotationY = rotationY;
-        this.rotationZ = rotationZ;
+        this.rotationX = (float) Math.toRadians(rotationX);
+        this.rotationY = (float) Math.toRadians(rotationY);
+        this.rotationZ = (float) Math.toRadians(rotationZ);
     }
 
     public Vec3d getPosition() {
         return new Vec3d(
-                this.positionX + this.getOffsetFromDisplacements().x + this.getOffsetFromRotations().x,
-                this.positionY + this.getOffsetFromDisplacements().y + this.getOffsetFromRotations().y,
-                this.positionZ + this.getOffsetFromDisplacements().z + this.getOffsetFromRotations().z
+                this.positionX + this.getPositionOffsetFromBoneDisplacements().x + this.getPositionOffsetFromBoneRotations().x,
+                this.positionY + this.getPositionOffsetFromBoneDisplacements().y + this.getPositionOffsetFromBoneRotations().y,
+                this.positionZ + this.getPositionOffsetFromBoneDisplacements().z + this.getPositionOffsetFromBoneRotations().z
         );
     }
 
-    private Vec3d getOffsetFromDisplacements() {
+    //todo: change hitbox and dynamic ride positions to use this eventually
+    public Quaternion computeQuaternion() {
+        Quaternion toReturn = new Quaternion();
+        GeoBone boneToTest = this.parent;
+
+        while (boneToTest != null) {
+            Quaternion boneQuaternion = this.quatFromEulerXYZ(boneToTest.getRotationX(), boneToTest.getRotationY(), -boneToTest.getRotationZ());
+            Quaternion.mul(toReturn, boneQuaternion, toReturn);
+            Quaternion.normalise(toReturn, toReturn);
+
+            boneToTest = boneToTest.parent;
+        }
+
+        Quaternion quatLoc = this.quatFromEulerXYZ(this.rotationX, this.rotationY, -this.rotationZ);
+        Quaternion.mul(toReturn, quatLoc, toReturn);
+        Quaternion.normalise(toReturn, toReturn);
+
+        return toReturn;
+    }
+
+    private Quaternion quatFromEulerXYZ(float rx, float ry, float rz) {
+        Quaternion quatX = new Quaternion();
+        quatX.setFromAxisAngle(new Vector4f(1, 0, 0, rx));
+
+        Quaternion quatY = new Quaternion();
+        quatY.setFromAxisAngle(new Vector4f(0, 1, 0, ry));
+
+        Quaternion quatZ = new Quaternion();
+        quatZ.setFromAxisAngle(new Vector4f(0, 0, 1, rz));
+
+        Quaternion toReturn = new Quaternion();
+        Quaternion.mul(quatZ, quatY, toReturn);
+        Quaternion.mul(toReturn, quatX, toReturn);
+        Quaternion.normalise(toReturn, toReturn);
+        return toReturn;
+    }
+
+    private Vec3d getPositionOffsetFromBoneDisplacements() {
         Vec3d toReturn = Vec3d.ZERO;
         GeoBone boneToTest = this.parent;
 
@@ -42,7 +81,7 @@ public class GeoLocator {
         return toReturn;
     }
 
-    private Vec3d getOffsetFromRotations() {
+    private Vec3d getPositionOffsetFromBoneRotations() {
         Vec3d toReturn = new Vec3d(this.positionX, this.positionY, this.positionZ);
         GeoBone boneToTest = this.parent;
 
@@ -72,8 +111,8 @@ public class GeoLocator {
             relZ = rz;
 
             //create offsets from z rotation, which affects x and y offsets
-            double cosZ = Math.cos(boneToTest.getRotationZ());
-            double sinZ = Math.sin(boneToTest.getRotationZ());
+            double cosZ = Math.cos(-boneToTest.getRotationZ());
+            double sinZ = Math.sin(-boneToTest.getRotationZ());
             rx = relX * cosZ - relY * sinZ;
             ry = relX * sinZ + relY * cosZ;
             relX = rx;
@@ -84,6 +123,17 @@ public class GeoLocator {
         }
 
         return toReturn.subtract(this.positionX, this.positionY, this.positionZ);
+    }
+
+    private Vec3d getRotationOffsetFromBoneRotations() {
+        Vec3d toReturn = Vec3d.ZERO;
+        GeoBone boneToTest = this.parent;
+
+        while (boneToTest != null) {
+            toReturn = toReturn.add(boneToTest.getRotationX(), boneToTest.getRotationY(), boneToTest.getRotationZ());
+            boneToTest = boneToTest.parent;
+        }
+        return toReturn;
     }
 
     public String toString() {

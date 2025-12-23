@@ -13,4 +13,5 @@ public class ItemRegistry {
 	public static GreenArmorItem GREEN_BOOTS;
 
     public static Item MERRY_GO_ROUND;
+    public static Item SPRINKLER;
 }

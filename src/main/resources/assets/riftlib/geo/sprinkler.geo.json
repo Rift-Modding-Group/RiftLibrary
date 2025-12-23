@@ -1,0 +1,88 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.sprinkler",
+				"texture_width": 64,
+				"texture_height": 64,
+				"visible_bounds_width": 2,
+				"visible_bounds_height": 2.5,
+				"visible_bounds_offset": [0, 0.75, 0]
+			},
+			"bones": [
+				{
+					"name": "bb_main",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [-4, 0, -4], "size": [8, 2, 8], "uv": [0, 0]}
+					]
+				},
+				{
+					"name": "rotatingPart",
+					"pivot": [0, 7, 0],
+					"cubes": [
+						{"origin": [-1.5, 2, -1.5], "size": [3, 10, 3], "uv": [0, 19]}
+					]
+				},
+				{
+					"name": "hose0",
+					"parent": "rotatingPart",
+					"pivot": [0, 9, 0],
+					"rotation": [-15, 0, 0],
+					"cubes": [
+						{"origin": [-1.5, 9, -5.5], "size": [3, 3, 6], "inflate": -0.375, "uv": [0, 10]}
+					],
+					"locators": {
+						"water0": [0, 10.5, -5.25]
+					}
+				},
+				{
+					"name": "hose1",
+					"parent": "rotatingPart",
+					"pivot": [0, 9, 0],
+					"rotation": [15, 0, 0],
+					"cubes": [
+						{"origin": [-1.5, 9, -0.5], "size": [3, 3, 6], "inflate": -0.375, "uv": [18, 10]}
+					],
+					"locators": {
+						"water1": {
+							"offset": [0, 10.5, 5.25],
+							"rotation": [0, 180, 0]
+						}
+					}
+				},
+				{
+					"name": "hose2",
+					"parent": "rotatingPart",
+					"pivot": [0, 9, 0],
+					"rotation": [0, 0, 15],
+					"cubes": [
+						{"origin": [-5.5, 9, -1.5], "size": [6, 3, 3], "inflate": -0.375, "uv": [12, 19]}
+					],
+					"locators": {
+						"water2": {
+							"offset": [-5.25, 10.5, 0],
+							"rotation": [0, 90, 0]
+						}
+					}
+				},
+				{
+					"name": "hose3",
+					"parent": "rotatingPart",
+					"pivot": [0, 9, 0],
+					"rotation": [0, 0, -15],
+					"cubes": [
+						{"origin": [-0.5, 9, -1.5], "size": [6, 3, 3], "inflate": -0.375, "uv": [12, 25]}
+					],
+					"locators": {
+						"water3": {
+							"offset": [5.25, 10.5, 0],
+							"rotation": [0, -90, 0]
+						}
+					}
+				}
+			]
+		}
+	]
+}

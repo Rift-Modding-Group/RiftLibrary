@@ -1,0 +1,54 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.sprinkler.spinning": {
+			"loop": true,
+			"animation_length": 5,
+			"bones": {
+				"rotatingPart": {
+					"rotation": {
+						"0.0": [0, 0, 0],
+						"5.0": [0, -360, 0]
+					}
+				}
+			}
+		},
+		"animation.sprinkler.hose_water_zero": {
+			"loop": true,
+            "animation_length": 1,
+			"particle_effects": {
+				"0.0": {
+					"effect": "riftlib:sprinkler_water",
+					"locator": "water0"
+				}
+			}
+		},
+		"animation.sprinkler.hose_water_one": {
+			"loop": true,
+			"particle_effects": {
+				"0.0": {
+					"effect": "riftlib:sprinkler_water",
+					"locator": "water1"
+				}
+			}
+		},
+		"animation.sprinkler.hose_water_two": {
+			"loop": true,
+			"particle_effects": {
+				"0.0": {
+					"effect": "riftlib:sprinkler_water",
+					"locator": "water2"
+				}
+			}
+		},
+		"animation.sprinkler.hose_water_three": {
+			"loop": true,
+			"particle_effects": {
+				"0.0": {
+					"effect": "riftlib:sprinkler_water",
+					"locator": "water3"
+				}
+			}
+		}
+	}
+}

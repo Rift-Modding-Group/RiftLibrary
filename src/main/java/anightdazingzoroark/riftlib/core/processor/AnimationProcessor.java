@@ -251,8 +251,6 @@ public class AnimationProcessor<T extends IAnimatable> {
                             new Vec3d(locator.getPosition().x, locator.getPosition().y, -locator.getPosition().z)
                     );
                 }
-
-                //
             }
 		}
 

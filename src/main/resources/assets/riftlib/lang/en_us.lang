@@ -4,6 +4,7 @@ item.riftlib.green_chest.name=Green Chestplate
 item.riftlib.green_leggings.name=Green Leggings
 item.riftlib.green_boots.name=Green Boots
 item.riftlib.bomb.name=Bomb
+item.riftlib.bubble_gun.name=Bubble Gun
 
 command.riftlib.mob_family_usage=/riftlibmobfamily OR /riftlibmobfamily [name]
 command.riftlib.mob_family_all=All mob families: %s

@@ -4,6 +4,8 @@ import anightdazingzoroark.example.block.MerryGoRoundBlock;
 import anightdazingzoroark.example.block.SprinklerBlock;
 import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
 import anightdazingzoroark.example.block.tile.SprinklerTileEntity;
+import anightdazingzoroark.example.client.renderer.item.BubbleGunRenderer;
+import anightdazingzoroark.example.item.BubbleGunItem;
 import anightdazingzoroark.example.item.GreenArmorItem;
 import anightdazingzoroark.example.registry.BlockRegistry;
 import anightdazingzoroark.riftlib.RiftLibMod;
@@ -90,6 +92,7 @@ public class CommonListener {
 	public void onRegisterItems(RegistryEvent.Register<Item> event) {
 		itemRegistry = event.getRegistry();
 		ItemRegistry.BOMB = registerItem(new BombItem(), "bomb");
+        ItemRegistry.BUBBLE_GUN = registerItem(new BubbleGunItem(), "bubble_gun");
 
 		ItemRegistry.GREEN_HEAD = registerItem(
 				new GreenArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.HEAD), "green_helmet");
@@ -134,11 +137,16 @@ public class CommonListener {
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public void onModelRegistry(ModelRegistryEvent event) {
-		ModelLoader.setCustomModelResourceLocation(
-				ItemRegistry.BOMB,
-				0,
-				new ModelResourceLocation(RiftLib.ModID+":bomb", "inventory")
-		);
+        ModelLoader.setCustomModelResourceLocation(
+                ItemRegistry.BOMB,
+                0,
+                new ModelResourceLocation(RiftLib.ModID+":bomb", "inventory")
+        );
+        ModelLoader.setCustomModelResourceLocation(
+                ItemRegistry.BUBBLE_GUN,
+                0,
+                new ModelResourceLocation(RiftLib.ModID+":bubble_gun", "inventory")
+        );
         ModelLoader.setCustomModelResourceLocation(ItemRegistry.MERRY_GO_ROUND, 0, new ModelResourceLocation(RiftLib.ModID+":merry_go_round", "inventory"));
         ModelLoader.setCustomModelResourceLocation(ItemRegistry.SPRINKLER, 0, new ModelResourceLocation(RiftLib.ModID+":sprinkler", "inventory"));
 
@@ -152,5 +160,6 @@ public class CommonListener {
 				new ModelResourceLocation(RiftLib.ModID + ":green_boots", "inventory"));
 
 		ItemRegistry.BOMB.setTileEntityItemStackRenderer(new BombRenderer());
+        ItemRegistry.BUBBLE_GUN.setTileEntityItemStackRenderer(new BubbleGunRenderer());
 	}
 }

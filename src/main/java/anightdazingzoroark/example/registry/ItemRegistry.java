@@ -14,4 +14,5 @@ public class ItemRegistry {
 
     public static Item MERRY_GO_ROUND;
     public static Item SPRINKLER;
+    public static Item BUBBLE_GUN;
 }

@@ -18,6 +18,6 @@ public class BubbleGunModel extends AnimatedGeoModel<BubbleGunItem> {
 
     @Override
     public ResourceLocation getAnimationFileLocation(BubbleGunItem animatable) {
-        return null;
+        return new ResourceLocation(RiftLib.ModID, "animations/bubble_gun.animation.json");
     }
 }

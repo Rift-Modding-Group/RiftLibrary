@@ -4,6 +4,7 @@ import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.util.vector.Quaternion;
@@ -22,12 +23,13 @@ public class AnimatedLocator {
         return this.locator.name;
     }
 
+    //todo: this is not a great way to kill emitters, maybe ticking all users to test for
+    //availability then kill their emitters should be done instead
     public boolean isDead() {
         if (this.animatable instanceof Entity) {
             Entity entity = (Entity) this.animatable;
             return !entity.isEntityAlive();
         }
-        //todo: find a way to kill animatedlocators that are attached to tile entities
         else if (this.animatable instanceof TileEntity) {
             TileEntity tileEntity = (TileEntity) this.animatable;
         }
@@ -62,7 +64,8 @@ public class AnimatedLocator {
                     tileEntity.getPos().getZ() - this.locator.getPosition().z + 0.5D
             );
         }
-        return Vec3d.ZERO;
+        else if (this.animatable instanceof Item) {}
+        return new Vec3d(0, 5, 0);
     }
 
     public Vec3d rotateVecByQuaternion(Vec3d vector) {

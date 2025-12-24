@@ -47,7 +47,7 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 
 	@Override
 	public AnimatedGeoModel<T> getGeoModelProvider() {
-		return modelProvider;
+		return this.modelProvider;
 	}
 
 	@Override
@@ -57,10 +57,10 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 
 	public void render(T animatable, ItemStack itemStack) {
 		this.currentItemStack = itemStack;
-		GeoModel model = modelProvider.getModel(modelProvider.getModelLocation(animatable));
+		GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(animatable));
 		AnimationEvent itemEvent = new AnimationEvent(animatable, 0, 0,
 				Minecraft.getMinecraft().getRenderPartialTicks(), false, Collections.singletonList(itemStack));
-		modelProvider.setLivingAnimations(animatable, this.getUniqueID(animatable), itemEvent);
+		this.modelProvider.setLivingAnimations(animatable, this.getUniqueID(animatable), itemEvent);
         this.modelProvider.tickAnimatedLocators(animatable, model);
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(0, 0.01f, 0);
@@ -68,7 +68,7 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 
 		Minecraft.getMinecraft().renderEngine.bindTexture(getTextureLocation(animatable));
 		Color renderColor = getRenderColor(animatable, 0f);
-		render(model, animatable, 0f, (float) renderColor.getRed() / 255f, (float) renderColor.getGreen() / 255f,
+        this.render(model, animatable, 0f, (float) renderColor.getRed() / 255f, (float) renderColor.getGreen() / 255f,
 				(float) renderColor.getBlue() / 255f, (float) renderColor.getAlpha() / 255);
 		GlStateManager.popMatrix();
 	}

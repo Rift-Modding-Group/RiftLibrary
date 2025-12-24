@@ -27,6 +27,7 @@ public class BubbleGunItem extends Item implements IAnimatable {
         this.maxStackSize = 1;
         this.setCreativeTab(RiftLibMod.getRiftlibItemGroup());
     }
+
     public int getMaxItemUseDuration(ItemStack stack) {
         return 72000;
     }
@@ -40,6 +41,8 @@ public class BubbleGunItem extends Item implements IAnimatable {
         return new ActionResult<>(EnumActionResult.PASS, stack);
     }
 
+    //todo: for testing purposes, the particles will always spawn, will change to only when right clicking after
+    //i figure out how to spawn particles from the
     @Override
     public void registerControllers(AnimationData data) {
         data.addAnimationController(new AnimationController(this, "blow", 0, new AnimationController.IAnimationPredicate() {

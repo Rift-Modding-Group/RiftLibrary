@@ -12,7 +12,7 @@ import anightdazingzoroark.riftlib.model.AnimatedLocator;
 public class AnimationFactory {
 	private final IAnimatable animatable;
 	private HashMap<Integer, AnimationData> animationDataMap = new HashMap<>();
-    private List<AnimatedLocator> animatedLocators = new ArrayList<>();
+    private final List<AnimatedLocator> animatedLocators = new ArrayList<>();
     private GeoModel currentModel;
 
 	public AnimationFactory(IAnimatable animatable) {

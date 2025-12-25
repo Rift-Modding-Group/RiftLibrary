@@ -1,0 +1,138 @@
+package anightdazingzoroark.riftlib.model.animatedLocator;
+
+import anightdazingzoroark.riftlib.ClientProxy;
+import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.event.ParticleAttachEvent;
+import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.IBakedModel;
+import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
+import net.minecraft.client.renderer.block.model.ItemTransformVec3f;
+import net.minecraft.entity.Entity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.client.event.RenderSpecificHandEvent;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
+@SideOnly(Side.CLIENT)
+public class AnimatedLocatorTicker {
+    public static long RENDER_FRAME_ID = 0L;
+
+    @SubscribeEvent
+    public void onRenderWorldLast(RenderWorldLastEvent event) {
+        RENDER_FRAME_ID++;
+    }
+
+    /***
+     * This is for attaching particles to entities and tileentities
+     * They do not need any further ticking based on certain attributes because
+     * their locators don't need further specialization based on cameras n stuff
+     * ***/
+    @SubscribeEvent
+    public void createParticlesUsingBuilders(ParticleAttachEvent event) {
+        if (event.animatable instanceof Entity || event.animatable instanceof TileEntity || event.animatable instanceof Item) {
+            ClientProxy.EMITTER_LIST.add(new RiftLibParticleEmitter(
+                    event.animatedLocator.getParticleBuilder(),
+                    Minecraft.getMinecraft().world,
+                    event.animatedLocator
+            ));
+        }
+    }
+
+    /***
+     * This is for ticking locators attached to items from the 1st person perspective
+     * ***/
+    @SubscribeEvent
+    public void tickOnItemFirstPerson(RenderSpecificHandEvent event) {
+        ItemStack stack = event.getItemStack();
+        if (stack.isEmpty()) return;
+
+        Item item = stack.getItem();
+        if (!(item instanceof IAnimatable)) return;
+        IAnimatable itemAnimatable = (IAnimatable) item;
+
+        //get camera and partial ticks
+        Entity camera = Minecraft.getMinecraft().getRenderViewEntity();
+        if (camera == null) return;
+        float partialTicks = Minecraft.getMinecraft().getRenderPartialTicks();
+
+        //get yaw and pitch rotation of camera
+        float yaw = camera.prevRotationYaw + (camera.rotationYaw - camera.prevRotationYaw) * partialTicks;
+        float pitch = camera.prevRotationPitch + (camera.rotationPitch - camera.prevRotationPitch) * partialTicks;
+
+        //base forward position for held item
+        Vec3d look = camera.getLook(partialTicks);
+        Vec3d right = look.crossProduct(new Vec3d(0, 1, 0)).normalize();
+        Vec3d up = right.crossProduct(look).normalize();
+
+        //finally le hand base
+        Vec3d handBase = getHandOffsetForItem(event.getHand(), stack, camera, partialTicks, look, right, up);
+
+        for (IAnimatedLocator animatedLocator : itemAnimatable.getFactory().getAnimatedLocators()) {
+            if (!(animatedLocator instanceof ItemAnimatedLocator)) continue;
+            ItemAnimatedLocator itemAnimatedLocator = (ItemAnimatedLocator) animatedLocator;
+            Vec3d geoLocatorPos = itemAnimatedLocator.getGeoLocator().getPosition();
+
+            Vec3d worldPos = handBase
+                            .add(right.scale(geoLocatorPos.x))
+                            .add(up.scale(geoLocatorPos.y))
+                            .add(look.scale(-geoLocatorPos.z));
+            Vec3d worldRot = new Vec3d(Math.toRadians(pitch), Math.toRadians(yaw), 0);
+
+            itemAnimatedLocator.updateFromRender(worldPos, worldRot);
+        }
+    }
+
+    /***
+     * Same as above, but in third person and the perspective of all other players
+     * ***/
+    @SubscribeEvent
+    public void tickOnItemThirdPerson(RenderPlayerEvent.Post event) {}
+
+    //private helper method for getting locator offset based on hand in which item is held
+    private static Vec3d getHandOffsetForItem(EnumHand hand, ItemStack itemStack, Entity camera, float partialTicks, Vec3d look, Vec3d right, Vec3d up) {
+        Vec3d toReturn = Vec3d.ZERO;
+
+        if (hand == null) return toReturn;
+
+        Vec3d eye = camera.getPositionEyes(partialTicks);
+
+        //rough offsets for item hand position
+        double rightOffset = 0.6 * (hand == EnumHand.MAIN_HAND ? 1 : -1);
+        double upOffset = -0.65;
+        double forwardOffset = 0.45;
+
+        //change based on item hand position
+        Vec3d handForward = look.normalize();
+        Vec3d handRight = handForward.crossProduct(new Vec3d(0, 1, 0)).normalize();
+        Vec3d handUp = handRight.crossProduct(handForward).normalize();
+        toReturn = eye
+                .add(handRight.scale(rightOffset))
+                .add(handUp.scale(upOffset))
+                .add(handForward.scale(forwardOffset));
+
+        //change based on details in item model
+        ItemCameraTransforms.TransformType type = hand == EnumHand.MAIN_HAND ?
+                ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND : ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND;
+        IBakedModel baked = Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(itemStack, Minecraft.getMinecraft().world, Minecraft.getMinecraft().player);
+        ItemTransformVec3f itemTransform = baked.getItemCameraTransforms().getTransform(type);
+        Vec3d scaledItemTransform = new Vec3d(
+                itemTransform.translation.x * itemTransform.scale.x,
+                itemTransform.translation.y * itemTransform.scale.y,
+                itemTransform.translation.z * itemTransform.scale.z
+        );
+        Vec3d modelOffset = right.scale(scaledItemTransform.x)
+                .add(up.scale(scaledItemTransform.y))
+                .add(look.scale(-scaledItemTransform.z));
+        toReturn = toReturn.add(modelOffset);
+
+        return toReturn;
+    }
+}

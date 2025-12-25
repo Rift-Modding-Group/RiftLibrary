@@ -61,7 +61,7 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 		AnimationEvent itemEvent = new AnimationEvent(animatable, 0, 0,
 				Minecraft.getMinecraft().getRenderPartialTicks(), false, Collections.singletonList(itemStack));
 		this.modelProvider.setLivingAnimations(animatable, this.getUniqueID(animatable), itemEvent);
-        this.modelProvider.tickAnimatedLocators(animatable, model);
+        animatable.getFactory().createAnimatedLocators(model);
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(0, 0.01f, 0);
 		GlStateManager.translate(0.5, 0.5, 0.5);

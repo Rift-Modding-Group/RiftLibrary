@@ -4,8 +4,6 @@ import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.core.event.predicate.AnimationEvent;
 import anightdazingzoroark.riftlib.core.processor.AnimationProcessor;
 import anightdazingzoroark.riftlib.core.processor.IBone;
-import anightdazingzoroark.riftlib.geo.render.GeoLocator;
-import anightdazingzoroark.riftlib.model.AnimatedLocator;
 
 public interface IAnimatableModel<E> {
 	default double getCurrentTick() {

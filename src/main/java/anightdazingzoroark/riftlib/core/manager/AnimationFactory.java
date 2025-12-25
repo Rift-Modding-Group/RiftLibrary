@@ -7,12 +7,18 @@ import java.util.List;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
-import anightdazingzoroark.riftlib.model.AnimatedLocator;
+import anightdazingzoroark.riftlib.model.animatedLocator.EntityAnimatedLocator;
+import anightdazingzoroark.riftlib.model.animatedLocator.IAnimatedLocator;
+import anightdazingzoroark.riftlib.model.animatedLocator.ItemAnimatedLocator;
+import anightdazingzoroark.riftlib.model.animatedLocator.TileEntityAnimatedLocator;
+import net.minecraft.entity.Entity;
+import net.minecraft.item.Item;
+import net.minecraft.tileentity.TileEntity;
 
 public class AnimationFactory {
 	private final IAnimatable animatable;
-	private HashMap<Integer, AnimationData> animationDataMap = new HashMap<>();
-    private final List<AnimatedLocator> animatedLocators = new ArrayList<>();
+	private final HashMap<Integer, AnimationData> animationDataMap = new HashMap<>();
+    private final List<IAnimatedLocator> animatedLocators = new ArrayList<>();
     private GeoModel currentModel;
 
 	public AnimationFactory(IAnimatable animatable) {
@@ -30,12 +36,12 @@ public class AnimationFactory {
 	 * @return the animatable manager
 	 */
 	public AnimationData getOrCreateAnimationData(Integer uniqueID) {
-		if (!animationDataMap.containsKey(uniqueID)) {
+		if (!this.animationDataMap.containsKey(uniqueID)) {
 			AnimationData data = new AnimationData();
-			animatable.registerControllers(data);
-			animationDataMap.put(uniqueID, data);
+            this.animatable.registerControllers(data);
+            this.animationDataMap.put(uniqueID, data);
 		}
-		return animationDataMap.get(uniqueID);
+		return this.animationDataMap.get(uniqueID);
 	}
 
     public void createAnimatedLocators(GeoModel model) {
@@ -43,20 +49,28 @@ public class AnimationFactory {
             this.animatedLocators.clear();
             List<GeoLocator> locators = model.getAllLocators();
             for (GeoLocator locator : locators) {
-                this.animatedLocators.add(new AnimatedLocator(this.animatable, locator));
+                if (this.animatable instanceof Entity) {
+                    this.animatedLocators.add(new EntityAnimatedLocator((Entity) this.animatable, locator));
+                }
+                else if (this.animatable instanceof TileEntity) {
+                    this.animatedLocators.add(new TileEntityAnimatedLocator((TileEntity) this.animatable, locator));
+                }
+                else if (this.animatable instanceof Item) {
+                    this.animatedLocators.add(new ItemAnimatedLocator((Item) this.animatable, locator));
+                }
             }
             this.currentModel = model;
         }
     }
 
-    public AnimatedLocator getAnimatedLocator(String name) {
-        for (AnimatedLocator locator : this.animatedLocators) {
+    public IAnimatedLocator getAnimatedLocator(String name) {
+        for (IAnimatedLocator locator : this.animatedLocators) {
             if (locator.getLocatorName().equals(name)) return locator;
         }
         return null;
     }
 
-    public List<AnimatedLocator> getAnimatedLocators() {
+    public List<IAnimatedLocator> getAnimatedLocators() {
         return this.animatedLocators;
     }
 }

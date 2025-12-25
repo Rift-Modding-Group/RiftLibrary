@@ -81,11 +81,6 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 		}
 	}
 
-    public void tickAnimatedLocators(T entity, GeoModel model) {
-        //create animated locator list for animatable if it doesn't exist yet
-        entity.getFactory().createAnimatedLocators(model);
-    }
-
 	@Override
 	public AnimationProcessor getAnimationProcessor() {
 		return this.animationProcessor;

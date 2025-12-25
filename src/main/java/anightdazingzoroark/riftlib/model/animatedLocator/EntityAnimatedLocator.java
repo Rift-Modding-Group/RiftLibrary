@@ -2,6 +2,7 @@ package anightdazingzoroark.riftlib.model.animatedLocator;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
+import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.math.Vec3d;
@@ -9,6 +10,7 @@ import net.minecraft.util.math.Vec3d;
 public class EntityAnimatedLocator implements IAnimatedLocator {
     private final Entity entity;
     private final GeoLocator locator;
+    private ParticleBuilder particleBuilder;
 
     public EntityAnimatedLocator(Entity entity, GeoLocator locator) {
         this.entity = entity;
@@ -16,7 +18,7 @@ public class EntityAnimatedLocator implements IAnimatedLocator {
     }
 
     @Override
-    public Vec3d getWorldPosition(float partialTicks) {
+    public Vec3d getWorldPosition() {
         //get locator pos and modify a bit based on entity rotation
         Vec3d locatorPos = this.locator.getPosition();
 
@@ -35,13 +37,33 @@ public class EntityAnimatedLocator implements IAnimatedLocator {
     }
 
     @Override
-    public Vec3d getWorldRotation(float partialTicks) {
+    public Vec3d getWorldRotation() {
         return null;
     }
 
     @Override
     public boolean isValid() {
         return this.entity != null && this.entity.isEntityAlive();
+    }
+
+    @Override
+    public GeoLocator getGeoLocator() {
+        return this.locator;
+    }
+
+    @Override
+    public void setParticleBuilder(ParticleBuilder particleBuilder) {
+        this.particleBuilder = particleBuilder;
+    }
+
+    @Override
+    public ParticleBuilder getParticleBuilder() {
+        return this.particleBuilder;
+    }
+
+    @Override
+    public Vec3d rotateVecByQuaternion(Vec3d vector) {
+        return Vec3d.ZERO;
     }
 
     private double getEntityYawRadians() {

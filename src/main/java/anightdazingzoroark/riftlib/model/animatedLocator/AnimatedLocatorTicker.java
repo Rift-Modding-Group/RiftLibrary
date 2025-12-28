@@ -5,10 +5,15 @@ import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.event.ParticleAttachEvent;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.ModelBiped;
+import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.block.model.ItemTransformVec3f;
+import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.client.renderer.entity.RenderPlayer;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -63,6 +68,9 @@ public class AnimatedLocatorTicker {
         if (camera == null) return;
         float partialTicks = Minecraft.getMinecraft().getRenderPartialTicks();
 
+        //block when in third person, thats taken care of in tickOnItemThirdPerson
+        if (Minecraft.getMinecraft().gameSettings.thirdPersonView != 0) return;
+
         //get yaw and pitch rotation of camera
         float yaw = camera.prevRotationYaw + (camera.rotationYaw - camera.prevRotationYaw) * partialTicks;
         float pitch = camera.prevRotationPitch + (camera.rotationPitch - camera.prevRotationPitch) * partialTicks;
@@ -73,7 +81,7 @@ public class AnimatedLocatorTicker {
         Vec3d up = right.crossProduct(look).normalize();
 
         //finally le hand base
-        Vec3d handBase = getHandOffsetForItem(event.getHand(), stack, camera, partialTicks, look, right, up);
+        Vec3d handBase = getFirstPersonHandOffsetForItem(event.getHand(), stack, camera, partialTicks, look, right, up);
 
         for (IAnimatedLocator animatedLocator : itemAnimatable.getFactory().getAnimatedLocators()) {
             if (!(animatedLocator instanceof ItemAnimatedLocator)) continue;
@@ -90,14 +98,8 @@ public class AnimatedLocatorTicker {
         }
     }
 
-    /***
-     * Same as above, but in third person and the perspective of all other players
-     * ***/
-    @SubscribeEvent
-    public void tickOnItemThirdPerson(RenderPlayerEvent.Post event) {}
-
-    //private helper method for getting locator offset based on hand in which item is held
-    private static Vec3d getHandOffsetForItem(EnumHand hand, ItemStack itemStack, Entity camera, float partialTicks, Vec3d look, Vec3d right, Vec3d up) {
+    //private helper method for getting locator offset based on hand in which item is held in 1st person
+    private static Vec3d getFirstPersonHandOffsetForItem(EnumHand hand, ItemStack itemStack, Entity camera, float partialTicks, Vec3d look, Vec3d right, Vec3d up) {
         Vec3d toReturn = Vec3d.ZERO;
 
         if (hand == null) return toReturn;
@@ -134,5 +136,21 @@ public class AnimatedLocatorTicker {
         toReturn = toReturn.add(modelOffset);
 
         return toReturn;
+    }
+
+    /***
+     * This is for ticking locators attached to items in third person and the perspective of all other players
+     * ***/
+    @SubscribeEvent
+    public void tickOnItemThirdPerson(RenderPlayerEvent.Post event) {
+        //get camera and partial ticks
+        Entity camera = Minecraft.getMinecraft().getRenderViewEntity();
+        if (camera == null) return;
+        EntityPlayer renderedPlayer = event.getEntityPlayer();
+        float partialTicks = Minecraft.getMinecraft().getRenderPartialTicks();
+
+        //block when in first person, thats taken care of in tickOnItemFirstPerson
+        EntityPlayer player = Minecraft.getMinecraft().player;
+        if (renderedPlayer == camera && Minecraft.getMinecraft().gameSettings.thirdPersonView == 0) return;
     }
 }

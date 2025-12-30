@@ -4,8 +4,10 @@ import anightdazingzoroark.riftlib.ClientProxy;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.event.ParticleAttachEvent;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
+import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelBiped;
+import net.minecraft.client.model.ModelPlayer;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
@@ -19,12 +21,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.RenderSpecificHandEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.util.vector.Quaternion;
+import org.lwjgl.util.vector.Vector4f;
 
 @SideOnly(Side.CLIENT)
 public class AnimatedLocatorTicker {
@@ -150,7 +155,91 @@ public class AnimatedLocatorTicker {
         float partialTicks = Minecraft.getMinecraft().getRenderPartialTicks();
 
         //block when in first person, thats taken care of in tickOnItemFirstPerson
-        EntityPlayer player = Minecraft.getMinecraft().player;
         if (renderedPlayer == camera && Minecraft.getMinecraft().gameSettings.thirdPersonView == 0) return;
+
+        //set offset for item on each hand
+        thirdPersonSetHandOffsetForItem(EnumHand.MAIN_HAND, renderedPlayer, event.getRenderer().getMainModel(), partialTicks);
+        thirdPersonSetHandOffsetForItem(EnumHand.OFF_HAND, renderedPlayer, event.getRenderer().getMainModel(), partialTicks);
+    }
+
+    private static void thirdPersonSetHandOffsetForItem(EnumHand hand, EntityPlayer player, ModelPlayer model, float partialTicks) {
+        if (hand == null) return;
+
+        //get held item stack
+        ItemStack itemStack = player.getHeldItem(hand);
+        if (itemStack.isEmpty()) return;
+
+        //get held item and animatable
+        Item item = itemStack.getItem();
+        if (!(item instanceof IAnimatable)) return;
+        IAnimatable itemAnimatable = (IAnimatable) item;
+
+        //select arm based on hand
+        ModelRenderer arm = (hand == EnumHand.MAIN_HAND) ? model.bipedRightArm : model.bipedLeftArm;
+
+        //base world position (interpolated player position)
+        Vec3d base = new Vec3d(
+                player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks,
+                player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks,
+                player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks
+        );
+        System.out.println("base: "+base);
+
+        //torso yaw rotation and clamping
+        double bodyYaw = Math.toRadians(player.prevRenderYawOffset + (player.renderYawOffset - player.prevRenderYawOffset) * partialTicks);
+        if (bodyYaw >= 2 * Math.PI) bodyYaw -= 2 * Math.PI;
+        if (bodyYaw < 0) bodyYaw += 2 * Math.PI;
+
+        //arm pivot location
+        Vec3d armPivot = new Vec3d(arm.rotationPointX, arm.rotationPointY, arm.rotationPointZ).scale(0.0625);
+
+        //rough ideal offsets for item hand position
+        //are ideally perpendicular to the players arm
+        double rightOffset = 0.375 * (hand == EnumHand.MAIN_HAND ? 1 : -1);
+        double upOffset = 0.9375;
+        double forwardOffset = 0.0625;
+
+        //create held item pivot from above offsets and change to be perpendicular to the arm
+        Vec3d heldItemPivot = new Vec3d(rightOffset, -forwardOffset, -upOffset);
+
+        //create hand pivot with above information
+        Vec3d handVec = armPivot.subtract(heldItemPivot);
+        System.out.println("handVec: "+handVec);
+
+        //create offset from hand based on details in item model
+        ItemCameraTransforms.TransformType type = hand == EnumHand.MAIN_HAND ?
+                ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND : ItemCameraTransforms.TransformType.THIRD_PERSON_LEFT_HAND;
+        IBakedModel baked = Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(itemStack, Minecraft.getMinecraft().world, Minecraft.getMinecraft().player);
+        ItemTransformVec3f itemTransform = baked.getItemCameraTransforms().getTransform(type);
+        Vec3d scaledItemTransform = new Vec3d(
+                itemTransform.translation.x * itemTransform.scale.x,
+                -itemTransform.translation.z * itemTransform.scale.z,
+                -itemTransform.translation.y * itemTransform.scale.y
+        );
+        System.out.println("scaledItemTransform: "+scaledItemTransform);
+
+        //iterate over each locator
+        for (IAnimatedLocator animatedLocator : itemAnimatable.getFactory().getAnimatedLocators()) {
+            if (!(animatedLocator instanceof ItemAnimatedLocator)) continue;
+            ItemAnimatedLocator itemAnimatedLocator = (ItemAnimatedLocator) animatedLocator;
+
+            //get locator position
+            Vec3d initGeoLocatorPos = itemAnimatedLocator.getGeoLocator().getPosition();
+            Vec3d geoLocatorPos = new Vec3d(initGeoLocatorPos.x, -initGeoLocatorPos.z, -initGeoLocatorPos.y);
+            System.out.println("geoLocatorPos: "+geoLocatorPos);
+
+            //create final rotated vector
+            Vec3d handBase = VectorUtils.rotateVector(
+                    handVec.add(scaledItemTransform).add(geoLocatorPos),
+                    arm.rotateAngleX, arm.rotateAngleY - bodyYaw, arm.rotateAngleZ
+            );
+            System.out.println("handBase: "+handBase);
+
+            Vec3d worldPos = base.add(handBase);
+            System.out.println("worldPos: "+worldPos);
+            Vec3d worldRot = new Vec3d(-arm.rotateAngleX + Math.PI / 2, arm.rotateAngleY, arm.rotateAngleZ);
+
+            itemAnimatedLocator.updateFromRender(worldPos, worldRot);
+        }
     }
 }

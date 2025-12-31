@@ -183,7 +183,6 @@ public class AnimatedLocatorTicker {
                 player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks,
                 player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks
         );
-        System.out.println("base: "+base);
 
         //torso yaw rotation and clamping
         double bodyYaw = Math.toRadians(player.prevRenderYawOffset + (player.renderYawOffset - player.prevRenderYawOffset) * partialTicks);
@@ -194,29 +193,27 @@ public class AnimatedLocatorTicker {
         Vec3d armPivot = new Vec3d(arm.rotationPointX, arm.rotationPointY, arm.rotationPointZ).scale(0.0625);
 
         //rough ideal offsets for item hand position
-        //are ideally perpendicular to the players arm
+        // are ideally perpendicular to the players arm
         double rightOffset = 0.375 * (hand == EnumHand.MAIN_HAND ? 1 : -1);
         double upOffset = 0.9375;
         double forwardOffset = 0.0625;
 
         //create held item pivot from above offsets and change to be perpendicular to the arm
-        Vec3d heldItemPivot = new Vec3d(rightOffset, -forwardOffset, -upOffset);
+        Vec3d heldItemPivot = new Vec3d(rightOffset, upOffset, -forwardOffset);
 
         //create hand pivot with above information
         Vec3d handVec = armPivot.subtract(heldItemPivot);
-        System.out.println("handVec: "+handVec);
 
         //create offset from hand based on details in item model
-        ItemCameraTransforms.TransformType type = hand == EnumHand.MAIN_HAND ?
-                ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND : ItemCameraTransforms.TransformType.THIRD_PERSON_LEFT_HAND;
+        ItemCameraTransforms.TransformType type = hand == EnumHand.MAIN_HAND
+                ? ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND : ItemCameraTransforms.TransformType.THIRD_PERSON_LEFT_HAND;
         IBakedModel baked = Minecraft.getMinecraft().getRenderItem().getItemModelWithOverrides(itemStack, Minecraft.getMinecraft().world, Minecraft.getMinecraft().player);
         ItemTransformVec3f itemTransform = baked.getItemCameraTransforms().getTransform(type);
         Vec3d scaledItemTransform = new Vec3d(
                 itemTransform.translation.x * itemTransform.scale.x,
-                -itemTransform.translation.z * itemTransform.scale.z,
-                -itemTransform.translation.y * itemTransform.scale.y
-        );
-        System.out.println("scaledItemTransform: "+scaledItemTransform);
+                itemTransform.translation.y * itemTransform.scale.y,
+                itemTransform.translation.z * itemTransform.scale.z
+        ).rotatePitch(-(float) Math.PI / 2f);;
 
         //iterate over each locator
         for (IAnimatedLocator animatedLocator : itemAnimatable.getFactory().getAnimatedLocators()) {
@@ -224,21 +221,16 @@ public class AnimatedLocatorTicker {
             ItemAnimatedLocator itemAnimatedLocator = (ItemAnimatedLocator) animatedLocator;
 
             //get locator position
-            Vec3d initGeoLocatorPos = itemAnimatedLocator.getGeoLocator().getPosition();
-            Vec3d geoLocatorPos = new Vec3d(initGeoLocatorPos.x, -initGeoLocatorPos.z, -initGeoLocatorPos.y);
-            System.out.println("geoLocatorPos: "+geoLocatorPos);
+            Vec3d geoLocatorPos = itemAnimatedLocator.getGeoLocator().getPosition().rotatePitch(-(float) Math.PI / 2f);
 
             //create final rotated vector
             Vec3d handBase = VectorUtils.rotateVector(
                     handVec.add(scaledItemTransform).add(geoLocatorPos),
                     arm.rotateAngleX, arm.rotateAngleY - bodyYaw, arm.rotateAngleZ
             );
-            System.out.println("handBase: "+handBase);
 
             Vec3d worldPos = base.add(handBase);
-            System.out.println("worldPos: "+worldPos);
-            Vec3d worldRot = new Vec3d(-arm.rotateAngleX + Math.PI / 2, arm.rotateAngleY, arm.rotateAngleZ);
-
+            Vec3d worldRot = new Vec3d(arm.rotateAngleX - Math.PI / 2, arm.rotateAngleY - bodyYaw, arm.rotateAngleZ);
             itemAnimatedLocator.updateFromRender(worldPos, worldRot);
         }
     }

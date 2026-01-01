@@ -2,6 +2,7 @@ package anightdazingzoroark.riftlib.model.animatedLocator;
 
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
+import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.util.vector.Quaternion;
@@ -27,11 +28,6 @@ public class TileEntityAnimatedLocator implements IAnimatedLocator {
     }
 
     @Override
-    public Vec3d getWorldRotation() {
-        return null;
-    }
-
-    @Override
     public boolean isValid() {
         return this.tileEntity != null && !this.tileEntity.isInvalid();
     }
@@ -53,16 +49,21 @@ public class TileEntityAnimatedLocator implements IAnimatedLocator {
 
     @Override
     public Vec3d rotateVecByQuaternion(Vec3d vector) {
-        Quaternion quaternion = this.getGeoLocator().computeQuaternion();
-        Quaternion vectorQuaternion = new Quaternion((float) vector.x, (float) vector.y, (float) vector.z, 0f);
+        Quaternion quatLocator = this.getGeoLocator().getXYZQuaternion();
 
-        Quaternion quatConj = new Quaternion(quaternion);
-        quatConj.negate(quatConj);
+        //get inverse of quatLocator
+        Quaternion quatLocatorConj = new Quaternion();
+        Quaternion.negate(quatLocator, quatLocatorConj);
 
-        Quaternion quatFinal = new Quaternion();
-        Quaternion.mul(quaternion, vectorQuaternion, quatFinal);
-        Quaternion.mul(quatFinal, quatConj, quatFinal);
+        //get quat of vector
+        Quaternion quatVector = new Quaternion((float) vector.x, (float) vector.y, (float) vector.z, 0);
 
-        return new Vec3d(quatFinal.x, quatFinal.y, quatFinal.z);
+        //multiply and get final result
+        Quaternion temp = new Quaternion();
+        Quaternion result = new Quaternion();
+        Quaternion.mul(quatLocator, quatVector, temp);
+        Quaternion.mul(temp, quatLocatorConj, result);
+
+        return new Vec3d(result.x, result.y, result.z);
     }
 }

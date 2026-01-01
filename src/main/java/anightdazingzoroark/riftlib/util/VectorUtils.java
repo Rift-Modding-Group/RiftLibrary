@@ -27,39 +27,6 @@ public class VectorUtils {
 		return new Vector3d(vector.getX(), vector.getY(), vector.getZ());
 	}
 
-
-    //expects inputs in rads, rotate a given Vec3d and use quaternions to rotate it
-    //this uses zyx
-    public static Vec3d rotateVectorZYX(Vec3d vec3d, double xRotation, double yRotation, double zRotation) {
-        //create quaternion
-        double cosZ = Math.cos(zRotation / 2);
-        double sinZ = Math.sin(zRotation / 2);
-        double cosY = Math.cos(yRotation / 2);
-        double sinY = Math.sin(yRotation / 2);
-        double cosX = Math.cos(xRotation / 2);
-        double sinX = Math.sin(xRotation / 2);
-        Quaternion rotationQuaternion = new Quaternion(
-                (float) (sinX * cosY * cosZ - cosX * sinY * sinZ),
-                (float) (cosX * sinY * cosZ + sinX * cosY * sinZ),
-                (float) (cosX * cosY * sinZ - sinX * sinY * cosZ),
-                (float) (cosX * cosY * cosZ + sinX * sinY * sinZ)
-        );
-
-        //conjugate
-        Quaternion conjRotationQuaternion = new Quaternion();
-        Quaternion.negate(rotationQuaternion, conjRotationQuaternion);
-
-        //turn vector into quaternion
-        Quaternion vecQuaternion = new Quaternion((float) vec3d.x, (float) vec3d.y, (float) vec3d.z, 0);
-
-        //now multiply
-        Quaternion toReturn = new Quaternion();
-        Quaternion.mul(rotationQuaternion, vecQuaternion, toReturn);
-        Quaternion.mul(toReturn, conjRotationQuaternion, toReturn);
-
-        return new Vec3d(toReturn.x, toReturn.y, toReturn.z);
-    }
-
     //this uses yxz
     public static Vec3d rotateVectorYXZ(Vec3d vec3d, double xRotation, double yRotation, double zRotation) {
         //create quaternion
@@ -100,6 +67,38 @@ public class VectorUtils {
         double sinZ = Math.sin(zRotation / 2);
         double cosX = Math.cos(xRotation / 2);
         double sinX = Math.sin(xRotation / 2);
+        Quaternion rotationQuaternion = new Quaternion(
+                (float) (sinX * cosY * cosZ - cosX * sinY * sinZ),
+                (float) (cosX * sinY * cosZ + sinX * cosY * sinZ),
+                (float) (cosX * cosY * sinZ - sinX * sinY * cosZ),
+                (float) (cosX * cosY * cosZ - sinX * sinY * sinZ)
+        );
+
+        //conjugate
+        Quaternion conjRotationQuaternion = new Quaternion();
+        Quaternion.negate(rotationQuaternion, conjRotationQuaternion);
+
+        //turn vector into quaternion
+        Quaternion vecQuaternion = new Quaternion((float) vec3d.x, (float) vec3d.y, (float) vec3d.z, 0);
+
+        //now multiply
+        Quaternion toReturn = new Quaternion();
+        Quaternion.mul(rotationQuaternion, vecQuaternion, toReturn);
+        Quaternion.mul(toReturn, conjRotationQuaternion, toReturn);
+
+        return new Vec3d(toReturn.x, toReturn.y, toReturn.z);
+    }
+
+    //this uses xyz
+    //note to self: this is equal to zyx
+    public static Vec3d rotateVectorXYZ(Vec3d vec3d, double xRotation, double yRotation, double zRotation) {
+        //create quaternion
+        double cosX = Math.cos(xRotation / 2);
+        double sinX = Math.sin(xRotation / 2);
+        double cosY = Math.cos(yRotation / 2);
+        double sinY = Math.sin(yRotation / 2);
+        double cosZ = Math.cos(zRotation / 2);
+        double sinZ = Math.sin(zRotation / 2);
         Quaternion rotationQuaternion = new Quaternion(
                 (float) (sinX * cosY * cosZ - cosX * sinY * sinZ),
                 (float) (cosX * sinY * cosZ + sinX * cosY * sinZ),

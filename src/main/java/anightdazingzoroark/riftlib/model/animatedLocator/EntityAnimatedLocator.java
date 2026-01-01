@@ -37,11 +37,6 @@ public class EntityAnimatedLocator implements IAnimatedLocator {
     }
 
     @Override
-    public Vec3d getWorldRotation() {
-        return null;
-    }
-
-    @Override
     public boolean isValid() {
         return this.entity != null && this.entity.isEntityAlive();
     }

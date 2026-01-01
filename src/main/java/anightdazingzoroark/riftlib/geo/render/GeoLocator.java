@@ -35,43 +35,66 @@ public class GeoLocator {
         );
     }
 
-    //todo: change hitbox and dynamic ride positions to use this eventually (?)
-    public Quaternion computeQuaternion() {
-        Quaternion toReturn = new Quaternion();
+    //summing up rotations sucks ass overall so this is to be used instead
+    //when it comes to dealing with rotations
+    //todo: add parameters for additional angles
+    public Quaternion getXYZQuaternion() {
+        Quaternion toReturn = new Quaternion(0, 0, 0, 1);
 
         //setup for getting from ancestor -> from child
         ArrayList<GeoBone> chain = new ArrayList<>();
         for (GeoBone boneToTest = this.parent; boneToTest != null; boneToTest = boneToTest.parent) chain.add(boneToTest);
 
-        //get info from ancestor to child
+        //multiply rotation quaternions in each chain
         for (int i = chain.size() - 1; i >= 0; i--) {
             GeoBone boneToTest = chain.get(i);
-            Quaternion quatBone = quatFromEulerXYZ(boneToTest.getRotationX(), -boneToTest.getRotationY(), -boneToTest.getRotationZ());
-            Quaternion.mul(toReturn, quatBone, toReturn);
-            Quaternion.normalise(toReturn, toReturn);
+
+            double cosX = Math.cos(boneToTest.getRotationX() / 2);
+            double sinX = Math.sin(boneToTest.getRotationX() / 2);
+            //note to self: negating y rotation is more or less a weird hack, idk if this is really necessary
+            double cosY = Math.cos(-boneToTest.getRotationY() / 2);
+            double sinY = Math.sin(-boneToTest.getRotationY() / 2);
+            double cosZ = Math.cos(-boneToTest.getRotationZ() / 2);
+            double sinZ = Math.sin(-boneToTest.getRotationZ() / 2);
+
+            Quaternion quatBone = new Quaternion(
+                    (float) (sinX * cosY * cosZ - cosX * sinY * sinZ),
+                    (float) (cosX * sinY * cosZ + sinX * cosY * sinZ),
+                    (float) (cosX * cosY * sinZ - sinX * sinY * cosZ),
+                    (float) (cosX * cosY * cosZ + sinX * sinY * sinZ)
+            );
+
+            Quaternion.normalise(quatBone, quatBone);
+
+            Quaternion tmp = new Quaternion();
+            Quaternion.mul(toReturn, quatBone, tmp);
+            toReturn.set(tmp);
         }
 
-        Quaternion quatLoc = this.quatFromEulerXYZ(this.rotationX, this.rotationY, -this.rotationZ);
-        Quaternion.mul(toReturn, quatLoc, toReturn);
+        //now apply the locator's rotation
+        double cosX = Math.cos(this.rotationX / 2);
+        double sinX = Math.sin(this.rotationX / 2);
+        double cosY = Math.cos(this.rotationY / 2);
+        double sinY = Math.sin(this.rotationY / 2);
+        double cosZ = Math.cos(-this.rotationZ / 2);
+        double sinZ = Math.sin(-this.rotationZ / 2);
+
+        Quaternion quatLocator = new Quaternion(
+                (float) (sinX * cosY * cosZ - cosX * sinY * sinZ),
+                (float) (cosX * sinY * cosZ + sinX * cosY * sinZ),
+                (float) (cosX * cosY * sinZ - sinX * sinY * cosZ),
+                (float) (cosX * cosY * cosZ + sinX * sinY * sinZ)
+        );
+
+        Quaternion.normalise(quatLocator, quatLocator);
+
+        Quaternion tmp = new Quaternion();
+        Quaternion.mul(toReturn, quatLocator, tmp);
+        toReturn.set(tmp);
+
+        //normalize and return
         Quaternion.normalise(toReturn, toReturn);
 
-        return toReturn;
-    }
-
-    private Quaternion quatFromEulerXYZ(float rx, float ry, float rz) {
-        Quaternion quatX = new Quaternion();
-        quatX.setFromAxisAngle(new Vector4f(1, 0, 0, rx));
-
-        Quaternion quatY = new Quaternion();
-        quatY.setFromAxisAngle(new Vector4f(0, 1, 0, ry));
-
-        Quaternion quatZ = new Quaternion();
-        quatZ.setFromAxisAngle(new Vector4f(0, 0, 1, rz));
-
-        Quaternion toReturn = new Quaternion();
-        Quaternion.mul(quatZ, quatY, toReturn);
-        Quaternion.mul(toReturn, quatX, toReturn);
-        Quaternion.normalise(toReturn, toReturn);
         return toReturn;
     }
 
@@ -130,17 +153,6 @@ public class GeoLocator {
         }
 
         return toReturn.subtract(this.positionX, this.positionY, this.positionZ);
-    }
-
-    private Vec3d getRotationOffsetFromBoneRotations() {
-        Vec3d toReturn = Vec3d.ZERO;
-        GeoBone boneToTest = this.parent;
-
-        while (boneToTest != null) {
-            toReturn = toReturn.add(boneToTest.getRotationX(), boneToTest.getRotationY(), boneToTest.getRotationZ());
-            boneToTest = boneToTest.parent;
-        }
-        return toReturn;
     }
 
     public String toString() {

@@ -11,11 +11,6 @@ public interface IAnimatedLocator {
     Vec3d getWorldPosition();
 
     /***
-     * This is for getting the rotation in the world of the locator in radians
-     ***/
-    Vec3d getWorldRotation();
-
-    /***
      * Whether or not the locator is alive depends on if the IAnimatable associated with it
      * is "dead", and "dead" depends on the IAnimatable
      ***/
@@ -33,8 +28,8 @@ public interface IAnimatedLocator {
     ParticleBuilder getParticleBuilder();
 
     /***
-     * This is for vectors signifying the direction in which to emit particles to.
-     * Its purpose is to rotate it based on a variety of factors
+     * GeoLocators contain quaternions which specify their overall rotation
+     * This is for rotating direction vectors using GeoLocator.getXYZQuaternion().
      * ***/
     Vec3d rotateVecByQuaternion(Vec3d vector);
 

@@ -97,7 +97,7 @@ public class AnimatedLocatorTicker {
                             .add(right.scale(geoLocatorPos.x))
                             .add(up.scale(geoLocatorPos.y))
                             .add(look.scale(-geoLocatorPos.z));
-            Vec3d worldRot = new Vec3d(Math.toRadians(pitch), Math.toRadians(yaw), 0);
+            Vec3d worldRot = new Vec3d(-Math.toRadians(pitch), Math.toRadians(yaw), 0);
 
             itemAnimatedLocator.updateFromRender(worldPos, worldRot);
         }
@@ -113,8 +113,8 @@ public class AnimatedLocatorTicker {
 
         //rough offsets for item hand position
         double rightOffset = 0.6 * (hand == EnumHand.MAIN_HAND ? 1 : -1);
-        double upOffset = -0.65;
-        double forwardOffset = 0.45;
+        double upOffset = -0.725;
+        double forwardOffset = 0.25;
 
         //change based on item hand position
         Vec3d handForward = look.normalize();

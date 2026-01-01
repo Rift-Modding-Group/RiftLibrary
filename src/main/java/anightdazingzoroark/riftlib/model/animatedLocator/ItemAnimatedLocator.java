@@ -31,12 +31,6 @@ public class ItemAnimatedLocator implements IAnimatedLocator {
     }
 
     @Override
-    public Vec3d getWorldRotation() {
-        if (!this.wasUpdatedRecently()) this.valid = false;
-        return this.worldRot;
-    }
-
-    @Override
     public boolean isValid() {
         if (!this.wasUpdatedRecently()) this.valid = false;
         return this.valid;
@@ -59,6 +53,7 @@ public class ItemAnimatedLocator implements IAnimatedLocator {
 
     @Override
     public Vec3d rotateVecByQuaternion(Vec3d vector) {
+        //really hacky way, may have to replace this sooner or later
         return VectorUtils.rotateVectorYXZ(vector, this.worldRot.x, this.worldRot.y, this.worldRot.z);
     }
 

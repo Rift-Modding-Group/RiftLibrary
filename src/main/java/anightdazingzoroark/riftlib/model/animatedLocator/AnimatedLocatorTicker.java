@@ -193,16 +193,16 @@ public class AnimatedLocatorTicker {
         Vec3d armPivot = new Vec3d(arm.rotationPointX, arm.rotationPointY, arm.rotationPointZ).scale(0.0625);
 
         //rough ideal offsets for item hand position
-        // are ideally perpendicular to the players arm
-        double rightOffset = 0.375 * (hand == EnumHand.MAIN_HAND ? 1 : -1);
-        double upOffset = 0.9375;
-        double forwardOffset = 0.0625;
+        //are ideally perpendicular to the players arm
+        double rightOffset = 0.0625 * (hand == EnumHand.MAIN_HAND ? 1 : -1);
+        double upOffset = 0.125;
+        double forwardOffset = 0.75;
 
-        //create held item pivot from above offsets and change to be perpendicular to the arm
+        //create held item pivot from above offsets
         Vec3d heldItemPivot = new Vec3d(rightOffset, upOffset, -forwardOffset);
 
-        //create hand pivot with above information
-        Vec3d handVec = armPivot.subtract(heldItemPivot);
+        //create vector from arm pivot to held item pivot
+        Vec3d handVec = heldItemPivot.subtract(armPivot);
 
         //create offset from hand based on details in item model
         ItemCameraTransforms.TransformType type = hand == EnumHand.MAIN_HAND
@@ -213,7 +213,7 @@ public class AnimatedLocatorTicker {
                 itemTransform.translation.x * itemTransform.scale.x,
                 itemTransform.translation.y * itemTransform.scale.y,
                 itemTransform.translation.z * itemTransform.scale.z
-        ).rotatePitch(-(float) Math.PI / 2f);;
+        ).rotatePitch(-(float) Math.PI / 2f);
 
         //iterate over each locator
         for (IAnimatedLocator animatedLocator : itemAnimatable.getFactory().getAnimatedLocators()) {
@@ -224,13 +224,13 @@ public class AnimatedLocatorTicker {
             Vec3d geoLocatorPos = itemAnimatedLocator.getGeoLocator().getPosition().rotatePitch(-(float) Math.PI / 2f);
 
             //create final rotated vector
-            Vec3d handBase = VectorUtils.rotateVector(
-                    handVec.add(scaledItemTransform).add(geoLocatorPos),
-                    arm.rotateAngleX, arm.rotateAngleY - bodyYaw, arm.rotateAngleZ
+            Vec3d localOffset = handVec.add(scaledItemTransform).add(geoLocatorPos);
+            Vec3d rotatedOffset = VectorUtils.rotateVectorYXZ(localOffset,
+                    arm.rotateAngleX,arm.rotateAngleY - bodyYaw + Math.PI, -arm.rotateAngleZ
             );
 
-            Vec3d worldPos = base.add(handBase);
-            Vec3d worldRot = new Vec3d(arm.rotateAngleX - Math.PI / 2, arm.rotateAngleY - bodyYaw, arm.rotateAngleZ);
+            Vec3d worldPos = base.add(rotatedOffset);
+            Vec3d worldRot = new Vec3d(arm.rotateAngleX - Math.PI / 2f, arm.rotateAngleY + bodyYaw + Math.PI, arm.rotateAngleZ);
             itemAnimatedLocator.updateFromRender(worldPos, worldRot);
         }
     }

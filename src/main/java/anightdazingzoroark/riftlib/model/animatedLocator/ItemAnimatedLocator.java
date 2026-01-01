@@ -59,7 +59,7 @@ public class ItemAnimatedLocator implements IAnimatedLocator {
 
     @Override
     public Vec3d rotateVecByQuaternion(Vec3d vector) {
-        return VectorUtils.rotateVector(vector, this.worldRot.x, this.worldRot.y, this.worldRot.z);
+        return VectorUtils.rotateVectorYXZ(vector, this.worldRot.x, this.worldRot.y, this.worldRot.z);
     }
 
     public void updateFromRender(Vec3d worldPos, Vec3d worldRot) {

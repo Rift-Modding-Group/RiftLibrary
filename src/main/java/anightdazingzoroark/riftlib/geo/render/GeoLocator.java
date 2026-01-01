@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.geo.render;
 
+import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.util.vector.Quaternion;
 import org.lwjgl.util.vector.Vector4f;
@@ -28,10 +29,13 @@ public class GeoLocator {
     }
 
     public Vec3d getPosition() {
+        Vec3d boneDispOffset = this.getPositionOffsetFromBoneDisplacements();
+        Vec3d boneRotOffset = this.getPositionOffsetFromBoneRotations();
+
         return new Vec3d(
-                this.positionX + this.getPositionOffsetFromBoneDisplacements().x + this.getPositionOffsetFromBoneRotations().x,
-                this.positionY + this.getPositionOffsetFromBoneDisplacements().y + this.getPositionOffsetFromBoneRotations().y,
-                this.positionZ + this.getPositionOffsetFromBoneDisplacements().z + this.getPositionOffsetFromBoneRotations().z
+                this.positionX + boneDispOffset.x + boneRotOffset.x,
+                this.positionY + boneDispOffset.y + boneRotOffset.y,
+                this.positionZ + boneDispOffset.z + boneRotOffset.z
         );
     }
 
@@ -48,7 +52,6 @@ public class GeoLocator {
         //multiply rotation quaternions in each chain
         for (int i = chain.size() - 1; i >= 0; i--) {
             GeoBone boneToTest = chain.get(i);
-
             double cosX = Math.cos(boneToTest.getRotationX() / 2);
             double sinX = Math.sin(boneToTest.getRotationX() / 2);
             //note to self: negating y rotation is more or less a weird hack, idk if this is really necessary
@@ -98,7 +101,6 @@ public class GeoLocator {
         return toReturn;
     }
 
-    //todo: change summing of bone data so that its parent -> child
     private Vec3d getPositionOffsetFromBoneDisplacements() {
         Vec3d toReturn = Vec3d.ZERO;
         GeoBone boneToTest = this.parent;
@@ -110,49 +112,50 @@ public class GeoLocator {
         return toReturn;
     }
 
-    //todo: change summing of bone data so that its parent -> child
     private Vec3d getPositionOffsetFromBoneRotations() {
-        Vec3d toReturn = new Vec3d(this.positionX, this.positionY, this.positionZ);
+        Vec3d vecPos = new Vec3d(this.positionX, this.positionY, this.positionZ);
         GeoBone boneToTest = this.parent;
 
+        //evaluate
         while (boneToTest != null) {
-            double pivotX = boneToTest.getPivotX() / 16D;
-            double pivotY = boneToTest.getPivotY() / 16D;
-            double pivotZ = boneToTest.getPivotZ() / 16D;
+            //get vector for direction from pivot to pos
+            Vec3d vecPivot = new Vec3d(boneToTest.getPivotX() / 16D, boneToTest.getPivotY() / 16D, boneToTest.getPivotZ() / 16D);
+            Vec3d vecDirection = vecPos.subtract(vecPivot);
 
-            double relX = toReturn.x - pivotX;
-            double relY = toReturn.y - pivotY;
-            double relZ = toReturn.z - pivotZ;
+            //create quaternion from current rotations, conjugate it too
+            double cosX = Math.cos(boneToTest.getRotationX() / 2);
+            double sinX = Math.sin(boneToTest.getRotationX() / 2);
+            //note to self: negating y rotation is more or less a weird hack, idk if this is really necessary
+            double cosY = Math.cos(-boneToTest.getRotationY() / 2);
+            double sinY = Math.sin(-boneToTest.getRotationY() / 2);
+            double cosZ = Math.cos(-boneToTest.getRotationZ() / 2);
+            double sinZ = Math.sin(-boneToTest.getRotationZ() / 2);
 
-            //create offsets from x rotation, which affects y and z offsets
-            double cosX = Math.cos(boneToTest.getRotationX());
-            double sinX = Math.sin(boneToTest.getRotationX());
-            double ry = relY * cosX - relZ * sinX;
-            double rz = relY * sinX + relZ * cosX;
-            relY = ry;
-            relZ = rz;
+            Quaternion quatBoneRot = new Quaternion(
+                    (float) (sinX * cosY * cosZ - cosX * sinY * sinZ),
+                    (float) (cosX * sinY * cosZ + sinX * cosY * sinZ),
+                    (float) (cosX * cosY * sinZ - sinX * sinY * cosZ),
+                    (float) (cosX * cosY * cosZ + sinX * sinY * sinZ)
+            );
+            Quaternion.normalise(quatBoneRot, quatBoneRot);
 
-            //create offsets from y rotation, which affects x and z offsets
-            double cosY = Math.cos(boneToTest.getRotationY());
-            double sinY = Math.sin(boneToTest.getRotationY());
-            double rx = relX * cosY - relZ * sinY;
-            rz = relX * sinY + relZ * cosY;
-            relX = rx;
-            relZ = rz;
+            Quaternion quatBoneRotConj = new Quaternion();
+            Quaternion.negate(quatBoneRot, quatBoneRotConj);
 
-            //create offsets from z rotation, which affects x and y offsets
-            double cosZ = Math.cos(-boneToTest.getRotationZ());
-            double sinZ = Math.sin(-boneToTest.getRotationZ());
-            rx = relX * cosZ - relY * sinZ;
-            ry = relX * sinZ + relY * cosZ;
-            relX = rx;
-            relY = ry;
+            //rotate vecDirection
+            Quaternion quatVecDirection = VectorUtils.convertToQuaternion(vecDirection);
+            Quaternion temp = new Quaternion();
+            Quaternion quatRotatedVecDirection = new Quaternion();
+            Quaternion.mul(quatBoneRot, quatVecDirection, temp);
+            Quaternion.mul(temp, quatBoneRotConj, quatRotatedVecDirection);
+            Vec3d rotatedVecDirection = VectorUtils.convertQuaternionToVec(quatRotatedVecDirection);
 
-            toReturn = new Vec3d(relX + pivotX, relY + pivotY, relZ + pivotZ);
+            //update vecPos
+            vecPos = rotatedVecDirection.add(vecPivot);
             boneToTest = boneToTest.parent;
         }
 
-        return toReturn.subtract(this.positionX, this.positionY, this.positionZ);
+        return vecPos.subtract(this.positionX, this.positionY, this.positionZ);
     }
 
     public String toString() {

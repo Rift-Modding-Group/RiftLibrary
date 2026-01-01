@@ -17,6 +17,7 @@ public class TileEntityAnimatedLocator implements IAnimatedLocator {
         this.locator = locator;
     }
 
+    //todo: edit to ensure it takes into account block orientation
     @Override
     public Vec3d getWorldPosition() {
         if (this.tileEntity == null || this.tileEntity.isInvalid()) return Vec3d.ZERO;
@@ -49,11 +50,11 @@ public class TileEntityAnimatedLocator implements IAnimatedLocator {
 
     @Override
     public Vec3d rotateVecByQuaternion(Vec3d vector) {
-        Quaternion quatLocator = this.getGeoLocator().getXYZQuaternion();
+        Quaternion quatLocatorRot = this.getGeoLocator().getXYZQuaternion();
 
         //get inverse of quatLocator
-        Quaternion quatLocatorConj = new Quaternion();
-        Quaternion.negate(quatLocator, quatLocatorConj);
+        Quaternion quatLocatorRotConj = new Quaternion();
+        Quaternion.negate(quatLocatorRot, quatLocatorRotConj);
 
         //get quat of vector
         Quaternion quatVector = new Quaternion((float) vector.x, (float) vector.y, (float) vector.z, 0);
@@ -61,8 +62,8 @@ public class TileEntityAnimatedLocator implements IAnimatedLocator {
         //multiply and get final result
         Quaternion temp = new Quaternion();
         Quaternion result = new Quaternion();
-        Quaternion.mul(quatLocator, quatVector, temp);
-        Quaternion.mul(temp, quatLocatorConj, result);
+        Quaternion.mul(quatLocatorRot, quatVector, temp);
+        Quaternion.mul(temp, quatLocatorRotConj, result);
 
         return new Vec3d(result.x, result.y, result.z);
     }

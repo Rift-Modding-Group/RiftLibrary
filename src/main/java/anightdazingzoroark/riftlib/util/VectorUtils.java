@@ -27,6 +27,14 @@ public class VectorUtils {
 		return new Vector3d(vector.getX(), vector.getY(), vector.getZ());
 	}
 
+    public static Quaternion convertToQuaternion(Vec3d vec3d) {
+        return new Quaternion((float) vec3d.x, (float) vec3d.y, (float) vec3d.z, 0);
+    }
+
+    public static Vec3d convertQuaternionToVec(Quaternion quaternion) {
+        return new Vec3d(quaternion.x, quaternion.y, quaternion.z);
+    }
+
     //this uses yxz
     public static Vec3d rotateVectorYXZ(Vec3d vec3d, double xRotation, double yRotation, double zRotation) {
         //create quaternion

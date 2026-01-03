@@ -7,6 +7,7 @@ import anightdazingzoroark.riftlib.geo.render.*;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.util.ParticleUtils;
 import net.minecraft.client.renderer.RenderHelper;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.renderer.BufferBuilder;
@@ -18,7 +19,6 @@ import anightdazingzoroark.riftlib.core.util.Color;
 import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 import anightdazingzoroark.riftlib.util.MatrixStack;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public interface IGeoRenderer<T> {
@@ -37,7 +37,7 @@ public interface IGeoRenderer<T> {
 
 		// Render all top level bones
 		for (GeoBone group : model.topLevelBones) {
-			renderRecursively(builder, group, red, green, blue, alpha);
+			this.renderRecursively(builder, group, red, green, blue, alpha);
 		}
 
 		Tessellator.getInstance().draw();
@@ -134,6 +134,7 @@ public interface IGeoRenderer<T> {
             RiftLibParticleEmitter emitter = geoLocator.getParticleEmitter();
 
             //update location based on animatedLocator if there is
+            BufferUtils.createFloatBuffer(16);
             Vector3d position = ParticleUtils.getCurrentRenderPos();
             emitter.posX = position.x;
             emitter.posY = position.y;
@@ -159,24 +160,9 @@ public interface IGeoRenderer<T> {
                     0,0,0,1
             ));
 
-            //push parent and previous bones of locator info to matrix
-            GeoBone[] bonePath = this.getBonePathFromLocator(geoLocator);
-            for (GeoBone bone : bonePath) {
-                MATRIX_STACK.translate(bone);
-                MATRIX_STACK.moveToPivot(bone);
-                MATRIX_STACK.rotate(bone);
-                MATRIX_STACK.scale(bone);
-                MATRIX_STACK.moveBackFromPivot(bone);
-            }
-
             //push locator info to matrix
             MATRIX_STACK.translate(geoLocator);
-            MATRIX_STACK.moveToPivot(geoLocator);
             MATRIX_STACK.rotate(geoLocator);
-            MATRIX_STACK.scale(1, 1, 1); //assumed to be so for locators
-            MATRIX_STACK.moveBackFromPivot(geoLocator);
-
-            MATRIX_STACK.moveToPivot(geoLocator);
 
             Matrix4f full = MATRIX_STACK.getModelMatrix();
             /*
@@ -187,7 +173,7 @@ public interface IGeoRenderer<T> {
             );
              */
             emitter.posX += full.m03;
-            emitter.posY += full.m13;
+            emitter.posY += full.m13 + 1.5D;
             emitter.posZ += full.m23;
 
             MATRIX_STACK.pop();
@@ -197,16 +183,6 @@ public interface IGeoRenderer<T> {
             RenderHelper.enableStandardItemLighting();
             GL11.glPopMatrix();
         }
-    }
-
-    default GeoBone[] getBonePathFromLocator(GeoLocator locator) {
-        GeoBone bone = locator.parent;
-        ArrayList<GeoBone> bones = new ArrayList<>();
-        while (bone != null) {
-            bones.add(0, bone);
-            bone = bone.parent;
-        }
-        return bones.toArray(new GeoBone[0]);
     }
 
 	default Color getRenderColor(T animatable, float partialTicks) {

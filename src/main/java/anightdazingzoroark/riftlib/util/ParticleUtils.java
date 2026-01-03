@@ -18,6 +18,7 @@ public class ParticleUtils {
     public static void setInitialWorldPos() {
         RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
         Entity camera = Minecraft.getMinecraft().getRenderViewEntity();
+        if (camera == null) return;
         GL11.glLoadIdentity();
         if (Minecraft.getMinecraft().gameSettings.thirdPersonView == 0) {
             GL11.glScaled(-1, 1, -1);
@@ -60,10 +61,10 @@ public class ParticleUtils {
         double dl = matrix4f.m03;
         double du = matrix4f.m13;
         double dz = matrix4f.m23;
-        if(Minecraft.getMinecraft().gameSettings.thirdPersonView==1){
+        if (Minecraft.getMinecraft().gameSettings.thirdPersonView==1){
             dz+=4;
         }
-        if(Minecraft.getMinecraft().gameSettings.thirdPersonView==2){
+        if (Minecraft.getMinecraft().gameSettings.thirdPersonView==2){
             dz*=-1;
             dl*=-1;
             dz-=4;

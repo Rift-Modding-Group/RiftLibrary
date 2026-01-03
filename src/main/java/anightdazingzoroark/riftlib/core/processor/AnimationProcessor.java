@@ -194,9 +194,9 @@ public class AnimationProcessor<T extends IAnimatable> {
                     //packets for hitbox updates will not be sent if their total change
                     //is too miniscule
                     //get positions
-                    float newHitboxX = (float) locator.getPosition().x;
-                    float newHitboxY = (float) locator.getPosition().y - (hitbox.initHeight / 2f) - (bone.getScaleY() - 1) / 3;
-                    float newHitboxZ = -(float) locator.getPosition().z;
+                    float newHitboxX = (float) locator.getPosition().x / 16f;
+                    float newHitboxY = (float) locator.getPosition().y / 16f - (hitbox.initHeight / 2f) - (bone.getScaleY() - 1) / 3;
+                    float newHitboxZ = -(float) locator.getPosition().z / 16f;
 
                     //get magnitude of displacement
                     double dPosTotal = Math.sqrt(Math.pow(newHitboxX - hitbox.getHitboxXOffset(), 2) + Math.pow(newHitboxY - hitbox.getHitboxYOffset(), 2) + Math.pow(newHitboxZ - hitbox.getHitboxZOffset(), 2));
@@ -248,7 +248,7 @@ public class AnimationProcessor<T extends IAnimatable> {
                     int ridePosIndex = DynamicRidePosUtils.locatorRideIndex(locator.name);
                     definitionList.map.put(
                             ridePosIndex,
-                            new Vec3d(locator.getPosition().x, locator.getPosition().y, -locator.getPosition().z)
+                            new Vec3d(locator.getPosition().x / 16f, locator.getPosition().y / 16f, -locator.getPosition().z / 16f)
                     );
                 }
             }

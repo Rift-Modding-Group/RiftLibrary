@@ -7,6 +7,7 @@ import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;
 
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
+import net.minecraft.util.math.Vec3d;
 import org.lwjgl.util.vector.Quaternion;
 
 import anightdazingzoroark.riftlib.geo.render.GeoBone;
@@ -16,13 +17,13 @@ import anightdazingzoroark.riftlib.geo.render.GeoCube;
  * Simple implementation of a matrix stack
  */
 public class MatrixStack {
-	private Stack<Matrix4f> model = new Stack<Matrix4f>();
-	private Stack<Matrix3f> normal = new Stack<Matrix3f>();
+	private final Stack<Matrix4f> model = new Stack<Matrix4f>();
+	private final Stack<Matrix3f> normal = new Stack<Matrix3f>();
 
-	private Matrix4f tempModelMatrix = new Matrix4f();
-	private Matrix3f tempNormalMatrix = new Matrix3f();
+	private final Matrix4f tempModelMatrix = new Matrix4f();
+	private final Matrix3f tempNormalMatrix = new Matrix3f();
 	@SuppressWarnings("unused")
-	private float[] tempArray = new float[16];
+	private final float[] tempArray = new float[16];
 
 	public MatrixStack() {
 		Matrix4f model = new Matrix4f();
@@ -92,16 +93,9 @@ public class MatrixStack {
 		this.translate(-bone.getPositionX() / 16, bone.getPositionY() / 16, bone.getPositionZ() / 16);
 	}
 
-    public void moveToPivot(GeoLocator locator) {
-        this.translate(locator.getRotationPointX() / 16f, locator.getRotationPointY() / 16f, locator.getRotationPointZ() / 16f);
-    }
-
-    public void moveBackFromPivot(GeoLocator locator) {
-        this.translate(-locator.getRotationPointX() / 16f, -locator.getRotationPointY() / 16f, -locator.getRotationPointZ() / 16f);
-    }
-
     public void translate(GeoLocator locator) {
-        this.translate(-locator.getPositionX() / 16f, locator.getPositionY() / 16f, locator.getPositionZ() / 16f);
+        Vec3d locatorPos = locator.getPosition();
+        this.translate((float) locatorPos.x / 16f, (float) locatorPos.y / 16f, (float) locatorPos.z / 16f);
     }
 
 	/* Scale */

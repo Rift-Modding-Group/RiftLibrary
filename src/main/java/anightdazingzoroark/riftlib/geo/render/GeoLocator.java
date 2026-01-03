@@ -16,9 +16,9 @@ public class GeoLocator {
     private float rotationX;
     private float rotationY;
     private float rotationZ;
-    private float rotationPointX;
-    private float rotationPointY;
-    private float rotationPointZ;
+    private float pivotX;
+    private float pivotY;
+    private float pivotZ;
     private RiftLibParticleEmitter particleEmitter;
 
     public GeoLocator(GeoBone parent, String name) {
@@ -74,28 +74,28 @@ public class GeoLocator {
         this.rotationZ = value;
     }
 
-    public float getRotationPointX() {
-        return this.rotationPointX;
+    public float getPivotX() {
+        return this.pivotX;
     }
 
-    public float getRotationPointY() {
-        return this.rotationPointY;
+    public float getPivotY() {
+        return this.pivotY;
     }
 
-    public float getRotationPointZ() {
-        return this.rotationPointZ;
+    public float getPivotZ() {
+        return this.pivotZ;
     }
 
-    public void setRotationPointX(float value) {
-        this.rotationPointX = value;
+    public void setPivotX(float value) {
+        this.pivotX = value;
     }
 
-    public void setRotationPointY(float value) {
-        this.rotationPointY = value;
+    public void setPivotY(float value) {
+        this.pivotY = value;
     }
 
-    public void setRotationPointZ(float value) {
-        this.rotationPointZ = value;
+    public void setPivotZ(float value) {
+        this.pivotZ = value;
     }
 
     public void createParticleEmitter(ParticleBuilder builder) {
@@ -115,9 +115,9 @@ public class GeoLocator {
         Vec3d boneRotOffset = this.getPositionOffsetFromBoneRotations();
 
         return new Vec3d(
-                (this.positionX / 16f) + boneDispOffset.x + boneRotOffset.x,
-                (this.positionY / 16f) + boneDispOffset.y + boneRotOffset.y,
-                (this.positionZ / 16f) + boneDispOffset.z + boneRotOffset.z
+                this.positionX + boneDispOffset.x + boneRotOffset.x,
+                this.positionY + boneDispOffset.y + boneRotOffset.y,
+                this.positionZ + boneDispOffset.z + boneRotOffset.z
         );
     }
 
@@ -130,33 +130,32 @@ public class GeoLocator {
         );
     }
 
-    private Vec3d getPositionOffsetFromBoneDisplacements() {
+    public Vec3d getPositionOffsetFromBoneDisplacements() {
         Vec3d toReturn = Vec3d.ZERO;
         GeoBone boneToTest = this.parent;
 
         while (boneToTest != null) {
-            toReturn = toReturn.add(boneToTest.getPositionX() / 16f, boneToTest.getPositionY() / 16f, boneToTest.getPositionZ() / 16f);
+            toReturn = toReturn.add(boneToTest.getPositionX(), boneToTest.getPositionY(), boneToTest.getPositionZ());
             boneToTest = boneToTest.parent;
         }
         return toReturn;
     }
 
-    private Vec3d getPositionOffsetFromBoneRotations() {
-        Vec3d vecPos = new Vec3d(this.positionX / 16f, this.positionY / 16f, this.positionZ / 16f);
+    public Vec3d getPositionOffsetFromBoneRotations() {
+        Vec3d vecPos = new Vec3d(this.positionX, this.positionY, this.positionZ);
         GeoBone boneToTest = this.parent;
 
         //evaluate
         while (boneToTest != null) {
             //get vector for direction from pivot to pos
-            Vec3d vecPivot = new Vec3d(boneToTest.getPivotX() / 16D, boneToTest.getPivotY() / 16D, boneToTest.getPivotZ() / 16D);
+            Vec3d vecPivot = new Vec3d(boneToTest.getPivotX(), boneToTest.getPivotY(), boneToTest.getPivotZ());
             Vec3d vecDirection = vecPos.subtract(vecPivot);
 
             //create quaternion from current rotations, conjugate it too
             double cosX = Math.cos(boneToTest.getRotationX() / 2);
             double sinX = Math.sin(boneToTest.getRotationX() / 2);
-            //note to self: negating y rotation is more or less a weird hack, idk if this is really necessary
-            double cosY = Math.cos(-boneToTest.getRotationY() / 2);
-            double sinY = Math.sin(-boneToTest.getRotationY() / 2);
+            double cosY = Math.cos(boneToTest.getRotationY() / 2);
+            double sinY = Math.sin(boneToTest.getRotationY() / 2);
             double cosZ = Math.cos(-boneToTest.getRotationZ() / 2);
             double sinZ = Math.sin(-boneToTest.getRotationZ() / 2);
 
@@ -184,7 +183,7 @@ public class GeoLocator {
             boneToTest = boneToTest.parent;
         }
 
-        return vecPos.subtract(this.positionX / 16f, this.positionY / 16f, this.positionZ / 16f);
+        return vecPos.subtract(this.positionX, this.positionY, this.positionZ);
     }
 
     private Vec3d getRotationOffsetFromBoneRotations() {

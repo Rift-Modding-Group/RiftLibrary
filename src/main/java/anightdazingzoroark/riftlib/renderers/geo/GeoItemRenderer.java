@@ -58,10 +58,10 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 	public void render(T animatable, ItemStack itemStack) {
 		this.currentItemStack = itemStack;
 		GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(animatable));
+        animatable.getFactory().setCurrentModel(model);
 		AnimationEvent itemEvent = new AnimationEvent(animatable, 0, 0,
 				Minecraft.getMinecraft().getRenderPartialTicks(), false, Collections.singletonList(itemStack));
 		this.modelProvider.setLivingAnimations(animatable, this.getUniqueID(animatable), itemEvent);
-        animatable.getFactory().createAnimatedLocators(model);
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(0, 0.01f, 0);
 		GlStateManager.translate(0.5, 0.5, 0.5);

@@ -6,6 +6,7 @@ import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;
 
+import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import org.lwjgl.util.vector.Quaternion;
 
 import anightdazingzoroark.riftlib.geo.render.GeoBone;
@@ -91,6 +92,18 @@ public class MatrixStack {
 		this.translate(-bone.getPositionX() / 16, bone.getPositionY() / 16, bone.getPositionZ() / 16);
 	}
 
+    public void moveToPivot(GeoLocator locator) {
+        this.translate(locator.getRotationPointX() / 16f, locator.getRotationPointY() / 16f, locator.getRotationPointZ() / 16f);
+    }
+
+    public void moveBackFromPivot(GeoLocator locator) {
+        this.translate(-locator.getRotationPointX() / 16f, -locator.getRotationPointY() / 16f, -locator.getRotationPointZ() / 16f);
+    }
+
+    public void translate(GeoLocator locator) {
+        this.translate(-locator.getPositionX() / 16f, locator.getPositionY() / 16f, locator.getPositionZ() / 16f);
+    }
+
 	/* Scale */
 
 	public void scale(float x, float y, float z) {
@@ -164,34 +177,48 @@ public class MatrixStack {
 		}
 	}
 
-	public void rotate(GeoCube bone) {
-		Vector3f rotation = bone.rotation;
-		Matrix4f matrix4f = new Matrix4f();
-		Matrix3f matrix3f = new Matrix3f();
+    public void rotate(GeoCube bone) {
+        Vector3f rotation = bone.rotation;
+        Matrix4f matrix4f = new Matrix4f();
+        Matrix3f matrix3f = new Matrix3f();
 
-		this.tempModelMatrix.setIdentity();
-		matrix4f.rotZ(rotation.getZ());
-		this.tempModelMatrix.mul(matrix4f);
+        this.tempModelMatrix.setIdentity();
+        matrix4f.rotZ(rotation.getZ());
+        this.tempModelMatrix.mul(matrix4f);
 
-		matrix4f.rotY(rotation.getY());
-		this.tempModelMatrix.mul(matrix4f);
+        matrix4f.rotY(rotation.getY());
+        this.tempModelMatrix.mul(matrix4f);
 
-		matrix4f.rotX(rotation.getX());
-		this.tempModelMatrix.mul(matrix4f);
+        matrix4f.rotX(rotation.getX());
+        this.tempModelMatrix.mul(matrix4f);
 
-		this.tempNormalMatrix.setIdentity();
-		matrix3f.rotZ(rotation.getZ());
-		this.tempNormalMatrix.mul(matrix3f);
+        this.tempNormalMatrix.setIdentity();
+        matrix3f.rotZ(rotation.getZ());
+        this.tempNormalMatrix.mul(matrix3f);
 
-		matrix3f.rotY(rotation.getY());
-		this.tempNormalMatrix.mul(matrix3f);
+        matrix3f.rotY(rotation.getY());
+        this.tempNormalMatrix.mul(matrix3f);
 
-		matrix3f.rotX(rotation.getX());
-		this.tempNormalMatrix.mul(matrix3f);
+        matrix3f.rotX(rotation.getX());
+        this.tempNormalMatrix.mul(matrix3f);
 
-		this.model.peek().mul(this.tempModelMatrix);
-		this.normal.peek().mul(this.tempNormalMatrix);
-	}
+        this.model.peek().mul(this.tempModelMatrix);
+        this.normal.peek().mul(this.tempNormalMatrix);
+    }
+
+    public void rotate(GeoLocator locator) {
+        if (locator.getRotationZ() != 0f) {
+            this.rotateZ(locator.getRotationZ());
+        }
+
+        if (locator.getRotationY() != 0f) {
+            this.rotateY(locator.getRotationY());
+        }
+
+        if (locator.getRotationX() != 0f) {
+            this.rotateX(locator.getRotationX());
+        }
+    }
 
 	@SuppressWarnings("unused")
 	private Quaternion fromAngles(float x, float y, float z) {

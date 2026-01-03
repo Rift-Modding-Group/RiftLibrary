@@ -21,13 +21,10 @@ import java.util.stream.Collectors;
 import anightdazingzoroark.riftlib.ClientProxy;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.easing.EasingManager;
-import anightdazingzoroark.riftlib.event.ParticleAttachEvent;
-import anightdazingzoroark.riftlib.model.animatedLocator.IAnimatedLocator;
+import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
-import net.minecraft.client.Minecraft;
-import net.minecraftforge.common.MinecraftForge;
 import org.apache.commons.lang3.tuple.Pair;
 
 import anightdazingzoroark.riftlib.molang.math.IValue;
@@ -637,7 +634,7 @@ public class AnimationController<T extends IAnimatable> {
         for (ParticleEventKeyFrame particleEventKeyFrame : this.currentAnimation.particleKeyFrames) {
             if (!this.executedKeyFrames.contains(particleEventKeyFrame) && tick >= particleEventKeyFrame.getStartTick()) {
                 //add particle information to a locator
-                IAnimatedLocator locator = this.animatable.getFactory().getAnimatedLocator(particleEventKeyFrame.locator);
+                GeoLocator locator = this.animatable.getFactory().getLocator(particleEventKeyFrame.locator);
                 if (locator != null) {
                     //first check if the locator is used by another particle in ClientProxy.EMITTER_LIST
                     //if there is, kill it
@@ -648,8 +645,8 @@ public class AnimationController<T extends IAnimatable> {
                     //add emitter to locator and put it in ClientProxy.EMITTER_LIST
                     ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(particleEventKeyFrame.effect);
                     if (particleBuilder != null) {
-                        locator.setParticleBuilder(particleBuilder);
-                        MinecraftForge.EVENT_BUS.post(new ParticleAttachEvent(this.animatable, locator));
+                        locator.createParticleEmitter(particleBuilder);
+                        ClientProxy.EMITTER_LIST.add(locator.getParticleEmitter());
                     }
                 }
 

@@ -58,6 +58,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 	public void doRender(T entity, double x, double y, double z, float entityYaw, float partialTicks) {
         //get model
         GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(entity));
+        entity.getFactory().setCurrentModel(model);
 
 		//rest is good ol rendering code
 		GlStateManager.pushMatrix();
@@ -124,8 +125,6 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		AnimationEvent predicate = new AnimationEvent(entity, limbSwing, limbSwingAmount, partialTicks,
 				!(limbSwingAmount > -0.15F && limbSwingAmount < 0.15F), Collections.singletonList(entityModelData));
         this.modelProvider.setLivingAnimations(entity, this.getUniqueID(entity), predicate);
-
-        entity.getFactory().createAnimatedLocators(model);
 
         GlStateManager.pushMatrix();
 		GlStateManager.scale(entity.scale(), entity.scale(), entity.scale());

@@ -1,31 +1,113 @@
 package anightdazingzoroark.riftlib.geo.render;
 
+import anightdazingzoroark.riftlib.particle.ParticleBuilder;
+import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.util.VectorUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.util.vector.Quaternion;
-import org.lwjgl.util.vector.Vector4f;
-
-import java.util.ArrayList;
 
 public class GeoLocator {
     public final GeoBone parent;
     public final String name;
-    private final float positionX;
-    private final float positionY;
-    private final float positionZ;
-    private final float rotationX;
-    private final float rotationY;
-    private final float rotationZ;
+    private float positionX;
+    private float positionY;
+    private float positionZ;
+    private float rotationX;
+    private float rotationY;
+    private float rotationZ;
+    private float rotationPointX;
+    private float rotationPointY;
+    private float rotationPointZ;
+    private RiftLibParticleEmitter particleEmitter;
 
-    public GeoLocator(GeoBone parent, String name, float x, float y, float z, float rotationX, float rotationY, float rotationZ) {
+    public GeoLocator(GeoBone parent, String name) {
         this.parent = parent;
         this.name = name;
-        this.positionX = x;
-        this.positionY = y;
-        this.positionZ = z;
-        this.rotationX = (float) Math.toRadians(rotationX);
-        this.rotationY = (float) Math.toRadians(rotationY);
-        this.rotationZ = (float) Math.toRadians(rotationZ);
+    }
+
+    public float getPositionX() {
+        return this.positionX;
+    }
+
+    public float getPositionY() {
+        return this.positionY;
+    }
+
+    public float getPositionZ() {
+        return this.positionZ;
+    }
+
+    public void setPositionX(float value) {
+        this.positionX = value;
+    }
+
+    public void setPositionY(float value) {
+        this.positionY = value;
+    }
+
+    public void setPositionZ(float value) {
+        this.positionZ = value;
+    }
+
+    public float getRotationX() {
+        return this.rotationX;
+    }
+
+    public float getRotationY() {
+        return this.rotationY;
+    }
+
+    public float getRotationZ() {
+        return this.rotationZ;
+    }
+
+    public void setRotationX(float value) {
+        this.rotationX = value;
+    }
+
+    public void setRotationY(float value) {
+        this.rotationY = value;
+    }
+
+    public void setRotationZ(float value) {
+        this.rotationZ = value;
+    }
+
+    public float getRotationPointX() {
+        return this.rotationPointX;
+    }
+
+    public float getRotationPointY() {
+        return this.rotationPointY;
+    }
+
+    public float getRotationPointZ() {
+        return this.rotationPointZ;
+    }
+
+    public void setRotationPointX(float value) {
+        this.rotationPointX = value;
+    }
+
+    public void setRotationPointY(float value) {
+        this.rotationPointY = value;
+    }
+
+    public void setRotationPointZ(float value) {
+        this.rotationPointZ = value;
+    }
+
+    public void createParticleEmitter(ParticleBuilder builder) {
+        this.particleEmitter = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, this);
+    }
+
+    public RiftLibParticleEmitter getParticleEmitter() {
+        return this.particleEmitter;
+    }
+
+    public Vec3d getUnoffsettedPosition() {
+        return new Vec3d(this.positionX, this.positionY, this.positionZ);
     }
 
     public Vec3d getPosition() {
@@ -33,72 +115,19 @@ public class GeoLocator {
         Vec3d boneRotOffset = this.getPositionOffsetFromBoneRotations();
 
         return new Vec3d(
-                this.positionX + boneDispOffset.x + boneRotOffset.x,
-                this.positionY + boneDispOffset.y + boneRotOffset.y,
-                this.positionZ + boneDispOffset.z + boneRotOffset.z
+                (this.positionX / 16f) + boneDispOffset.x + boneRotOffset.x,
+                (this.positionY / 16f) + boneDispOffset.y + boneRotOffset.y,
+                (this.positionZ / 16f) + boneDispOffset.z + boneRotOffset.z
         );
     }
 
-    //summing up rotations sucks ass overall so this is to be used instead
-    //when it comes to dealing with rotations
-    //todo: add parameters for additional angles
-    public Quaternion getXYZQuaternion() {
-        Quaternion toReturn = new Quaternion(0, 0, 0, 1);
-
-        //setup for getting from ancestor -> from child
-        ArrayList<GeoBone> chain = new ArrayList<>();
-        for (GeoBone boneToTest = this.parent; boneToTest != null; boneToTest = boneToTest.parent) chain.add(boneToTest);
-
-        //multiply rotation quaternions in each chain
-        for (int i = chain.size() - 1; i >= 0; i--) {
-            GeoBone boneToTest = chain.get(i);
-            double cosX = Math.cos(boneToTest.getRotationX() / 2);
-            double sinX = Math.sin(boneToTest.getRotationX() / 2);
-            //note to self: negating y rotation is more or less a weird hack, idk if this is really necessary
-            double cosY = Math.cos(-boneToTest.getRotationY() / 2);
-            double sinY = Math.sin(-boneToTest.getRotationY() / 2);
-            double cosZ = Math.cos(-boneToTest.getRotationZ() / 2);
-            double sinZ = Math.sin(-boneToTest.getRotationZ() / 2);
-
-            Quaternion quatBone = new Quaternion(
-                    (float) (sinX * cosY * cosZ - cosX * sinY * sinZ),
-                    (float) (cosX * sinY * cosZ + sinX * cosY * sinZ),
-                    (float) (cosX * cosY * sinZ - sinX * sinY * cosZ),
-                    (float) (cosX * cosY * cosZ + sinX * sinY * sinZ)
-            );
-
-            Quaternion.normalise(quatBone, quatBone);
-
-            Quaternion tmp = new Quaternion();
-            Quaternion.mul(toReturn, quatBone, tmp);
-            toReturn.set(tmp);
-        }
-
-        //now apply the locator's rotation
-        double cosX = Math.cos(this.rotationX / 2);
-        double sinX = Math.sin(this.rotationX / 2);
-        double cosY = Math.cos(this.rotationY / 2);
-        double sinY = Math.sin(this.rotationY / 2);
-        double cosZ = Math.cos(-this.rotationZ / 2);
-        double sinZ = Math.sin(-this.rotationZ / 2);
-
-        Quaternion quatLocator = new Quaternion(
-                (float) (sinX * cosY * cosZ - cosX * sinY * sinZ),
-                (float) (cosX * sinY * cosZ + sinX * cosY * sinZ),
-                (float) (cosX * cosY * sinZ - sinX * sinY * cosZ),
-                (float) (cosX * cosY * cosZ + sinX * sinY * sinZ)
+    public Vec3d getRotation() {
+        Vec3d boneRotOffset = this.getRotationOffsetFromBoneRotations();
+        return new Vec3d(
+                this.rotationX + boneRotOffset.x,
+                this.rotationY + boneRotOffset.y,
+                this.rotationZ + boneRotOffset.z
         );
-
-        Quaternion.normalise(quatLocator, quatLocator);
-
-        Quaternion tmp = new Quaternion();
-        Quaternion.mul(toReturn, quatLocator, tmp);
-        toReturn.set(tmp);
-
-        //normalize and return
-        Quaternion.normalise(toReturn, toReturn);
-
-        return toReturn;
     }
 
     private Vec3d getPositionOffsetFromBoneDisplacements() {
@@ -113,7 +142,7 @@ public class GeoLocator {
     }
 
     private Vec3d getPositionOffsetFromBoneRotations() {
-        Vec3d vecPos = new Vec3d(this.positionX, this.positionY, this.positionZ);
+        Vec3d vecPos = new Vec3d(this.positionX / 16f, this.positionY / 16f, this.positionZ / 16f);
         GeoBone boneToTest = this.parent;
 
         //evaluate
@@ -155,7 +184,18 @@ public class GeoLocator {
             boneToTest = boneToTest.parent;
         }
 
-        return vecPos.subtract(this.positionX, this.positionY, this.positionZ);
+        return vecPos.subtract(this.positionX / 16f, this.positionY / 16f, this.positionZ / 16f);
+    }
+
+    private Vec3d getRotationOffsetFromBoneRotations() {
+        Vec3d toReturn = Vec3d.ZERO;
+        GeoBone boneToTest = this.parent;
+
+        while (boneToTest != null) {
+            toReturn = toReturn.add(boneToTest.getRotationX(), -boneToTest.getRotationY(), -boneToTest.getRotationZ());
+            boneToTest = boneToTest.parent;
+        }
+        return toReturn;
     }
 
     public String toString() {

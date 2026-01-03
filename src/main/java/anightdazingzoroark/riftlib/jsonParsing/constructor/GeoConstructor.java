@@ -62,16 +62,21 @@ public class GeoConstructor {
 		//add locators
 		if (rawBone.locators != null && !rawBone.locators.list.isEmpty()) {
 			for (RawModelLocatorList.RawModelLocator rawLocator : rawBone.locators.list) {
-				geoBone.childLocators.add(new GeoLocator(
-						geoBone,
-                        rawLocator.name,
-						(float) rawLocator.offset[0] / 16f,
-						(float) rawLocator.offset[1] / 16f,
-						(float) rawLocator.offset[2] / 16f,
-                        (float) rawLocator.rotation[0],
-                        (float) rawLocator.rotation[1],
-                        (float) rawLocator.rotation[2]
-				));
+                GeoLocator toAdd = new GeoLocator(geoBone, rawLocator.name);
+
+                toAdd.setPositionX((float) rawLocator.offset[0]);
+                toAdd.setPositionY((float) rawLocator.offset[1]);
+                toAdd.setPositionZ((float) rawLocator.offset[2]);
+
+                toAdd.setRotationX((float) Math.toRadians(-rawLocator.rotation[0]));
+                toAdd.setRotationY((float) Math.toRadians(-rawLocator.rotation[1]));
+                toAdd.setRotationZ((float) Math.toRadians(rawLocator.rotation[2]));
+
+                toAdd.setRotationPointX((float) -rawLocator.offset[0]);
+                toAdd.setRotationPointY((float) rawLocator.offset[1]);
+                toAdd.setRotationPointZ((float) rawLocator.offset[2]);
+
+				geoBone.childLocators.add(toAdd);
 			}
 		}
 

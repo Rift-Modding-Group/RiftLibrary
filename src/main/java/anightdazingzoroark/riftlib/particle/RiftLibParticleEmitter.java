@@ -1,8 +1,8 @@
 package anightdazingzoroark.riftlib.particle;
 
 import anightdazingzoroark.riftlib.ClientProxy;
+import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
-import anightdazingzoroark.riftlib.model.animatedLocator.IAnimatedLocator;
 import anightdazingzoroark.riftlib.molang.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class RiftLibParticleEmitter {
     private final List<RiftLibParticle> particles = new ArrayList<>();
     public final String particleIdentifier;
-    private IAnimatedLocator animatedLocator;
+    private GeoLocator locator;
     private double particleCount;
     private final World world;
     private final int emitterId; //this is mostly for debugging
@@ -49,7 +49,8 @@ public class RiftLibParticleEmitter {
     private final ParticleMaterial material;
     private final MolangParser molangParser;
     private final Random random = new Random();
-    private double x, y, z;
+    public double posX, posY, posZ;
+    public double rotationX, rotationY, rotationZ;
     private boolean isDead;
     public RiftLibEmitterShapeComponent emitterShape;
     public RiftLibEmitterRateComponent emitterRate;
@@ -79,9 +80,9 @@ public class RiftLibParticleEmitter {
     //for lifetime stuff
     public RiftLibEmitterLifetimeComponent emitterLifetime;
 
-    public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, IAnimatedLocator animatedLocator) {
-        this(particleBuilder, world, animatedLocator.getWorldPosition().x, animatedLocator.getWorldPosition().y, animatedLocator.getWorldPosition().z);
-        this.animatedLocator = animatedLocator;
+    public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, GeoLocator locator) {
+        this(particleBuilder, world, 0, 0, 0);
+        this.locator = locator;
     }
 
     public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, double x, double y, double z) {
@@ -92,9 +93,9 @@ public class RiftLibParticleEmitter {
         this.rawParticleComponents = particleBuilder.rawParticleComponents;
         this.emitterId = ClientProxy.EMITTER_ID++;
         this.world = world;
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        this.posX = x;
+        this.posY = y;
+        this.posZ = z;
 
         //init molang stuff
         this.setupMolangVariables();
@@ -154,15 +155,7 @@ public class RiftLibParticleEmitter {
         if (this.canExpire() && this.particles.isEmpty()) this.killEmitter();
 
         //set death based on if it has an animated locator and if said animatedlocator is dead
-        if (this.animatedLocator != null && !this.animatedLocator.isValid()) this.killEmitter();
-
-        //update location based on animatedLocator if there is
-        if (this.animatedLocator != null) {
-            Vec3d animatedLocatorPos = this.animatedLocator.getWorldPosition();
-            this.x = animatedLocatorPos.x;
-            this.y = animatedLocatorPos.y;
-            this.z = animatedLocatorPos.z;
-        }
+        //if (this.animatedLocator != null && !this.animatedLocator.isValid()) this.killEmitter();
 
         //create particles based on rate and ability to create them
         if (this.canCreateParticles() && !this.isDead) {
@@ -222,19 +215,19 @@ public class RiftLibParticleEmitter {
         this.molangParser.withScope(this.emitterScope, () -> {
             Vec3d obtainedOffset = this.particleOffset();
             offset.set(obtainedOffset);
-            directionFromShape.set(this.particleDirection(
-                    this.x + obtainedOffset.x,
-                    this.y + obtainedOffset.y,
-                    this.z + obtainedOffset.z
+            directionFromShape.set(this.particleDirectionFromShape(
+                    this.posX + obtainedOffset.x,
+                    this.posY + obtainedOffset.y,
+                    this.posZ + obtainedOffset.z
             ));
         });
 
         //set particle init position
         //position is only evaluated when the moment a particle is created, it should be ok to define it here
         Vec3d finalOffset = offset.get();
-        toReturn.x = toReturn.prevX = this.x + finalOffset.x;
-        toReturn.y = toReturn.prevY = this.y + finalOffset.y;
-        toReturn.z = toReturn.prevZ = this.z + finalOffset.z;
+        toReturn.x = toReturn.prevX = this.posX + finalOffset.x;
+        toReturn.y = toReturn.prevY = this.posY + finalOffset.y;
+        toReturn.z = toReturn.prevZ = this.posZ + finalOffset.z;
 
         //set particle velocity
         //velocity is only evaluated when the moment a particle is created, it should be ok to define it here
@@ -415,19 +408,6 @@ public class RiftLibParticleEmitter {
         return Vec3d.ZERO;
     }
 
-    private Vec3d particleDirection(double emissionX, double emissionY, double emissionZ) {
-        Vec3d directionFromShape = this.particleDirectionFromShape(emissionX, emissionY, emissionZ);
-        if (this.animatedLocator != null) {
-            Vec3d rotatedLocator = this.animatedLocator.rotateVecByQuaternion(directionFromShape);
-            return new Vec3d(
-                    rotatedLocator.x,
-                    rotatedLocator.y,
-                    -rotatedLocator.z
-            );
-        }
-        return directionFromShape;
-    }
-
     //this creates a normalized vector that serves as the direction in which
     //a particle must travel
     private Vec3d particleDirectionFromShape(double emissionX, double emissionY, double emissionZ) {
@@ -446,9 +426,9 @@ public class RiftLibParticleEmitter {
                 //generally the direction to go towards should be the same as its xyz offset from the center of sphere emitter
                 int pointer = sphereEmitterShape.particleDirection.equals("outwards") ? 1 : sphereEmitterShape.particleDirection.equals("inwards") ? -1 : 0;
                 return new Vec3d(
-                        pointer * (emissionX - this.x),
-                        pointer * (emissionY - this.y),
-                        pointer * (emissionZ - this.z)
+                        pointer * (emissionX - this.posX),
+                        pointer * (emissionY - this.posY),
+                        pointer * (emissionZ - this.posZ)
                 ).normalize();
             }
         }
@@ -467,9 +447,9 @@ public class RiftLibParticleEmitter {
                 //generally the direction to go towards should be the same as its xyz offset from the center of sphere emitter
                 int pointer = boxEmitterShape.particleDirection.equals("outwards") ? 1 : boxEmitterShape.particleDirection.equals("inwards") ? -1 : 0;
                 return new Vec3d(
-                        pointer * (emissionX - this.x),
-                        pointer * (emissionY - this.y),
-                        pointer * (emissionZ - this.z)
+                        pointer * (emissionX - this.posX),
+                        pointer * (emissionY - this.posY),
+                        pointer * (emissionZ - this.posZ)
                 ).normalize();
             }
         }
@@ -488,9 +468,9 @@ public class RiftLibParticleEmitter {
                 //generally the direction to go towards should be the same as its xyz offset from the center of sphere emitter
                 int pointer = discEmitterShape.particleDirection.equals("outwards") ? 1 : discEmitterShape.particleDirection.equals("inwards") ? -1 : 0;
                 return new Vec3d(
-                        pointer * (emissionX - this.x),
-                        pointer * (emissionY - this.y),
-                        pointer * (emissionZ - this.z)
+                        pointer * (emissionX - this.posX),
+                        pointer * (emissionY - this.posY),
+                        pointer * (emissionZ - this.posZ)
                 ).normalize();
             }
         }
@@ -613,7 +593,7 @@ public class RiftLibParticleEmitter {
         return this.isDead && this.particles.isEmpty();
     }
 
-    public IAnimatedLocator getLocator() {
-        return this.animatedLocator;
+    public GeoLocator getLocator() {
+        return this.locator;
     }
 }

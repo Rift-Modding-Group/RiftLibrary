@@ -1,63 +1,73 @@
 {
 	"format_version": "1.8.0",
 	"animations": {
-		"animation.dragon.flying": {
-			"loop": true,
-			"animation_length": 1,
-			"bones": {
-				"body": {
-					"rotation": [-22.5, 0, 0]
-				},
-				"leftWing0": {
-					"rotation": {
-						"0.0": [0, 0, 0],
-						"0.25": [0, 0, -60],
-						"0.5": [0, 0, 0],
-						"0.75": [0, 0, 60],
-						"1.0": [0, 0, 0]
-					}
-				},
-				"rightWing0": {
-					"rotation": {
-						"0.0": [0, 0, 0],
-						"0.25": [0, 0, 60],
-						"0.5": [0, 0, 0],
-						"0.75": [0, 0, -60],
-						"1.0": [0, 0, 0]
-					}
-				},
-				"tail0": {
-					"rotation": [32.5, 0, 0]
-				},
-				"neck": {
-					"rotation": [-5, 0, 0]
-				},
-				"head": {
-					"rotation": [27.5, 0, 0]
-				},
-				"leftLeg": {
-					"rotation": [-45, 0, 0]
-				},
-				"rightLeg": {
-					"rotation": [-45, 0, 0]
-				},
-				"main": {
-					"position": {
-						"0.0": [0, 0, 0],
-						"0.25": [0, -1, 0],
-						"0.5": [0, 0, 0],
-						"0.75": [0, 3, 0],
-						"1.0": [0, 0, 0]
-					}
-				}
-			},
-			"particle_effects": {
-				"0.0": {
-					"effect": "riftlib:fire_emission",
-					"locator": "fireLocator"
-				}
-			}
-		},
+      "animation.dragon.flying": {
+        "loop": true,
+        "animation_length": 1,
+        "bones": {
+          "body": {
+            "rotation": [-22.5, 0, 0]
+          },
+          "leftWing0": {
+            "rotation": {
+              "0.0": [0, 0, 0],
+              "0.25": [0, 0, -60],
+              "0.5": [0, 0, 0],
+              "0.75": [0, 0, 60],
+              "1.0": [0, 0, 0]
+            }
+          },
+          "rightWing0": {
+            "rotation": {
+              "0.0": [0, 0, 0],
+              "0.25": [0, 0, 60],
+              "0.5": [0, 0, 0],
+              "0.75": [0, 0, -60],
+              "1.0": [0, 0, 0]
+            }
+          },
+          "tail0": {
+            "rotation": [32.5, 0, 0]
+          },
+          "neck": {
+            "rotation": [-5, 0, 0]
+          },
+          "head": {
+            "rotation": [27.5, 0, 0]
+          },
+          "leftLeg": {
+            "rotation": [-45, 0, 0]
+          },
+          "rightLeg": {
+            "rotation": [-45, 0, 0]
+          },
+          "main": {
+            "position": {
+              "0.0": [0, 0, 0],
+              "0.25": [0, -1, 0],
+              "0.5": [0, 0, 0],
+              "0.75": [0, 3, 0],
+              "1.0": [0, 0, 0]
+            }
+          }
+        },
+        "particle_effects": {
+          "0.0": {
+            "effect": "riftlib:fire_emission",
+            "locator": "fireLocator"
+          }
+        }
+      },
+      "animation.dragon.flame_particles": {
+        "loop": true,
+        "animation_length": 1,
+        "particle_effects": {
+          "0.0": {
+            "effect": "riftlib:fire_emission",
+            "locator": "fireLocator"
+          }
+        }
+      },
 		"animation.dragon.attack_while_flying": {
 			"loop": true,
 			"animation_length": 0.75,

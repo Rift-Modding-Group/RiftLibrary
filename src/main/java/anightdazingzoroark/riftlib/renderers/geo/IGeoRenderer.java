@@ -1,8 +1,12 @@
 package anightdazingzoroark.riftlib.renderers.geo;
 
-import javax.vecmath.Vector3f;
-import javax.vecmath.Vector4f;
+import javax.vecmath.*;
 
+import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.geo.render.*;
+import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
+import anightdazingzoroark.riftlib.util.ParticleUtils;
+import net.minecraft.client.renderer.RenderHelper;
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.renderer.BufferBuilder;
@@ -11,23 +15,21 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.core.util.Color;
-import anightdazingzoroark.riftlib.geo.render.GeoBone;
-import anightdazingzoroark.riftlib.geo.render.GeoCube;
-import anightdazingzoroark.riftlib.geo.render.GeoModel;
-import anightdazingzoroark.riftlib.geo.render.GeoQuad;
-import anightdazingzoroark.riftlib.geo.render.GeoVertex;
 import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 import anightdazingzoroark.riftlib.util.MatrixStack;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public interface IGeoRenderer<T> {
-	public static MatrixStack MATRIX_STACK = new MatrixStack();
+	MatrixStack MATRIX_STACK = new MatrixStack();
 
 	default void render(GeoModel model, T animatable, float partialTicks, float red, float green, float blue, float alpha) {
 		GlStateManager.disableCull();
 		GlStateManager.enableRescaleNormal();
-		renderEarly(animatable, partialTicks, red, green, blue, alpha);
+        this.renderEarly(animatable, partialTicks, red, green, blue, alpha);
 
-		renderLate(animatable, partialTicks, red, green, blue, alpha);
+        this.renderLate(animatable, partialTicks, red, green, blue, alpha);
 
 		BufferBuilder builder = Tessellator.getInstance().getBuffer();
 
@@ -40,7 +42,9 @@ public interface IGeoRenderer<T> {
 
 		Tessellator.getInstance().draw();
 
-		renderAfter(animatable, partialTicks, red, green, blue, alpha);
+		this.renderAfter(animatable, partialTicks, red, green, blue, alpha);
+        this.renderAttachedParticles(animatable);
+
 		GlStateManager.disableRescaleNormal();
 		GlStateManager.enableCull();
 	}
@@ -58,7 +62,7 @@ public interface IGeoRenderer<T> {
 			for (GeoCube cube : bone.childCubes) {
 				MATRIX_STACK.push();
 				GlStateManager.pushMatrix();
-				renderCube(builder, cube, red, green, blue, alpha);
+                this.renderCube(builder, cube, red, green, blue, alpha);
 				GlStateManager.popMatrix();
 				MATRIX_STACK.pop();
 			}
@@ -118,8 +122,92 @@ public interface IGeoRenderer<T> {
 	default void renderLate(T animatable, float ticks, float red, float green, float blue, float partialTicks) {
 	}
 
-	default void renderAfter(T animatable, float ticks, float red, float green, float blue, float partialTicks) {
-	}
+	default void renderAfter(T animatable, float ticks, float red, float green, float blue, float partialTicks) {}
+
+    default void renderAttachedParticles(T animatable) {
+        if (!(animatable instanceof IAnimatable)) return;
+        IAnimatable animatableObject = (IAnimatable) animatable;
+
+        List<GeoLocator> animatedLocators = animatableObject.getFactory().getGeoLocators();
+        for (GeoLocator geoLocator : animatedLocators) {
+            if (geoLocator.getParticleEmitter() == null) continue;
+            RiftLibParticleEmitter emitter = geoLocator.getParticleEmitter();
+
+            //update location based on animatedLocator if there is
+            Vector3d position = ParticleUtils.getCurrentRenderPos();
+            emitter.posX = position.x;
+            emitter.posY = position.y;
+            emitter.posZ = position.z;
+
+            RenderHelper.disableStandardItemLighting();
+
+            GL11.glPushMatrix();
+
+            Matrix4f curRot = ParticleUtils.getCurrentMatrix();
+
+            ParticleUtils.setInitialWorldPos();
+
+            Matrix4f cur2 = ParticleUtils.getCurrentRotation(curRot, ParticleUtils.getCurrentMatrix());
+
+            //emitter.rotation.setIdentity();
+
+            MATRIX_STACK.push();
+            MATRIX_STACK.getModelMatrix().mul(new Matrix4f(
+                    cur2.m00, cur2.m01, cur2.m02,0,
+                    cur2.m10, cur2.m11, cur2.m12,0,
+                    cur2.m20, cur2.m21,cur2.m22,0,
+                    0,0,0,1
+            ));
+
+            //push parent and previous bones of locator info to matrix
+            GeoBone[] bonePath = this.getBonePathFromLocator(geoLocator);
+            for (GeoBone bone : bonePath) {
+                MATRIX_STACK.translate(bone);
+                MATRIX_STACK.moveToPivot(bone);
+                MATRIX_STACK.rotate(bone);
+                MATRIX_STACK.scale(bone);
+                MATRIX_STACK.moveBackFromPivot(bone);
+            }
+
+            //push locator info to matrix
+            MATRIX_STACK.translate(geoLocator);
+            MATRIX_STACK.moveToPivot(geoLocator);
+            MATRIX_STACK.rotate(geoLocator);
+            MATRIX_STACK.scale(1, 1, 1); //assumed to be so for locators
+            MATRIX_STACK.moveBackFromPivot(geoLocator);
+
+            MATRIX_STACK.moveToPivot(geoLocator);
+
+            Matrix4f full = MATRIX_STACK.getModelMatrix();
+            /*
+            emitter.rotation = new Matrix3f(
+                    full.m00, full.m01, full.m02,
+                    full.m10, full.m11, full.m12,
+                    full.m20, full.m21, full.m22
+            );
+             */
+            emitter.posX += full.m03;
+            emitter.posY += full.m13;
+            emitter.posZ += full.m23;
+
+            MATRIX_STACK.pop();
+            //the finalized repositioned locator is ticked in ParticleTicker.onRenderWorldLast
+            //this is commented out
+            //emitter.render(partialTicks);
+            RenderHelper.enableStandardItemLighting();
+            GL11.glPopMatrix();
+        }
+    }
+
+    default GeoBone[] getBonePathFromLocator(GeoLocator locator) {
+        GeoBone bone = locator.parent;
+        ArrayList<GeoBone> bones = new ArrayList<>();
+        while (bone != null) {
+            bones.add(0, bone);
+            bone = bone.parent;
+        }
+        return bones.toArray(new GeoBone[0]);
+    }
 
 	default Color getRenderColor(T animatable, float partialTicks) {
 		return Color.ofRGBA(255, 255, 255, 255);

@@ -21,14 +21,12 @@ import anightdazingzoroark.example.ui.HelloWorldUI;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitbox;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitboxRenderer;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
-import anightdazingzoroark.riftlib.model.animatedLocator.AnimatedLocatorTicker;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.ParticleTicker;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
 import anightdazingzoroark.riftlib.renderers.geo.GeoArmorRenderer;
 import anightdazingzoroark.riftlib.renderers.geo.GeoReplacedEntityRenderer;
-import anightdazingzoroark.riftlib.resource.RiftLibCache;
 import anightdazingzoroark.riftlib.ui.RiftLibUI;
 import anightdazingzoroark.riftlib.ui.RiftLibUIRegistry;
 import net.minecraft.client.Minecraft;
@@ -45,7 +43,6 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class ClientProxy extends ServerProxy {
@@ -58,7 +55,6 @@ public class ClientProxy extends ServerProxy {
         super.preInit(e);
         RenderingRegistry.registerEntityRenderingHandler(EntityHitbox.class, new EntityHitboxRenderer.Factory());
         MinecraftForge.EVENT_BUS.register(new ParticleTicker());
-        MinecraftForge.EVENT_BUS.register(new AnimatedLocatorTicker());
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {

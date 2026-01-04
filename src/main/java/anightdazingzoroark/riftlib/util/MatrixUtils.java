@@ -8,6 +8,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
+import org.lwjgl.util.vector.Quaternion;
 
 import javax.annotation.Nullable;
 import javax.vecmath.*;
@@ -176,48 +177,80 @@ public class MatrixUtils {
         matrix = null;
     }
 
-    public static Quat4d matrixToQuaternion(Matrix3f matrix)
-    {
-        double tr = matrix.m00 + matrix.m11 + matrix.m22;
-        double qw = 0;
-        double qx = 0;
-        double qy = 0;
-        double qz = 0;
+    public static Quaternion matrixToQuaternion(Matrix3f matrix) {
+        float tr = matrix.m00 + matrix.m11 + matrix.m22;
+        float qw = 0;
+        float qx = 0;
+        float qy = 0;
+        float qz = 0;
 
         if (tr > 0)
         {
-            double S = Math.sqrt(tr+1.0) * 2; // S=4*qw
-            qw = 0.25 * S;
+            float S = (float) Math.sqrt(tr+1.0) * 2; // S=4*qw
+            qw = 0.25f * S;
             qx = (matrix.m21 - matrix.m12) / S;
             qy = (matrix.m02 - matrix.m20) / S;
             qz = (matrix.m10 - matrix.m01) / S;
         }
         else if ((matrix.m00 > matrix.m11) & (matrix.m00 > matrix.m22))
         {
-            double S = Math.sqrt(1.0 + matrix.m00 - matrix.m11 - matrix.m22) * 2; // S=4*qx
+            float S = (float) Math.sqrt(1.0 + matrix.m00 - matrix.m11 - matrix.m22) * 2; // S=4*qx
             qw = (matrix.m21 - matrix.m12) / S;
-            qx = 0.25 * S;
+            qx = 0.25f * S;
             qy = (matrix.m01 + matrix.m10) / S;
             qz = (matrix.m02 + matrix.m20) / S;
         }
         else if (matrix.m11 > matrix.m22)
         {
-            double S = Math.sqrt(1.0 + matrix.m11 - matrix.m00 - matrix.m22) * 2; // S=4*qy
+            float S = (float) Math.sqrt(1.0 + matrix.m11 - matrix.m00 - matrix.m22) * 2; // S=4*qy
             qw = (matrix.m02 - matrix.m20) / S;
             qx = (matrix.m01 + matrix.m10) / S;
-            qy = 0.25 * S;
+            qy = 0.25f * S;
             qz = (matrix.m12 + matrix.m21) / S;
         }
         else
         {
-            double S = Math.sqrt(1.0 + matrix.m22 - matrix.m00 - matrix.m11) * 2; // S=4*qz
+            float S = (float) Math.sqrt(1.0 + matrix.m22 - matrix.m00 - matrix.m11) * 2; // S=4*qz
             qw = (matrix.m10 - matrix.m01) / S;
             qx = (matrix.m02 + matrix.m20) / S;
             qy = (matrix.m12 + matrix.m21) / S;
-            qz = 0.25 * S;
+            qz = 0.25f * S;
         }
 
-        return new Quat4d(qw, qx, qy, qz);
+        return new Quaternion(qx, qy, qz, qw);
+    }
+
+    public static Matrix3f quaternionToMatrix(Quaternion quaternion) {
+        float xx = quaternion.x * quaternion.x;
+        float yy = quaternion.y * quaternion.y;
+        float zz = quaternion.z * quaternion.z;
+
+        float xy = quaternion.x * quaternion.y;
+        float xz = quaternion.x * quaternion.z;
+        float yz = quaternion.y * quaternion.z;
+
+        float wx = quaternion.w * quaternion.x;
+        float wy = quaternion.w * quaternion.y;
+        float wz = quaternion.w * quaternion.z;
+
+        // 3x3 rotation matrix from quaternion
+        float m00 = 1 - 2f * (yy + zz);
+        float m01 = 2 * (xy - wz);
+        float m02 = 2 * (xz + wy);
+
+        float m10 = 2 * (xy + wz);
+        float m11 = 1 - 2 * (xx + zz);
+        float m12 = 2 * (yz - wx);
+
+        float m20 = 2 * (xz - wy);
+        float m21 = 2 * (yz + wx);
+        float m22 = 1 - 2 * (xx + yy);
+
+        return new Matrix3f(
+                m00, m01, m02,
+                m10, m11, m12,
+                m20, m21, m22
+        );
     }
 
     /**

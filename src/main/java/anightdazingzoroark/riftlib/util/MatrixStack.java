@@ -201,17 +201,43 @@ public class MatrixStack {
     }
 
     public void rotate(GeoLocator locator) {
-        if (locator.getRotationZ() != 0f) {
-            this.rotateZ(locator.getRotationZ());
-        }
+        Quaternion locatorRotQuat = locator.getYXZQuaternion();
+        Quaternion.normalise(locatorRotQuat, locatorRotQuat);
+        Matrix3f matrixFromQuat = MatrixUtils.quaternionToMatrix(locatorRotQuat);
 
-        if (locator.getRotationY() != 0f) {
-            this.rotateY(locator.getRotationY());
-        }
+        //apply to model matrix
+        this.tempModelMatrix.setIdentity();
 
-        if (locator.getRotationX() != 0f) {
-            this.rotateX(locator.getRotationX());
-        }
+        this.tempModelMatrix.setM00(matrixFromQuat.m00);
+        this.tempModelMatrix.setM01(matrixFromQuat.m01);
+        this.tempModelMatrix.setM02(matrixFromQuat.m02);
+
+        this.tempModelMatrix.setM10(matrixFromQuat.m10);
+        this.tempModelMatrix.setM11(matrixFromQuat.m11);
+        this.tempModelMatrix.setM12(matrixFromQuat.m12);
+
+        this.tempModelMatrix.setM20(matrixFromQuat.m20);
+        this.tempModelMatrix.setM21(matrixFromQuat.m21);
+        this.tempModelMatrix.setM22(matrixFromQuat.m22);
+
+        this.model.peek().mul(this.tempModelMatrix);
+
+        //apply to normal matrix
+        this.tempNormalMatrix.setIdentity();
+
+        this.tempNormalMatrix.setM00(matrixFromQuat.m00);
+        this.tempNormalMatrix.setM01(matrixFromQuat.m01);
+        this.tempNormalMatrix.setM02(matrixFromQuat.m02);
+
+        this.tempNormalMatrix.setM10(matrixFromQuat.m10);
+        this.tempNormalMatrix.setM11(matrixFromQuat.m11);
+        this.tempNormalMatrix.setM12(matrixFromQuat.m12);
+
+        this.tempNormalMatrix.setM20(matrixFromQuat.m20);
+        this.tempNormalMatrix.setM21(matrixFromQuat.m21);
+        this.tempNormalMatrix.setM22(matrixFromQuat.m22);
+
+        this.normal.peek().mul(this.tempNormalMatrix);
     }
 
 	@SuppressWarnings("unused")

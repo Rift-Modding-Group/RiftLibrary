@@ -5,6 +5,7 @@ import javax.vecmath.*;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.geo.render.*;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
+import anightdazingzoroark.riftlib.util.MatrixUtils;
 import anightdazingzoroark.riftlib.util.ParticleUtils;
 import net.minecraft.client.renderer.RenderHelper;
 import org.lwjgl.BufferUtils;
@@ -150,8 +151,6 @@ public interface IGeoRenderer<T> {
 
             Matrix4f cur2 = ParticleUtils.getCurrentRotation(curRot, ParticleUtils.getCurrentMatrix());
 
-            //emitter.rotation.setIdentity();
-
             MATRIX_STACK.push();
             MATRIX_STACK.getModelMatrix().mul(new Matrix4f(
                     cur2.m00, cur2.m01, cur2.m02,0,
@@ -165,15 +164,19 @@ public interface IGeoRenderer<T> {
             MATRIX_STACK.rotate(geoLocator);
 
             Matrix4f full = MATRIX_STACK.getModelMatrix();
-            /*
-            emitter.rotation = new Matrix3f(
-                    full.m00, full.m01, full.m02,
-                    full.m10, full.m11, full.m12,
-                    full.m20, full.m21, full.m22
+
+            //set final rotations
+            emitter.rotationQuaternion = MatrixUtils.matrixToQuaternion(
+                    new Matrix3f(
+                        full.m00, full.m01, full.m02,
+                        full.m10, full.m11, full.m12,
+                        full.m20, full.m21, full.m22
+                    )
             );
-             */
+
+            //set final world position
             emitter.posX += full.m03;
-            emitter.posY += full.m13 + 1.5D;
+            emitter.posY += full.m13 + 1.6D;
             emitter.posZ += full.m23;
 
             MATRIX_STACK.pop();

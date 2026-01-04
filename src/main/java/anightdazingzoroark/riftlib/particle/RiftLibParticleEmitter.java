@@ -19,6 +19,7 @@ import anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate.RiftLib
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeExpressionComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeLoopingComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.RiftLibEmitterLifetimeComponent;
+import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -31,6 +32,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.vector.Quaternion;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -50,7 +52,7 @@ public class RiftLibParticleEmitter {
     private final MolangParser molangParser;
     private final Random random = new Random();
     public double posX, posY, posZ;
-    public double rotationX, rotationY, rotationZ;
+    public Quaternion rotationQuaternion = new Quaternion(); //assumed to use yxz rotation
     private boolean isDead;
     public RiftLibEmitterShapeComponent emitterShape;
     public RiftLibEmitterRateComponent emitterRate;
@@ -215,7 +217,7 @@ public class RiftLibParticleEmitter {
         this.molangParser.withScope(this.emitterScope, () -> {
             Vec3d obtainedOffset = this.particleOffset();
             offset.set(obtainedOffset);
-            directionFromShape.set(this.particleDirectionFromShape(
+            directionFromShape.set(this.particleDirection(
                     this.posX + obtainedOffset.x,
                     this.posY + obtainedOffset.y,
                     this.posZ + obtainedOffset.z
@@ -406,6 +408,14 @@ public class RiftLibParticleEmitter {
             );
         }
         return Vec3d.ZERO;
+    }
+
+    private Vec3d particleDirection(double emissionX, double emissionY, double emissionZ) {
+        //get from shape first
+        Vec3d directionFromShape = this.particleDirectionFromShape(emissionX, emissionY, emissionZ);
+
+        //rotate using quaternion and return
+        return VectorUtils.rotateVectorWithQuaternion(directionFromShape, this.rotationQuaternion).normalize();
     }
 
     //this creates a normalized vector that serves as the direction in which

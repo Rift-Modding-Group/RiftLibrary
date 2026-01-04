@@ -4,6 +4,7 @@ import javax.vecmath.*;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.geo.render.*;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.util.MatrixUtils;
 import anightdazingzoroark.riftlib.util.ParticleUtils;
@@ -129,10 +130,10 @@ public interface IGeoRenderer<T> {
         if (!(animatable instanceof IAnimatable)) return;
         IAnimatable animatableObject = (IAnimatable) animatable;
 
-        List<GeoLocator> animatedLocators = animatableObject.getFactory().getGeoLocators();
-        for (GeoLocator geoLocator : animatedLocators) {
-            if (geoLocator.getParticleEmitter() == null) continue;
-            RiftLibParticleEmitter emitter = geoLocator.getParticleEmitter();
+        List<AnimatedLocator> animatedLocators = animatableObject.getFactory().getAnimatedLocators();
+        for (AnimatedLocator animatedLocator : animatedLocators) {
+            if (animatedLocator.getParticleEmitter() == null) continue;
+            RiftLibParticleEmitter emitter = animatedLocator.getParticleEmitter();
 
             //update location based on animatedLocator if there is
             BufferUtils.createFloatBuffer(16);
@@ -160,8 +161,8 @@ public interface IGeoRenderer<T> {
             ));
 
             //push locator info to matrix
-            MATRIX_STACK.translate(geoLocator);
-            MATRIX_STACK.rotate(geoLocator);
+            MATRIX_STACK.translate(animatedLocator);
+            MATRIX_STACK.rotate(animatedLocator);
 
             Matrix4f full = MATRIX_STACK.getModelMatrix();
 

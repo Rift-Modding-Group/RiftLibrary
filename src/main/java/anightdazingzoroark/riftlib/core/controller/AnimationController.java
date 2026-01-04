@@ -22,6 +22,7 @@ import anightdazingzoroark.riftlib.ClientProxy;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.easing.EasingManager;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
@@ -634,7 +635,7 @@ public class AnimationController<T extends IAnimatable> {
         for (ParticleEventKeyFrame particleEventKeyFrame : this.currentAnimation.particleKeyFrames) {
             if (!this.executedKeyFrames.contains(particleEventKeyFrame) && tick >= particleEventKeyFrame.getStartTick()) {
                 //add particle information to a locator
-                GeoLocator locator = this.animatable.getFactory().getLocator(particleEventKeyFrame.locator);
+                AnimatedLocator locator = this.animatable.getFactory().getAnimatedLocator(particleEventKeyFrame.locator);
                 if (locator != null) {
                     //first check if the locator is used by another particle in ClientProxy.EMITTER_LIST
                     //if there is, kill it

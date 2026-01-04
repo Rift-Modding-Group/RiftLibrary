@@ -3,6 +3,7 @@ package anightdazingzoroark.riftlib.particle;
 import anightdazingzoroark.riftlib.ClientProxy;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.molang.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
@@ -42,7 +43,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class RiftLibParticleEmitter {
     private final List<RiftLibParticle> particles = new ArrayList<>();
     public final String particleIdentifier;
-    private GeoLocator locator;
+    private AnimatedLocator locator;
     private double particleCount;
     private final World world;
     private final int emitterId; //this is mostly for debugging
@@ -82,7 +83,7 @@ public class RiftLibParticleEmitter {
     //for lifetime stuff
     public RiftLibEmitterLifetimeComponent emitterLifetime;
 
-    public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, GeoLocator locator) {
+    public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, AnimatedLocator locator) {
         this(particleBuilder, world, 0, 0, 0);
         this.locator = locator;
     }
@@ -157,7 +158,7 @@ public class RiftLibParticleEmitter {
         if (this.canExpire() && this.particles.isEmpty()) this.killEmitter();
 
         //set death based on if it has an animated locator and if said animatedlocator is dead
-        //if (this.animatedLocator != null && !this.animatedLocator.isValid()) this.killEmitter();
+        if (this.locator != null && !this.locator.isValid()) this.killEmitter();
 
         //create particles based on rate and ability to create them
         if (this.canCreateParticles() && !this.isDead) {
@@ -603,7 +604,7 @@ public class RiftLibParticleEmitter {
         return this.isDead && this.particles.isEmpty();
     }
 
-    public GeoLocator getLocator() {
+    public AnimatedLocator getLocator() {
         return this.locator;
     }
 }

@@ -1,15 +1,18 @@
 package anightdazingzoroark.riftlib.core.manager;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 
 public class AnimationFactory {
 	private final IAnimatable animatable;
 	private final HashMap<Integer, AnimationData> animationDataMap = new HashMap<>();
+    private final List<AnimatedLocator> animatedLocators = new ArrayList<>();
     private GeoModel currentModel;
 
 	public AnimationFactory(IAnimatable animatable) {
@@ -35,22 +38,29 @@ public class AnimationFactory {
 		return this.animationDataMap.get(uniqueID);
 	}
 
-    public void setCurrentModel(GeoModel model) {
-        if (this.currentModel != model) this.currentModel = model;
+    public void createAnimatedLocators(GeoModel model) {
+        if (this.currentModel != model) {
+            this.animatedLocators.clear();
+
+            List<GeoLocator> locatorList = model.getAllLocators();
+            for (GeoLocator locator : locatorList) {
+                if (locator == null) continue;
+                this.animatedLocators.add(new AnimatedLocator(locator, this.animatable));
+            }
+
+            this.currentModel = model;
+        }
     }
 
-    public GeoLocator getLocator(String name) {
-        if (this.currentModel == null) return null;
-        List<GeoLocator> locatorList = this.currentModel.getAllLocators();
-        for (GeoLocator locator : locatorList) {
-            if (locator == null) continue;
-            if (locator.name != null && locator.name.equals(name)) return locator;
+    public AnimatedLocator getAnimatedLocator(String name) {
+        for (AnimatedLocator animatedLocator : this.animatedLocators) {
+            if (animatedLocator == null) continue;
+            if (animatedLocator.getName() != null && animatedLocator.getName().equals(name)) return animatedLocator;
         }
         return null;
     }
 
-    public List<GeoLocator> getGeoLocators() {
-        if (this.currentModel == null) return null;
-        return this.currentModel.getAllLocators();
+    public List<AnimatedLocator> getAnimatedLocators() {
+        return this.animatedLocators;
     }
 }

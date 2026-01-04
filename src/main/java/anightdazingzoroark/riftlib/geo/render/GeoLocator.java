@@ -23,7 +23,6 @@ public class GeoLocator {
     private float pivotX;
     private float pivotY;
     private float pivotZ;
-    private RiftLibParticleEmitter particleEmitter;
 
     public GeoLocator(GeoBone parent, String name) {
         this.parent = parent;
@@ -100,14 +99,6 @@ public class GeoLocator {
 
     public void setPivotZ(float value) {
         this.pivotZ = value;
-    }
-
-    public void createParticleEmitter(ParticleBuilder builder) {
-        this.particleEmitter = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, this);
-    }
-
-    public RiftLibParticleEmitter getParticleEmitter() {
-        return this.particleEmitter;
     }
 
     public Vec3d getPosition() {

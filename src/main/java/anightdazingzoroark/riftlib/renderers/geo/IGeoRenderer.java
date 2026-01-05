@@ -26,7 +26,7 @@ import java.util.List;
 public interface IGeoRenderer<T> {
 	MatrixStack MATRIX_STACK = new MatrixStack();
 
-	default void render(GeoModel model, T animatable, float partialTicks, boolean renderParticles, float red, float green, float blue, float alpha) {
+	default void render(GeoModel model, T animatable, Integer uniqueID, float partialTicks, boolean renderParticles, float red, float green, float blue, float alpha) {
 		GlStateManager.disableCull();
 		GlStateManager.enableRescaleNormal();
         this.renderEarly(animatable, partialTicks, red, green, blue, alpha);
@@ -45,7 +45,7 @@ public interface IGeoRenderer<T> {
 		Tessellator.getInstance().draw();
 
 		this.renderAfter(animatable, partialTicks, red, green, blue, alpha);
-        if (renderParticles) this.renderAttachedParticles(animatable);
+        if (renderParticles) this.renderAttachedParticles(animatable, uniqueID);
 
 		GlStateManager.disableRescaleNormal();
 		GlStateManager.enableCull();
@@ -124,11 +124,11 @@ public interface IGeoRenderer<T> {
 
 	default void renderAfter(T animatable, float ticks, float red, float green, float blue, float partialTicks) {}
 
-    default void renderAttachedParticles(T animatable) {
+    default void renderAttachedParticles(T animatable, Integer uniqueID) {
         if (!(animatable instanceof IAnimatable)) return;
         IAnimatable animatableObject = (IAnimatable) animatable;
 
-        List<AnimatedLocator> animatedLocators = animatableObject.getFactory().getAnimatedLocators();
+        List<AnimatedLocator> animatedLocators = animatableObject.getFactory().getOrCreateAnimationData(uniqueID).getAnimatedLocators();
         for (AnimatedLocator animatedLocator : animatedLocators) {
             if (animatedLocator.getParticleEmitter() == null) continue;
             RiftLibParticleEmitter emitter = animatedLocator.getParticleEmitter();

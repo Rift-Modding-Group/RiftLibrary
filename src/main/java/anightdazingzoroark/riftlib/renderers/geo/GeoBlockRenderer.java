@@ -50,8 +50,8 @@ public abstract class GeoBlockRenderer<T extends TileEntity & IAnimatable> exten
 
 	public void render(T tile, double x, double y, double z, float partialTicks, int destroyStage) {
 		GeoModel model = modelProvider.getModel(modelProvider.getModelLocation(tile));
-        tile.getFactory().createAnimatedLocators(model);
-		modelProvider.setLivingAnimations(tile, this.getUniqueID(tile));
+        Integer uniqueID = this.getUniqueID(tile);
+		this.modelProvider.setLivingAnimations(tile, uniqueID);
 
 		int light = tile.getWorld().getCombinedLight(tile.getPos(), 0);
 		int lx = light % 65536;
@@ -70,7 +70,7 @@ public abstract class GeoBlockRenderer<T extends TileEntity & IAnimatable> exten
 
 		Minecraft.getMinecraft().renderEngine.bindTexture(getTextureLocation(tile));
 		Color renderColor = getRenderColor(tile, partialTicks);
-		render(model, tile, partialTicks, true,
+		render(model, tile, uniqueID, partialTicks, true,
                 (float) renderColor.getRed() / 255f, (float) renderColor.getGreen() / 255f,
 				(float) renderColor.getBlue() / 255f, (float) renderColor.getAlpha() / 255);
 		GlStateManager.popMatrix();

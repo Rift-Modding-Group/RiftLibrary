@@ -5,8 +5,14 @@
 
 package anightdazingzoroark.riftlib.core.manager;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
+import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.geo.render.GeoLocator;
+import anightdazingzoroark.riftlib.geo.render.GeoModel;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import org.apache.commons.lang3.tuple.Pair;
 
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
@@ -15,7 +21,10 @@ import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
 
 public class AnimationData {
 	private HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection;
-	private HashMap<String, AnimationController> animationControllers = new HashMap<>();
+	private final HashMap<String, AnimationController> animationControllers = new HashMap<>();
+    private final List<AnimatedLocator> animatedLocators = new ArrayList<>();
+    private final IAnimatable iAnimatable;
+    private GeoModel currentModel;
 	public double tick;
 	public boolean isFirstTick = true;
 	private double resetTickLength = 1;
@@ -26,9 +35,9 @@ public class AnimationData {
 	/**
 	 * Instantiates a new Animation controller collection.
 	 */
-	public AnimationData() {
-		super();
-		boneSnapshotCollection = new HashMap<>();
+	public AnimationData(IAnimatable iAnimatable) {
+        this.iAnimatable = iAnimatable;
+		this.boneSnapshotCollection = new HashMap<>();
 	}
 
 	/**
@@ -43,7 +52,7 @@ public class AnimationData {
 	}
 
 	public HashMap<String, Pair<IBone, BoneSnapshot>> getBoneSnapshotCollection() {
-		return boneSnapshotCollection;
+		return this.boneSnapshotCollection;
 	}
 
 	public void setBoneSnapshotCollection(HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection) {
@@ -55,7 +64,7 @@ public class AnimationData {
 	}
 
 	public double getResetSpeed() {
-		return resetTickLength;
+		return this.resetTickLength;
 	}
 
 	/**
@@ -70,6 +79,32 @@ public class AnimationData {
 	}
 
 	public HashMap<String, AnimationController> getAnimationControllers() {
-		return animationControllers;
+		return this.animationControllers;
 	}
+
+    public void createAnimatedLocators(GeoModel model) {
+        if (this.currentModel != model) {
+            this.animatedLocators.clear();
+
+            List<GeoLocator> locatorList = model.getAllLocators();
+            for (GeoLocator locator : locatorList) {
+                if (locator == null) continue;
+                this.animatedLocators.add(new AnimatedLocator(locator, this.iAnimatable));
+            }
+
+            this.currentModel = model;
+        }
+    }
+
+    public AnimatedLocator getAnimatedLocator(String name) {
+        for (AnimatedLocator animatedLocator : this.animatedLocators) {
+            if (animatedLocator == null) continue;
+            if (animatedLocator.getName() != null && animatedLocator.getName().equals(name)) return animatedLocator;
+        }
+        return null;
+    }
+
+    public List<AnimatedLocator> getAnimatedLocators() {
+        return this.animatedLocators;
+    }
 }

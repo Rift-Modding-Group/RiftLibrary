@@ -58,7 +58,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 	public void doRender(T entity, double x, double y, double z, float entityYaw, float partialTicks) {
         //get model
         GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(entity));
-        entity.getFactory().createAnimatedLocators(model);
+        Integer uniqueID = this.getUniqueID(entity);
 
 		//rest is good ol rendering code
 		GlStateManager.pushMatrix();
@@ -124,7 +124,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 
 		AnimationEvent predicate = new AnimationEvent(entity, limbSwing, limbSwingAmount, partialTicks,
 				!(limbSwingAmount > -0.15F && limbSwingAmount < 0.15F), Collections.singletonList(entityModelData));
-        this.modelProvider.setLivingAnimations(entity, this.getUniqueID(entity), predicate);
+        this.modelProvider.setLivingAnimations(entity, uniqueID, predicate);
 
         GlStateManager.pushMatrix();
 		GlStateManager.scale(entity.scale(), entity.scale(), entity.scale());
@@ -135,7 +135,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		boolean flag = this.setDoRenderBrightness(entity, partialTicks);
 
 		if (!entity.isInvisibleToPlayer(Minecraft.getMinecraft().player))
-			render(model, entity, partialTicks, true,
+			render(model, entity, uniqueID, partialTicks, true,
                     (float) renderColor.getRed() / 255f,
 					(float) renderColor.getBlue() / 255f, (float) renderColor.getGreen() / 255f,
 					(float) renderColor.getAlpha() / 255);

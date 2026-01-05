@@ -63,18 +63,17 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 	public void render(T animatable, ItemStack itemStack) {
 		this.currentItemStack = itemStack;
 		GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(animatable));
-        animatable.getFactory().createAnimatedLocators(model);
+        Integer uniqueID = this.getUniqueID(animatable);
 		AnimationEvent itemEvent = new AnimationEvent(animatable, 0, 0,
 				Minecraft.getMinecraft().getRenderPartialTicks(), false, Collections.singletonList(itemStack));
-		this.modelProvider.setLivingAnimations(animatable, this.getUniqueID(animatable), itemEvent);
+		this.modelProvider.setLivingAnimations(animatable, uniqueID, itemEvent);
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(0, 0.01f, 0);
 		GlStateManager.translate(0.5, 0.5, 0.5);
 
 		Minecraft.getMinecraft().renderEngine.bindTexture(this.getTextureLocation(animatable));
 		Color renderColor = getRenderColor(animatable, 0f);
-        System.out.println("this.canRenderParticles: "+this.canRenderParticles);
-        this.render(model, animatable, 0f, this.canRenderParticles,
+        this.render(model, animatable, uniqueID, 0f, this.canRenderParticles,
                 (float) renderColor.getRed() / 255f, (float) renderColor.getGreen() / 255f,
 				(float) renderColor.getBlue() / 255f, (float) renderColor.getAlpha() / 255);
 		GlStateManager.popMatrix();
@@ -90,7 +89,8 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 		return Objects.hash(
                 this.currentItemStack.getItem(),
                 this.currentItemStack.getCount(),
-                this.currentItemStack.hasTagCompound() ? this.currentItemStack.getTagCompound().toString() : 1
+                this.currentItemStack.hasTagCompound() ? this.currentItemStack.getTagCompound().toString() : 1,
+                this.currentItemStack.hashCode()
         );
 	}
 }

@@ -634,6 +634,7 @@ public class AnimationController<T extends IAnimatable> {
         //create a riftlibrary particle emitter that's attached to a locator
         for (ParticleEventKeyFrame particleEventKeyFrame : this.currentAnimation.particleKeyFrames) {
             if (!this.executedKeyFrames.contains(particleEventKeyFrame) && tick >= particleEventKeyFrame.getStartTick()) {
+                /*
                 //add particle information to a locator
                 AnimatedLocator locator = this.animatable.getFactory().getAnimatedLocator(particleEventKeyFrame.locator);
                 if (locator != null) {
@@ -650,6 +651,7 @@ public class AnimationController<T extends IAnimatable> {
                         ClientProxy.EMITTER_LIST.add(locator.getParticleEmitter());
                     }
                 }
+                 */
 
                 this.executedKeyFrames.add(particleEventKeyFrame);
             }
@@ -751,6 +753,10 @@ public class AnimationController<T extends IAnimatable> {
 		}
 		return new KeyFrameLocation<>(frames.get(frames.size() - 1), ageInTicks);
 	}
+
+    public Set<EventKeyFrame<?>> getExecutedKeyFrames() {
+        return this.executedKeyFrames;
+    }
 
 	private void resetEventKeyFrames() {
 		this.executedKeyFrames.clear();

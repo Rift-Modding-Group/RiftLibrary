@@ -53,6 +53,10 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 		// Each animation has it's own collection of animations (called the
 		// EntityAnimationManager), which allows for multiple independent animations
 		AnimationData manager = entity.getFactory().getOrCreateAnimationData(uniqueID);
+
+        //create animated locators
+        manager.createAnimatedLocators(this.currentModel);
+
 		if (manager.ticker == null) {
 			AnimationTicker ticker = new AnimationTicker(manager);
 			manager.ticker = ticker;

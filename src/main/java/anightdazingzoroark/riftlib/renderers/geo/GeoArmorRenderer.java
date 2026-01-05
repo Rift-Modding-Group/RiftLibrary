@@ -77,14 +77,15 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 	}
 
 	public void render(float partialTicks) {
+        GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(this.currentArmorItem));
+        Integer uniqueID = this.getUniqueID(this.currentArmorItem);
+
 		GlStateManager.translate(0.0D, 1.501F, 0.0D);
 		GlStateManager.scale(-1.0F, -1.0F, 1.0F);
-		GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(this.currentArmorItem));
-        this.currentArmorItem.getFactory().createAnimatedLocators(model);
 
 		AnimationEvent itemEvent = new AnimationEvent(this.currentArmorItem, 0, 0, 0, false,
 				Arrays.asList(this.itemStack, this.entityLiving, this.armorSlot));
-		modelProvider.setLivingAnimations(currentArmorItem, this.getUniqueID(this.currentArmorItem), itemEvent);
+		modelProvider.setLivingAnimations(currentArmorItem, uniqueID, itemEvent);
 		this.fitToBiped();
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(0, 0.01f, 0);
@@ -121,7 +122,7 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 		}
 		Minecraft.getMinecraft().renderEngine.bindTexture(getTextureLocation(currentArmorItem));
 		Color renderColor = getRenderColor(currentArmorItem, partialTicks);
-		render(model, currentArmorItem, partialTicks, true,
+		render(model, currentArmorItem, uniqueID, partialTicks, true,
                 (float) renderColor.getRed() / 255f,
 				(float) renderColor.getGreen() / 255f, (float) renderColor.getBlue() / 255f,
 				(float) renderColor.getAlpha() / 255);

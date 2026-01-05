@@ -69,6 +69,9 @@ public abstract class GeoReplacedEntityRenderer<T extends IAnimatable> extends R
 
 	@Override
 	public void doRender(EntityLivingBase entity, double x, double y, double z, float entityYaw, float partialTicks) {
+        GeoModel model = this.modelProvider.getModel(modelProvider.getModelLocation(animatable));
+        Integer uniqueID = this.getUniqueID(entity);
+
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(x, y, z);
 
@@ -133,7 +136,6 @@ public abstract class GeoReplacedEntityRenderer<T extends IAnimatable> extends R
 
 		AnimationEvent predicate = new AnimationEvent(animatable, limbSwing, limbSwingAmount, partialTicks,
 				!(limbSwingAmount > -0.15F && limbSwingAmount < 0.15F), Collections.singletonList(entityModelData));
-		GeoModel model = this.modelProvider.getModel(modelProvider.getModelLocation(animatable));
         this.modelProvider.setLivingAnimations(animatable, this.getUniqueID(entity), predicate);
 
         GlStateManager.pushMatrix();
@@ -142,7 +144,7 @@ public abstract class GeoReplacedEntityRenderer<T extends IAnimatable> extends R
 		Color renderColor = getRenderColor(entity, partialTicks);
 
 		if (!entity.isInvisibleToPlayer(Minecraft.getMinecraft().player))
-			render(model, entity, partialTicks, true,
+			render(model, entity, uniqueID, partialTicks, true,
                     (float) renderColor.getRed() / 255f,
 					(float) renderColor.getBlue() / 255f, (float) renderColor.getGreen() / 255f,
 					(float) renderColor.getAlpha() / 255);

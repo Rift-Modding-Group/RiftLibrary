@@ -39,9 +39,11 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile & IAnimatable> ex
 
 	@Override
 	public void doRender(T entity, double x, double y, double z, float entityYaw, float partialTicks) {
+        GeoModel model = modelProvider.getModel(modelProvider.getModelLocation(entity));
+        Integer uniqueID = this.getUniqueID(entity);
+
 		GlStateManager.pushMatrix();
 		GlStateManager.pushMatrix();
-		GeoModel model = modelProvider.getModel(modelProvider.getModelLocation(entity));
 		GlStateManager.translate(x, y, z);
 		GlStateManager.rotate(
 				entity.prevRotationYaw + (entity.rotationYaw - entity.prevRotationYaw) * partialTicks - 90.0F, 0.0F,
@@ -58,14 +60,14 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile & IAnimatable> ex
 		AnimationEvent<T> predicate = new AnimationEvent<T>(entity, limbSwing, lastLimbDistance, partialTicks,
 				!(lastLimbDistance > -0.15F && lastLimbDistance < 0.15F), Collections.singletonList(entityModelData));
 		if (modelProvider instanceof IAnimatableModel) {
-			((IAnimatableModel<T>) modelProvider).setLivingAnimations(entity, this.getUniqueID(entity), predicate);
+			((IAnimatableModel<T>) modelProvider).setLivingAnimations(entity, uniqueID, predicate);
 		}
 		GlStateManager.pushMatrix();
 		Minecraft.getMinecraft().renderEngine.bindTexture(getTextureLocation(entity));
 		Color renderColor = getRenderColor(entity, partialTicks);
 
 		if (!entity.isInvisibleToPlayer(Minecraft.getMinecraft().player))
-			render(model, entity, partialTicks, true,
+			render(model, entity, uniqueID, partialTicks, true,
                     (float) renderColor.getRed() / 255f,
 					(float) renderColor.getBlue() / 255f, (float) renderColor.getGreen() / 255f,
 					(float) renderColor.getAlpha() / 255);

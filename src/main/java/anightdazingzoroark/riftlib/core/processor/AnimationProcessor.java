@@ -7,8 +7,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import anightdazingzoroark.riftlib.ClientProxy;
 import anightdazingzoroark.riftlib.ServerProxy;
 import anightdazingzoroark.riftlib.RiftLibConfig;
+import anightdazingzoroark.riftlib.core.keyframe.EventKeyFrame;
+import anightdazingzoroark.riftlib.core.keyframe.ParticleEventKeyFrame;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
+import anightdazingzoroark.riftlib.particle.ParticleBuilder;
+import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
+import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
 import anightdazingzoroark.riftlib.ridePositionLogic.RidePosDefinitionList;
 import anightdazingzoroark.riftlib.geo.render.GeoBone;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
@@ -131,6 +138,31 @@ public class AnimationProcessor<T extends IAnimatable> {
 
 
 			}
+
+            //animation effects
+            Set<EventKeyFrame<?>> effectKeyFrames = controller.getExecutedKeyFrames();
+            for (EventKeyFrame<?> eventKeyFrame : effectKeyFrames) {
+                //for particles
+                if (eventKeyFrame instanceof ParticleEventKeyFrame) {
+                    ParticleEventKeyFrame particleEventKeyFrame = (ParticleEventKeyFrame) eventKeyFrame;
+
+                    AnimatedLocator locator = entity.getFactory().getOrCreateAnimationData(uniqueID).getAnimatedLocator(particleEventKeyFrame.locator);
+                    if (locator != null) {
+                        //first check if the locator is used by another particle in ClientProxy.EMITTER_LIST
+                        //if there is, kill it
+                        for (RiftLibParticleEmitter emitter : ClientProxy.EMITTER_LIST) {
+                            if (emitter.getLocator() == locator) emitter.killEmitter();
+                        }
+
+                        //add emitter to locator and put it in ClientProxy.EMITTER_LIST
+                        ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(particleEventKeyFrame.effect);
+                        if (particleBuilder != null) {
+                            locator.createParticleEmitter(particleBuilder);
+                            ClientProxy.EMITTER_LIST.add(locator.getParticleEmitter());
+                        }
+                    }
+                }
+            }
 		}
 
 		//make a rideposdef list for changine ride positions

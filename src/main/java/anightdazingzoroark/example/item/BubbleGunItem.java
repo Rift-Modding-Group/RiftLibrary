@@ -22,6 +22,7 @@ import net.minecraft.world.World;
 //when the player holds this item and right clicks, they will spawn a bunch of bubbles that go forward
 public class BubbleGunItem extends Item implements IAnimatable {
     private final AnimationFactory factory = new AnimationFactory(this);
+    private boolean isUsing;
 
     public BubbleGunItem() {
         this.maxStackSize = 1;
@@ -36,9 +37,13 @@ public class BubbleGunItem extends Item implements IAnimatable {
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
         ItemStack stack = player.getHeldItem(hand);
         player.setActiveHand(hand);
-        player.getCooldownTracker().setCooldown(this, 20);
-        System.out.println("use item");
+        if (world.isRemote) this.isUsing = true;
         return new ActionResult<>(EnumActionResult.PASS, stack);
+    }
+
+    @Override
+    public void onPlayerStoppedUsing(ItemStack stack, World worldIn, EntityLivingBase entityLiving, int timeLeft) {
+        if (worldIn.isRemote) this.isUsing = false;
     }
 
     //todo: for testing purposes, the particles will always spawn, will change to only when right clicking after
@@ -48,6 +53,17 @@ public class BubbleGunItem extends Item implements IAnimatable {
         data.addAnimationController(new AnimationController(this, "blow", 0, new AnimationController.IAnimationPredicate() {
             @Override
             public PlayState test(AnimationEvent event) {
+                /*
+                if (isUsing) {
+                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.bubble_gun.blow_bubbles", LoopType.LOOP));
+                }
+                else {
+                    event.getController().clearAnimationCache();
+                    return PlayState.STOP;
+                }
+                return PlayState.CONTINUE;
+                 */
+
                 event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.bubble_gun.blow_bubbles", LoopType.LOOP));
                 return PlayState.CONTINUE;
             }

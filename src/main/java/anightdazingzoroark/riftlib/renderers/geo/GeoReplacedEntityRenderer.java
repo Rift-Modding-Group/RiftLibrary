@@ -142,7 +142,8 @@ public abstract class GeoReplacedEntityRenderer<T extends IAnimatable> extends R
 		Color renderColor = getRenderColor(entity, partialTicks);
 
 		if (!entity.isInvisibleToPlayer(Minecraft.getMinecraft().player))
-			render(model, entity, partialTicks, (float) renderColor.getRed() / 255f,
+			render(model, entity, partialTicks, true,
+                    (float) renderColor.getRed() / 255f,
 					(float) renderColor.getBlue() / 255f, (float) renderColor.getGreen() / 255f,
 					(float) renderColor.getAlpha() / 255);
 

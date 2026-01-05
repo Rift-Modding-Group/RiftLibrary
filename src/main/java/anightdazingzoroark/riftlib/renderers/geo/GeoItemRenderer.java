@@ -36,6 +36,7 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 
 	protected AnimatedGeoModel<T> modelProvider;
 	protected ItemStack currentItemStack;
+    private boolean canRenderParticles;
 
 	public GeoItemRenderer(AnimatedGeoModel<T> modelProvider) {
 		this.modelProvider = modelProvider;
@@ -49,6 +50,10 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 	public AnimatedGeoModel<T> getGeoModelProvider() {
 		return this.modelProvider;
 	}
+
+    public void setCanRenderParticles(boolean value) {
+        this.canRenderParticles = value;
+    }
 
 	@Override
 	public void renderByItem(ItemStack itemStack, float partialTicks) {
@@ -66,9 +71,11 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 		GlStateManager.translate(0, 0.01f, 0);
 		GlStateManager.translate(0.5, 0.5, 0.5);
 
-		Minecraft.getMinecraft().renderEngine.bindTexture(getTextureLocation(animatable));
+		Minecraft.getMinecraft().renderEngine.bindTexture(this.getTextureLocation(animatable));
 		Color renderColor = getRenderColor(animatable, 0f);
-        this.render(model, animatable, 0f, (float) renderColor.getRed() / 255f, (float) renderColor.getGreen() / 255f,
+        System.out.println("this.canRenderParticles: "+this.canRenderParticles);
+        this.render(model, animatable, 0f, this.canRenderParticles,
+                (float) renderColor.getRed() / 255f, (float) renderColor.getGreen() / 255f,
 				(float) renderColor.getBlue() / 255f, (float) renderColor.getAlpha() / 255);
 		GlStateManager.popMatrix();
 	}
@@ -80,7 +87,10 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 
 	@Override
 	public Integer getUniqueID(T animatable) {
-		return Objects.hash(currentItemStack.getItem(), currentItemStack.getCount(),
-				currentItemStack.hasTagCompound() ? currentItemStack.getTagCompound().toString() : 1);
+		return Objects.hash(
+                this.currentItemStack.getItem(),
+                this.currentItemStack.getCount(),
+                this.currentItemStack.hasTagCompound() ? this.currentItemStack.getTagCompound().toString() : 1
+        );
 	}
 }

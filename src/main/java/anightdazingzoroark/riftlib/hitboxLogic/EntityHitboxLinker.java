@@ -28,9 +28,9 @@ public abstract class EntityHitboxLinker<T extends IAnimatable & IMultiHitboxUse
                     String hitboxName = HitboxUtils.locatorHitboxToHitbox(locator.name);
                     toReturn.editHitboxDefinitionPosition(
                             hitboxName,
-                            (float) locator.getPosition().x,
-                            (float) locator.getPosition().y - toReturn.getHitboxDefinitionByName(hitboxName).height / 2f,
-                            -(float) locator.getPosition().z
+                            (float) locator.getPosition().x / 16f,
+                            (float) locator.getPosition().y / 16f - toReturn.getHitboxDefinitionByName(hitboxName).height / 2f,
+                            -(float) locator.getPosition().z / 16f
                     );
                 }
             }

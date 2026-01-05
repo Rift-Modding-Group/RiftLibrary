@@ -79,7 +79,8 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 	public void render(float partialTicks) {
 		GlStateManager.translate(0.0D, 1.501F, 0.0D);
 		GlStateManager.scale(-1.0F, -1.0F, 1.0F);
-		GeoModel model = modelProvider.getModel(modelProvider.getModelLocation(currentArmorItem));
+		GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(this.currentArmorItem));
+        this.currentArmorItem.getFactory().createAnimatedLocators(model);
 
 		AnimationEvent itemEvent = new AnimationEvent(this.currentArmorItem, 0, 0, 0, false,
 				Arrays.asList(this.itemStack, this.entityLiving, this.armorSlot));
@@ -120,7 +121,8 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 		}
 		Minecraft.getMinecraft().renderEngine.bindTexture(getTextureLocation(currentArmorItem));
 		Color renderColor = getRenderColor(currentArmorItem, partialTicks);
-		render(model, currentArmorItem, partialTicks, (float) renderColor.getRed() / 255f,
+		render(model, currentArmorItem, partialTicks, true,
+                (float) renderColor.getRed() / 255f,
 				(float) renderColor.getGreen() / 255f, (float) renderColor.getBlue() / 255f,
 				(float) renderColor.getAlpha() / 255);
 		GlStateManager.popMatrix();

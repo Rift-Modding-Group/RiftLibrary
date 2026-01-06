@@ -70,7 +70,7 @@ public abstract class GeoBlockRenderer<T extends TileEntity & IAnimatable> exten
 
 		Minecraft.getMinecraft().renderEngine.bindTexture(getTextureLocation(tile));
 		Color renderColor = getRenderColor(tile, partialTicks);
-		render(model, tile, uniqueID, partialTicks, true,
+		render(model, tile, partialTicks, true,
                 (float) renderColor.getRed() / 255f, (float) renderColor.getGreen() / 255f,
 				(float) renderColor.getBlue() / 255f, (float) renderColor.getAlpha() / 255);
 		GlStateManager.popMatrix();

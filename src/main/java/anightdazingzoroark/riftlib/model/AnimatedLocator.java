@@ -1,6 +1,7 @@
 package anightdazingzoroark.riftlib.model;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.core.manager.AnimationData;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
@@ -13,10 +14,12 @@ import org.lwjgl.util.vector.Quaternion;
 public class AnimatedLocator {
     private final GeoLocator locator;
     private final IAnimatable iAnimatable;
+    private final AnimationData data;
     private RiftLibParticleEmitter particleEmitter;
 
-    public AnimatedLocator(GeoLocator geoLocator, IAnimatable iAnimatable) {
+    public AnimatedLocator(GeoLocator geoLocator, AnimationData data, IAnimatable iAnimatable) {
         this.locator = geoLocator;
+        this.data = data;
         this.iAnimatable = iAnimatable;
     }
 
@@ -50,5 +53,11 @@ public class AnimatedLocator {
 
     public RiftLibParticleEmitter getParticleEmitter() {
         return this.particleEmitter;
+    }
+
+    public boolean equals(Object o) {
+        if (!(o instanceof AnimatedLocator)) return false;
+        AnimatedLocator otherLocator = (AnimatedLocator) o;
+        return otherLocator.data == this.data && otherLocator == this;
     }
 }

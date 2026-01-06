@@ -148,11 +148,18 @@ public class AnimationProcessor<T extends IAnimatable> {
 
                     AnimatedLocator locator = entity.getFactory().getOrCreateAnimationData(uniqueID).getAnimatedLocator(particleEventKeyFrame.locator);
                     if (locator != null) {
+                        /**
+                         * note: this implementation of emitter removal has a bug that may cause emitters
+                         * of instances of an item after those that were already rendered
+                         * to be killed prematurely
+                         * **/
                         //first check if the locator is used by another particle in ClientProxy.EMITTER_LIST
                         //if there is, kill it
+                        /*
                         for (RiftLibParticleEmitter emitter : ClientProxy.EMITTER_LIST) {
                             if (emitter.getLocator() == locator) emitter.killEmitter();
                         }
+                         */
 
                         //add emitter to locator and put it in ClientProxy.EMITTER_LIST
                         ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(particleEventKeyFrame.effect);

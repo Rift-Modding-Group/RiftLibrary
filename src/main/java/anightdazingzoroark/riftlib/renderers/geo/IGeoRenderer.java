@@ -26,7 +26,7 @@ import java.util.List;
 public interface IGeoRenderer<T> {
 	MatrixStack MATRIX_STACK = new MatrixStack();
 
-	default void render(GeoModel model, T animatable, Integer uniqueID, float partialTicks, boolean renderParticles, float red, float green, float blue, float alpha) {
+	default void render(GeoModel model, T animatable, float partialTicks, boolean renderParticles, float red, float green, float blue, float alpha) {
 		GlStateManager.disableCull();
 		GlStateManager.enableRescaleNormal();
         this.renderEarly(animatable, partialTicks, red, green, blue, alpha);
@@ -45,7 +45,7 @@ public interface IGeoRenderer<T> {
 		Tessellator.getInstance().draw();
 
 		this.renderAfter(animatable, partialTicks, red, green, blue, alpha);
-        if (renderParticles) this.renderAttachedParticles(animatable, uniqueID);
+        if (renderParticles) this.renderAttachedParticles(animatable);
 
 		GlStateManager.disableRescaleNormal();
 		GlStateManager.enableCull();
@@ -124,13 +124,15 @@ public interface IGeoRenderer<T> {
 
 	default void renderAfter(T animatable, float ticks, float red, float green, float blue, float partialTicks) {}
 
-    default void renderAttachedParticles(T animatable, Integer uniqueID) {
+    default void renderAttachedParticles(T animatable) {
         if (!(animatable instanceof IAnimatable)) return;
         IAnimatable animatableObject = (IAnimatable) animatable;
+        Integer uniqueID = this.getUniqueID(animatable);
 
         List<AnimatedLocator> animatedLocators = animatableObject.getFactory().getOrCreateAnimationData(uniqueID).getAnimatedLocators();
         for (AnimatedLocator animatedLocator : animatedLocators) {
             if (animatedLocator.getParticleEmitter() == null) continue;
+
             RiftLibParticleEmitter emitter = animatedLocator.getParticleEmitter();
 
             //update location based on animatedLocator if there is
@@ -177,6 +179,11 @@ public interface IGeoRenderer<T> {
             emitter.posX += full.m03;
             emitter.posY += full.m13 + 1.6D;
             emitter.posZ += full.m23;
+
+            System.out.println("locator id: "+uniqueID);
+            System.out.println("final posX: "+emitter.posX);
+            System.out.println("final posY: "+emitter.posY);
+            System.out.println("final posZ: "+emitter.posZ);
 
             MATRIX_STACK.pop();
             //the finalized repositioned locator is ticked in ParticleTicker.onRenderWorldLast

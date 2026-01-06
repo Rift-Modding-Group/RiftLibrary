@@ -135,7 +135,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		boolean flag = this.setDoRenderBrightness(entity, partialTicks);
 
 		if (!entity.isInvisibleToPlayer(Minecraft.getMinecraft().player))
-			render(model, entity, uniqueID, partialTicks, true,
+			render(model, entity, partialTicks, true,
                     (float) renderColor.getRed() / 255f,
 					(float) renderColor.getBlue() / 255f, (float) renderColor.getGreen() / 255f,
 					(float) renderColor.getAlpha() / 255);

@@ -54,8 +54,8 @@ public class RenderItemMixin {
                 GlStateManager.enableRescaleNormal();
 
                 GeoItemRenderer geoItemRenderer = (GeoItemRenderer) stack.getItem().getTileEntityItemStackRenderer();
+                geoItemRenderer.setCanRenderParticles(true);
                 geoItemRenderer.renderByItem(stack);
-                geoItemRenderer.setCanRenderParticles(false);
             }
             else {
                 thisRenderItem.renderModel(model, stack);
@@ -105,8 +105,8 @@ public class RenderItemMixin {
                 GlStateManager.enableRescaleNormal();
 
                 GeoItemRenderer geoItemRenderer = (GeoItemRenderer) stack.getItem().getTileEntityItemStackRenderer();
+                geoItemRenderer.setCanRenderParticles(false);
                 geoItemRenderer.renderByItem(stack);
-                geoItemRenderer.setCanRenderParticles(true);
             }
             else {
                 thisRenderItem.renderModel(model, stack);

@@ -31,7 +31,7 @@ public class RenderItemMixin {
             GlStateManager.pushMatrix();
             bakedmodel = net.minecraftforge.client.ForgeHooksClient.handleCameraTransforms(bakedmodel, transform, leftHanded);
 
-            this.finalRenderItem(stack, bakedmodel);
+            this.finalRenderItem(stack, bakedmodel, transform);
             GlStateManager.cullFace(GlStateManager.CullFace.BACK);
             GlStateManager.popMatrix();
             GlStateManager.disableRescaleNormal();
@@ -40,29 +40,6 @@ public class RenderItemMixin {
             thisRenderItem.textureManager.getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).restoreLastBlurMipmap();
 
             ci.cancel();
-        }
-    }
-
-    private void finalRenderItem(ItemStack stack, IBakedModel model) {
-        RenderItem thisRenderItem = (RenderItem) ((Object) this);
-        if (!stack.isEmpty()) {
-            GlStateManager.pushMatrix();
-            GlStateManager.translate(-0.5F, -0.5F, -0.5F);
-
-            if (model.isBuiltInRenderer()) {
-                GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-                GlStateManager.enableRescaleNormal();
-
-                GeoItemRenderer geoItemRenderer = (GeoItemRenderer) stack.getItem().getTileEntityItemStackRenderer();
-                geoItemRenderer.setCanRenderParticles(true);
-                geoItemRenderer.renderByItem(stack);
-            }
-            else {
-                thisRenderItem.renderModel(model, stack);
-                if (stack.hasEffect()) thisRenderItem.renderEffect(model);
-            }
-
-            GlStateManager.popMatrix();
         }
     }
 
@@ -82,7 +59,7 @@ public class RenderItemMixin {
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
             thisRenderItem.setupGuiTransform(x, y, bakedmodel.isGui3d());
             bakedmodel = net.minecraftforge.client.ForgeHooksClient.handleCameraTransforms(bakedmodel, ItemCameraTransforms.TransformType.GUI, false);
-            this.finalRenderItemGUI(stack, bakedmodel);
+            this.finalRenderItem(stack, bakedmodel, ItemCameraTransforms.TransformType.GUI);
             GlStateManager.disableAlpha();
             GlStateManager.disableRescaleNormal();
             GlStateManager.disableLighting();
@@ -94,7 +71,7 @@ public class RenderItemMixin {
         }
     }
 
-    private void finalRenderItemGUI(ItemStack stack, IBakedModel model) {
+    private void finalRenderItem(ItemStack stack, IBakedModel model, ItemCameraTransforms.TransformType transformType) {
         RenderItem thisRenderItem = (RenderItem) ((Object) this);
         if (!stack.isEmpty()) {
             GlStateManager.pushMatrix();
@@ -105,7 +82,7 @@ public class RenderItemMixin {
                 GlStateManager.enableRescaleNormal();
 
                 GeoItemRenderer geoItemRenderer = (GeoItemRenderer) stack.getItem().getTileEntityItemStackRenderer();
-                geoItemRenderer.setCanRenderParticles(false);
+                geoItemRenderer.setLastTransformType(transformType);
                 geoItemRenderer.renderByItem(stack);
             }
             else {

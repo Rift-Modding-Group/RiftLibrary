@@ -26,7 +26,7 @@ import java.util.List;
 public interface IGeoRenderer<T> {
 	MatrixStack MATRIX_STACK = new MatrixStack();
 
-	default void render(GeoModel model, T animatable, float partialTicks, boolean renderParticles, float red, float green, float blue, float alpha) {
+	default void render(GeoModel model, T animatable, float partialTicks, float red, float green, float blue, float alpha) {
 		GlStateManager.disableCull();
 		GlStateManager.enableRescaleNormal();
         this.renderEarly(animatable, partialTicks, red, green, blue, alpha);
@@ -45,7 +45,7 @@ public interface IGeoRenderer<T> {
 		Tessellator.getInstance().draw();
 
 		this.renderAfter(animatable, partialTicks, red, green, blue, alpha);
-        if (renderParticles) this.renderAttachedParticles(animatable);
+        this.renderAttachedParticles(animatable);
 
 		GlStateManager.disableRescaleNormal();
 		GlStateManager.enableCull();

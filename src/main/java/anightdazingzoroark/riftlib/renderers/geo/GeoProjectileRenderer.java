@@ -67,7 +67,7 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile & IAnimatable> ex
 		Color renderColor = getRenderColor(entity, partialTicks);
 
 		if (!entity.isInvisibleToPlayer(Minecraft.getMinecraft().player))
-			render(model, entity, partialTicks, true,
+			render(model, entity, partialTicks,
                     (float) renderColor.getRed() / 255f,
 					(float) renderColor.getBlue() / 255f, (float) renderColor.getGreen() / 255f,
 					(float) renderColor.getAlpha() / 255);

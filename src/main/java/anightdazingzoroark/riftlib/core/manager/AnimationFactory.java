@@ -1,8 +1,10 @@
 package anightdazingzoroark.riftlib.core.manager;
 
 import java.util.HashMap;
+import java.util.List;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 
 public class AnimationFactory {
 	private final IAnimatable animatable;
@@ -30,4 +32,18 @@ public class AnimationFactory {
 		}
 		return this.animationDataMap.get(uniqueID);
 	}
+
+    public void removeAnimationData(Integer uniqueID) {
+        //first of all, kill all the animation locators
+        //in the extracted animationdata
+        //then remove the animationdata
+        if (this.animationDataMap.containsKey(uniqueID)) {
+            AnimationData data = this.animationDataMap.get(uniqueID);
+            List<AnimatedLocator> animatedLocators = data.getAnimatedLocators();
+            for (AnimatedLocator animatedLocator : animatedLocators) {
+                animatedLocator.killLocator();
+            }
+            this.animationDataMap.remove(uniqueID);
+        }
+    }
 }

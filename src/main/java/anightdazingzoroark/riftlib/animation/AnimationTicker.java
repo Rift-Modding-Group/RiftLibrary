@@ -19,7 +19,7 @@ public class AnimationTicker {
 		}
 
 		if (event.phase == TickEvent.Phase.END) {
-			data.tick++;
+			this.data.tick++;
 		}
 	}
 }

@@ -16,6 +16,7 @@ public class AnimatedLocator {
     private final GeoLocator locator;
     private final IAnimatable iAnimatable;
     private RiftLibParticleEmitter particleEmitter;
+    private boolean killed;
 
     public AnimatedLocator(GeoLocator geoLocator, IAnimatable iAnimatable) {
         this.locator = geoLocator;
@@ -32,7 +33,7 @@ public class AnimatedLocator {
             return !tileEntityAnimatable.isInvalid();
         }
         else if (this.iAnimatable instanceof Item) {
-
+            return !this.killed;
         }
         return true;
     }
@@ -67,5 +68,9 @@ public class AnimatedLocator {
 
     public RiftLibParticleEmitter getParticleEmitter() {
         return this.particleEmitter;
+    }
+
+    public void killLocator() {
+        this.killed = true;
     }
 }

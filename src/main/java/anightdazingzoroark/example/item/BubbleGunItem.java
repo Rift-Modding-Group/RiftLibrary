@@ -46,14 +46,11 @@ public class BubbleGunItem extends Item implements IAnimatable {
         if (worldIn.isRemote) this.isUsing = false;
     }
 
-    //todo: for testing purposes, the particles will always spawn, will change to only when right clicking after
-    //i figure out how to spawn particles from the
     @Override
     public void registerControllers(AnimationData data) {
         data.addAnimationController(new AnimationController(this, "blow", 0, new AnimationController.IAnimationPredicate() {
             @Override
             public PlayState test(AnimationEvent event) {
-                /*
                 if (isUsing) {
                     event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.bubble_gun.blow_bubbles", LoopType.LOOP));
                 }
@@ -62,10 +59,9 @@ public class BubbleGunItem extends Item implements IAnimatable {
                     return PlayState.STOP;
                 }
                 return PlayState.CONTINUE;
-                 */
 
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.bubble_gun.blow_bubbles", LoopType.LOOP));
-                return PlayState.CONTINUE;
+                //event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.bubble_gun.blow_bubbles", LoopType.LOOP));
+                //return PlayState.CONTINUE;
             }
         }));
     }

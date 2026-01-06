@@ -18,6 +18,7 @@ import anightdazingzoroark.example.entity.hitboxLinker.FlyingPufferfishHitboxLin
 import anightdazingzoroark.example.entity.ridePosLinker.DragonRidePosLinker;
 import anightdazingzoroark.example.item.GreenArmorItem;
 import anightdazingzoroark.example.ui.HelloWorldUI;
+import anightdazingzoroark.riftlib.animation.ItemAnimationTicker;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitbox;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitboxRenderer;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
@@ -55,6 +56,7 @@ public class ClientProxy extends ServerProxy {
         super.preInit(e);
         RenderingRegistry.registerEntityRenderingHandler(EntityHitbox.class, new EntityHitboxRenderer.Factory());
         MinecraftForge.EVENT_BUS.register(new ParticleTicker());
+        MinecraftForge.EVENT_BUS.register(new ItemAnimationTicker());
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {

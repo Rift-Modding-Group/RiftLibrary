@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import anightdazingzoroark.riftlib.animation.ItemAnimationTicker;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.util.MatrixUtils;
@@ -48,7 +49,7 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 	}
 
 	protected AnimatedGeoModel<T> modelProvider;
-	protected ItemStack currentItemStack;
+	private ItemStack currentItemStack;
     private ItemCameraTransforms.TransformType transformType;
 
 	public GeoItemRenderer(AnimatedGeoModel<T> modelProvider) {
@@ -90,6 +91,8 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
                 (float) renderColor.getRed() / 255f, (float) renderColor.getGreen() / 255f,
 				(float) renderColor.getBlue() / 255f, (float) renderColor.getAlpha() / 255);
 		GlStateManager.popMatrix();
+
+        ItemAnimationTicker.refreshRenderedStackEntry(itemStack, this.getUniqueID(animatable));
 	}
 
 	@Override
@@ -106,6 +109,10 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
                 this.currentItemStack.hashCode()
         );
 	}
+
+    public ItemStack getCurrentItemStack() {
+        return this.currentItemStack;
+    }
 
     @Override
     public void renderAttachedParticles(T animatable) {

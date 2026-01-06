@@ -89,7 +89,7 @@ public class AnimationData {
             List<GeoLocator> locatorList = model.getAllLocators();
             for (GeoLocator locator : locatorList) {
                 if (locator == null) continue;
-                this.animatedLocators.add(new AnimatedLocator(locator, this, this.iAnimatable));
+                this.animatedLocators.add(new AnimatedLocator(locator, this.iAnimatable));
             }
 
             this.currentModel = model;

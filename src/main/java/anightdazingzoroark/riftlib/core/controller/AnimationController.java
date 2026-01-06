@@ -247,8 +247,7 @@ public class AnimationController<T extends IAnimatable> {
 	 * @param transitionLengthTicks How long it takes to transition between
 	 *                              animations (IN TICKS!!)
 	 */
-	public AnimationController(T animatable, String name, float transitionLengthTicks,
-			IAnimationPredicate<T> animationPredicate) {
+	public AnimationController(T animatable, String name, float transitionLengthTicks, IAnimationPredicate<T> animationPredicate) {
 		this.animatable = animatable;
 		this.name = name;
 		this.transitionLengthTicks = transitionLengthTicks;
@@ -271,8 +270,7 @@ public class AnimationController<T extends IAnimatable> {
 	 * @param easingtype            The method of easing to use. The other
 	 *                              constructor defaults to no easing.
 	 */
-	public AnimationController(T animatable, String name, float transitionLengthTicks, EasingType easingtype,
-			IAnimationPredicate<T> animationPredicate) {
+	public AnimationController(T animatable, String name, float transitionLengthTicks, EasingType easingtype, IAnimationPredicate<T> animationPredicate) {
 		this.animatable = animatable;
 		this.name = name;
 		this.transitionLengthTicks = transitionLengthTicks;
@@ -300,8 +298,7 @@ public class AnimationController<T extends IAnimatable> {
 	 *                              number also within 0 and 1. Take a look at
 	 *                              {@link EasingManager}
 	 */
-	public AnimationController(T animatable, String name, float transitionLengthTicks,
-			Function<Double, Double> customEasingMethod, IAnimationPredicate<T> animationPredicate) {
+	public AnimationController(T animatable, String name, float transitionLengthTicks, Function<Double, Double> customEasingMethod, IAnimationPredicate<T> animationPredicate) {
 		this.animatable = animatable;
 		this.name = name;
 		this.transitionLengthTicks = transitionLengthTicks;
@@ -437,7 +434,7 @@ public class AnimationController<T extends IAnimatable> {
 			if (tick == 0 || this.isJustStarting) {
                 this.justStartedTransition = false;
 				this.currentAnimation = animationQueue.poll();
-				resetEventKeyFrames();
+				this.resetEventKeyFrames();
 				saveSnapshotsForAnimation(this.currentAnimation, boneSnapshotCollection);
 			}
 			if (this.currentAnimation != null) {
@@ -505,7 +502,7 @@ public class AnimationController<T extends IAnimatable> {
 		}
         else if (getAnimationState() == AnimationState.Running) {
 			// Actually run the animation
-			processCurrentAnimation(tick, actualTick, parser, crashWhenCantFindBone);
+			this.processCurrentAnimation(tick, actualTick, parser, crashWhenCantFindBone);
 		}
 	}
 
@@ -541,8 +538,7 @@ public class AnimationController<T extends IAnimatable> {
 		}
 	}
 
-	private void processCurrentAnimation(double tick, double actualTick, MolangParser parser,
-			boolean crashWhenCantFindBone) {
+	private void processCurrentAnimation(double tick, double actualTick, MolangParser parser, boolean crashWhenCantFindBone) {
 		assert currentAnimation != null;
 		//Animation has ended
 		if (tick >= currentAnimation.animationLength) {
@@ -634,25 +630,6 @@ public class AnimationController<T extends IAnimatable> {
         //create a riftlibrary particle emitter that's attached to a locator
         for (ParticleEventKeyFrame particleEventKeyFrame : this.currentAnimation.particleKeyFrames) {
             if (!this.executedKeyFrames.contains(particleEventKeyFrame) && tick >= particleEventKeyFrame.getStartTick()) {
-                /*
-                //add particle information to a locator
-                AnimatedLocator locator = this.animatable.getFactory().getAnimatedLocator(particleEventKeyFrame.locator);
-                if (locator != null) {
-                    //first check if the locator is used by another particle in ClientProxy.EMITTER_LIST
-                    //if there is, kill it
-                    for (RiftLibParticleEmitter emitter : ClientProxy.EMITTER_LIST) {
-                        if (emitter.getLocator() == locator) emitter.killEmitter();
-                    }
-
-                    //add emitter to locator and put it in ClientProxy.EMITTER_LIST
-                    ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(particleEventKeyFrame.effect);
-                    if (particleBuilder != null) {
-                        locator.createParticleEmitter(particleBuilder);
-                        ClientProxy.EMITTER_LIST.add(locator.getParticleEmitter());
-                    }
-                }
-                 */
-
                 this.executedKeyFrames.add(particleEventKeyFrame);
             }
         }
@@ -779,6 +756,5 @@ public class AnimationController<T extends IAnimatable> {
 	}
 
 	@FunctionalInterface
-	public interface ModelFetcher<T> extends Function<IAnimatable, IAnimatableModel<T>> {
-	}
+	public interface ModelFetcher<T> extends Function<IAnimatable, IAnimatableModel<T>> {}
 }

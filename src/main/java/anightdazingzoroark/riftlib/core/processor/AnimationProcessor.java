@@ -55,8 +55,7 @@ public class AnimationProcessor<T extends IAnimatable> {
 		this.animatedModel = animatedModel;
 	}
 
-	public void tickAnimation(IAnimatable entity, Integer uniqueID, double seekTime, AnimationEvent event,
-			MolangParser parser, boolean crashWhenCantFindBone) {
+	public void tickAnimation(IAnimatable entity, Integer uniqueID, double seekTime, AnimationEvent event, MolangParser parser, boolean crashWhenCantFindBone) {
 		if (seekTime != lastTickValue) {
 			this.animatedEntities.clear();
 		}
@@ -142,30 +141,18 @@ public class AnimationProcessor<T extends IAnimatable> {
             //animation effects
             Set<EventKeyFrame<?>> effectKeyFrames = controller.getExecutedKeyFrames();
             for (EventKeyFrame<?> eventKeyFrame : effectKeyFrames) {
+                //System.out.println("eventKeyFrame: "+eventKeyFrame);
+
                 //for particles
                 if (eventKeyFrame instanceof ParticleEventKeyFrame) {
                     ParticleEventKeyFrame particleEventKeyFrame = (ParticleEventKeyFrame) eventKeyFrame;
 
                     AnimatedLocator locator = entity.getFactory().getOrCreateAnimationData(uniqueID).getAnimatedLocator(particleEventKeyFrame.locator);
                     if (locator != null) {
-                        /**
-                         * note: this implementation of emitter removal has a bug that may cause emitters
-                         * of instances of an item after those that were already rendered
-                         * to be killed prematurely
-                         * **/
-                        //first check if the locator is used by another particle in ClientProxy.EMITTER_LIST
-                        //if there is, kill it
-                        /*
-                        for (RiftLibParticleEmitter emitter : ClientProxy.EMITTER_LIST) {
-                            if (emitter.getLocator() == locator) emitter.killEmitter();
-                        }
-                         */
-
-                        //add emitter to locator and put it in ClientProxy.EMITTER_LIST
                         ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(particleEventKeyFrame.effect);
                         if (particleBuilder != null) {
-                            locator.createParticleEmitter(particleBuilder);
-                            ClientProxy.EMITTER_LIST.add(locator.getParticleEmitter());
+                            boolean addToListFlag = locator.createParticleEmitter(particleBuilder);
+                            if (addToListFlag) ClientProxy.EMITTER_LIST.add(locator.getParticleEmitter());
                         }
                     }
                 }

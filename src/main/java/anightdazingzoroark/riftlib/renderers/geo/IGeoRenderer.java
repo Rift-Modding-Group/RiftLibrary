@@ -180,11 +180,6 @@ public interface IGeoRenderer<T> {
             emitter.posY += full.m13 + 1.6D;
             emitter.posZ += full.m23;
 
-            System.out.println("locator id: "+uniqueID);
-            System.out.println("final posX: "+emitter.posX);
-            System.out.println("final posY: "+emitter.posY);
-            System.out.println("final posZ: "+emitter.posZ);
-
             MATRIX_STACK.pop();
             //the finalized repositioned locator is ticked in ParticleTicker.onRenderWorldLast
             //this is commented out

@@ -18,7 +18,13 @@ public class ParticleTicker {
         while (it.hasNext()) {
             RiftLibParticleEmitter emitter = it.next();
             emitter.update();
-            if (emitter.isDead()) it.remove();
+            if (emitter.isDead()) {
+                //remove from the animatedlocator
+                emitter.getLocator().removeParticleEmitter();
+
+                //remove from list of emitters
+                it.remove();
+            }
         }
     }
 

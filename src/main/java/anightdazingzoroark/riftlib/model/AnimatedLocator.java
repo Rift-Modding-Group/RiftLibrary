@@ -66,6 +66,10 @@ public class AnimatedLocator {
         return false;
     }
 
+    public void removeParticleEmitter() {
+        this.particleEmitter = null;
+    }
+
     public RiftLibParticleEmitter getParticleEmitter() {
         return this.particleEmitter;
     }

@@ -92,7 +92,7 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 				(float) renderColor.getBlue() / 255f, (float) renderColor.getAlpha() / 255);
 		GlStateManager.popMatrix();
 
-        ItemAnimationTicker.refreshRenderedStackEntry(itemStack, this.getUniqueID(animatable));
+        ItemAnimationTicker.refreshRenderedStackEntry(itemStack, this.getUniqueID(animatable), this.transformType);
 	}
 
 	@Override

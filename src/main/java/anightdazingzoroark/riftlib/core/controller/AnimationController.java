@@ -745,6 +745,7 @@ public class AnimationController<T extends IAnimatable> {
 
 	public void clearAnimationCache() {
 		this.currentAnimationBuilder = new AnimationBuilder();
+        this.resetEventKeyFrames();
 	}
 
 	public double getAnimationSpeed() {

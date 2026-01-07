@@ -5,7 +5,9 @@ import anightdazingzoroark.example.block.SprinklerBlock;
 import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
 import anightdazingzoroark.example.block.tile.SprinklerTileEntity;
 import anightdazingzoroark.example.client.renderer.item.BubbleGunRenderer;
+import anightdazingzoroark.example.client.renderer.item.FidgetSpinnerRenderer;
 import anightdazingzoroark.example.item.BubbleGunItem;
+import anightdazingzoroark.example.item.FidgetSpinnerItem;
 import anightdazingzoroark.example.item.GreenArmorItem;
 import anightdazingzoroark.example.registry.BlockRegistry;
 import anightdazingzoroark.riftlib.RiftLibMod;
@@ -93,6 +95,7 @@ public class CommonListener {
 		itemRegistry = event.getRegistry();
 		ItemRegistry.BOMB = registerItem(new BombItem(), "bomb");
         ItemRegistry.BUBBLE_GUN = registerItem(new BubbleGunItem(), "bubble_gun");
+        ItemRegistry.FIDGET_SPINNER = registerItem(new FidgetSpinnerItem(), "fidget_spinner");
 
 		ItemRegistry.GREEN_HEAD = registerItem(
 				new GreenArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.HEAD), "green_helmet");
@@ -149,6 +152,11 @@ public class CommonListener {
                 0,
                 new ModelResourceLocation(RiftLib.ModID+":bubble_gun", "inventory")
         );
+        ModelLoader.setCustomModelResourceLocation(
+                ItemRegistry.FIDGET_SPINNER,
+                0,
+                new ModelResourceLocation(RiftLib.ModID+":fidget_spinner", "inventory")
+        );
         ModelLoader.setCustomModelResourceLocation(ItemRegistry.MERRY_GO_ROUND, 0, new ModelResourceLocation(RiftLib.ModID+":merry_go_round", "inventory"));
         ModelLoader.setCustomModelResourceLocation(ItemRegistry.SPRINKLER, 0, new ModelResourceLocation(RiftLib.ModID+":sprinkler", "inventory"));
 
@@ -163,5 +171,6 @@ public class CommonListener {
 
 		ItemRegistry.BOMB.setTileEntityItemStackRenderer(new BombRenderer());
         ItemRegistry.BUBBLE_GUN.setTileEntityItemStackRenderer(new BubbleGunRenderer());
+        ItemRegistry.FIDGET_SPINNER.setTileEntityItemStackRenderer(new FidgetSpinnerRenderer());
 	}
 }

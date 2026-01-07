@@ -14,6 +14,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+/**
+ * This mixin is mainly for blocking particle rendering when
+ * the item is rendered in a UI. Soon however this may be
+ * modified to permit rendering particles in certain UIs
+ * **/
 @Mixin(RenderItem.class)
 public class RenderItemMixin {
     @Inject(method = "renderItemModel", at = @At(value = "HEAD"), cancellable = true)

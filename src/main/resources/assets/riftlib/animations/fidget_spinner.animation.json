@@ -1,0 +1,29 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.fidget_spinner.spin": {
+			"loop": true,
+			"animation_length": 4,
+			"bones": {
+				"armOne": {
+					"rotation": {
+						"0.0": [0, 0, 0],
+						"4.0": [360, 0, 0]
+					}
+				},
+				"armTwo": {
+					"rotation": {
+						"0.0": [0, 0, 0],
+						"4.0": [360, 0, 0]
+					}
+				},
+				"armThree": {
+					"rotation": {
+						"0.0": [0, 0, 0],
+						"4.0": [360, 0, 0]
+					}
+				}
+			}
+		}
+	}
+}

@@ -59,9 +59,6 @@ public class BubbleGunItem extends Item implements IAnimatable {
                     return PlayState.STOP;
                 }
                 return PlayState.CONTINUE;
-
-                //event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.bubble_gun.blow_bubbles", LoopType.LOOP));
-                //return PlayState.CONTINUE;
             }
         }));
     }

@@ -141,8 +141,6 @@ public class AnimationProcessor<T extends IAnimatable> {
             //animation effects
             Set<EventKeyFrame<?>> effectKeyFrames = controller.getExecutedKeyFrames();
             for (EventKeyFrame<?> eventKeyFrame : effectKeyFrames) {
-                //System.out.println("eventKeyFrame: "+eventKeyFrame);
-
                 //for particles
                 if (eventKeyFrame instanceof ParticleEventKeyFrame) {
                     ParticleEventKeyFrame particleEventKeyFrame = (ParticleEventKeyFrame) eventKeyFrame;
@@ -150,10 +148,7 @@ public class AnimationProcessor<T extends IAnimatable> {
                     AnimatedLocator locator = entity.getFactory().getOrCreateAnimationData(uniqueID).getAnimatedLocator(particleEventKeyFrame.locator);
                     if (locator != null) {
                         ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(particleEventKeyFrame.effect);
-                        if (particleBuilder != null) {
-                            boolean addToListFlag = locator.createParticleEmitter(particleBuilder);
-                            if (addToListFlag) ClientProxy.EMITTER_LIST.add(locator.getParticleEmitter());
-                        }
+                        if (particleBuilder != null) locator.createParticleEmitter(particleBuilder);
                     }
                 }
             }

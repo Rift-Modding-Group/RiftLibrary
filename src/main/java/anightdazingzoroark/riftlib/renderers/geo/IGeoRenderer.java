@@ -131,61 +131,60 @@ public interface IGeoRenderer<T> {
 
         List<AnimatedLocator> animatedLocators = animatableObject.getFactory().getOrCreateAnimationData(uniqueID).getAnimatedLocators();
         for (AnimatedLocator animatedLocator : animatedLocators) {
-            if (animatedLocator.getParticleEmitter() == null) continue;
+            List<RiftLibParticleEmitter> emitterList = animatedLocator.getParticleEmitterList();
+            for (RiftLibParticleEmitter emitter : emitterList) {
+                //update location based on animatedLocator if there is
+                BufferUtils.createFloatBuffer(16);
+                Vector3d position = ParticleUtils.getCurrentRenderPos();
+                emitter.posX = position.x;
+                emitter.posY = position.y;
+                emitter.posZ = position.z;
 
-            RiftLibParticleEmitter emitter = animatedLocator.getParticleEmitter();
+                RenderHelper.disableStandardItemLighting();
 
-            //update location based on animatedLocator if there is
-            BufferUtils.createFloatBuffer(16);
-            Vector3d position = ParticleUtils.getCurrentRenderPos();
-            emitter.posX = position.x;
-            emitter.posY = position.y;
-            emitter.posZ = position.z;
+                GL11.glPushMatrix();
 
-            RenderHelper.disableStandardItemLighting();
+                Matrix4f curRot = ParticleUtils.getCurrentMatrix();
 
-            GL11.glPushMatrix();
+                ParticleUtils.setInitialWorldPos();
 
-            Matrix4f curRot = ParticleUtils.getCurrentMatrix();
+                Matrix4f cur2 = ParticleUtils.getCurrentRotation(curRot, ParticleUtils.getCurrentMatrix());
 
-            ParticleUtils.setInitialWorldPos();
+                MATRIX_STACK.push();
+                MATRIX_STACK.getModelMatrix().mul(new Matrix4f(
+                        cur2.m00, cur2.m01, cur2.m02,0,
+                        cur2.m10, cur2.m11, cur2.m12,0,
+                        cur2.m20, cur2.m21,cur2.m22,0,
+                        0,0,0,1
+                ));
 
-            Matrix4f cur2 = ParticleUtils.getCurrentRotation(curRot, ParticleUtils.getCurrentMatrix());
+                //push locator info to matrix
+                MATRIX_STACK.translate(animatedLocator);
+                MATRIX_STACK.rotate(animatedLocator);
 
-            MATRIX_STACK.push();
-            MATRIX_STACK.getModelMatrix().mul(new Matrix4f(
-                    cur2.m00, cur2.m01, cur2.m02,0,
-                    cur2.m10, cur2.m11, cur2.m12,0,
-                    cur2.m20, cur2.m21,cur2.m22,0,
-                    0,0,0,1
-            ));
+                Matrix4f full = MATRIX_STACK.getModelMatrix();
 
-            //push locator info to matrix
-            MATRIX_STACK.translate(animatedLocator);
-            MATRIX_STACK.rotate(animatedLocator);
+                //set final rotations
+                emitter.rotationQuaternion = MatrixUtils.matrixToQuaternion(
+                        new Matrix3f(
+                                full.m00, full.m01, full.m02,
+                                full.m10, full.m11, full.m12,
+                                full.m20, full.m21, full.m22
+                        )
+                );
 
-            Matrix4f full = MATRIX_STACK.getModelMatrix();
+                //set final world position
+                emitter.posX += full.m03;
+                emitter.posY += full.m13 + 1.6D;
+                emitter.posZ += full.m23;
 
-            //set final rotations
-            emitter.rotationQuaternion = MatrixUtils.matrixToQuaternion(
-                    new Matrix3f(
-                        full.m00, full.m01, full.m02,
-                        full.m10, full.m11, full.m12,
-                        full.m20, full.m21, full.m22
-                    )
-            );
-
-            //set final world position
-            emitter.posX += full.m03;
-            emitter.posY += full.m13 + 1.6D;
-            emitter.posZ += full.m23;
-
-            MATRIX_STACK.pop();
-            //the finalized repositioned locator is ticked in ParticleTicker.onRenderWorldLast
-            //this is commented out
-            //emitter.render(partialTicks);
-            RenderHelper.enableStandardItemLighting();
-            GL11.glPopMatrix();
+                MATRIX_STACK.pop();
+                //the finalized repositioned locator is ticked in ParticleTicker.onRenderWorldLast
+                //this is commented out
+                //emitter.render(partialTicks);
+                RenderHelper.enableStandardItemLighting();
+                GL11.glPopMatrix();
+            }
         }
     }
 

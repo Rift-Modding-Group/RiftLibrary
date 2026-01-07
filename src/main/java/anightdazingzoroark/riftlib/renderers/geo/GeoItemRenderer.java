@@ -92,7 +92,7 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 				(float) renderColor.getBlue() / 255f, (float) renderColor.getAlpha() / 255);
 		GlStateManager.popMatrix();
 
-        ItemAnimationTicker.refreshRenderedStackEntry(itemStack, this.getUniqueID(animatable), this.transformType);
+        ItemAnimationTicker.refreshRenderedStackEntry(itemStack, this.getUniqueID(animatable));
 	}
 
 	@Override
@@ -106,82 +106,14 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
                 this.currentItemStack.getItem(),
                 this.currentItemStack.getCount(),
                 this.currentItemStack.hasTagCompound() ? this.currentItemStack.getTagCompound().toString() : 1,
-                this.currentItemStack.hashCode()
+                this.currentItemStack.hashCode(),
+                this.transformType
         );
 	}
-
-    public ItemStack getCurrentItemStack() {
-        return this.currentItemStack;
-    }
 
     @Override
     public void renderAttachedParticles(T animatable) {
         if (this.transformType == null) return;
-        Integer uniqueID = this.getUniqueID(animatable);
-
-        List<AnimatedLocator> animatedLocators = animatable.getFactory().getOrCreateAnimationData(uniqueID).getAnimatedLocators();
-        for (AnimatedLocator animatedLocator : animatedLocators) {
-            if (animatedLocator.getParticleEmitter() == null) continue;
-
-            RiftLibParticleEmitter emitter = animatedLocator.getParticleEmitter();
-
-            //differentiate based on transform type for repositioning locator
-            //note that for now its blocked within all guis, including in hotbar
-            //might add it back, idk how much effort would be needed to do so but
-            //i'd imagine it would be a lot
-            if (this.transformType != ItemCameraTransforms.TransformType.GUI) {
-                //update location based on animatedLocator if there is
-                BufferUtils.createFloatBuffer(16);
-                Vector3d position = ParticleUtils.getCurrentRenderPos();
-                emitter.posX = position.x;
-                emitter.posY = position.y;
-                emitter.posZ = position.z;
-
-                RenderHelper.disableStandardItemLighting();
-
-                GL11.glPushMatrix();
-
-                Matrix4f curRot = ParticleUtils.getCurrentMatrix();
-
-                ParticleUtils.setInitialWorldPos();
-
-                Matrix4f cur2 = ParticleUtils.getCurrentRotation(curRot, ParticleUtils.getCurrentMatrix());
-
-                MATRIX_STACK.push();
-                MATRIX_STACK.getModelMatrix().mul(new Matrix4f(
-                        cur2.m00, cur2.m01, cur2.m02,0,
-                        cur2.m10, cur2.m11, cur2.m12,0,
-                        cur2.m20, cur2.m21,cur2.m22,0,
-                        0,0,0,1
-                ));
-
-                //push locator info to matrix
-                MATRIX_STACK.translate(animatedLocator);
-                MATRIX_STACK.rotate(animatedLocator);
-
-                Matrix4f full = MATRIX_STACK.getModelMatrix();
-
-                //set final rotations
-                emitter.rotationQuaternion = MatrixUtils.matrixToQuaternion(
-                        new Matrix3f(
-                                full.m00, full.m01, full.m02,
-                                full.m10, full.m11, full.m12,
-                                full.m20, full.m21, full.m22
-                        )
-                );
-
-                //set final world position
-                emitter.posX += full.m03;
-                emitter.posY += full.m13 + 1.6D;
-                emitter.posZ += full.m23;
-
-                MATRIX_STACK.pop();
-                //the finalized repositioned locator is ticked in ParticleTicker.onRenderWorldLast
-                //this is commented out
-                //emitter.render(partialTicks);
-                RenderHelper.enableStandardItemLighting();
-                GL11.glPopMatrix();
-            }
-        }
+        IGeoRenderer.super.renderAttachedParticles(animatable);
     }
 }

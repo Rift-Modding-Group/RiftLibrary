@@ -52,7 +52,7 @@ public class BubbleGunItem extends Item implements IAnimatable {
             @Override
             public PlayState test(AnimationEvent event) {
                 if (isUsing) {
-                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.bubble_gun.blow_bubbles", LoopType.LOOP));
+                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.bubble_gun.blow_bubbles", LoopType.PLAY_ONCE));
                 }
                 else {
                     event.getController().clearAnimationCache();

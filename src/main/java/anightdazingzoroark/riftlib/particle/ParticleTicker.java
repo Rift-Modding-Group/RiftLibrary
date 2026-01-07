@@ -20,7 +20,7 @@ public class ParticleTicker {
             emitter.update();
             if (emitter.isDead()) {
                 //remove from the animatedlocator
-                emitter.getLocator().removeParticleEmitter();
+                emitter.getLocator().removeParticleEmitter(emitter);
 
                 //remove from list of emitters
                 it.remove();

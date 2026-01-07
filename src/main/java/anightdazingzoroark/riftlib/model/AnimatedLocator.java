@@ -1,7 +1,7 @@
 package anightdazingzoroark.riftlib.model;
 
+import anightdazingzoroark.riftlib.ClientProxy;
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.manager.AnimationData;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
@@ -12,10 +12,13 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.util.vector.Quaternion;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AnimatedLocator {
     private final GeoLocator locator;
     private final IAnimatable iAnimatable;
-    private RiftLibParticleEmitter particleEmitter;
+    private final List<RiftLibParticleEmitter> particleEmitterList = new ArrayList<>();
     private boolean killed;
 
     public AnimatedLocator(GeoLocator geoLocator, IAnimatable iAnimatable) {
@@ -50,28 +53,18 @@ public class AnimatedLocator {
         return this.locator.getYXZQuaternion();
     }
 
-    /**
-     * This creates a particle emitter and returns success result in boolean
-     * **/
-    public boolean createParticleEmitter(ParticleBuilder builder) {
-        if (this.particleEmitter == null) {
-            this.particleEmitter = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, this);
-            return true;
-        }
-        else if (!this.particleEmitter.particleIdentifier.equals(builder.identifier)) {
-            this.particleEmitter.killEmitter();
-            this.particleEmitter = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, this);
-            return true;
-        }
-        return false;
+    public void createParticleEmitter(ParticleBuilder builder) {
+        RiftLibParticleEmitter emitterToAdd = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, this);
+        this.particleEmitterList.add(emitterToAdd);
+        ClientProxy.EMITTER_LIST.add(emitterToAdd);
     }
 
-    public void removeParticleEmitter() {
-        this.particleEmitter = null;
+    public void removeParticleEmitter(RiftLibParticleEmitter emitter) {
+        this.particleEmitterList.remove(emitter);
     }
 
-    public RiftLibParticleEmitter getParticleEmitter() {
-        return this.particleEmitter;
+    public List<RiftLibParticleEmitter> getParticleEmitterList() {
+        return this.particleEmitterList;
     }
 
     public void killLocator() {

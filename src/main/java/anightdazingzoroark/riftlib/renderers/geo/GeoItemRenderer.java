@@ -106,14 +106,13 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
                 this.currentItemStack.getItem(),
                 this.currentItemStack.getCount(),
                 this.currentItemStack.hasTagCompound() ? this.currentItemStack.getTagCompound().toString() : 1,
-                this.currentItemStack.hashCode(),
-                this.transformType
+                this.currentItemStack.hashCode()
         );
 	}
 
     @Override
     public void renderAttachedParticles(T animatable) {
-        if (this.transformType == null) return;
+        if (this.transformType == null || this.transformType == ItemCameraTransforms.TransformType.GUI) return;
         IGeoRenderer.super.renderAttachedParticles(animatable);
     }
 }

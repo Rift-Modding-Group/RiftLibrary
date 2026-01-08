@@ -24,12 +24,6 @@ import anightdazingzoroark.riftlib.core.event.predicate.AnimationEvent;
 import anightdazingzoroark.riftlib.core.util.Color;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-
-import javax.vecmath.Matrix3f;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3d;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends TileEntityItemStackRenderer
@@ -106,7 +100,8 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
                 this.currentItemStack.getItem(),
                 this.currentItemStack.getCount(),
                 this.currentItemStack.hasTagCompound() ? this.currentItemStack.getTagCompound().toString() : 1,
-                this.currentItemStack.hashCode()
+                this.currentItemStack.hashCode(),
+                this.transformType
         );
 	}
 

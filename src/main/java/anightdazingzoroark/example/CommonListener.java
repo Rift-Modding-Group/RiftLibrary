@@ -6,14 +6,12 @@ import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
 import anightdazingzoroark.example.block.tile.SprinklerTileEntity;
 import anightdazingzoroark.example.client.renderer.item.BubbleGunRenderer;
 import anightdazingzoroark.example.client.renderer.item.FidgetSpinnerRenderer;
-import anightdazingzoroark.example.item.BubbleGunItem;
-import anightdazingzoroark.example.item.FidgetSpinnerItem;
-import anightdazingzoroark.example.item.GreenArmorItem;
+import anightdazingzoroark.example.client.renderer.item.FireworkStickRenderer;
+import anightdazingzoroark.example.item.*;
 import anightdazingzoroark.example.registry.BlockRegistry;
 import anightdazingzoroark.riftlib.RiftLibMod;
 import anightdazingzoroark.example.client.renderer.item.BombRenderer;
 import anightdazingzoroark.example.entity.*;
-import anightdazingzoroark.example.item.BombItem;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.inventory.EntityEquipmentSlot;
@@ -96,6 +94,7 @@ public class CommonListener {
 		ItemRegistry.BOMB = registerItem(new BombItem(), "bomb");
         ItemRegistry.BUBBLE_GUN = registerItem(new BubbleGunItem(), "bubble_gun");
         ItemRegistry.FIDGET_SPINNER = registerItem(new FidgetSpinnerItem(), "fidget_spinner");
+        ItemRegistry.FIREWORK_STICK = registerItem(new FireworkStickItem(), "firework_stick");
 
 		ItemRegistry.GREEN_HEAD = registerItem(
 				new GreenArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.HEAD), "green_helmet");
@@ -105,7 +104,6 @@ public class CommonListener {
 				new GreenArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.LEGS), "green_leggings");
 		ItemRegistry.GREEN_BOOTS = registerItem(
 				new GreenArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.FEET), "green_boots");
-
 
 
         ItemRegistry.MERRY_GO_ROUND = registerItem(new ItemBlock(BlockRegistry.MERRY_GO_ROUND_BLOCK), "merry_go_round");
@@ -157,6 +155,11 @@ public class CommonListener {
                 0,
                 new ModelResourceLocation(RiftLib.ModID+":fidget_spinner", "inventory")
         );
+        ModelLoader.setCustomModelResourceLocation(
+                ItemRegistry.FIREWORK_STICK,
+                0,
+                new ModelResourceLocation(RiftLib.ModID+":firework_stick", "inventory")
+        );
         ModelLoader.setCustomModelResourceLocation(ItemRegistry.MERRY_GO_ROUND, 0, new ModelResourceLocation(RiftLib.ModID+":merry_go_round", "inventory"));
         ModelLoader.setCustomModelResourceLocation(ItemRegistry.SPRINKLER, 0, new ModelResourceLocation(RiftLib.ModID+":sprinkler", "inventory"));
 
@@ -172,5 +175,6 @@ public class CommonListener {
 		ItemRegistry.BOMB.setTileEntityItemStackRenderer(new BombRenderer());
         ItemRegistry.BUBBLE_GUN.setTileEntityItemStackRenderer(new BubbleGunRenderer());
         ItemRegistry.FIDGET_SPINNER.setTileEntityItemStackRenderer(new FidgetSpinnerRenderer());
+        ItemRegistry.FIREWORK_STICK.setTileEntityItemStackRenderer(new FireworkStickRenderer());
 	}
 }

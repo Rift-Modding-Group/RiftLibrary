@@ -22,4 +22,5 @@ public class ItemRegistry {
     public static Item SPRINKLER;
     public static Item BUBBLE_GUN;
     public static Item FIDGET_SPINNER;
+    public static Item FIREWORK_STICK;
 }

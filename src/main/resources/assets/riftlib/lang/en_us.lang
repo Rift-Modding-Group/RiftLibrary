@@ -6,6 +6,7 @@ item.riftlib.green_boots.name=Green Boots
 item.riftlib.bomb.name=Bomb
 item.riftlib.bubble_gun.name=Bubble Gun
 item.riftlib.fidget_spinner.name=Fidget Spinner
+item.riftlib.firework_stick.name=Firework Stick
 
 command.riftlib.mob_family_usage=/riftlibmobfamily OR /riftlibmobfamily [name]
 command.riftlib.mob_family_all=All mob families: %s

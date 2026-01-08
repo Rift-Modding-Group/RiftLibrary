@@ -5,6 +5,7 @@ item.riftlib.green_leggings.name=Green Leggings
 item.riftlib.green_boots.name=Green Boots
 item.riftlib.bomb.name=Bomb
 item.riftlib.bubble_gun.name=Bubble Gun
+item.riftlib.fidget_spinner.name=Fidget Spinner
 
 command.riftlib.mob_family_usage=/riftlibmobfamily OR /riftlibmobfamily [name]
 command.riftlib.mob_family_all=All mob families: %s
@@ -12,6 +13,7 @@ command.riftlib.mob_family_all_members=Members of mob family %s: %s
 command.riftlib.mob_family_invalid_member=%s is not a valid mob family member!
 
 tile.riftlib.merry_go_round_block.name=Merry-Go-Round
+tile.riftlib.sprinkler.name=Sprinkler
 
 entity.dragon.name=Red Dragon
 entity.flying_pufferfish.name=Flying Pufferfish

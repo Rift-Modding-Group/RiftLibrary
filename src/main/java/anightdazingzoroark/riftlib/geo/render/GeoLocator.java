@@ -112,15 +112,6 @@ public class GeoLocator {
         );
     }
 
-    public Vec3d getRotation() {
-        Vec3d boneRotOffset = this.getRotationOffsetFromBoneRotations();
-        return new Vec3d(
-                this.rotationX + boneRotOffset.x,
-                this.rotationY + boneRotOffset.y,
-                this.rotationZ + boneRotOffset.z
-        );
-    }
-
     //summing up rotations sucks ass overall so this is to be used instead
     //when it comes to dealing with rotations
     public Quaternion getYXZQuaternion() {
@@ -157,10 +148,10 @@ public class GeoLocator {
         }
 
         //now apply the locator's rotation
-        double cosY = Math.cos(-this.rotationY / 2);
-        double sinY = Math.sin(-this.rotationY / 2);
-        double cosX = Math.cos(-this.rotationX / 2);
-        double sinX = Math.sin(-this.rotationX / 2);
+        double cosY = Math.cos(this.rotationY / 2);
+        double sinY = Math.sin(this.rotationY / 2);
+        double cosX = Math.cos(this.rotationX / 2);
+        double sinX = Math.sin(this.rotationX / 2);
         double cosZ = Math.cos(-this.rotationZ / 2);
         double sinZ = Math.sin(-this.rotationZ / 2);
 
@@ -237,17 +228,6 @@ public class GeoLocator {
         }
 
         return vecPos.subtract(this.positionX, this.positionY, this.positionZ);
-    }
-
-    private Vec3d getRotationOffsetFromBoneRotations() {
-        Vec3d toReturn = Vec3d.ZERO;
-        GeoBone boneToTest = this.parent;
-
-        while (boneToTest != null) {
-            toReturn = toReturn.add(boneToTest.getRotationX(), boneToTest.getRotationY(), boneToTest.getRotationZ());
-            boneToTest = boneToTest.parent;
-        }
-        return toReturn;
     }
 
     public String toString() {

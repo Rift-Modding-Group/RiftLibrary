@@ -185,6 +185,7 @@ public class AnimationController<T extends IAnimatable> {
 	protected boolean needsAnimationReload = false;
 	public double animationSpeed = 1D;
 	private final Set<EventKeyFrame<?>> executedKeyFrames = new HashSet<>();
+    private ParticleEventKeyFrame lastParticleEvent;
 
 	/**
 	 * This method sets the current animation with an animation builder. You can run
@@ -630,6 +631,7 @@ public class AnimationController<T extends IAnimatable> {
         //create a riftlibrary particle emitter that's attached to a locator
         for (ParticleEventKeyFrame particleEventKeyFrame : this.currentAnimation.particleKeyFrames) {
             if (!this.executedKeyFrames.contains(particleEventKeyFrame) && tick >= particleEventKeyFrame.getStartTick()) {
+                this.lastParticleEvent = particleEventKeyFrame;
                 this.executedKeyFrames.add(particleEventKeyFrame);
             }
         }
@@ -731,8 +733,10 @@ public class AnimationController<T extends IAnimatable> {
 		return new KeyFrameLocation<>(frames.get(frames.size() - 1), ageInTicks);
 	}
 
-    public Set<EventKeyFrame<?>> getExecutedKeyFrames() {
-        return this.executedKeyFrames;
+    public ParticleEventKeyFrame getLastParticleEvent() {
+        ParticleEventKeyFrame toReturn = this.lastParticleEvent;
+        this.lastParticleEvent = null;
+        return toReturn;
     }
 
 	private void resetEventKeyFrames() {

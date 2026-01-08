@@ -9,6 +9,7 @@ public enum ParticleCameraMode {
     ROTATE_Y,
     LOOKAT_XYZ,
     LOOKAT_Y,
+    LOOKAT_DIRECTION,
     //everything else below isnt supported... yet
     DIRECTION_X,
     DIRECTION_Y,

@@ -7,16 +7,18 @@ import anightdazingzoroark.riftlib.core.manager.AnimationFactory;
 import anightdazingzoroark.riftlib.item.GeoArmorItem;
 import net.minecraft.inventory.EntityEquipmentSlot;
 
-public class StinkyArmorItem extends GeoArmorItem implements IAnimatable {
+public class SatelliteDishHelmet extends GeoArmorItem implements IAnimatable {
     private final AnimationFactory factory = new AnimationFactory(this);
 
-    public StinkyArmorItem(ArmorMaterial materialIn, int renderIndexIn, EntityEquipmentSlot slot) {
-        super(materialIn, renderIndexIn, slot);
+    public SatelliteDishHelmet(ArmorMaterial materialIn, int renderIndexIn) {
+        super(materialIn, renderIndexIn, EntityEquipmentSlot.HEAD);
         this.setCreativeTab(RiftLibMod.getRiftlibItemGroup());
     }
 
     @Override
-    public void registerControllers(AnimationData data) {}
+    public void registerControllers(AnimationData data) {
+
+    }
 
     @Override
     public AnimationFactory getFactory() {

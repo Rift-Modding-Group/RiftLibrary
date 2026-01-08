@@ -128,4 +128,17 @@ public class ClientProxy extends ServerProxy {
             EMITTER_LIST.add(emitter);
         }
     }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void spawnParticle(String name, double x, double y, double z, double rotationX, double rotationY) {
+        //get particle builder
+        ParticleBuilder builder = RiftLibParticleHelper.getParticleBuilder(name);
+
+        //create an emitter
+        if (builder != null) {
+            RiftLibParticleEmitter emitter = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, x, y, z, rotationX, rotationY);
+            EMITTER_LIST.add(emitter);
+        }
+    }
 }

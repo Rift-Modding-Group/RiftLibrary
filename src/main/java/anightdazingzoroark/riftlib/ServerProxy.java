@@ -51,4 +51,6 @@ public class ServerProxy {
     }
 
     public void spawnParticle(String name, double x, double y, double z) {}
+
+    public void spawnParticle(String name, double x, double y, double z, double rotationX, double rotationY) {}
 }

@@ -12,6 +12,7 @@ command.riftlib.mob_family_usage=/riftlibmobfamily OR /riftlibmobfamily [name]
 command.riftlib.mob_family_all=All mob families: %s
 command.riftlib.mob_family_all_members=Members of mob family %s: %s
 command.riftlib.mob_family_invalid_member=%s is not a valid mob family member!
+command.riftlib.particle_usage=/riftlibparticle [identifier] <x> <y> <z> OR /riftlibparticle [identifier] <x> <y> <z> [<y-rot> <x-rot>]
 
 tile.riftlib.merry_go_round_block.name=Merry-Go-Round
 tile.riftlib.sprinkler.name=Sprinkler

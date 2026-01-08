@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 public class RiftLibCreateParticle extends RiftLibMessage<RiftLibCreateParticle> {
     private String name;
     private double x, y, z;
+    private double rotationX, rotationY;
 
     public RiftLibCreateParticle() {}
 
@@ -22,12 +23,23 @@ public class RiftLibCreateParticle extends RiftLibMessage<RiftLibCreateParticle>
         this.z = z;
     }
 
+    public RiftLibCreateParticle(String name, double x, double y, double z, double rotationX, double rotationY) {
+        this.name = name;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.rotationX = rotationX;
+        this.rotationY = rotationY;
+    }
+
     @Override
     public void fromBytes(ByteBuf buf) {
         this.name = ByteBufUtils.readUTF8String(buf);
         this.x = buf.readDouble();
         this.y = buf.readDouble();
         this.z = buf.readDouble();
+        this.rotationX = buf.readDouble();
+        this.rotationY = buf.readDouble();
     }
 
     @Override
@@ -36,6 +48,8 @@ public class RiftLibCreateParticle extends RiftLibMessage<RiftLibCreateParticle>
         buf.writeDouble(this.x);
         buf.writeDouble(this.y);
         buf.writeDouble(this.z);
+        buf.writeDouble(this.rotationX);
+        buf.writeDouble(this.rotationY);
     }
 
     @Override
@@ -43,6 +57,9 @@ public class RiftLibCreateParticle extends RiftLibMessage<RiftLibCreateParticle>
 
     @Override
     public void executeOnClient(Minecraft client, RiftLibCreateParticle message, EntityPlayer player, MessageContext messageContext) {
-        RiftLibMod.PROXY.spawnParticle(message.name, message.x, message.y, message.z);
+        if (message.rotationX != 0 || message.rotationY != 0) {
+            RiftLibMod.PROXY.spawnParticle(message.name, message.x, message.y, message.z, message.rotationX, message.rotationY);
+        }
+        else RiftLibMod.PROXY.spawnParticle(message.name, message.x, message.y, message.z);
     }
 }

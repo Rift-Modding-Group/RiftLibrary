@@ -2,6 +2,7 @@ package anightdazingzoroark.riftlib.geo.render;
 
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
+import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.Vec3d;
@@ -124,20 +125,10 @@ public class GeoLocator {
         //multiply rotation quaternions in each chain
         for (int i = chain.size() - 1; i >= 0; i--) {
             GeoBone boneToTest = chain.get(i);
-            double cosY = Math.cos(boneToTest.getRotationY() / 2);
-            double sinY = Math.sin(boneToTest.getRotationY() / 2);
-
-            double cosX = Math.cos(boneToTest.getRotationX() / 2);
-            double sinX = Math.sin(boneToTest.getRotationX() / 2);
-
-            double cosZ = Math.cos(-boneToTest.getRotationZ() / 2);
-            double sinZ = Math.sin(-boneToTest.getRotationZ() / 2);
-
-            Quaternion quatBone = new Quaternion(
-                    (float) (sinX * cosY * cosZ + cosX * sinY * sinZ),
-                    (float) (cosX * sinY * cosZ - sinX * cosY * sinZ),
-                    (float) (cosX * cosY * sinZ + sinX * sinY * cosZ),
-                    (float) (cosX * cosY * cosZ - sinX * sinY * sinZ)
+            Quaternion quatBone = QuaternionUtils.createYXZQuaternion(
+                    boneToTest.getRotationX(),
+                    boneToTest.getRotationY(),
+                    -boneToTest.getRotationZ()
             );
 
             Quaternion.normalise(quatBone, quatBone);
@@ -148,18 +139,10 @@ public class GeoLocator {
         }
 
         //now apply the locator's rotation
-        double cosY = Math.cos(this.rotationY / 2);
-        double sinY = Math.sin(this.rotationY / 2);
-        double cosX = Math.cos(this.rotationX / 2);
-        double sinX = Math.sin(this.rotationX / 2);
-        double cosZ = Math.cos(-this.rotationZ / 2);
-        double sinZ = Math.sin(-this.rotationZ / 2);
-
-        Quaternion quatLocator = new Quaternion(
-                (float) (sinX * cosY * cosZ + cosX * sinY * sinZ),
-                (float) (cosX * sinY * cosZ - sinX * cosY * sinZ),
-                (float) (cosX * cosY * sinZ + sinX * sinY * cosZ),
-                (float) (cosX * cosY * cosZ - sinX * sinY * sinZ)
+        Quaternion quatLocator = QuaternionUtils.createYXZQuaternion(
+                this.rotationX,
+                this.rotationY,
+                -this.rotationZ
         );
 
         Quaternion.normalise(quatLocator, quatLocator);
@@ -196,18 +179,10 @@ public class GeoLocator {
             Vec3d vecDirection = vecPos.subtract(vecPivot);
 
             //create quaternion from current rotations, conjugate it too
-            double cosX = Math.cos(boneToTest.getRotationX() / 2);
-            double sinX = Math.sin(boneToTest.getRotationX() / 2);
-            double cosY = Math.cos(boneToTest.getRotationY() / 2);
-            double sinY = Math.sin(boneToTest.getRotationY() / 2);
-            double cosZ = Math.cos(-boneToTest.getRotationZ() / 2);
-            double sinZ = Math.sin(-boneToTest.getRotationZ() / 2);
-
-            Quaternion quatBoneRot = new Quaternion(
-                    (float) (sinX * cosY * cosZ - cosX * sinY * sinZ),
-                    (float) (cosX * sinY * cosZ + sinX * cosY * sinZ),
-                    (float) (cosX * cosY * sinZ - sinX * sinY * cosZ),
-                    (float) (cosX * cosY * cosZ + sinX * sinY * sinZ)
+            Quaternion quatBoneRot = QuaternionUtils.createXYZQuaternion(
+                    boneToTest.getRotationX(),
+                    boneToTest.getRotationY(),
+                    -boneToTest.getRotationZ()
             );
             Quaternion.normalise(quatBoneRot, quatBoneRot);
 

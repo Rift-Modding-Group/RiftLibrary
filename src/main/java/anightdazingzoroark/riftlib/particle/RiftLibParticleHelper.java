@@ -20,6 +20,10 @@ public class RiftLibParticleHelper {
         ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibCreateParticle(name, x, y, z));
     }
 
+    public static void createParticle(String name, double x, double y, double z, double rotationX, double rotationY) {
+        ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibCreateParticle(name, x, y, z, rotationX, rotationY));
+    }
+
     public static ParticleBuilder getParticleBuilder(String name) {
         Collection<ParticleBuilder> particleBuilders = RiftLibCache.getInstance().getParticleBuilders().values();
 

@@ -20,6 +20,7 @@ import anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate.RiftLib
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeExpressionComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeLoopingComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.RiftLibEmitterLifetimeComponent;
+import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -53,7 +54,7 @@ public class RiftLibParticleEmitter {
     private final MolangParser molangParser;
     private final Random random = new Random();
     public double posX, posY, posZ;
-    public Quaternion rotationQuaternion = new Quaternion(); //assumed to use yxz rotation
+    public Quaternion rotationQuaternion = new Quaternion(); //assumed to use yxz rotation when created from animations and xyz when created from player orientation
     private boolean isDead;
     public RiftLibEmitterShapeComponent emitterShape;
     public RiftLibEmitterRateComponent emitterRate;
@@ -86,6 +87,13 @@ public class RiftLibParticleEmitter {
     public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, AnimatedLocator locator) {
         this(particleBuilder, world, 0, 0, 0);
         this.locator = locator;
+    }
+
+    public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, double x, double y, double z, double rotationX, double rotationY) {
+        this(particleBuilder, world, x, y, z);
+        //the reason for using xyz here is because as far as i was able to see
+        //thats basically the one look related operations use
+        this.rotationQuaternion = QuaternionUtils.createXYZQuaternion(rotationX, rotationY, 0);
     }
 
     public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, double x, double y, double z) {

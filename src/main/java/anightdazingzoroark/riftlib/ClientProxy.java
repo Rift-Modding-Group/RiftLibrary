@@ -3,6 +3,7 @@ package anightdazingzoroark.riftlib;
 import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
 import anightdazingzoroark.example.block.tile.SprinklerTileEntity;
 import anightdazingzoroark.example.client.renderer.armor.GreenArmorRenderer;
+import anightdazingzoroark.example.client.renderer.armor.SatelliteDishHelmetRenderer;
 import anightdazingzoroark.example.client.renderer.entity.BombProjectileRenderer;
 import anightdazingzoroark.example.client.renderer.entity.DragonRenderer;
 import anightdazingzoroark.example.client.renderer.entity.FlyingPufferfishRenderer;
@@ -17,6 +18,7 @@ import anightdazingzoroark.example.entity.hitboxLinker.DragonHitboxLinker;
 import anightdazingzoroark.example.entity.hitboxLinker.FlyingPufferfishHitboxLinker;
 import anightdazingzoroark.example.entity.ridePosLinker.DragonRidePosLinker;
 import anightdazingzoroark.example.item.GreenArmorItem;
+import anightdazingzoroark.example.item.SatelliteDishHelmet;
 import anightdazingzoroark.example.ui.HelloWorldUI;
 import anightdazingzoroark.riftlib.animation.ItemAnimationTicker;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitbox;
@@ -75,6 +77,7 @@ public class ClientProxy extends ServerProxy {
 
             //armor renderer
             GeoArmorRenderer.registerArmorRenderer(GreenArmorItem.class, new GreenArmorRenderer());
+            GeoArmorRenderer.registerArmorRenderer(SatelliteDishHelmet.class, new SatelliteDishHelmetRenderer());
 
             //block renderers
             ClientRegistry.bindTileEntitySpecialRenderer(MerryGoRoundTileEntity.class, new MerryGoRoundRenderer());

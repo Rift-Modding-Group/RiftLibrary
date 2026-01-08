@@ -12,6 +12,15 @@
 					}
 				}
 			}
+		},
+		"animation.satellite_dish_helmet.signal": {
+			"animation_length": 0.5,
+			"particle_effects": {
+				"0.0": {
+					"effect": "riftlib:satellite_dish_signal",
+					"locator": "locator"
+				}
+			}
 		}
 	}
 }

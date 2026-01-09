@@ -11,6 +11,7 @@ public class GreenArmorRenderer extends GeoArmorRenderer<GreenArmorItem> {
 		this.bodyBone = "body";
 		this.rightArmBone = "rightArm";
 		this.leftArmBone = "leftArm";
+        this.hipsBone = "hips";
 		this.rightLegBone = "rightLeg";
 		this.leftLegBone = "leftLeg";
 		this.rightBootBone = "rightFoot";

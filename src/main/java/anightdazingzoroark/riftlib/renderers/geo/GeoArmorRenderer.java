@@ -49,6 +49,7 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 	public String bodyBone = "armorBody";
 	public String rightArmBone = "armorRightArm";
 	public String leftArmBone = "armorLeftArm";
+    public String hipsBone = "armorHipsBone";
 	public String rightLegBone = "armorRightLeg";
 	public String leftLegBone = "armorLeftLeg";
 	public String rightBootBone = "armorRightBoot";
@@ -92,10 +93,10 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 		IBone rightArmBone = this.modelProvider.getBone(this.rightArmBone);
 		IBone leftArmBone = this.modelProvider.getBone(this.leftArmBone);
 		if (this.swingProgress > 0.0F) {
-			rightArmBone.setScaleZ(1.25F);
-			rightArmBone.setScaleX(1.25F);
-			leftArmBone.setScaleZ(1.3F);
-			leftArmBone.setScaleX(1.05F);
+			rightArmBone.setScaleZ(1.25f);
+			rightArmBone.setScaleX(1.25f);
+			leftArmBone.setScaleZ(1.3f);
+			leftArmBone.setScaleX(1.05f);
 		}
 		if (isSneak) {
 			IBone headBone = this.modelProvider.getBone(this.headBone);
@@ -105,18 +106,26 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 			IBone rightBootBone = this.modelProvider.getBone(this.rightBootBone);
 			IBone leftBootBone = this.modelProvider.getBone(this.leftBootBone);
 			try {
-				headBone.setPositionY(headBone.getPositionY() - 1F);
-				bodyBone.setPositionZ(bodyBone.getPositionX() - 0.4F);
-				bodyBone.setPositionY(bodyBone.getPositionX() - 3.5F);
+				headBone.setPositionY(headBone.getPositionY() - 3.5f);
+
+				bodyBone.setPositionZ(bodyBone.getPositionX() - 0.4f);
+				bodyBone.setPositionY(bodyBone.getPositionX() - 3.5f);
+
 				rightArmBone.setPositionY(bodyBone.getPositionX() - 3);
-				rightArmBone.setPositionX(bodyBone.getPositionX() + 0.35F);
+				rightArmBone.setPositionX(bodyBone.getPositionX() + 0.35f);
+
 				leftArmBone.setPositionY(bodyBone.getPositionX() - 3);
-				leftArmBone.setPositionX(bodyBone.getPositionX() - 0.35F);
+				leftArmBone.setPositionX(bodyBone.getPositionX() - 0.35f);
+
 				rightLegBone.setPositionZ(bodyBone.getPositionX() + 4);
+
 				leftLegBone.setPositionZ(bodyBone.getPositionX() + 4);
+
 				rightBootBone.setPositionZ(bodyBone.getPositionX() + 4);
+
 				leftBootBone.setPositionZ(bodyBone.getPositionX() + 4);
-			} catch (Exception e) {
+			}
+            catch (Exception e) {
 				throw new RuntimeException("Could not find an armor bone.", e);
 			}
 		}
@@ -136,7 +145,8 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 		IBone bodyBone = this.modelProvider.getBone(this.bodyBone);
 		IBone rightArmBone = this.modelProvider.getBone(this.rightArmBone);
 		IBone leftArmBone = this.modelProvider.getBone(this.leftArmBone);
-		IBone rightLegBone = this.modelProvider.getBone(this.rightLegBone);
+		IBone hipsBone = this.modelProvider.getBone(this.hipsBone);
+        IBone rightLegBone = this.modelProvider.getBone(this.rightLegBone);
 		IBone leftLegBone = this.modelProvider.getBone(this.leftLegBone);
 		IBone rightBootBone = this.modelProvider.getBone(this.rightBootBone);
 		IBone leftBootBone = this.modelProvider.getBone(this.leftBootBone);
@@ -146,12 +156,14 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 				GeoUtils.copyRotations(this.bipedBody, bodyBone);
 				GeoUtils.copyRotations(this.bipedRightArm, rightArmBone);
 				GeoUtils.copyRotations(this.bipedLeftArm, leftArmBone);
+                GeoUtils.copyRotations(this.bipedBody, hipsBone);
 				GeoUtils.copyRotations(this.bipedRightLeg, rightLegBone);
 				GeoUtils.copyRotations(this.bipedLeftLeg, leftLegBone);
 				GeoUtils.copyRotations(this.bipedRightLeg, rightBootBone);
 				GeoUtils.copyRotations(this.bipedLeftLeg, leftBootBone);
 			}
-		} catch (Exception e) {
+		}
+        catch (Exception e) {
 			throw new RuntimeException("Could not find an armor bone.", e);
 		}
 	}
@@ -193,7 +205,8 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 		IBone bodyBone = this.modelProvider.getBone(this.bodyBone);
 		IBone rightArmBone = this.modelProvider.getBone(this.rightArmBone);
 		IBone leftArmBone = this.modelProvider.getBone(this.leftArmBone);
-		IBone rightLegBone = this.modelProvider.getBone(this.rightLegBone);
+		IBone hipsBone = this.modelProvider.getBone(this.hipsBone);
+        IBone rightLegBone = this.modelProvider.getBone(this.rightLegBone);
 		IBone leftLegBone = this.modelProvider.getBone(this.leftLegBone);
 		IBone rightBootBone = this.modelProvider.getBone(this.rightBootBone);
 		IBone leftBootBone = this.modelProvider.getBone(this.leftBootBone);
@@ -202,30 +215,33 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 			bodyBone.setHidden(true);
 			rightArmBone.setHidden(true);
 			leftArmBone.setHidden(true);
-			rightLegBone.setHidden(true);
+			hipsBone.setHidden(true);
+            rightLegBone.setHidden(true);
 			leftLegBone.setHidden(true);
 			rightBootBone.setHidden(true);
 			leftBootBone.setHidden(true);
 
 			switch (slot) {
-			case HEAD:
-				headBone.setHidden(false);
-				break;
-			case CHEST:
-				bodyBone.setHidden(false);
-				rightArmBone.setHidden(false);
-				leftArmBone.setHidden(false);
-				break;
-			case LEGS:
-				rightLegBone.setHidden(false);
-				leftLegBone.setHidden(false);
-				break;
-			case FEET:
-				rightBootBone.setHidden(false);
-				leftBootBone.setHidden(false);
-				break;
+                case HEAD:
+                    headBone.setHidden(false);
+                    break;
+                case CHEST:
+                    bodyBone.setHidden(false);
+                    rightArmBone.setHidden(false);
+                    leftArmBone.setHidden(false);
+                    break;
+                case LEGS:
+                    hipsBone.setHidden(false);
+                    rightLegBone.setHidden(false);
+                    leftLegBone.setHidden(false);
+                    break;
+                case FEET:
+                    rightBootBone.setHidden(false);
+                    leftBootBone.setHidden(false);
+                    break;
 			}
-		} catch (Exception e) {
+		}
+        catch (Exception e) {
 			throw new RuntimeException("Could not find an armor bone.", e);
 		}
 		return this;

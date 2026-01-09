@@ -7,6 +7,6 @@ import anightdazingzoroark.riftlib.renderers.geo.GeoArmorRenderer;
 public class SatelliteDishHelmetRenderer extends GeoArmorRenderer<SatelliteDishHelmet> {
     public SatelliteDishHelmetRenderer() {
         super(new SatelliteDishHelmetModel());
-        this.headBone = "head";
+        this.setHeadBone("head");
     }
 }

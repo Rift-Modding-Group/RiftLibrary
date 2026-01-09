@@ -47,15 +47,15 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 	private EntityEquipmentSlot armorSlot;
 
 	// Set these to the names of your armor's bones
-	public String headBone = "armorHead";
-	public String bodyBone = "armorBody";
-	public String rightArmBone = "armorRightArm";
-	public String leftArmBone = "armorLeftArm";
-    public String hipsBone = "armorHipsBone";
-	public String rightLegBone = "armorRightLeg";
-	public String leftLegBone = "armorLeftLeg";
-	public String rightBootBone = "armorRightBoot";
-	public String leftBootBone = "armorLeftBoot";
+	private String headBone = "";
+    private String bodyBone = "";
+    private String rightArmBone = "";
+    private String leftArmBone = "";
+    private String hipsBone = "";
+    private String rightLegBone = "";
+    private String leftLegBone = "";
+    private String rightBootBone = "";
+    private String leftBootBone = "";
 
 	public static void registerArmorRenderer(Class<? extends ItemArmor> itemClass, GeoArmorRenderer renderer) {
 		renderers.put(itemClass, renderer);
@@ -92,21 +92,25 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 		this.fitToBiped();
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(0, 0.01f, 0);
-		IBone rightArmBone = this.modelProvider.getBone(this.rightArmBone);
-		IBone leftArmBone = this.modelProvider.getBone(this.leftArmBone);
+		IBone rightArmBone = !this.rightArmBone.isEmpty() ? this.modelProvider.getBone(this.rightArmBone) : null;
+		IBone leftArmBone = !this.leftArmBone.isEmpty() ? this.modelProvider.getBone(this.leftArmBone) : null;
 		if (this.swingProgress > 0.0F) {
-			rightArmBone.setScaleZ(1.25f);
-			rightArmBone.setScaleX(1.25f);
-			leftArmBone.setScaleZ(1.3f);
-			leftArmBone.setScaleX(1.05f);
+            if (rightArmBone != null) {
+                rightArmBone.setScaleZ(1.25f);
+                rightArmBone.setScaleX(1.25f);
+            }
+            if (leftArmBone != null) {
+                leftArmBone.setScaleZ(1.3f);
+                leftArmBone.setScaleX(1.05f);
+            }
 		}
-		if (isSneak) {
-			IBone headBone = this.modelProvider.getBone(this.headBone);
-			IBone bodyBone = this.modelProvider.getBone(this.bodyBone);
-			IBone rightLegBone = this.modelProvider.getBone(this.rightLegBone);
-			IBone leftLegBone = this.modelProvider.getBone(this.leftLegBone);
-			IBone rightBootBone = this.modelProvider.getBone(this.rightBootBone);
-			IBone leftBootBone = this.modelProvider.getBone(this.leftBootBone);
+		if (this.isSneak) {
+			IBone headBone = !this.headBone.isEmpty() ? this.modelProvider.getBone(this.headBone) : null;
+			IBone bodyBone = !this.bodyBone.isEmpty() ? this.modelProvider.getBone(this.bodyBone) : null;
+			IBone rightLegBone = !this.rightLegBone.isEmpty() ? this.modelProvider.getBone(this.rightLegBone) : null;
+			IBone leftLegBone = !this.leftLegBone.isEmpty() ? this.modelProvider.getBone(this.leftLegBone) : null;
+			IBone rightBootBone = !this.rightBootBone.isEmpty() ? this.modelProvider.getBone(this.rightBootBone) : null;
+			IBone leftBootBone = !this.leftBootBone.isEmpty() ? this.modelProvider.getBone(this.leftBootBone) : null;
 
             if (headBone != null) headBone.setPositionY(headBone.getPositionY() - 3.5f);
 
@@ -167,6 +171,7 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 
     private void tryFitBoneToBiped(ModelRenderer bipedBone, String boneName) {
         if (bipedBone == null) RiftLib.LOGGER.warn("Biped bone to fit to cannot be null");
+        if (boneName.isEmpty()) return;
         IBone boneToFit = this.modelProvider.getBone(boneName);
         if (boneToFit != null) GeoUtils.copyRotations(bipedBone, boneToFit);
     }
@@ -237,6 +242,7 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 	}
 
     private void tryHideBone(String boneName, boolean value) {
+        if (boneName.isEmpty()) return;
         IBone boneToHide = this.modelProvider.getBone(boneName);
         if (boneToHide != null) boneToHide.setHidden(value);
     }
@@ -247,4 +253,74 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 				itemStack.hasTagCompound() ? itemStack.getTagCompound().toString() : 1,
 				this.entityLiving.getUniqueID().toString());
 	}
+
+    //setting bones here
+    public void setHeadBone(String name) {
+        if (name == null) RiftLib.LOGGER.warn("Cannot assign null as bone name");
+        this.headBone = name;
+    }
+
+    public void setBodyBone(String name) {
+        if (name == null) {
+            RiftLib.LOGGER.warn("Cannot assign null as bone name");
+            return;
+        }
+        this.bodyBone = name;
+    }
+
+    public void setRightArmBone(String name) {
+        if (name == null) {
+            RiftLib.LOGGER.warn("Cannot assign null as bone name");
+            return;
+        }
+        this.rightArmBone = name;
+    }
+
+    public void setLeftArmBone(String name) {
+        if (name == null) {
+            RiftLib.LOGGER.warn("Cannot assign null as bone name");
+            return;
+        }
+        this.leftArmBone = name;
+    }
+
+    public void setHipsBone(String name) {
+        if (name == null) {
+            RiftLib.LOGGER.warn("Cannot assign null as bone name");
+            return;
+        }
+        this.hipsBone = name;
+    }
+
+    public void setRightLegBone(String name) {
+        if (name == null) {
+            RiftLib.LOGGER.warn("Cannot assign null as bone name");
+            return;
+        }
+        this.rightLegBone = name;
+    }
+
+    public void setLeftLegBone(String name) {
+        if (name == null) {
+            RiftLib.LOGGER.warn("Cannot assign null as bone name");
+            return;
+        }
+        this.leftLegBone = name;
+    }
+
+    public void setRightBootBone(String name) {
+        if (name == null) {
+            RiftLib.LOGGER.warn("Cannot assign null as bone name");
+            return;
+        }
+        this.rightBootBone = name;
+    }
+
+    public void setLeftBootBone(String name) {
+        if (name == null) {
+            RiftLib.LOGGER.warn("Cannot assign null as bone name");
+            return;
+        }
+        this.leftBootBone = name;
+    }
 }

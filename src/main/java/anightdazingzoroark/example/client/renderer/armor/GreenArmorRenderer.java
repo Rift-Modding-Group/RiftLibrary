@@ -7,14 +7,14 @@ import anightdazingzoroark.riftlib.renderers.geo.GeoArmorRenderer;
 public class GreenArmorRenderer extends GeoArmorRenderer<GreenArmorItem> {
 	public GreenArmorRenderer() {
 		super(new GreenArmorModel());
-		this.headBone = "head";
-		this.bodyBone = "body";
-		this.rightArmBone = "rightArm";
-		this.leftArmBone = "leftArm";
-        this.hipsBone = "hips";
-		this.rightLegBone = "rightLeg";
-		this.leftLegBone = "leftLeg";
-		this.rightBootBone = "rightFoot";
-		this.leftBootBone = "leftFoot";
+		this.setHeadBone("head");
+		this.setBodyBone("body");
+		this.setRightArmBone("rightArm");
+		this.setLeftArmBone("leftArm");
+        this.setHipsBone("hips");
+		this.setRightLegBone("rightLeg");
+		this.setLeftLegBone("leftLeg");
+		this.setRightBootBone("rightFoot");
+		this.setLeftBootBone("leftFoot");
 	}
 }

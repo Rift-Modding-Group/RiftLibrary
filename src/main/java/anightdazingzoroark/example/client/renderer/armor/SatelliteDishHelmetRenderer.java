@@ -8,13 +8,5 @@ public class SatelliteDishHelmetRenderer extends GeoArmorRenderer<SatelliteDishH
     public SatelliteDishHelmetRenderer() {
         super(new SatelliteDishHelmetModel());
         this.headBone = "head";
-        this.bodyBone = "body";
-        this.rightArmBone = "rightArm";
-        this.leftArmBone = "leftArm";
-        this.hipsBone = "hips";
-        this.rightLegBone = "rightLeg";
-        this.leftLegBone = "leftLeg";
-        this.rightBootBone = "rightFoot";
-        this.leftBootBone = "leftFoot";
     }
 }

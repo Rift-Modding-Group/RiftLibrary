@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.core;
 
+import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.core.event.predicate.AnimationEvent;
 import anightdazingzoroark.riftlib.core.processor.AnimationProcessor;
@@ -28,9 +29,8 @@ public interface IAnimatableModel<E> {
 	 */
 	default IBone getBone(String boneName) {
 		IBone bone = this.getAnimationProcessor().getBone(boneName);
-		if (bone == null) {
-			throw new RuntimeException("Could not find bone: " + boneName);
-		}
+	    //todo: maybe add to config omitting errors from here
+		if (bone == null) RiftLib.LOGGER.warn("Cannot find bone {}.", boneName);
 		return bone;
 	}
 

@@ -145,9 +145,9 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
                 leftBootBone.setPositionZ(bodyBone.getPositionX() + 4);
             }
 		}
-		Minecraft.getMinecraft().renderEngine.bindTexture(getTextureLocation(currentArmorItem));
-		Color renderColor = getRenderColor(currentArmorItem, partialTicks);
-		render(model, currentArmorItem, partialTicks,
+		Minecraft.getMinecraft().renderEngine.bindTexture(this.getTextureLocation(this.currentArmorItem));
+		Color renderColor = this.getRenderColor(this.currentArmorItem, partialTicks);
+		render(model, this.currentArmorItem, partialTicks,
                 (float) renderColor.getRed() / 255f,
 				(float) renderColor.getGreen() / 255f, (float) renderColor.getBlue() / 255f,
 				(float) renderColor.getAlpha() / 255);

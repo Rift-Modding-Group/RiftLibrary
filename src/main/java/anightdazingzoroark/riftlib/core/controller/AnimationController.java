@@ -641,7 +641,7 @@ public class AnimationController<T extends IAnimatable> {
 
     public EventKeyFrame.SoundEventKeyFrame getLastSoundEvent() {
         EventKeyFrame.SoundEventKeyFrame toReturn = this.lastSoundEvent;
-        this.lastParticleEvent = null;
+        this.lastSoundEvent = null;
         return toReturn;
     }
 

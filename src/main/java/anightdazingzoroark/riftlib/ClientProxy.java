@@ -30,6 +30,8 @@ import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
 import anightdazingzoroark.riftlib.renderers.geo.GeoArmorRenderer;
 import anightdazingzoroark.riftlib.renderers.geo.GeoReplacedEntityRenderer;
+import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffect;
+import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffectRegistry;
 import anightdazingzoroark.riftlib.ui.RiftLibUI;
 import anightdazingzoroark.riftlib.ui.RiftLibUIRegistry;
 import net.minecraft.client.Minecraft;
@@ -53,6 +55,7 @@ public class ClientProxy extends ServerProxy {
         RenderingRegistry.registerEntityRenderingHandler(EntityHitbox.class, new EntityHitboxRenderer.Factory());
         MinecraftForge.EVENT_BUS.register(new ParticleTicker());
         MinecraftForge.EVENT_BUS.register(new ItemAnimationTicker());
+        MinecraftForge.EVENT_BUS.register(new RiftLibSoundEffectRegistry());
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {
@@ -76,6 +79,12 @@ public class ClientProxy extends ServerProxy {
             //block renderers
             ClientRegistry.bindTileEntitySpecialRenderer(MerryGoRoundTileEntity.class, new MerryGoRoundRenderer());
             ClientRegistry.bindTileEntitySpecialRenderer(SprinklerTileEntity.class, new SprinklerRenderer());
+
+            //sound effects
+            RiftLibSoundEffectRegistry.registerSoundEffect(
+                    "entity.creeper.primed",
+                    new RiftLibSoundEffect("bombLaunch")
+            );
         }
     }
 

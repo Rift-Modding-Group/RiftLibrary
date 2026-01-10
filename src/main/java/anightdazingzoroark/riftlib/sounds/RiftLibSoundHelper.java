@@ -9,6 +9,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
 
 public class RiftLibSoundHelper {
     public static void playSound(IAnimatable source, AnimatedLocator locator, String soundName) {
@@ -17,13 +18,15 @@ public class RiftLibSoundHelper {
         SoundEvent soundEvent = RiftLibSoundEffectRegistry.soundEffectMap.get(soundName).right;
         RiftLibSoundEffect soundEffect = RiftLibSoundEffectRegistry.soundEffectMap.get(soundName).left;
 
+        BlockPos sourcePos = getPosFromAnimatable(source);
+
         Minecraft.getMinecraft().world.playSound(
-            null,
-                0, 0, 0,
-                soundEvent,
-                getSoundCategoryFromAnimatable(source),
-                soundEffect.getVolume(),
-                soundEffect.getPitch()
+            Minecraft.getMinecraft().player,
+            sourcePos.getX(), sourcePos.getY(), sourcePos.getZ(),
+            soundEvent,
+            getSoundCategoryFromAnimatable(source),
+            soundEffect.getVolume(),
+            soundEffect.getPitch()
         );
     }
 
@@ -35,6 +38,14 @@ public class RiftLibSoundHelper {
         if (targetPlayer == null) return;
 
         //todo: use packets do deal with this
+    }
+
+    private static BlockPos getPosFromAnimatable(IAnimatable source) {
+        if (source instanceof Entity) {
+            Entity entity = (Entity) source;
+            return entity.getPosition();
+        }
+        return new BlockPos(0, 0, 0);
     }
 
     private static SoundCategory getSoundCategoryFromAnimatable(IAnimatable source) {

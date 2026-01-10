@@ -53,6 +53,13 @@ public class BombProjectile extends RiftLibProjectile {
                 return PlayState.CONTINUE;
             }
         }));
+        data.addAnimationController(new AnimationController(this, "bomb_sounds", 0, new AnimationController.IAnimationPredicate() {
+            @Override
+            public PlayState test(AnimationEvent event) {
+                event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.bomb.sounds", LoopType.PLAY_ONCE));
+                return PlayState.CONTINUE;
+            }
+        }));
     }
 
     @Override

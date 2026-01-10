@@ -14,6 +14,21 @@ public class RiftLibSoundEffectRegistry {
     public static final Map<String, ImmutablePair<RiftLibSoundEffect, SoundEvent>> soundEffectMap = new HashMap<>();
 
     /**
+     * Register a vanilla sound effect for use in animations
+     *
+     * @param soundIdentifier The identifier of the sound as defined in sounds.json
+     * @param soundEffect The sound effect associated with the sound to register
+     */
+    public static void registerSoundEffect(String soundIdentifier, RiftLibSoundEffect soundEffect) {
+        //register to vanilla game
+        ResourceLocation soundID = new ResourceLocation("minecraft", soundIdentifier);
+        SoundEvent soundEvent = SoundEvent.REGISTRY.getObject(soundID);
+
+        //add to map
+        soundEffectMap.put(soundEffect.soundEffectName, new ImmutablePair<>(soundEffect, soundEvent));
+    }
+
+    /**
      * Register sound effects meant for use in animations
      *
      * @param modID The id of your mod

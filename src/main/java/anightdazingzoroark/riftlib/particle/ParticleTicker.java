@@ -36,8 +36,6 @@ public class ParticleTicker {
         }
     }
 
-    //todo: maybe change this so particles attached to entities don't
-    //need to be rendered using this
     @SubscribeEvent
     public void onRenderWorldLast(RenderWorldLastEvent event) {
         float partialTicks = event.getPartialTicks();

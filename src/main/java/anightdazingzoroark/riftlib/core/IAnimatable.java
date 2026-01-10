@@ -7,6 +7,9 @@ package anightdazingzoroark.riftlib.core;
 import anightdazingzoroark.riftlib.core.manager.AnimationData;
 import anightdazingzoroark.riftlib.core.manager.AnimationFactory;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * This interface must be applied to any object that wants to be animated
  */
@@ -20,5 +23,23 @@ public interface IAnimatable {
 		return 1f;
 	}
 
-    //todo: from now on molang variables are to be initialized here
+    /**
+     * This only runs once and will run when this object just started rendering
+     *
+     * @return A Map of Strings and AnimatableValues. The string is to be the name of the
+     * variable, while the AnimatableValue is to be its initial starting value
+     */
+    default Map<String, AnimatableValue> createAnimationVariables() {
+        return new HashMap<>();
+    }
+
+    /**
+     * This runs as long as the rendered object gets rendered
+     *
+     * @return A Map of Strings and AnimatableValues. The string is to be the name of the
+     * variable, while the AnimatableValue is to be the new value
+     */
+    default Map<String, AnimatableValue> updateAnimationVariables() {
+        return new HashMap<>();
+    }
 }

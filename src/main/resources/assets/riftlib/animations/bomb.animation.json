@@ -11,13 +11,13 @@
 			}
 		},
         "animation.bomb.sounds": {
-          "animation_length": 0.5,
-          "sound_effects": {
-            "0.0": {
-              "effect": "bombLaunch",
-              "locator": "locator"
+            "animation_length": 0.5,
+            "sound_effects": {
+                "0.0": {
+                  "effect": "bombLaunch",
+                  "locator": "locator"
+                }
             }
-          }
         }
 	}
 }

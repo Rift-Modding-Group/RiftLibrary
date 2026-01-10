@@ -168,6 +168,16 @@ public class RiftLibParticleEmitter {
         //set death based on if it has an animated locator and if said animatedlocator is dead
         if (this.locator != null && !this.locator.isValid()) this.killEmitter();
 
+        //set position and quaternion based on animated locator
+        if (this.locator != null) {
+            Vec3d locatorPos = this.locator.getWorldSpacePosition();
+            this.posX = locatorPos.x;
+            this.posY = locatorPos.y;
+            this.posZ = locatorPos.z;
+
+            this.rotationQuaternion = this.locator.getWorldSpaceYXZQuaternion();
+        }
+
         //create particles based on rate and ability to create them
         if (this.canCreateParticles() && !this.isDead) {
             if (this.emitterRate instanceof EmitterInstantComponent) {

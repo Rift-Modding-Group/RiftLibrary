@@ -9,7 +9,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 public class RiftLibSoundHelper {
     public static void playSound(IAnimatable source, AnimatedLocator locator, String soundName) {
@@ -18,11 +18,11 @@ public class RiftLibSoundHelper {
         SoundEvent soundEvent = RiftLibSoundEffectRegistry.soundEffectMap.get(soundName).right;
         RiftLibSoundEffect soundEffect = RiftLibSoundEffectRegistry.soundEffectMap.get(soundName).left;
 
-        BlockPos sourcePos = getPosFromAnimatable(source);
+        Vec3d locatorPos = locator.getWorldSpacePosition();
 
         Minecraft.getMinecraft().world.playSound(
             Minecraft.getMinecraft().player,
-            sourcePos.getX(), sourcePos.getY(), sourcePos.getZ(),
+            locatorPos.x, locatorPos.y, locatorPos.z,
             soundEvent,
             getSoundCategoryFromAnimatable(source),
             soundEffect.getVolume(),
@@ -38,14 +38,6 @@ public class RiftLibSoundHelper {
         if (targetPlayer == null) return;
 
         //todo: use packets do deal with this
-    }
-
-    private static BlockPos getPosFromAnimatable(IAnimatable source) {
-        if (source instanceof Entity) {
-            Entity entity = (Entity) source;
-            return entity.getPosition();
-        }
-        return new BlockPos(0, 0, 0);
     }
 
     private static SoundCategory getSoundCategoryFromAnimatable(IAnimatable source) {

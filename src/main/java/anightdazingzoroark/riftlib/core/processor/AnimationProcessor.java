@@ -135,8 +135,6 @@ public class AnimationProcessor<T extends IAnimatable> {
 							MathUtil.lerpValues(sZPoint, controller.easingType, controller.customEasingMethod)
 					);
 				}
-
-
 			}
 
             //animation effects

@@ -20,6 +20,8 @@ public class AnimatedLocator {
     private final GeoLocator locator;
     private final IAnimatable iAnimatable;
     private final List<RiftLibParticleEmitter> particleEmitterList = new ArrayList<>();
+    private Vec3d worldSpacePos = new Vec3d(0, 0, 0);
+    private Quaternion worldSpaceYXZQuaternion = new Quaternion();
     private boolean killed;
 
     public AnimatedLocator(GeoLocator geoLocator, IAnimatable iAnimatable) {
@@ -46,11 +48,27 @@ public class AnimatedLocator {
         return this.locator.name;
     }
 
-    public Vec3d getPosition() {
+    public void setWorldSpacePosition(double x, double y, double z) {
+        this.worldSpacePos = new Vec3d(x, y, z);
+    }
+
+    public Vec3d getWorldSpacePosition() {
+        return this.worldSpacePos;
+    }
+
+    public Vec3d getModelSpacePosition() {
         return this.locator.getPosition();
     }
 
-    public Quaternion getYXZQuaternion() {
+    public void setWorldSpaceYXZQuaternion(Quaternion quaternion) {
+        this.worldSpaceYXZQuaternion = quaternion;
+    }
+
+    public Quaternion getWorldSpaceYXZQuaternion() {
+        return this.worldSpaceYXZQuaternion;
+    }
+
+    public Quaternion getModelSpaceYXZQuaternion() {
         return this.locator.getYXZQuaternion();
     }
 

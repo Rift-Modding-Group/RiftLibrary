@@ -106,8 +106,8 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 	}
 
     @Override
-    public void renderAttachedParticles(T animatable) {
+    public void repositionAnimatedLocators(T animatable) {
         if (this.transformType == null || this.transformType == ItemCameraTransforms.TransformType.GUI) return;
-        IGeoRenderer.super.renderAttachedParticles(animatable);
+        IGeoRenderer.super.repositionAnimatedLocators(animatable);
     }
 }

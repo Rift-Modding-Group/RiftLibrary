@@ -14,7 +14,7 @@ public class RiftLibSoundEffectRegistry {
     public static final Map<String, ImmutablePair<RiftLibSoundEffect, SoundEvent>> soundEffectMap = new HashMap<>();
 
     /**
-     * Register a vanilla sound effect for use in animations
+     * Register a vanilla sound effect for use in animations.
      *
      * @param soundIdentifier The identifier of the sound as defined in sounds.json
      * @param soundEffect The sound effect associated with the sound to register
@@ -29,7 +29,7 @@ public class RiftLibSoundEffectRegistry {
     }
 
     /**
-     * Register sound effects meant for use in animations
+     * Register sound effects meant for use in animations.
      *
      * @param modID The id of your mod
      * @param soundIdentifier The identifier of your sound as defined in sounds.json

@@ -187,7 +187,6 @@ public interface IGeoRenderer<T> {
             //emitter.render(partialTicks);
             RenderHelper.enableStandardItemLighting();
             GL11.glPopMatrix();
-
         }
     }
 

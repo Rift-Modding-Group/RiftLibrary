@@ -30,18 +30,18 @@ import java.nio.charset.Charset;
 import java.util.Map;
 
 public class RiftLibLoader {
-    private static final Gson gson = new GsonBuilder()
+    private final Gson gson = new GsonBuilder()
             .registerTypeAdapter(RawUVUnion.class, new RawUVUnion.Deserializer())
             .registerTypeAdapter(RawAnimationChannel.class, new RawAnimationChannel.Deserializer())
             .registerTypeAdapter(RawParticleComponent.class, new RawParticleComponent.Deserializer())
             .registerTypeAdapter(RawModelLocatorList.class, new RawModelLocatorList.Deserialize())
             .create();
 
-	public static GeoModel loadGeoModel(IResourceManager resourceManager, ResourceLocation location) {
+	public GeoModel loadGeoModel(IResourceManager resourceManager, ResourceLocation location) {
 		try {
 			// Deserialize from json into basic json objects, bones are still stored as a
 			// flat list
-			RawGeoModel rawModel = gson.fromJson(getResourceAsString(location, resourceManager), RawGeoModel.class);;
+			RawGeoModel rawModel = this.gson.fromJson(getResourceAsString(location, resourceManager), RawGeoModel.class);;
 
             if (FormatVersion.forValue(rawModel.format_version) != FormatVersion.VERSION_1_12_0) {
 				throw new GeoModelException(location, "Wrong geometry json version, expected 1.12.0");
@@ -60,11 +60,11 @@ public class RiftLibLoader {
 		}
 	}
 
-    public static AnimationFile loadAnimationFile(MolangParser parser, IResourceManager manager, ResourceLocation location) {
+    public AnimationFile loadAnimationFile(MolangParser parser, IResourceManager manager, ResourceLocation location) {
         try {
             AnimationFile animationFile = new AnimationFile();
 
-            RawAnimationFile rawAnimationFile = gson.fromJson(getResourceAsString(location, manager), RawAnimationFile.class);
+            RawAnimationFile rawAnimationFile = this.gson.fromJson(getResourceAsString(location, manager), RawAnimationFile.class);
             Map<String, RawAnimationFile.RawAnimation> rawAnimationMap = rawAnimationFile.rawAnimations;
             for (Map.Entry<String, RawAnimationFile.RawAnimation> rawAnimation : rawAnimationMap.entrySet()) {
                 Animation animation = AnimationConstructor.getAnimationFromRawAnimationEntry(rawAnimation, parser);
@@ -79,9 +79,9 @@ public class RiftLibLoader {
         }
     }
 
-    public static HitboxDefinitionList loadHitboxDefinitionList(IResourceManager resourceManager, ResourceLocation location) {
+    public HitboxDefinitionList loadHitboxDefinitionList(IResourceManager resourceManager, ResourceLocation location) {
         try {
-            RawHitboxDefinition rawHitboxDefinition = gson.fromJson(getResourceAsString(location, resourceManager), RawHitboxDefinition.class);
+            RawHitboxDefinition rawHitboxDefinition = this.gson.fromJson(getResourceAsString(location, resourceManager), RawHitboxDefinition.class);
             return HitboxConstructor.createHitboxDefinitionList(rawHitboxDefinition);
         }
         catch (Exception e) {
@@ -90,9 +90,9 @@ public class RiftLibLoader {
         }
     }
 
-    public static ParticleBuilder loadParticle(MolangParser parser, IResourceManager resourceManager, ResourceLocation location) {
+    public ParticleBuilder loadParticle(MolangParser parser, IResourceManager resourceManager, ResourceLocation location) {
         try {
-            RawParticle rawParticle = gson.fromJson(getResourceAsString(location, resourceManager), RawParticle.class);
+            RawParticle rawParticle = this.gson.fromJson(getResourceAsString(location, resourceManager), RawParticle.class);
             return ParticleConstructor.createParticleBuilder(location.getNamespace(), rawParticle, parser);
         }
         catch (Exception e) {
@@ -101,7 +101,7 @@ public class RiftLibLoader {
         }
     }
 
-    public static String getResourceAsString(ResourceLocation location, IResourceManager manager) {
+    private String getResourceAsString(ResourceLocation location, IResourceManager manager) {
         try (InputStream inputStream = manager.getResource(location).getInputStream()) {
             return IOUtils.toString(inputStream, Charset.defaultCharset());
         }

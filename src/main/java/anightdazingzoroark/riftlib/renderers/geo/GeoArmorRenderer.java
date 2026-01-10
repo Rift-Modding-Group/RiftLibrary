@@ -46,7 +46,6 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 	private ItemStack itemStack;
 	private EntityEquipmentSlot armorSlot;
 
-	// Set these to the names of your armor's bones
 	private String headBone = "";
     private String bodyBone = "";
     private String rightArmBone = "";

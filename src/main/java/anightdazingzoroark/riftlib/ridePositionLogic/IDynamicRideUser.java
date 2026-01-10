@@ -1,6 +1,6 @@
 package anightdazingzoroark.riftlib.ridePositionLogic;
 
-import anightdazingzoroark.riftlib.RiftLibLinkerRegistry;
+import anightdazingzoroark.riftlib.RiftLibRegistry;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
@@ -20,7 +20,7 @@ public interface IDynamicRideUser {
     //this must be placed in the constructor of the entity
     //and must be the entity itself being entered
     default <T extends Entity & IAnimatable & IDynamicRideUser> void initializeRiderPositions(T entity) {
-        DynamicRidePosLinker dynamicRidePosLinker = RiftLibLinkerRegistry.INSTANCE.dynamicRidePosLinkerMap.get(entity.getClass());
+        DynamicRidePosLinker dynamicRidePosLinker = RiftLibRegistry.INSTANCE.dynamicRidePosLinkerMap.get(entity.getClass());
         if (dynamicRidePosLinker == null) return;
         this.createRidePositions(dynamicRidePosLinker.getDynamicRideDefinitions(entity).finalOrderedRiderPositions());
     }

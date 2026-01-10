@@ -35,7 +35,8 @@ import anightdazingzoroark.riftlib.molang.MolangRegistrar;
 public class RiftLibCache implements IResourceManagerReloadListener {
 	private static RiftLibCache INSTANCE;
 
-    //todo: each instance of IAnimatable is to have their own parser instead of sharing this one parser
+    private final RiftLibLoader loader;
+
 	public final MolangParser parser = new MolangParser();
 
 	public HashMap<ResourceLocation, AnimationFile> getAnimations() {
@@ -73,6 +74,7 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 
 	protected RiftLibCache() {
 		MolangRegistrar.registerVars(this.parser);
+        this.loader = new RiftLibLoader();
 	}
 
 	public static RiftLibCache getInstance() {
@@ -97,7 +99,7 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 			for (ResourceLocation location : this.getLocations(pack, "animations",
 					fileName -> fileName.endsWith(".json"))) {
 				try {
-					tempAnimations.put(location, RiftLibLoader.loadAnimationFile(this.parser, resourceManager, location));
+					tempAnimations.put(location, this.loader.loadAnimationFile(this.parser, resourceManager, location));
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -108,7 +110,7 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 			//this must be where the model files are being loaded
 			for (ResourceLocation location : this.getLocations(pack, "geo", fileName -> fileName.endsWith(".json"))) {
 				try {
-					tempModels.put(location, RiftLibLoader.loadGeoModel(resourceManager, location));
+					tempModels.put(location, this.loader.loadGeoModel(resourceManager, location));
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -119,7 +121,7 @@ public class RiftLibCache implements IResourceManagerReloadListener {
 			//load the hitbox files
 			for (ResourceLocation location : this.getLocations(pack, "hitboxes", filename -> filename.endsWith(".json"))) {
 				try {
-					tempHitboxes.put(location, RiftLibLoader.loadHitboxDefinitionList(resourceManager, location));
+					tempHitboxes.put(location, this.loader.loadHitboxDefinitionList(resourceManager, location));
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -131,7 +133,7 @@ public class RiftLibCache implements IResourceManagerReloadListener {
             for (ResourceLocation location : this.getLocations(pack, "particles", filename -> filename.endsWith(".json"))) {
                 try {
                     //temporarily like this coz it a print only void method
-                    tempParticleBuilders.put(location, RiftLibLoader.loadParticle(this.parser, resourceManager, location));
+                    tempParticleBuilders.put(location, this.loader.loadParticle(this.parser, resourceManager, location));
                 }
                 catch (Exception e) {
                     e.printStackTrace();

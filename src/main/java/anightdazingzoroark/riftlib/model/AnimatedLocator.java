@@ -4,6 +4,7 @@ import anightdazingzoroark.riftlib.ClientProxy;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
+import anightdazingzoroark.riftlib.particle.ParticleTicker;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
@@ -56,7 +57,7 @@ public class AnimatedLocator {
     public void createParticleEmitter(ParticleBuilder builder) {
         RiftLibParticleEmitter emitterToAdd = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, this);
         this.particleEmitterList.add(emitterToAdd);
-        ClientProxy.EMITTER_LIST.add(emitterToAdd);
+        ParticleTicker.EMITTER_LIST.add(emitterToAdd);
     }
 
     public void removeParticleEmitter(RiftLibParticleEmitter emitter) {

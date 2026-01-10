@@ -1,5 +1,10 @@
 package anightdazingzoroark.example.entity;
 
+import anightdazingzoroark.riftlib.core.PlayState;
+import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
+import anightdazingzoroark.riftlib.core.builder.LoopType;
+import anightdazingzoroark.riftlib.core.controller.AnimationController;
+import anightdazingzoroark.riftlib.core.event.predicate.AnimationEvent;
 import anightdazingzoroark.riftlib.core.manager.AnimationData;
 import anightdazingzoroark.riftlib.projectile.RiftLibProjectile;
 import net.minecraft.entity.EntityLivingBase;
@@ -41,7 +46,13 @@ public class BombProjectile extends RiftLibProjectile {
 
     @Override
     public void registerControllers(AnimationData data) {
-
+        data.addAnimationController(new AnimationController(this, "bomb_flames", 0, new AnimationController.IAnimationPredicate() {
+            @Override
+            public PlayState test(AnimationEvent event) {
+                event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.bomb.flame_particles", LoopType.PLAY_ONCE));
+                return PlayState.CONTINUE;
+            }
+        }));
     }
 
     @Override

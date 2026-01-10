@@ -249,9 +249,13 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 
 	@Override
 	public Integer getUniqueID(T animatable) {
-		return Objects.hash(this.armorSlot, itemStack.getItem(), itemStack.getCount(),
-				itemStack.hasTagCompound() ? itemStack.getTagCompound().toString() : 1,
-				this.entityLiving.getUniqueID().toString());
+		return Objects.hash(
+                this.armorSlot,
+                this.itemStack.getItem(),
+                this.itemStack.getCount(),
+				this.itemStack.hasTagCompound() ? this.itemStack.getTagCompound().toString() : 1,
+				this.entityLiving.getUniqueID().toString()
+        );
 	}
 
     //setting bones here

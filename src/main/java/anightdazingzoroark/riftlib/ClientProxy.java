@@ -45,13 +45,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class ClientProxy extends ServerProxy {
-    public static final List<RiftLibParticleEmitter> EMITTER_LIST = new ArrayList<>();
-    public static int EMITTER_ID = 0;
-
     @SideOnly(Side.CLIENT)
     @Override
     public void preInit(FMLPreInitializationEvent e) {
@@ -128,7 +122,7 @@ public class ClientProxy extends ServerProxy {
         //create an emitter
         if (builder != null) {
             RiftLibParticleEmitter emitter = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, x, y, z);
-            EMITTER_LIST.add(emitter);
+            ParticleTicker.EMITTER_LIST.add(emitter);
         }
     }
 
@@ -141,7 +135,7 @@ public class ClientProxy extends ServerProxy {
         //create an emitter
         if (builder != null) {
             RiftLibParticleEmitter emitter = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, x, y, z, rotationX, rotationY);
-            EMITTER_LIST.add(emitter);
+            ParticleTicker.EMITTER_LIST.add(emitter);
         }
     }
 }

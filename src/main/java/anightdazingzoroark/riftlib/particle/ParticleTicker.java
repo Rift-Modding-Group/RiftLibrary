@@ -1,20 +1,28 @@
 package anightdazingzoroark.riftlib.particle;
 
-import anightdazingzoroark.riftlib.ClientProxy;
 import anightdazingzoroark.riftlib.molang.MolangException;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class ParticleTicker {
+    public static final List<RiftLibParticleEmitter> EMITTER_LIST = new ArrayList<>();
+    public static int EMITTER_ID;
+
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) throws MolangException {
         if (event.phase != TickEvent.Phase.END) return;
 
-        Iterator<RiftLibParticleEmitter> it = ClientProxy.EMITTER_LIST.iterator();
+        //do not tick if the game is paused
+        if (Minecraft.getMinecraft().isGamePaused()) return;
+
+        Iterator<RiftLibParticleEmitter> it = EMITTER_LIST.iterator();
         while (it.hasNext()) {
             RiftLibParticleEmitter emitter = it.next();
             emitter.update();
@@ -34,7 +42,7 @@ public class ParticleTicker {
     public void onRenderWorldLast(RenderWorldLastEvent event) {
         float partialTicks = event.getPartialTicks();
 
-        for (RiftLibParticleEmitter emitter : ClientProxy.EMITTER_LIST) {
+        for (RiftLibParticleEmitter emitter : EMITTER_LIST) {
             if (emitter == null) continue;
             emitter.render(partialTicks);
         }
@@ -42,8 +50,6 @@ public class ParticleTicker {
 
     @SubscribeEvent
     public void onWorldUnload(WorldEvent.Unload event) {
-        if (event.getWorld().isRemote) {
-            ClientProxy.EMITTER_LIST.clear();
-        }
+        if (event.getWorld().isRemote) EMITTER_LIST.clear();
     }
 }

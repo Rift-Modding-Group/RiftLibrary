@@ -102,7 +102,7 @@ public class RiftLibParticleEmitter {
         this.material = particleBuilder.material;
         this.molangParser = particleBuilder.molangParser;
         this.rawParticleComponents = particleBuilder.rawParticleComponents;
-        this.emitterId = ClientProxy.EMITTER_ID++;
+        this.emitterId = ParticleTicker.EMITTER_ID++;
         this.world = world;
         this.posX = x;
         this.posY = y;

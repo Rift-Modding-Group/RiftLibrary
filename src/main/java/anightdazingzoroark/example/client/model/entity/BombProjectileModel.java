@@ -18,6 +18,6 @@ public class BombProjectileModel extends AnimatedGeoModel<BombProjectile> {
 
     @Override
     public ResourceLocation getAnimationFileLocation(BombProjectile animatable) {
-        return null;
+        return new ResourceLocation(RiftLib.ModID, "animations/bomb.animation.json");
     }
 }

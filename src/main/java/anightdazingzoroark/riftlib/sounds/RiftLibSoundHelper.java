@@ -2,17 +2,18 @@ package anightdazingzoroark.riftlib.sounds;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.item.GeoArmorItem;
-import anightdazingzoroark.riftlib.util.MathUtils;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 
 public class RiftLibSoundHelper {
-    public static void playSound(IAnimatable source, String locatorName, String soundName) {
+    public static void playSound(IAnimatable source, AnimatedLocator locator, String soundName) {
+        if (!RiftLibSoundEffectRegistry.soundEffectMap.containsKey(soundName)) return;
+
         SoundEvent soundEvent = RiftLibSoundEffectRegistry.soundEffectMap.get(soundName).right;
         RiftLibSoundEffect soundEffect = RiftLibSoundEffectRegistry.soundEffectMap.get(soundName).left;
 

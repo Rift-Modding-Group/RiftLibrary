@@ -3,12 +3,6 @@
 	"animations": {
 		"animation.bomb.flame_particles": {
 			"animation_length": 0.5,
-			"sound_effects": {
-				"0.0": {
-					"effect": "test",
-					"locator": "locator"
-				}
-			},
 			"particle_effects": {
 				"0.0": {
 					"effect": "bomb_flame",

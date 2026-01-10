@@ -4,10 +4,7 @@ import anightdazingzoroark.riftlib.core.ConstantValue;
 import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.easing.EasingType;
-import anightdazingzoroark.riftlib.core.keyframe.BoneAnimation;
-import anightdazingzoroark.riftlib.core.keyframe.KeyFrame;
-import anightdazingzoroark.riftlib.core.keyframe.ParticleEventKeyFrame;
-import anightdazingzoroark.riftlib.core.keyframe.VectorKeyFrameList;
+import anightdazingzoroark.riftlib.core.keyframe.*;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationChannel;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationFile;
 import anightdazingzoroark.riftlib.molang.MolangException;
@@ -27,41 +24,30 @@ public class AnimationConstructor {
         toReturn.loop = rawAnimation.getValue().loop == Boolean.TRUE ? LoopType.LOOP : LoopType.PLAY_ONCE;
         toReturn.animationLength = rawAnimation.getValue().animationLength != null ? rawAnimation.getValue().animationLength * 20 : null; //if length is null, it will be calculated later based on the provided info
 
-        //until i figure out how to implement this later on, this will be left as a comment
-        //for reference when i add this back in somehow
-        /*
-        // Handle parsing sound effect keyframes
-		ArrayList<Map.Entry<String, JsonElement>> soundEffectFrames = getSoundEffectFrames(animationJsonObject);
-		if (soundEffectFrames != null) {
-			for (Map.Entry<String, JsonElement> keyFrame : soundEffectFrames) {
-				animation.soundKeyFrames.add(new EventKeyFrame(Double.parseDouble(keyFrame.getKey()) * 20,
-						keyFrame.getValue().getAsJsonObject().get("effect").getAsString()));
-			}
-		}
-
-		// Handle parsing custom instruction keyframes
-		ArrayList<Map.Entry<String, JsonElement>> customInstructionKeyFrames = getCustomInstructionKeyFrames(
-				animationJsonObject);
-		if (customInstructionKeyFrames != null) {
-			for (Map.Entry<String, JsonElement> keyFrame : customInstructionKeyFrames) {
-				animation.customInstructionKeyframes.add(new EventKeyFrame(Double.parseDouble(keyFrame.getKey()) * 20,
-						keyFrame.getValue() instanceof JsonArray
-								? convertJsonArrayToList(keyFrame.getValue().getAsJsonArray()).toString()
-								: keyFrame.getValue().getAsString()));
-			}
-		}
-         */
         //create particle animations
         Map<String, RawAnimationFile.RawParticleEffectAnimations> rawParticleEffectAnimations = rawAnimation.getValue().particleEffects;
         if (rawParticleEffectAnimations != null) {
             for (Map.Entry<String, RawAnimationFile.RawParticleEffectAnimations> rawParticleEffectAnim : rawParticleEffectAnimations.entrySet()) {
-                ParticleEventKeyFrame particleEventKeyFrame = new ParticleEventKeyFrame(
+                EventKeyFrame.ParticleEventKeyFrame particleEventKeyFrame = new EventKeyFrame.ParticleEventKeyFrame(
                         Double.parseDouble(rawParticleEffectAnim.getKey()) * 20,
                         rawParticleEffectAnim.getValue().effect,
                         rawParticleEffectAnim.getValue().locator,
                         rawParticleEffectAnim.getValue().preEffectScript
                 );
                 toReturn.particleKeyFrames.add(particleEventKeyFrame);
+            }
+        }
+
+        //create sound animations
+        Map<String, RawAnimationFile.RawSoundEffectAnimations> rawSoundEffectAnimations = rawAnimation.getValue().soundEffects;
+        if (rawSoundEffectAnimations != null) {
+            for (Map.Entry<String, RawAnimationFile.RawSoundEffectAnimations> rawSoundEffectAnim : rawSoundEffectAnimations.entrySet()) {
+                EventKeyFrame.SoundEventKeyFrame soundEventKeyFrame = new EventKeyFrame.SoundEventKeyFrame(
+                        Double.parseDouble(rawSoundEffectAnim.getKey()) * 20,
+                        rawSoundEffectAnim.getValue().effect,
+                        rawSoundEffectAnim.getValue().locator
+                );
+                toReturn.soundKeyFrames.add(soundEventKeyFrame);
             }
         }
 

@@ -26,6 +26,7 @@ import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateHitboxSize;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateRiderPos;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosUtils;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
+import anightdazingzoroark.riftlib.sounds.RiftLibSoundHelper;
 import anightdazingzoroark.riftlib.util.HitboxUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
@@ -139,13 +140,20 @@ public class AnimationProcessor<T extends IAnimatable> {
 			}
 
             //animation effects
-            ParticleEventKeyFrame lastParticleEvent = controller.getLastParticleEvent();
+            EventKeyFrame.ParticleEventKeyFrame lastParticleEvent = controller.getLastParticleEvent();
             if (lastParticleEvent != null) {
                 AnimatedLocator locator = entity.getFactory().getOrCreateAnimationData(uniqueID).getAnimatedLocator(lastParticleEvent.locator);
                 if (locator != null) {
                     ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(lastParticleEvent.effect);
                     if (particleBuilder != null) locator.createParticleEmitter(particleBuilder);
                 }
+            }
+
+            //sound effects
+            EventKeyFrame.SoundEventKeyFrame lastSoundEvent = controller.getLastSoundEvent();
+            if (lastSoundEvent != null) {
+                AnimatedLocator locator = entity.getFactory().getOrCreateAnimationData(uniqueID).getAnimatedLocator(lastSoundEvent.locator);
+                if (locator != null) RiftLibSoundHelper.playSound(entity, locator, lastSoundEvent.effect);
             }
 		}
 

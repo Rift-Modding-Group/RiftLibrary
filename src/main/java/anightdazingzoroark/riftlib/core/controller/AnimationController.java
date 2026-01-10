@@ -39,9 +39,6 @@ import anightdazingzoroark.riftlib.core.PlayState;
 import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
 import anightdazingzoroark.riftlib.core.easing.EasingType;
-import anightdazingzoroark.riftlib.core.event.CustomInstructionKeyframeEvent;
-import anightdazingzoroark.riftlib.core.event.ParticleKeyFrameEvent;
-import anightdazingzoroark.riftlib.core.event.SoundKeyframeEvent;
 import anightdazingzoroark.riftlib.core.event.predicate.AnimationEvent;
 import anightdazingzoroark.riftlib.core.keyframe.AnimationPoint;
 import anightdazingzoroark.riftlib.core.keyframe.BoneAnimation;
@@ -83,24 +80,6 @@ public class AnimationController<T extends IAnimatable> {
 	 */
 	public double transitionLengthTicks;
 
-	/**
-	 * The sound listener is called every time a sound keyframe is encountered (i.e.
-	 * every frame)
-	 */
-	private ISoundListener<T> soundListener;
-
-	/**
-	 * The particle listener is called every time a particle keyframe is encountered
-	 * (i.e. every frame)
-	 */
-	private IParticleListener<T> particleListener;
-
-	/**
-	 * The custom instruction listener is called every time a custom instruction
-	 * keyframe is encountered (i.e. every frame)
-	 */
-	private ICustomInstructionListener<T> customInstructionListener;
-
 	public boolean isJustStarting = false;
 
 	public static void addModelFetcher(ModelFetcher<?> fetcher) {
@@ -129,49 +108,6 @@ public class AnimationController<T extends IAnimatable> {
 		PlayState test(AnimationEvent<P> event);
 	}
 
-	/**
-	 * Sound Listeners are run when a sound keyframe is hit. You can either return
-	 * the SoundEvent and geckolib will play the sound for you, or return null and
-	 * handle the sounds yourself.
-	 */
-	@FunctionalInterface
-	public interface ISoundListener<A extends IAnimatable> {
-		/**
-		 * Sound Listeners are run when a sound keyframe is hit. You can either return
-		 * the SoundEvent and geckolib will play the sound for you, or return null and
-		 * handle the sounds yourself.
-		 */
-		void playSound(SoundKeyframeEvent<A> event);
-	}
-
-	/**
-	 * Particle Listeners are run when a sound keyframe is hit. You need to handle
-	 * the actual playing of the particle yourself.
-	 */
-	@FunctionalInterface
-	public interface IParticleListener<A extends IAnimatable> {
-		/**
-		 * Particle Listeners are run when a sound keyframe is hit. You need to handle
-		 * the actual playing of the particle yourself.
-		 */
-		void summonParticle(ParticleKeyFrameEvent<A> event);
-	}
-
-	/**
-	 * Custom instructions can be added in blockbench by enabling animation effects
-	 * in Animation - Animate Effects. You can then add custom instruction keyframes
-	 * and use them as timecodes/events to handle in code.
-	 */
-	@FunctionalInterface
-	public interface ICustomInstructionListener<A extends IAnimatable> {
-		/**
-		 * Custom instructions can be added in blockbench by enabling animation effects
-		 * in Animation - Animate Effects. You can then add custom instruction keyframes
-		 * and use them as timecodes/events to handle in code.
-		 */
-		void executeInstruction(CustomInstructionKeyframeEvent<A> event);
-	}
-
 	private final HashMap<String, BoneAnimationQueue> boneAnimationQueues = new HashMap<>();
 	public double tickOffset;
 	protected Queue<Animation> animationQueue = new LinkedList<>();
@@ -184,8 +120,9 @@ public class AnimationController<T extends IAnimatable> {
 	public Function<Double, Double> customEasingMethod;
 	protected boolean needsAnimationReload = false;
 	public double animationSpeed = 1D;
-	private final Set<EventKeyFrame<?>> executedKeyFrames = new HashSet<>();
-    private ParticleEventKeyFrame lastParticleEvent;
+	private final Set<EventKeyFrame> executedKeyFrames = new HashSet<>();
+    private EventKeyFrame.ParticleEventKeyFrame lastParticleEvent;
+    private EventKeyFrame.SoundEventKeyFrame lastSoundEvent;
 
 	/**
 	 * This method sets the current animation with an animation builder. You can run
@@ -342,27 +279,6 @@ public class AnimationController<T extends IAnimatable> {
 	 */
 	public HashMap<String, BoneAnimationQueue> getBoneAnimationQueues() {
 		return this.boneAnimationQueues;
-	}
-
-	/**
-	 * Registers a sound listener.
-	 */
-	public void registerSoundListener(ISoundListener<T> soundListener) {
-		this.soundListener = soundListener;
-	}
-
-	/**
-	 * Registers a particle listener.
-	 */
-	public void registerParticleListener(IParticleListener<T> particleListener) {
-		this.particleListener = particleListener;
-	}
-
-	/**
-	 * Registers a custom instruction listener.
-	 */
-	public void registerCustomInstructionListener(ICustomInstructionListener<T> customInstructionListener) {
-		this.customInstructionListener = customInstructionListener;
 	}
 
 	/**
@@ -629,36 +545,20 @@ public class AnimationController<T extends IAnimatable> {
 		}
 
         //create a riftlibrary particle emitter that's attached to a locator
-        for (ParticleEventKeyFrame particleEventKeyFrame : this.currentAnimation.particleKeyFrames) {
+        for (EventKeyFrame.ParticleEventKeyFrame particleEventKeyFrame : this.currentAnimation.particleKeyFrames) {
             if (!this.executedKeyFrames.contains(particleEventKeyFrame) && tick >= particleEventKeyFrame.getStartTick()) {
                 this.lastParticleEvent = particleEventKeyFrame;
                 this.executedKeyFrames.add(particleEventKeyFrame);
             }
         }
 
-        //TODO: this if block will be deprecated soon :tm:
-		if (this.soundListener != null || this.particleListener != null || this.customInstructionListener != null) {
-			for (EventKeyFrame<String> soundKeyFrame : this.currentAnimation.soundKeyFrames) {
-				if (!this.executedKeyFrames.contains(soundKeyFrame) && tick >= soundKeyFrame.getStartTick()) {
-					SoundKeyframeEvent<T> event = new SoundKeyframeEvent<>(this.animatable, tick,
-							soundKeyFrame.getEventData(), this);
-					soundListener.playSound(event);
-
-					this.executedKeyFrames.add(soundKeyFrame);
-				}
-			}
-
-			for (EventKeyFrame<String> customInstructionKeyFrame : this.currentAnimation.customInstructionKeyframes) {
-				if (!this.executedKeyFrames.contains(customInstructionKeyFrame)
-						&& tick >= customInstructionKeyFrame.getStartTick()) {
-					CustomInstructionKeyframeEvent<T> event = new CustomInstructionKeyframeEvent<>(this.animatable,
-							tick, customInstructionKeyFrame.getEventData(), this);
-					customInstructionListener.executeInstruction(event);
-
-					this.executedKeyFrames.add(customInstructionKeyFrame);
-				}
-			}
-		}
+        //create a riftlibrary sound effect that's attached to a locator
+        for (EventKeyFrame.SoundEventKeyFrame soundEventKeyFrame : this.currentAnimation.soundKeyFrames) {
+            if (!this.executedKeyFrames.contains(soundEventKeyFrame) && tick >= soundEventKeyFrame.getStartTick()) {
+                this.lastSoundEvent = soundEventKeyFrame;
+                this.executedKeyFrames.add(soundEventKeyFrame);
+            }
+        }
 
 		if (this.transitionLengthTicks == 0 && shouldResetTick && this.animationState == AnimationState.Transitioning) {
 			this.currentAnimation = animationQueue.poll();
@@ -733,8 +633,14 @@ public class AnimationController<T extends IAnimatable> {
 		return new KeyFrameLocation<>(frames.get(frames.size() - 1), ageInTicks);
 	}
 
-    public ParticleEventKeyFrame getLastParticleEvent() {
-        ParticleEventKeyFrame toReturn = this.lastParticleEvent;
+    public EventKeyFrame.ParticleEventKeyFrame getLastParticleEvent() {
+        EventKeyFrame.ParticleEventKeyFrame toReturn = this.lastParticleEvent;
+        this.lastParticleEvent = null;
+        return toReturn;
+    }
+
+    public EventKeyFrame.SoundEventKeyFrame getLastSoundEvent() {
+        EventKeyFrame.SoundEventKeyFrame toReturn = this.lastSoundEvent;
         this.lastParticleEvent = null;
         return toReturn;
     }

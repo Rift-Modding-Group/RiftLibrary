@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.core.event.predicate;
+package anightdazingzoroark.riftlib.core.event;
 
 import java.util.List;
 import java.util.stream.Collectors;

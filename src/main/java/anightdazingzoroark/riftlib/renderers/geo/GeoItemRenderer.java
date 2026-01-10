@@ -1,17 +1,11 @@
 package anightdazingzoroark.riftlib.renderers.geo;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 import anightdazingzoroark.riftlib.animation.ItemAnimationTicker;
-import anightdazingzoroark.riftlib.model.AnimatedLocator;
-import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
-import anightdazingzoroark.riftlib.util.MatrixUtils;
-import anightdazingzoroark.riftlib.util.ParticleUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
 import net.minecraft.item.Item;
@@ -20,7 +14,7 @@ import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
-import anightdazingzoroark.riftlib.core.event.predicate.AnimationEvent;
+import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.util.Color;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;

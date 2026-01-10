@@ -2,7 +2,7 @@ package anightdazingzoroark.riftlib.core;
 
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.core.builder.Animation;
-import anightdazingzoroark.riftlib.core.event.predicate.AnimationEvent;
+import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.processor.AnimationProcessor;
 import anightdazingzoroark.riftlib.core.processor.IBone;
 

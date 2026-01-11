@@ -1,0 +1,13 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.alarm_clock.hour_rotation": {
+			"loop": true,
+			"bones": {
+				"hourHand": {
+					"rotation": [0, 0, "hour_rotation"]
+				}
+			}
+		}
+	}
+}

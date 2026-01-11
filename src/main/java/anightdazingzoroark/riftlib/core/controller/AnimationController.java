@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.easing.EasingManager;
+import anightdazingzoroark.riftlib.molang.MolangScope;
 import org.apache.commons.lang3.tuple.Pair;
 
 import anightdazingzoroark.riftlib.molang.math.IValue;
@@ -284,7 +285,7 @@ public class AnimationController<T extends IAnimatable> {
 	 * @param boneSnapshotCollection The bone snapshot collection
 	 */
 	public void process(double tick, AnimationEvent<T> event, List<IBone> modelRendererList,
-			HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection, MolangParser parser,
+			HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection, MolangParser parser, MolangScope scope,
 			boolean crashWhenCantFindBone) {
 		parser.setValue("query.life_time", tick / 20);
 		if (this.currentAnimation != null) {
@@ -348,7 +349,7 @@ public class AnimationController<T extends IAnimatable> {
 				saveSnapshotsForAnimation(this.currentAnimation, boneSnapshotCollection);
 			}
 			if (this.currentAnimation != null) {
-				setAnimTime(parser, 0);
+				this.setAnimTime(parser, 0);
 				for (BoneAnimation boneAnimation : this.currentAnimation.boneAnimations) {
 					BoneAnimationQueue boneAnimationQueue = this.boneAnimationQueues.get(boneAnimation.boneName);
 					BoneSnapshot boneSnapshot = this.boneSnapshots.get(boneAnimation.boneName);

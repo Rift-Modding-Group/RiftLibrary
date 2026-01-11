@@ -78,10 +78,18 @@ public class CommonListener {
 				.tracker(160, 2, false)
 				.build()
 		);
+        event.getRegistry().register(EntityEntryBuilder.create()
+                .entity(AlarmClock.class)
+                .name("alarm_clock")
+                .id(new ResourceLocation(RiftLib.ModID, "alarm_clock"), id++)
+                .tracker(160, 2, false)
+                .build()
+        );
 
 		//egg registry
 		EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "dragon"), 0x980d0d, 0xca7824);
-		EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "flying_pufferfish"), 0xffae00, 0xbfc700);
+        EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "flying_pufferfish"), 0xffae00, 0xbfc700);
+        EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "alarm_clock"), 0x0000ff, 0xffffff);
 
 		//tile entity registry
         GameRegistry.registerTileEntity(MerryGoRoundTileEntity.class, new ResourceLocation(RiftLib.ModID, "merry_go_round_te"));

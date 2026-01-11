@@ -89,7 +89,7 @@ public class AnimationProcessor<T extends IAnimatable> {
 			controller.isJustStarting = manager.isFirstTick;
 			event.setController(controller);
 
-			controller.process(seekTime, event, this.modelRendererList, boneSnapshots, parser, crashWhenCantFindBone);
+			controller.process(seekTime, event, this.modelRendererList, boneSnapshots, parser, manager.dataScope, crashWhenCantFindBone);
 
 			for (BoneAnimationQueue boneAnimation : controller.getBoneAnimationQueues().values()) {
 				IBone bone = boneAnimation.bone;

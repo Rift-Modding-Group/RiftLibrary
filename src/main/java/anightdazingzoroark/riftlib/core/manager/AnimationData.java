@@ -9,10 +9,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
+import anightdazingzoroark.riftlib.molang.MolangParser;
+import anightdazingzoroark.riftlib.molang.MolangScope;
+import anightdazingzoroark.riftlib.resource.RiftLibCache;
 import org.apache.commons.lang3.tuple.Pair;
 
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
@@ -24,6 +28,7 @@ public class AnimationData {
 	private final HashMap<String, AnimationController> animationControllers = new HashMap<>();
     private final List<AnimatedLocator> animatedLocators = new ArrayList<>();
     private final IAnimatable iAnimatable;
+    public final MolangScope dataScope = new MolangScope();
     private GeoModel currentModel;
 	public double tick;
 	public boolean isFirstTick = true;
@@ -38,6 +43,24 @@ public class AnimationData {
 	public AnimationData(IAnimatable iAnimatable) {
         this.iAnimatable = iAnimatable;
 		this.boneSnapshotCollection = new HashMap<>();
+
+        //init molang queries from the animatable's createAnimationVariables()
+        MolangParser parser = RiftLibCache.getInstance().parser;
+        List<AnimatableValue> initAnimatableValues = iAnimatable.createAnimationVariables();
+        parser.withScope(this.dataScope, () -> {
+            for (AnimatableValue animatableValue : initAnimatableValues) {
+                if (animatableValue.isExpression()) {
+                    try {
+                        System.out.println("parsed expression");
+                        parser.parseExpression(animatableValue.getExpressionValue());
+                    }
+                    catch (Exception e) {
+                        System.out.println("cannot parse expression");
+                    }
+                }
+                else parser.setValue(animatableValue.getConstantValue().left, animatableValue.getConstantValue().right);
+            }
+        });
 	}
 
 	/**

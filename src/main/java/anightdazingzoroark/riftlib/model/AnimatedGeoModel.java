@@ -37,7 +37,6 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 		implements IAnimatableModel<T>, IAnimatableModelProvider<T> {
 	private final AnimationProcessor animationProcessor;
 	protected GeoModel currentModel;
-    public final MolangScope emitterScope = new MolangScope();
 
 	protected AnimatedGeoModel() {
 		this.animationProcessor = new AnimationProcessor(this);
@@ -123,20 +122,6 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 		MolangParser parser = RiftLibCache.getInstance().parser;
 		Minecraft minecraftInstance = Minecraft.getMinecraft();
 		float partialTick = minecraftInstance.getRenderPartialTicks();
-
-        //init molang queries from createAnimationVariables()
-        List<AnimatableValue> initAnimatableValues = animatable.createAnimationVariables();
-        parser.withScope(this.emitterScope, () -> {
-            for (AnimatableValue animatableValue : initAnimatableValues) {
-                if (animatableValue.isExpression()) {
-                    try {
-                        parser.parseExpression(animatableValue.getExpressionValue());
-                    }
-                    catch (Exception e) {}
-                }
-                else parser.setValue(animatableValue.getConstantValue().left, animatableValue.getConstantValue().right);
-            }
-        });
 
         //vanilla queries
 		parser.setValue("query.actor_count", minecraftInstance.world.loadedEntityList.size());

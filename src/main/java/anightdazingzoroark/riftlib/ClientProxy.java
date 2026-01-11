@@ -4,16 +4,10 @@ import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
 import anightdazingzoroark.example.block.tile.SprinklerTileEntity;
 import anightdazingzoroark.example.client.renderer.armor.GreenArmorRenderer;
 import anightdazingzoroark.example.client.renderer.armor.SatelliteDishHelmetRenderer;
-import anightdazingzoroark.example.client.renderer.entity.BombProjectileRenderer;
-import anightdazingzoroark.example.client.renderer.entity.DragonRenderer;
-import anightdazingzoroark.example.client.renderer.entity.FlyingPufferfishRenderer;
-import anightdazingzoroark.example.client.renderer.entity.ReplacedCreeperRenderer;
+import anightdazingzoroark.example.client.renderer.entity.*;
 import anightdazingzoroark.example.client.renderer.tile.MerryGoRoundRenderer;
 import anightdazingzoroark.example.client.renderer.tile.SprinklerRenderer;
-import anightdazingzoroark.example.entity.BombProjectile;
-import anightdazingzoroark.example.entity.DragonEntity;
-import anightdazingzoroark.example.entity.FlyingPufferfishEntity;
-import anightdazingzoroark.example.entity.ReplacedCreeperEntity;
+import anightdazingzoroark.example.entity.*;
 import anightdazingzoroark.example.entity.hitboxLinker.DragonHitboxLinker;
 import anightdazingzoroark.example.entity.hitboxLinker.FlyingPufferfishHitboxLinker;
 import anightdazingzoroark.example.entity.ridePosLinker.DragonRidePosLinker;
@@ -71,6 +65,7 @@ public class ClientProxy extends ServerProxy {
             RenderingRegistry.registerEntityRenderingHandler(DragonEntity.class, DragonRenderer::new);
             RenderingRegistry.registerEntityRenderingHandler(FlyingPufferfishEntity.class, FlyingPufferfishRenderer::new);
             RenderingRegistry.registerEntityRenderingHandler(BombProjectile.class, BombProjectileRenderer::new);
+            RenderingRegistry.registerEntityRenderingHandler(AlarmClock.class, AlarmClockRenderer::new);
 
             //armor renderer
             GeoArmorRenderer.registerArmorRenderer(GreenArmorItem.class, new GreenArmorRenderer());

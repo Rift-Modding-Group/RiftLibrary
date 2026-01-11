@@ -7,7 +7,9 @@ package anightdazingzoroark.riftlib.core;
 import anightdazingzoroark.riftlib.core.manager.AnimationData;
 import anightdazingzoroark.riftlib.core.manager.AnimationFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,20 +28,25 @@ public interface IAnimatable {
     /**
      * This only runs once and will run when this object just started rendering
      *
-     * @return A Map of Strings and AnimatableValues. The string is to be the name of the
-     * variable, while the AnimatableValue is to be its initial starting value
+     * @return A List of AnimatableValues.
      */
-    default Map<String, AnimatableValue> createAnimationVariables() {
-        return new HashMap<>();
+    default List<AnimatableValue> createAnimationVariables() {
+        return new ArrayList<>();
     }
 
     /**
      * This runs as long as the rendered object gets rendered
      *
-     * @return A Map of Strings and AnimatableValues. The string is to be the name of the
-     * variable, while the AnimatableValue is to be the new value
+     * @return A List of AnimatableValues.
      */
-    default Map<String, AnimatableValue> updateAnimationVariables() {
-        return new HashMap<>();
+    default List<AnimatableValue> tickAnimationVariables() {
+        return new ArrayList<>();
     }
+
+    /**
+     * There might be times where the user would want their custom variable to
+     * update on specific events that tickAnimationVariables() is not suited
+     * for, hence, this method
+     */
+    default void updateAnimationVariable(AnimatableValue value) {}
 }

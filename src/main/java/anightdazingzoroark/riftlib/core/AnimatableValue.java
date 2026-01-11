@@ -1,11 +1,15 @@
 package anightdazingzoroark.riftlib.core;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 public class AnimatableValue {
-    private double constantValue;
+    private String variableName;
+    private Double constantValue;
     private String expressionValue;
     private final boolean isExpression;
 
-    public AnimatableValue(double constantValue) {
+    public AnimatableValue(String variableName, Double constantValue) {
+        this.variableName = variableName;
         this.constantValue = constantValue;
         this.isExpression = false;
     }
@@ -19,8 +23,8 @@ public class AnimatableValue {
         return this.isExpression;
     }
 
-    public double getConstantValue() {
-        return this.constantValue;
+    public ImmutablePair<String, Double> getConstantValue() {
+        return new ImmutablePair<>(this.variableName, this.constantValue);
     }
 
     public String getExpressionValue() {

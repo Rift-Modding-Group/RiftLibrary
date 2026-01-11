@@ -4,8 +4,10 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 
+import anightdazingzoroark.riftlib.molang.MolangScope;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.entity.Entity;
@@ -35,6 +37,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 		implements IAnimatableModel<T>, IAnimatableModelProvider<T> {
 	private final AnimationProcessor animationProcessor;
 	protected GeoModel currentModel;
+    public final MolangScope emitterScope = new MolangScope();
 
 	protected AnimatedGeoModel() {
 		this.animationProcessor = new AnimationProcessor(this);
@@ -92,7 +95,8 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 
 	@Override
 	public Animation getAnimation(String name, IAnimatable animatable) {
-		return RiftLibCache.getInstance().getAnimations().get(this.getAnimationFileLocation((T) animatable))
+		return RiftLibCache.getInstance().getAnimations()
+                .get(this.getAnimationFileLocation((T) animatable))
 				.getAnimation(name);
 	}
 
@@ -120,6 +124,21 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 		Minecraft minecraftInstance = Minecraft.getMinecraft();
 		float partialTick = minecraftInstance.getRenderPartialTicks();
 
+        //init molang queries from createAnimationVariables()
+        List<AnimatableValue> initAnimatableValues = animatable.createAnimationVariables();
+        parser.withScope(this.emitterScope, () -> {
+            for (AnimatableValue animatableValue : initAnimatableValues) {
+                if (animatableValue.isExpression()) {
+                    try {
+                        parser.parseExpression(animatableValue.getExpressionValue());
+                    }
+                    catch (Exception e) {}
+                }
+                else parser.setValue(animatableValue.getConstantValue().left, animatableValue.getConstantValue().right);
+            }
+        });
+
+        //vanilla queries
 		parser.setValue("query.actor_count", minecraftInstance.world.loadedEntityList.size());
 		parser.setValue("query.time_of_day", MolangUtils.normalizeTime(minecraftInstance.world.getTotalWorldTime()));
 		parser.setValue("query.moon_phase", minecraftInstance.world.getMoonPhase());

@@ -2,9 +2,11 @@ package anightdazingzoroark.riftlib.core.keyframe;
 
 import anightdazingzoroark.riftlib.core.util.Axis;
 import anightdazingzoroark.riftlib.molang.MolangParser;
+import anightdazingzoroark.riftlib.molang.MolangScope;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class VectorKeyFrameList {
     private final List<KeyFrame> keyFrames = new ArrayList<>();
@@ -39,7 +41,7 @@ public class VectorKeyFrameList {
     }
 
     // Helper method to transform a KeyFrameLocation to an AnimationPoint
-    public AnimationPoint getAnimationPointAtTick(MolangParser parser, double tick, Axis axis) {
+    public AnimationPoint getAnimationPointAtTick(MolangParser parser, MolangScope scope, double tick, Axis axis) {
         KeyFrameLocation location = this.getCurrentKeyFrameLocation(tick);
         KeyFrame currentFrame = location.currentFrame;
 
@@ -49,13 +51,24 @@ public class VectorKeyFrameList {
         double startValue = 0;
         double endValue = 0;
 
-        try {
-            startValue = startValueUnparsed.isExpression() ?
-                    parser.parseExpression(startValueUnparsed.getExpressionValue()).get() : startValueUnparsed.getConstValue();
-            endValue = endValueUnparsed.isExpression() ?
-                    parser.parseExpression(endValueUnparsed.getExpressionValue()).get() : endValueUnparsed.getConstValue();
-        }
-        catch (Exception e) {}
+        AtomicReference<Double> atomicStartValue = new AtomicReference<>(0D);
+        AtomicReference<Double> atomicEndValue = new AtomicReference<>(0D);
+
+        parser.withScope(scope, () -> {
+            try {
+                double scopedStartValue = startValueUnparsed.isExpression() ?
+                        parser.parseExpression(startValueUnparsed.getExpressionValue()).get() : startValueUnparsed.getConstValue();
+                atomicStartValue.set(scopedStartValue);
+
+                double scopedEndValue = endValueUnparsed.isExpression() ?
+                        parser.parseExpression(endValueUnparsed.getExpressionValue()).get() : endValueUnparsed.getConstValue();
+                atomicEndValue.set(scopedEndValue);
+            }
+            catch (Exception e) {}
+        });
+
+        startValue = atomicStartValue.get();
+        endValue = atomicEndValue.get();
 
         if (this.isRotation) {
             if (currentFrame.getStartValue().getValueFromAxis(axis).isExpression()) {

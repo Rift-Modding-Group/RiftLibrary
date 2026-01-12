@@ -51,14 +51,13 @@ public class AnimationData {
             for (AnimatableValue animatableValue : initAnimatableValues) {
                 if (animatableValue.isExpression()) {
                     try {
-                        System.out.println("parsed expression");
                         parser.parseExpression(animatableValue.getExpressionValue());
                     }
-                    catch (Exception e) {
-                        System.out.println("cannot parse expression");
-                    }
+                    catch (Exception e) {}
                 }
-                else parser.setValue(animatableValue.getConstantValue().left, animatableValue.getConstantValue().right);
+                else {
+                    parser.setValue(animatableValue.getConstantValue().left, animatableValue.getConstantValue().right);
+                }
             }
         });
 	}

@@ -9,6 +9,7 @@ import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.manager.AnimationData;
 import anightdazingzoroark.riftlib.core.manager.AnimationFactory;
+import anightdazingzoroark.riftlib.util.MathUtils;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.world.World;
 
@@ -40,6 +41,9 @@ public class AlarmClock extends EntityLiving implements IAnimatable {
 
     @Override
     public List<AnimatableValue> createAnimationVariables() {
-        return Arrays.asList(new AnimatableValue("hour_rotation = math.random(0, 360);"));
+        return Arrays.asList(
+                new AnimatableValue("hour_rotation", MathUtils.randomInRange(0D, 360D)),
+                new AnimatableValue("minute_rotation", MathUtils.randomInRange(0D, 360D))
+        );
     }
 }

@@ -6,7 +6,10 @@
 			"bones": {
 				"hourHand": {
 					"rotation": [0, 0, "hour_rotation"]
-				}
+				},
+                "minuteHand": {
+                    "rotation": [0, 0, "minute_rotation"]
+                }
 			}
 		}
 	}

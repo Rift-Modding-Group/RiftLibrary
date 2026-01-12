@@ -279,7 +279,10 @@ public class AnimationController<T extends IAnimatable> {
 	public void process(double tick, AnimationEvent<T> event, List<IBone> modelRendererList,
 			HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection, MolangParser parser, MolangScope scope,
 			boolean crashWhenCantFindBone) {
-		parser.setValue("query.life_time", tick / 20);
+        double tickWithinScope = tick;
+        parser.withScope(scope, () -> {
+            parser.setValue("query.life_time", tickWithinScope / 20);
+        });
 		if (this.currentAnimation != null) {
 			IAnimatableModel<T> model = getModel(this.animatable);
 			if (model != null) {
@@ -363,9 +366,9 @@ public class AnimationController<T extends IAnimatable> {
 					// Adding the initial positions of the upcoming animation, so the model
 					// transitions to the initial state of the new animation
 					if (!rotationKeyFrames.isEmpty()) {
-                        AnimationPoint xPoint = rotationKeyFrames.getAnimationPointAtTick(parser, 0, Axis.X);
-                        AnimationPoint yPoint = rotationKeyFrames.getAnimationPointAtTick(parser, 0, Axis.Y);
-                        AnimationPoint zPoint = rotationKeyFrames.getAnimationPointAtTick(parser, 0, Axis.Z);
+                        AnimationPoint xPoint = rotationKeyFrames.getAnimationPointAtTick(parser, scope, 0, Axis.X);
+                        AnimationPoint yPoint = rotationKeyFrames.getAnimationPointAtTick(parser, scope, 0, Axis.Y);
+                        AnimationPoint zPoint = rotationKeyFrames.getAnimationPointAtTick(parser, scope, 0, Axis.Z);
 
 						boneAnimationQueue.rotationXQueue.add(new AnimationPoint(null, tick, transitionLengthTicks,
 								boneSnapshot.rotationValueX - initialSnapshot.rotationValueX,
@@ -379,9 +382,9 @@ public class AnimationController<T extends IAnimatable> {
 					}
 
 					if (!positionKeyFrames.isEmpty()) {
-                        AnimationPoint xPoint = positionKeyFrames.getAnimationPointAtTick(parser, 0, Axis.X);
-                        AnimationPoint yPoint = positionKeyFrames.getAnimationPointAtTick(parser, 0, Axis.Y);
-                        AnimationPoint zPoint = positionKeyFrames.getAnimationPointAtTick(parser, 0, Axis.Z);
+                        AnimationPoint xPoint = positionKeyFrames.getAnimationPointAtTick(parser, scope, 0, Axis.X);
+                        AnimationPoint yPoint = positionKeyFrames.getAnimationPointAtTick(parser, scope, 0, Axis.Y);
+                        AnimationPoint zPoint = positionKeyFrames.getAnimationPointAtTick(parser, scope, 0, Axis.Z);
 
 						boneAnimationQueue.positionXQueue.add(new AnimationPoint(null, tick, transitionLengthTicks,
 								boneSnapshot.positionOffsetX, xPoint.animationStartValue));
@@ -392,9 +395,9 @@ public class AnimationController<T extends IAnimatable> {
 					}
 
 					if (!scaleKeyFrames.isEmpty()) {
-                        AnimationPoint xPoint = scaleKeyFrames.getAnimationPointAtTick(parser, 0, Axis.X);
-                        AnimationPoint yPoint = scaleKeyFrames.getAnimationPointAtTick(parser, 0, Axis.Y);
-                        AnimationPoint zPoint = scaleKeyFrames.getAnimationPointAtTick(parser, 0, Axis.Z);
+                        AnimationPoint xPoint = scaleKeyFrames.getAnimationPointAtTick(parser, scope, 0, Axis.X);
+                        AnimationPoint yPoint = scaleKeyFrames.getAnimationPointAtTick(parser, scope, 0, Axis.Y);
+                        AnimationPoint zPoint = scaleKeyFrames.getAnimationPointAtTick(parser, scope, 0, Axis.Z);
 
 						boneAnimationQueue.scaleXQueue.add(new AnimationPoint(null, tick, transitionLengthTicks,
 								boneSnapshot.scaleValueX, xPoint.animationStartValue));
@@ -408,7 +411,7 @@ public class AnimationController<T extends IAnimatable> {
 		}
         else if (getAnimationState() == AnimationState.Running) {
 			// Actually run the animation
-			this.processCurrentAnimation(tick, actualTick, parser, crashWhenCantFindBone);
+			this.processCurrentAnimation(tick, actualTick, parser, scope, crashWhenCantFindBone);
 		}
 	}
 
@@ -444,7 +447,7 @@ public class AnimationController<T extends IAnimatable> {
 		}
 	}
 
-	private void processCurrentAnimation(double tick, double actualTick, MolangParser parser, boolean crashWhenCantFindBone) {
+	private void processCurrentAnimation(double tick, double actualTick, MolangParser parser, MolangScope scope, boolean crashWhenCantFindBone) {
 		assert currentAnimation != null;
 		//Animation has ended
 		if (tick >= currentAnimation.animationLength) {
@@ -506,21 +509,21 @@ public class AnimationController<T extends IAnimatable> {
             VectorKeyFrameList scaleKeyFrames = boneAnimation.scaleKeyFrames;
 
 			if (!rotationKeyFrames.isEmpty()) {
-				boneAnimationQueue.rotationXQueue.add(rotationKeyFrames.getAnimationPointAtTick(parser, tick, Axis.X));
-				boneAnimationQueue.rotationYQueue.add(rotationKeyFrames.getAnimationPointAtTick(parser, tick, Axis.Y));
-				boneAnimationQueue.rotationZQueue.add(rotationKeyFrames.getAnimationPointAtTick(parser, tick, Axis.Z));
+				boneAnimationQueue.rotationXQueue.add(rotationKeyFrames.getAnimationPointAtTick(parser, scope, tick, Axis.X));
+				boneAnimationQueue.rotationYQueue.add(rotationKeyFrames.getAnimationPointAtTick(parser, scope, tick, Axis.Y));
+				boneAnimationQueue.rotationZQueue.add(rotationKeyFrames.getAnimationPointAtTick(parser, scope, tick, Axis.Z));
 			}
 
 			if (!positionKeyFrames.isEmpty()) {
-				boneAnimationQueue.positionXQueue.add(positionKeyFrames.getAnimationPointAtTick(parser, tick, Axis.X));
-				boneAnimationQueue.positionYQueue.add(positionKeyFrames.getAnimationPointAtTick(parser, tick, Axis.Y));
-				boneAnimationQueue.positionZQueue.add(positionKeyFrames.getAnimationPointAtTick(parser, tick, Axis.Z));
+				boneAnimationQueue.positionXQueue.add(positionKeyFrames.getAnimationPointAtTick(parser, scope, tick, Axis.X));
+				boneAnimationQueue.positionYQueue.add(positionKeyFrames.getAnimationPointAtTick(parser, scope, tick, Axis.Y));
+				boneAnimationQueue.positionZQueue.add(positionKeyFrames.getAnimationPointAtTick(parser, scope, tick, Axis.Z));
 			}
 
 			if (!scaleKeyFrames.isEmpty()) {
-				boneAnimationQueue.scaleXQueue.add(scaleKeyFrames.getAnimationPointAtTick(parser, tick, Axis.X));
-				boneAnimationQueue.scaleYQueue.add(scaleKeyFrames.getAnimationPointAtTick(parser, tick, Axis.Y));
-				boneAnimationQueue.scaleZQueue.add(scaleKeyFrames.getAnimationPointAtTick(parser, tick, Axis.Z));
+				boneAnimationQueue.scaleXQueue.add(scaleKeyFrames.getAnimationPointAtTick(parser, scope, tick, Axis.X));
+				boneAnimationQueue.scaleYQueue.add(scaleKeyFrames.getAnimationPointAtTick(parser, scope, tick, Axis.Y));
+				boneAnimationQueue.scaleZQueue.add(scaleKeyFrames.getAnimationPointAtTick(parser, scope, tick, Axis.Z));
 			}
 		}
 

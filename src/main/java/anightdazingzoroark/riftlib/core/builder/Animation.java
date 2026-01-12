@@ -8,9 +8,8 @@ package anightdazingzoroark.riftlib.core.builder;
 import java.util.ArrayList;
 import java.util.List;
 
-import anightdazingzoroark.riftlib.core.keyframe.BoneAnimation;
 import anightdazingzoroark.riftlib.core.keyframe.EventKeyFrame;
-import anightdazingzoroark.riftlib.core.keyframe.ParticleEventKeyFrame;
+import anightdazingzoroark.riftlib.core.keyframe.BoneAnimation;
 
 /**
  * A specific animation instance

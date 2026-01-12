@@ -1,22 +1,18 @@
 package anightdazingzoroark.riftlib.jsonParsing.constructor;
 
-import anightdazingzoroark.riftlib.core.ConstantValue;
 import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.easing.EasingType;
 import anightdazingzoroark.riftlib.core.keyframe.*;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationChannel;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationFile;
-import anightdazingzoroark.riftlib.molang.MolangException;
-import anightdazingzoroark.riftlib.molang.MolangParser;
-import anightdazingzoroark.riftlib.molang.math.IValue;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class AnimationConstructor {
-    public static Animation getAnimationFromRawAnimationEntry(Map.Entry<String, RawAnimationFile.RawAnimation> rawAnimation, MolangParser parser) {
+    public static Animation getAnimationFromRawAnimationEntry(Map.Entry<String, RawAnimationFile.RawAnimation> rawAnimation) {
         Animation toReturn = new Animation();
 
         //set anim info
@@ -58,16 +54,11 @@ public class AnimationConstructor {
                 BoneAnimation boneAnimation = new BoneAnimation();
                 boneAnimation.boneName = rawBoneAnimation.getKey();
 
-                //anti NPE protection
-                boneAnimation.positionKeyFrames = new VectorKeyFrameList<>();
-                boneAnimation.rotationKeyFrames = new VectorKeyFrameList<>();
-                boneAnimation.scaleKeyFrames = new VectorKeyFrameList<>();
-
                 //positions
                 if (rawBoneAnimation.getValue().position != null) {
                     try {
                         RawAnimationChannel rawPositionChannel = rawBoneAnimation.getValue().position;
-                        boneAnimation.positionKeyFrames = convertRawChannelToFrameList(rawPositionChannel, false, parser);
+                        boneAnimation.positionKeyFrames = convertRawChannelToFrameList(rawPositionChannel, false);
                     }
                     catch (Exception e) {}
                 }
@@ -76,7 +67,7 @@ public class AnimationConstructor {
                 if (rawBoneAnimation.getValue().rotation != null) {
                     try {
                         RawAnimationChannel rawRotationChannel = rawBoneAnimation.getValue().rotation;
-                        boneAnimation.rotationKeyFrames = convertRawChannelToFrameList(rawRotationChannel, true, parser);
+                        boneAnimation.rotationKeyFrames = convertRawChannelToFrameList(rawRotationChannel, true);
                     }
                     catch (Exception e) {}
                 }
@@ -85,7 +76,7 @@ public class AnimationConstructor {
                 if (rawBoneAnimation.getValue().scale != null) {
                     try {
                         RawAnimationChannel rawPositionChannel = rawBoneAnimation.getValue().scale;
-                        boneAnimation.scaleKeyFrames = convertRawChannelToFrameList(rawPositionChannel, false, parser);
+                        boneAnimation.scaleKeyFrames = convertRawChannelToFrameList(rawPositionChannel, false);
                     }
                     catch (Exception e) {}
                 }
@@ -103,10 +94,10 @@ public class AnimationConstructor {
     private static double calculateLength(List<BoneAnimation> boneAnimations) {
         double longestLength = 0;
         for (BoneAnimation animation : boneAnimations) {
-            double xKeyframeTime = animation.rotationKeyFrames.getLastKeyframeTime();
-            double yKeyframeTime = animation.positionKeyFrames.getLastKeyframeTime();
-            double zKeyframeTime = animation.scaleKeyFrames.getLastKeyframeTime();
-            longestLength = maxAll(longestLength, xKeyframeTime, yKeyframeTime, zKeyframeTime);
+            double rotationKeyframeTime = animation.rotationKeyFrames.getLastKeyframeTime();
+            double positionKeyframeTime = animation.positionKeyFrames.getLastKeyframeTime();
+            double scaleKeyframeTime = animation.scaleKeyFrames.getLastKeyframeTime();
+            longestLength = maxAll(longestLength, rotationKeyframeTime, positionKeyframeTime, scaleKeyframeTime);
         }
         return longestLength == 0 ? Double.MAX_VALUE : longestLength;
     }
@@ -117,14 +108,11 @@ public class AnimationConstructor {
         return max;
     }
 
-    private static VectorKeyFrameList<KeyFrame<IValue>> convertRawChannelToFrameList(RawAnimationChannel rawAnimationChannel, boolean isRotation, MolangParser parser) throws NumberFormatException, MolangException {
-        IValue previousXValue = null;
-        IValue previousYValue = null;
-        IValue previousZValue = null;
-
-        List<KeyFrame<IValue>> xKeyFrames = new ArrayList<>();
-        List<KeyFrame<IValue>> yKeyFrames = new ArrayList<>();
-        List<KeyFrame<IValue>> zKeyFrames = new ArrayList<>();
+    private static VectorKeyFrameList convertRawChannelToFrameList(RawAnimationChannel rawAnimationChannel, boolean isRotation) throws NumberFormatException {
+        VectorKeyFrameList toReturn = new VectorKeyFrameList(isRotation);
+        KeyFrame.KeyFrameAxisValue previousXValue = null;
+        KeyFrame.KeyFrameAxisValue previousYValue = null;
+        KeyFrame.KeyFrameAxisValue previousZValue = null;
 
         //vector mode for raw anim channels only has 1 keyframe so there's that
         int channelSize = rawAnimationChannel.isKeyframed() ? rawAnimationChannel.keyframes.size() : 1;
@@ -136,70 +124,77 @@ public class AnimationConstructor {
             Double currentKeyFrameLocation = rawKeyframe.time;
             double animationTimeDifference = currentKeyFrameLocation - previousKeyFrameLocation;
 
-            IValue xValue = parseExpression(parser, rawKeyframe.vector[0]);
-            IValue yValue = parseExpression(parser, rawKeyframe.vector[1]);
-            IValue zValue = parseExpression(parser, rawKeyframe.vector[2]);
+            KeyFrame.KeyFrameAxisValue xValue = parseExpression(rawKeyframe.vector[0]);
+            KeyFrame.KeyFrameAxisValue yValue = parseExpression(rawKeyframe.vector[1]);
+            KeyFrame.KeyFrameAxisValue zValue = parseExpression(rawKeyframe.vector[2]);
 
-            IValue currentXValue = isRotation && xValue instanceof ConstantValue
-                    ? ConstantValue.fromDouble(Math.toRadians(-xValue.get()))
+            KeyFrame.KeyFrameAxisValue currentXValue = isRotation && !xValue.isExpression()
+                    ? new KeyFrame.KeyFrameAxisValue(Math.toRadians(-xValue.getConstValue()))
                     : xValue;
-            IValue currentYValue = isRotation && yValue instanceof ConstantValue
-                    ? ConstantValue.fromDouble(Math.toRadians(-yValue.get()))
+            KeyFrame.KeyFrameAxisValue currentYValue = isRotation && !yValue.isExpression()
+                    ? new KeyFrame.KeyFrameAxisValue(Math.toRadians(-yValue.getConstValue()))
                     : yValue;
-            IValue currentZValue = isRotation && zValue instanceof ConstantValue
-                    ? ConstantValue.fromDouble(Math.toRadians(zValue.get()))
+            KeyFrame.KeyFrameAxisValue currentZValue = isRotation && !zValue.isExpression()
+                    ? new KeyFrame.KeyFrameAxisValue(Math.toRadians(zValue.getConstValue()))
                     : zValue;
-            KeyFrame<IValue> xKeyFrame;
-            KeyFrame<IValue> yKeyFrame;
-            KeyFrame<IValue> zKeyFrame;
+
+            KeyFrame.KeyFrameVectorValue currentVector = new KeyFrame.KeyFrameVectorValue(
+                    currentXValue,
+                    currentYValue,
+                    currentZValue
+            );
+            KeyFrame.KeyFrameVectorValue previousVector = new KeyFrame.KeyFrameVectorValue(
+                    previousXValue,
+                    previousYValue,
+                    previousZValue
+            );
+
+            KeyFrame keyFrameToAdd;
 
             if (rawKeyframe.easingType != null) {
                 EasingType easingType = EasingType.getEasingTypeFromString(rawKeyframe.easingType);
                 if (rawKeyframe.easingArgs != null) {
                     List<Double> easingArgs = convertEasingArgsToList(rawKeyframe.easingArgs);
-                    xKeyFrame = new KeyFrame<>(animationTimeDifference * 20,
-                            i == 0 ? currentXValue : previousXValue, currentXValue, easingType, easingArgs);
-                    yKeyFrame = new KeyFrame<>(animationTimeDifference * 20,
-                            i == 0 ? currentYValue : previousYValue, currentYValue, easingType, easingArgs);
-                    zKeyFrame = new KeyFrame<>(animationTimeDifference * 20,
-                            i == 0 ? currentZValue : previousZValue, currentZValue, easingType, easingArgs);
+
+                    keyFrameToAdd = new KeyFrame(
+                            animationTimeDifference * 20,
+                            i == 0 ? currentVector : previousVector,
+                            currentVector,
+                            easingType, easingArgs
+                    );
                 }
                 else {
-                    xKeyFrame = new KeyFrame<>(animationTimeDifference * 20,
-                            i == 0 ? currentXValue : previousXValue, currentXValue, easingType);
-                    yKeyFrame = new KeyFrame<>(animationTimeDifference * 20,
-                            i == 0 ? currentYValue : previousYValue, currentYValue, easingType);
-                    zKeyFrame = new KeyFrame<>(animationTimeDifference * 20,
-                            i == 0 ? currentZValue : previousZValue, currentZValue, easingType);
-
+                    keyFrameToAdd = new KeyFrame(
+                            animationTimeDifference * 20,
+                            i == 0 ? currentVector : previousVector,
+                            currentVector,
+                            easingType
+                    );
                 }
             }
             else {
-                xKeyFrame = new KeyFrame<>(animationTimeDifference * 20,
-                        i == 0 ? currentXValue : previousXValue, currentXValue);
-                yKeyFrame = new KeyFrame<>(animationTimeDifference * 20,
-                        i == 0 ? currentYValue : previousYValue, currentYValue);
-                zKeyFrame = new KeyFrame<>(animationTimeDifference * 20,
-                        i == 0 ? currentZValue : previousZValue, currentZValue);
+                keyFrameToAdd = new KeyFrame(
+                        animationTimeDifference * 20,
+                        i == 0 ? currentVector : previousVector,
+                        currentVector
+                );
             }
 
             previousXValue = currentXValue;
             previousYValue = currentYValue;
             previousZValue = currentZValue;
 
-            xKeyFrames.add(xKeyFrame);
-            yKeyFrames.add(yKeyFrame);
-            zKeyFrames.add(zKeyFrame);
+            toReturn.addKeyFrame(keyFrameToAdd);
         }
 
-        return new VectorKeyFrameList<>(xKeyFrames, yKeyFrames, zKeyFrames);
+        return toReturn;
     }
 
-    private static IValue parseExpression(MolangParser parser, RawAnimationChannel.RawVectorValue element) throws MolangException {
+    private static KeyFrame.KeyFrameAxisValue parseExpression(RawAnimationChannel.RawVectorValue element) {
         //presumes that the vector value was a string
-        if (element.stringValue != null) return parser.parseExpression(element.stringValue);
-        //presumes that the vector value was a double
-        else return ConstantValue.fromDouble(element.numericalValue);
+        if (element.stringValue != null) return new KeyFrame.KeyFrameAxisValue(element.stringValue);
+            //presumes that the vector value was a double
+        else return new KeyFrame.KeyFrameAxisValue(element.numericalValue);
     }
 
     private static List<Double> convertEasingArgsToList(double[] easingArgsArray) {

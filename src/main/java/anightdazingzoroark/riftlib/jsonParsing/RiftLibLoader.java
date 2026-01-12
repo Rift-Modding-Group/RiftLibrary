@@ -67,7 +67,7 @@ public class RiftLibLoader {
             RawAnimationFile rawAnimationFile = this.gson.fromJson(getResourceAsString(location, manager), RawAnimationFile.class);
             Map<String, RawAnimationFile.RawAnimation> rawAnimationMap = rawAnimationFile.rawAnimations;
             for (Map.Entry<String, RawAnimationFile.RawAnimation> rawAnimation : rawAnimationMap.entrySet()) {
-                Animation animation = AnimationConstructor.getAnimationFromRawAnimationEntry(rawAnimation, parser);
+                Animation animation = AnimationConstructor.getAnimationFromRawAnimationEntry(rawAnimation);
                 animationFile.putAnimation(rawAnimation.getKey(), animation);
             }
 

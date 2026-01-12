@@ -9,7 +9,7 @@ import java.util.Set;
 
 import anightdazingzoroark.riftlib.ServerProxy;
 import anightdazingzoroark.riftlib.RiftLibConfig;
-import anightdazingzoroark.riftlib.core.keyframe.EventKeyFrame;
+import anightdazingzoroark.riftlib.core.keyframe.*;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
@@ -35,8 +35,6 @@ import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.event.AnimationEvent;
-import anightdazingzoroark.riftlib.core.keyframe.AnimationPoint;
-import anightdazingzoroark.riftlib.core.keyframe.BoneAnimationQueue;
 import anightdazingzoroark.riftlib.core.manager.AnimationData;
 import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
 import anightdazingzoroark.riftlib.core.snapshot.DirtyTracker;
@@ -95,16 +93,16 @@ public class AnimationProcessor<T extends IAnimatable> {
 				IBone bone = boneAnimation.bone;
 
 				AnimationPoint rXPoint = boneAnimation.rotationXQueue.poll();
-				AnimationPoint rYPoint = boneAnimation.rotationYQueue.poll();
-				AnimationPoint rZPoint = boneAnimation.rotationZQueue.poll();
+                AnimationPoint rYPoint = boneAnimation.rotationYQueue.poll();
+                AnimationPoint rZPoint = boneAnimation.rotationZQueue.poll();
 
-				AnimationPoint pXPoint = boneAnimation.positionXQueue.poll();
-				AnimationPoint pYPoint = boneAnimation.positionYQueue.poll();
-				AnimationPoint pZPoint = boneAnimation.positionZQueue.poll();
+                AnimationPoint pXPoint = boneAnimation.positionXQueue.poll();
+                AnimationPoint pYPoint = boneAnimation.positionYQueue.poll();
+                AnimationPoint pZPoint = boneAnimation.positionZQueue.poll();
 
-				AnimationPoint sXPoint = boneAnimation.scaleXQueue.poll();
-				AnimationPoint sYPoint = boneAnimation.scaleYQueue.poll();
-				AnimationPoint sZPoint = boneAnimation.scaleZQueue.poll();
+                AnimationPoint sXPoint = boneAnimation.scaleXQueue.poll();
+                AnimationPoint sYPoint = boneAnimation.scaleYQueue.poll();
+                AnimationPoint sZPoint = boneAnimation.scaleZQueue.poll();
 
 				if (rXPoint != null && rYPoint != null && rZPoint != null) {
 					boneAnimationValues.addRotations(

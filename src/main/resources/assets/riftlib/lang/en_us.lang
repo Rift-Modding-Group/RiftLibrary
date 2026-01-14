@@ -19,6 +19,7 @@ tile.riftlib.sprinkler.name=Sprinkler
 
 entity.dragon.name=Red Dragon
 entity.flying_pufferfish.name=Flying Pufferfish
+entity.alarm_clock.name=Alarm Clock
 
 ui.hovered_tool=%s level %s
 ui.open_in_jei=Click to open in JEI

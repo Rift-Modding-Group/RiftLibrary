@@ -47,5 +47,7 @@ public interface IAnimatable {
      * for, or maybe their custom operation is also not suited for use there too,
      * hence, this method.
      */
-    default void updateAnimationVariable(AnimatableValue value) {}
+    default void updateAnimationVariable(AnimatableValue value) {
+
+    }
 }

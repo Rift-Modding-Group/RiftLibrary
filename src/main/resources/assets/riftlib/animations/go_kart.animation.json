@@ -1,0 +1,22 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.go_kart.move": {
+			"loop": true,
+			"bones": {
+				"wheelZero": {
+					"rotation": ["-query.anim_time * -30", 0, 0]
+				},
+				"wheelOne": {
+					"rotation": ["-query.anim_time * -30", 0, 0]
+				},
+				"wheelTwo": {
+					"rotation": ["-query.anim_time * -30", 0, 0]
+				},
+				"wheelThree": {
+					"rotation": ["-query.anim_time * -30", 0, 0]
+				}
+			}
+		}
+	}
+}

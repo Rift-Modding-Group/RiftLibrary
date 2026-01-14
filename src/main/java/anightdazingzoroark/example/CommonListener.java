@@ -78,18 +78,26 @@ public class CommonListener {
 				.tracker(160, 2, false)
 				.build()
 		);
-        event.getRegistry().register(EntityEntryBuilder.create()
-                .entity(AlarmClock.class)
-                .name("alarm_clock")
-                .id(new ResourceLocation(RiftLib.ModID, "alarm_clock"), id++)
-                .tracker(160, 2, false)
-                .build()
-        );
+		event.getRegistry().register(EntityEntryBuilder.create()
+				.entity(AlarmClock.class)
+				.name("alarm_clock")
+				.id(new ResourceLocation(RiftLib.ModID, "alarm_clock"), id++)
+				.tracker(160, 2, false)
+				.build()
+		);
+		event.getRegistry().register(EntityEntryBuilder.create()
+				.entity(GoKart.class)
+				.name("go_kart")
+				.id(new ResourceLocation(RiftLib.ModID, "go_kart"), id++)
+				.tracker(160, 2, false)
+				.build()
+		);
 
 		//egg registry
 		EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "dragon"), 0x980d0d, 0xca7824);
         EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "flying_pufferfish"), 0xffae00, 0xbfc700);
-        EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "alarm_clock"), 0x0000ff, 0xffffff);
+		EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "alarm_clock"), 0x0000ff, 0xffffff);
+		EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "go_kart"), 0xbf2c12, 0xb3b3b3);
 
 		//tile entity registry
         GameRegistry.registerTileEntity(MerryGoRoundTileEntity.class, new ResourceLocation(RiftLib.ModID, "merry_go_round_te"));
@@ -137,15 +145,6 @@ public class CommonListener {
 
 	public static void registerBlock(Block block, ResourceLocation name) {
 		blockRegistry.register(block.setRegistryName(name).setTranslationKey(name.toString().replace(":", ".")));
-	}
-
-	@SubscribeEvent
-	public void onRegisterSoundEvents(RegistryEvent.Register<SoundEvent> event) {
-		ResourceLocation location = new ResourceLocation(RiftLib.ModID, "jack_music");
-
-		SoundRegistry.JACK_MUSIC = new SoundEvent(location).setRegistryName(location);
-
-		event.getRegistry().register(SoundRegistry.JACK_MUSIC);
 	}
 
 	@SubscribeEvent

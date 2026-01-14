@@ -1,0 +1,60 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.unknown",
+				"texture_width": 128,
+				"texture_height": 128,
+				"visible_bounds_width": 4,
+				"visible_bounds_height": 2.5,
+				"visible_bounds_offset": [0, 0.75, 0]
+			},
+			"bones": [
+				{
+					"name": "goKart",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [-6, 2, -8], "size": [12, 1, 16], "uv": [0, 0]},
+						{"origin": [-7, 2, 8], "size": [14, 8, 1], "uv": [0, 41]},
+						{"origin": [-7, 2, -9], "size": [14, 8, 1], "uv": [30, 41]},
+						{"origin": [-7, 2, -8], "size": [1, 8, 16], "uv": [0, 17]},
+						{"origin": [6, 2, -8], "size": [1, 8, 16], "uv": [34, 17]}
+					]
+				},
+				{
+					"name": "wheelZero",
+					"parent": "goKart",
+					"pivot": [-8, 2, -5.5],
+					"cubes": [
+						{"origin": [-9, 0, -7.5], "size": [2, 4, 4], "uv": [0, 50]}
+					]
+				},
+				{
+					"name": "wheelOne",
+					"parent": "goKart",
+					"pivot": [8, 2, -5.5],
+					"cubes": [
+						{"origin": [7, 0, -7.5], "size": [2, 4, 4], "uv": [12, 50]}
+					]
+				},
+				{
+					"name": "wheelTwo",
+					"parent": "goKart",
+					"pivot": [8, 2, 5.5],
+					"cubes": [
+						{"origin": [7, 0, 3.5], "size": [2, 4, 4], "uv": [24, 50]}
+					]
+				},
+				{
+					"name": "wheelThree",
+					"parent": "goKart",
+					"pivot": [-8, 2, 5.5],
+					"cubes": [
+						{"origin": [-9, 0, 3.5], "size": [2, 4, 4], "uv": [36, 50]}
+					]
+				}
+			]
+		}
+	]
+}

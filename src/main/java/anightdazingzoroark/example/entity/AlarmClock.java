@@ -46,4 +46,11 @@ public class AlarmClock extends EntityLiving implements IAnimatable {
                 new AnimatableValue("minute_rotation = math.random(0, 360);")
         );
     }
+
+    @Override
+    public List<AnimatableValue> tickAnimationVariables() {
+        return Arrays.asList(
+                new AnimatableValue("minute_rotation = minute_rotation + 1;")
+        );
+    }
 }

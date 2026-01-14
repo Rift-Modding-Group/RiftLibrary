@@ -40,12 +40,15 @@ public abstract class AnimatedTickingGeoModel<T extends IAnimatable & IAnimation
 		AnimationEvent<T> predicate;
 		if (customPredicate == null) {
 			predicate = new AnimationEvent<T>(entity, 0, 0, 0, false, Collections.emptyList());
-		} else {
-			predicate = customPredicate;
 		}
+		else predicate = customPredicate;
 
-		predicate.animationTick = seekTime;
-		getAnimationProcessor().preAnimationSetup(predicate.getAnimatable(), seekTime);
+		predicate.animationTick = this.seekTime;
+
+		//update molang related information while the entity is rendered
+		manager.updateAnimationVariables();
+		manager.updateMolangQueries();
+
 		if (!this.getAnimationProcessor().getModelRendererList().isEmpty()) {
 			getAnimationProcessor().tickAnimation(entity, uniqueID, seekTime, predicate,
 					RiftLibCache.getInstance().parser, shouldCrashOnMissing);

@@ -29,7 +29,6 @@ import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.client.FMLFolderResourcePack;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
-import anightdazingzoroark.riftlib.molang.MolangRegistrar;
 
 @SuppressWarnings("deprecation")
 public class RiftLibCache implements IResourceManagerReloadListener {
@@ -73,7 +72,6 @@ public class RiftLibCache implements IResourceManagerReloadListener {
     private HashMap<ResourceLocation, ParticleBuilder> particleBuilders = new HashMap<>();
 
 	protected RiftLibCache() {
-		MolangRegistrar.registerVars(this.parser);
         this.loader = new RiftLibLoader();
 	}
 

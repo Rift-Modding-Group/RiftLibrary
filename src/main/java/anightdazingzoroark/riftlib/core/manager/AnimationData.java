@@ -15,6 +15,7 @@ import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.molang.MolangParser;
+import anightdazingzoroark.riftlib.molang.MolangQueryValue;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.resource.RiftLibCache;
 import org.apache.commons.lang3.tuple.Pair;
@@ -27,6 +28,7 @@ public class AnimationData {
 	private HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection;
 	private final HashMap<String, AnimationController> animationControllers = new HashMap<>();
     private final List<AnimatedLocator> animatedLocators = new ArrayList<>();
+	private final MolangParser parser = RiftLibCache.getInstance().parser;
     private final IAnimatable iAnimatable;
     public final MolangScope dataScope = new MolangScope();
     private GeoModel currentModel;
@@ -115,21 +117,40 @@ public class AnimationData {
     }
 
 	public void initAnimationVariables() {
-		//init molang queries from the animatable's createAnimationVariables()
-		MolangParser parser = RiftLibCache.getInstance().parser;
 		List<AnimatableValue> initAnimatableValues = this.iAnimatable.createAnimationVariables();
-		parser.withScope(this.dataScope, () -> {
+		this.parser.withScope(this.dataScope, () -> {
 			for (AnimatableValue animatableValue : initAnimatableValues) {
 				if (animatableValue.isExpression()) {
 					try {
-						parser.parseExpression(animatableValue.getExpressionValue()).get();
+						this.parser.parseExpression(animatableValue.getExpressionValue()).get();
 					}
 					catch (Exception e) {}
 				}
 				else {
-					parser.setValue(animatableValue.getConstantValue().left, animatableValue.getConstantValue().right);
+					this.parser.setValue(animatableValue.getConstantValue().left, animatableValue.getConstantValue().right);
 				}
 			}
 		});
+	}
+
+	public void updateAnimationVariables() {
+		List<AnimatableValue> updateAnimatableValues = this.iAnimatable.tickAnimationVariables();
+		this.parser.withScope(this.dataScope, () -> {
+			for (AnimatableValue animatableValue : updateAnimatableValues) {
+				if (animatableValue.isExpression()) {
+					try {
+						this.parser.parseExpression(animatableValue.getExpressionValue()).get();
+					}
+					catch (Exception e) {}
+				}
+				else {
+					this.parser.setValue(animatableValue.getConstantValue().left, animatableValue.getConstantValue().right);
+				}
+			}
+		});
+	}
+
+	public void updateMolangQueries() {
+		this.parser.withScope(this.dataScope, () -> MolangQueryValue.updateMolangQueryValues(this.parser, this.iAnimatable));
 	}
 }

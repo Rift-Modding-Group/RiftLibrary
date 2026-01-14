@@ -8,4 +8,8 @@ public class MolangUtils {
 	public static float booleanToFloat(boolean input) {
 		return input ? 1.0F : 0.0F;
 	}
+
+	public static double booleanToDouble(boolean input) {
+		return input ? 1D : 0D;
+	}
 }

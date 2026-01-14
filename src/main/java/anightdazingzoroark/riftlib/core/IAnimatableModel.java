@@ -33,6 +33,4 @@ public interface IAnimatableModel<E> {
 		if (bone == null) RiftLib.LOGGER.warn("Cannot find bone {}.", boneName);
 		return bone;
 	}
-
-	void setMolangQueries(IAnimatable animatable, double currentTick);
 }

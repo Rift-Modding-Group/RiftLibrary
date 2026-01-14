@@ -438,8 +438,4 @@ public class AnimationProcessor<T extends IAnimatable> {
 	public List<IBone> getModelRendererList() {
 		return modelRendererList;
 	}
-
-	public void preAnimationSetup(IAnimatable animatable, double seekTime) {
-		this.animatedModel.setMolangQueries(animatable, seekTime);
-	}
 }

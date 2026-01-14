@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.easing.EasingManager;
 import anightdazingzoroark.riftlib.core.keyframe.*;
+import anightdazingzoroark.riftlib.molang.MolangQueryValue;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -344,7 +345,7 @@ public class AnimationController<T extends IAnimatable> {
 				saveSnapshotsForAnimation(this.currentAnimation, boneSnapshotCollection);
 			}
 			if (this.currentAnimation != null) {
-				this.setAnimTime(parser, 0);
+				this.setAnimTime(parser, scope, 0);
 				for (BoneAnimation boneAnimation : this.currentAnimation.boneAnimations) {
                     BoneAnimationQueue boneAnimationQueue = this.boneAnimationQueues.get(boneAnimation.boneName);
 					BoneSnapshot boneSnapshot = this.boneSnapshots.get(boneAnimation.boneName);
@@ -415,8 +416,8 @@ public class AnimationController<T extends IAnimatable> {
 		}
 	}
 
-	private void setAnimTime(MolangParser parser, double tick) {
-		parser.setValue("query.anim_time", tick / 20);
+	private void setAnimTime(MolangParser parser, MolangScope scope, double tick) {
+		parser.withScope(scope, () -> MolangQueryValue.setAnimTime(parser, tick / 20D));
 	}
 
 	private IAnimatableModel<T> getModel(T animatable) {
@@ -490,7 +491,7 @@ public class AnimationController<T extends IAnimatable> {
 				tick = this.adjustTick(actualTick);
 			}
 		}
-		this.setAnimTime(parser, tick);
+		this.setAnimTime(parser, scope, tick);
 
 		// Loop through every boneanimation in the current animation and process the
 		// values

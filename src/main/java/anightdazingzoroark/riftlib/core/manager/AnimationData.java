@@ -43,23 +43,7 @@ public class AnimationData {
 	public AnimationData(IAnimatable iAnimatable) {
         this.iAnimatable = iAnimatable;
 		this.boneSnapshotCollection = new HashMap<>();
-
-        //init molang queries from the animatable's createAnimationVariables()
-        MolangParser parser = RiftLibCache.getInstance().parser;
-        List<AnimatableValue> initAnimatableValues = iAnimatable.createAnimationVariables();
-        parser.withScope(this.dataScope, () -> {
-            for (AnimatableValue animatableValue : initAnimatableValues) {
-                if (animatableValue.isExpression()) {
-                    try {
-                        parser.parseExpression(animatableValue.getExpressionValue());
-                    }
-                    catch (Exception e) {}
-                }
-                else {
-                    parser.setValue(animatableValue.getConstantValue().left, animatableValue.getConstantValue().right);
-                }
-            }
-        });
+		this.initAnimationVariables();
 	}
 
 	/**
@@ -129,4 +113,23 @@ public class AnimationData {
     public List<AnimatedLocator> getAnimatedLocators() {
         return this.animatedLocators;
     }
+
+	public void initAnimationVariables() {
+		//init molang queries from the animatable's createAnimationVariables()
+		MolangParser parser = RiftLibCache.getInstance().parser;
+		List<AnimatableValue> initAnimatableValues = this.iAnimatable.createAnimationVariables();
+		parser.withScope(this.dataScope, () -> {
+			for (AnimatableValue animatableValue : initAnimatableValues) {
+				if (animatableValue.isExpression()) {
+					try {
+						parser.parseExpression(animatableValue.getExpressionValue()).get();
+					}
+					catch (Exception e) {}
+				}
+				else {
+					parser.setValue(animatableValue.getConstantValue().left, animatableValue.getConstantValue().right);
+				}
+			}
+		});
+	}
 }

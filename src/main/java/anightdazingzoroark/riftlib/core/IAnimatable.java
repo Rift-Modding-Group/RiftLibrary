@@ -44,7 +44,8 @@ public interface IAnimatable {
     /**
      * There might be times where the user would want their custom variable to
      * update on specific events that tickAnimationVariables() is not suited
-     * for, hence, this method
+     * for, or maybe their custom operation is also not suited for use there too,
+     * hence, this method.
      */
     default void updateAnimationVariable(AnimatableValue value) {}
 }

@@ -67,6 +67,7 @@ public class ClientProxy extends ServerProxy {
             RenderingRegistry.registerEntityRenderingHandler(BombProjectile.class, BombProjectileRenderer::new);
             RenderingRegistry.registerEntityRenderingHandler(AlarmClockEntity.class, AlarmClockRenderer::new);
             RenderingRegistry.registerEntityRenderingHandler(GoKartEntity.class, GoKartRenderer::new);
+            RenderingRegistry.registerEntityRenderingHandler(AvianRunnerEntity.class, AvianRunnerRenderer::new);
 
             //armor renderer
             GeoArmorRenderer.registerArmorRenderer(GreenArmorItem.class, new GreenArmorRenderer());

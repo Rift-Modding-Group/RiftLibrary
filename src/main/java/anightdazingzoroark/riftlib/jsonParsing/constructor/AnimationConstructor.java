@@ -19,6 +19,7 @@ public class AnimationConstructor {
         toReturn.animationName = rawAnimation.getKey();
         toReturn.loop = rawAnimation.getValue().loop == Boolean.TRUE ? LoopType.LOOP : LoopType.PLAY_ONCE;
         toReturn.animationLength = rawAnimation.getValue().animationLength != null ? rawAnimation.getValue().animationLength * 20 : null; //if length is null, it will be calculated later based on the provided info
+        toReturn.animTimeUpdateExpression = rawAnimation.getValue().animTimeUpdate; //if null, it just use default update method
 
         //create particle animations
         Map<String, RawAnimationFile.RawParticleEffectAnimations> rawParticleEffectAnimations = rawAnimation.getValue().particleEffects;

@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -296,7 +297,9 @@ public class AnimationController<T extends IAnimatable> {
 			}
 		}
 
-		createInitialQueues(modelRendererList);
+		this.createInitialQueues(modelRendererList);
+
+		tick = this.hasAnimTimeExpression() ? this.getAnimTimeExpressionValue(parser, scope) : tick;
 
 		double actualTick = tick;
 		tick = this.adjustTick(tick);
@@ -305,7 +308,7 @@ public class AnimationController<T extends IAnimatable> {
 		if (this.animationState == AnimationState.Transitioning && tick >= this.transitionLengthTicks) {
 			this.shouldResetTick = true;
             this.animationState = AnimationState.Running;
-			tick = adjustTick(actualTick);
+			tick = this.adjustTick(actualTick);
 		}
 
 		assert tick >= 0 : "GeckoLib: Tick was less than zero";
@@ -320,14 +323,14 @@ public class AnimationController<T extends IAnimatable> {
 		}
 		if (this.justStartedTransition && (this.shouldResetTick || this.justStopped)) {
             this.justStopped = false;
-			tick = adjustTick(actualTick);
+			tick = this.adjustTick(actualTick);
 		}
         else if (currentAnimation == null && !this.animationQueue.isEmpty()) {
 			this.shouldResetTick = true;
 			this.animationState = AnimationState.Transitioning;
             this.justStartedTransition = true;
             this.needsAnimationReload = false;
-			tick = adjustTick(actualTick);
+			tick = this.adjustTick(actualTick);
 		}
         else {
 			if (this.animationState != AnimationState.Transitioning) {
@@ -559,12 +562,12 @@ public class AnimationController<T extends IAnimatable> {
 
 	// Used to reset the "tick" everytime a new animation starts, a transition
 	// starts, or something else of importance happens
-	protected double adjustTick(double tick) {
+	private double adjustTick(double tick) {
 		if (this.shouldResetTick) {
-			if (getAnimationState() == AnimationState.Transitioning) {
+			if (this.getAnimationState() == AnimationState.Transitioning) {
 				this.tickOffset = tick;
 			}
-            else if (getAnimationState() == AnimationState.Running) {
+            else if (this.getAnimationState() == AnimationState.Running) {
 				this.tickOffset = tick;
 			}
             this.shouldResetTick = false;
@@ -572,6 +575,25 @@ public class AnimationController<T extends IAnimatable> {
 		}
         // assert tick - this.tickOffset >= 0;
         else return this.animationSpeed * Math.max(tick - this.tickOffset, 0.0D);
+	}
+
+
+	private double getAnimTimeExpressionValue(MolangParser parser, MolangScope scope) {
+		if (this.currentAnimation == null) return 0;
+
+		AtomicReference<Double> atomicToReturn = new AtomicReference<>(0D);
+		parser.withScope(scope, () -> {
+			try {
+				double value = parser.parseExpression(this.currentAnimation.animTimeUpdateExpression).get();
+				atomicToReturn.set(value);
+			}
+			catch (Exception e) {}
+		});
+		return atomicToReturn.get();
+	}
+
+	private boolean hasAnimTimeExpression() {
+		return this.currentAnimation != null && this.currentAnimation.animTimeUpdateExpression != null;
 	}
 
     public EventKeyFrame.ParticleEventKeyFrame getLastParticleEvent() {

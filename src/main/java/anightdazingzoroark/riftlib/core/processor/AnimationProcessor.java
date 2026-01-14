@@ -52,12 +52,9 @@ public class AnimationProcessor<T extends IAnimatable> {
 	}
 
 	public void tickAnimation(IAnimatable entity, Integer uniqueID, double seekTime, AnimationEvent event, MolangParser parser, boolean crashWhenCantFindBone) {
-		if (seekTime != lastTickValue) {
-			this.animatedEntities.clear();
-		}
-		else if (this.animatedEntities.contains(uniqueID)) { // Entity already animated on this tick
-			return;
-		}
+		if (seekTime != this.lastTickValue) this.animatedEntities.clear();
+		// Entity already animated on this tick
+		else if (this.animatedEntities.contains(uniqueID)) return;
 
 		this.lastTickValue = seekTime;
 		this.animatedEntities.add(uniqueID);
@@ -70,7 +67,7 @@ public class AnimationProcessor<T extends IAnimatable> {
 		HashMap<String, DirtyTracker> modelTracker = createNewDirtyTracker();
 
 		// Store the current value of each bone rotation/position/scale
-		updateBoneSnapshots(manager.getBoneSnapshotCollection());
+		this.updateBoneSnapshots(manager.getBoneSnapshotCollection());
 
 		HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshots = manager.getBoneSnapshotCollection();
 

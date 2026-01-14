@@ -59,6 +59,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
         //create animated locators
         manager.createAnimatedLocators(this.currentModel);
 
+
 		if (manager.ticker == null) {
 			AnimationTicker ticker = new AnimationTicker(manager);
 			manager.ticker = ticker;
@@ -82,8 +83,11 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 		manager.updateMolangQueries();
 
 		if (!this.animationProcessor.getModelRendererList().isEmpty()) {
-			animationProcessor.tickAnimation(entity, uniqueID, seekTime, predicate, RiftLibCache.getInstance().parser,
-					shouldCrashOnMissing);
+			this.animationProcessor.tickAnimation(
+					entity, uniqueID, this.seekTime,
+					predicate, RiftLibCache.getInstance().parser,
+					this.shouldCrashOnMissing
+			);
 		}
 	}
 

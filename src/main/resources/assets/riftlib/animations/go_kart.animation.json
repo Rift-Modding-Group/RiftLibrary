@@ -3,18 +3,19 @@
 	"animations": {
 		"animation.go_kart.move": {
 			"loop": true,
+			"anim_time_update": "query.modified_distance_moved",
 			"bones": {
 				"wheelZero": {
-					"rotation": ["-query.anim_time * -30", 0, 0]
+					"rotation": ["query.anim_time * 30", 0, 0]
 				},
 				"wheelOne": {
-					"rotation": ["-query.anim_time * -30", 0, 0]
+					"rotation": ["query.anim_time * 30", 0, 0]
 				},
 				"wheelTwo": {
-					"rotation": ["-query.anim_time * -30", 0, 0]
+					"rotation": ["query.anim_time * 30", 0, 0]
 				},
 				"wheelThree": {
-					"rotation": ["-query.anim_time * -30", 0, 0]
+					"rotation": ["query.anim_time * 30", 0, 0]
 				}
 			}
 		}

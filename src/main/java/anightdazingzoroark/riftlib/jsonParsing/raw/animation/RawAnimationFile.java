@@ -15,6 +15,9 @@ public class RawAnimationFile {
         @SerializedName("animation_length")
         public Double animationLength;
 
+        @SerializedName("anim_time_update")
+        public String animTimeUpdate;
+
         @SerializedName("bones")
         public Map<String, RawBoneAnimations> bones;
 

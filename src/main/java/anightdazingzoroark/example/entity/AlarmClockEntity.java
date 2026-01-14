@@ -16,10 +16,10 @@ import net.minecraft.world.World;
 import java.util.Arrays;
 import java.util.List;
 
-public class AlarmClock extends EntityLiving implements IAnimatable {
+public class AlarmClockEntity extends EntityLiving implements IAnimatable {
     private final AnimationFactory factory = new AnimationFactory(this);
 
-    public AlarmClock(World worldIn) {
+    public AlarmClockEntity(World worldIn) {
         super(worldIn);
     }
 

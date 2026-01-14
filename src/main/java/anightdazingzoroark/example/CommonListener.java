@@ -19,7 +19,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.event.RegistryEvent;
@@ -32,7 +31,6 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
 import anightdazingzoroark.example.registry.ItemRegistry;
-import anightdazingzoroark.example.registry.SoundRegistry;
 import anightdazingzoroark.riftlib.RiftLib;
 
 public class CommonListener {
@@ -79,14 +77,14 @@ public class CommonListener {
 				.build()
 		);
 		event.getRegistry().register(EntityEntryBuilder.create()
-				.entity(AlarmClock.class)
+				.entity(AlarmClockEntity.class)
 				.name("alarm_clock")
 				.id(new ResourceLocation(RiftLib.ModID, "alarm_clock"), id++)
 				.tracker(160, 2, false)
 				.build()
 		);
 		event.getRegistry().register(EntityEntryBuilder.create()
-				.entity(GoKart.class)
+				.entity(GoKartEntity.class)
 				.name("go_kart")
 				.id(new ResourceLocation(RiftLib.ModID, "go_kart"), id++)
 				.tracker(160, 2, false)

@@ -151,6 +151,17 @@ public class AnimationData {
 	}
 
 	public void updateMolangQueries() {
-		this.parser.withScope(this.dataScope, () -> MolangQueryValue.updateMolangQueryValues(this.parser, this.iAnimatable));
+		this.parser.withScope(this.dataScope, () -> {
+			//generic molang queries
+			MolangQueryValue.updateMolangQueryValues(this.parser, this.iAnimatable);
+
+			//special molang queries
+			MolangQueryValue.setModifiedDistanceMoved(this.parser, this.iAnimatable);
+		});
 	}
+
+	/**
+	 * Only relevant if the data is for an entity. This is for updating speed related values
+	 */
+	public void updateAnimatableEntitySpeed() {}
 }

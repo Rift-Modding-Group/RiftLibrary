@@ -299,7 +299,7 @@ public class AnimationController<T extends IAnimatable> {
 		createInitialQueues(modelRendererList);
 
 		double actualTick = tick;
-		tick = adjustTick(tick);
+		tick = this.adjustTick(tick);
 
 		// Transition period has ended, reset the tick and set the animation to running
 		if (this.animationState == AnimationState.Transitioning && tick >= this.transitionLengthTicks) {

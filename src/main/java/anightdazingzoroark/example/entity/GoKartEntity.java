@@ -8,7 +8,6 @@ import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.manager.AnimationData;
 import anightdazingzoroark.riftlib.core.manager.AnimationFactory;
-import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumHand;
@@ -16,11 +15,16 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 
-public class GoKart extends EntityCreature implements IAnimatable {
+public class GoKartEntity extends EntityCreature implements IAnimatable {
     private final AnimationFactory factory = new AnimationFactory(this);
 
-    public GoKart(World worldIn) {
+    public GoKartEntity(World worldIn) {
         super(worldIn);
+    }
+
+    protected void applyEntityAttributes() {
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25D);
     }
 
     @Override
@@ -33,6 +37,7 @@ public class GoKart extends EntityCreature implements IAnimatable {
     }
 
     //ride management stuff starts here
+    //also because of how simple this entity is its not an IDynamicRideUser
     @Override
     public void updatePassenger(Entity passenger) {
         if (!this.isPassenger(passenger)) return;
@@ -60,19 +65,14 @@ public class GoKart extends EntityCreature implements IAnimatable {
         if (this.isBeingRidden()) {
             EntityLivingBase controller = (EntityLivingBase)this.getControllingPassenger();
             if (controller != null) {
-                if (this.getAttackTarget() != null) {
-                    this.setAttackTarget(null);
-                    this.getNavigator().clearPath();
-                }
-
                 strafe = controller.moveStrafing * 0.5f;
                 forward = controller.moveForward;
 
-                if (forward <= 0.0F) forward *= 0.25F;
+                if (forward <= 0f) forward *= 0.25f;
 
                 //movement
-                this.stepHeight = 1.0F;
-                this.jumpMovementFactor = this.getAIMoveSpeed() * 0.1F;
+                this.stepHeight = 1f;
+                this.jumpMovementFactor = this.getAIMoveSpeed() * 0.1f;
                 this.fallDistance = 0;
                 float riderSpeed = (float) (controller.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getAttributeValue());
                 float moveSpeed = (float)Math.max(0, this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getAttributeValue() - riderSpeed);
@@ -82,8 +82,8 @@ public class GoKart extends EntityCreature implements IAnimatable {
             }
         }
         else {
-            this.stepHeight = 0.5F;
-            this.jumpMovementFactor = 0.02F;
+            this.stepHeight = 0.5f;
+            this.jumpMovementFactor = 0.02f;
             super.travel(strafe, vertical, forward);
         }
     }

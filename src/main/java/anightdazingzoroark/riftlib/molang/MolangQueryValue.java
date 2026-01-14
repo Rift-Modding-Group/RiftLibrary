@@ -15,6 +15,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+
+/**
+ * This class contains all helper functions that involve molang queries.
+ * This is a great way to organize them.
+ */
 public class MolangQueryValue {
     private static final HashMap<String, Function<IAnimatable, Double>> molangQueryMap = new HashMap<>();
 
@@ -30,6 +35,23 @@ public class MolangQueryValue {
     //being part of molangQueryMap
     public static void setAnimTime(MolangParser parser, double value) {
         parser.setValue("query.anim_time", value);
+    }
+
+    public static void setModifiedDistanceMoved(MolangParser parser, IAnimatable animatable) {
+        if (!(animatable instanceof Entity)) {
+            parser.setValue("query.modified_distance_moved", 0);
+            return;
+        }
+        double speed = getEntitySpeed(animatable);
+
+        //the reason why modified_distance_moved is calculated as such is because
+        //getEntitySpeed returns the speed of an entity within the tick, which is
+        //as good as by how many blocks it was displaced within a tick, which is
+        //good enough to add upon for this query
+        if (speed > 0) {
+            double oldValue = parser.getVariable("query.modified_distance_moved").get();
+            parser.setValue("query.modified_distance_moved", oldValue + speed);
+        }
     }
 
     public static void registerMolangQueries() {
@@ -134,12 +156,7 @@ public class MolangQueryValue {
         molangQueryMap.put("query.ground_speed", new Function<IAnimatable, Double>() {
             @Override
             public Double apply(IAnimatable animatable) {
-                if (!(animatable instanceof EntityLivingBase)) return 0D;
-
-                EntityLivingBase entity = (EntityLivingBase) animatable;
-                double dx = entity.motionX;
-                double dz = entity.motionZ;
-                return (double) MathHelper.sqrt((dx * dx) + (dz * dz));
+                return getEntitySpeed(animatable);
             }
         });
         molangQueryMap.put("query.yaw_speed", new Function<IAnimatable, Double>() {
@@ -155,5 +172,22 @@ public class MolangQueryValue {
                 return (double) (currentEntityYaw - prevEntityYaw);
             }
         });
+    }
+
+    //better than using the motion variables :tm:
+    private static double getEntitySpeed(IAnimatable animatable) {
+        if (!(animatable instanceof Entity)) return 0D;
+        Entity entity = (Entity) animatable;
+        float partialTicks = Minecraft.getMinecraft().getRenderPartialTicks();
+
+        //query.modified_distance_moved is to be modifiable based on entity speed
+        //multiplied by amount of ticks ever since they moved
+        double currentPosX = entity.prevPosX + (entity.posX - entity.prevPosX) * partialTicks;
+        double currentPosZ = entity.prevPosZ + (entity.posZ - entity.prevPosZ) * partialTicks;
+
+        double dx = currentPosX - entity.prevPosX;
+        double dz = currentPosZ - entity.prevPosZ;
+
+        return Math.sqrt(dx * dx + dz * dz);
     }
 }

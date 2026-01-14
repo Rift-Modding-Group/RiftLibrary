@@ -6,10 +6,10 @@
 			"anim_time_update": "query.modified_distance_moved",
 			"bones": {
 				"leftLeg": {
-					"rotation": ["-math.sin(query.anim_time * 30) * -22.5", 0, 0]
+					"rotation": ["math.sin(query.anim_time * 30) * 22.5", 0, 0]
 				},
 				"rightLeg": {
-					"rotation": ["-math.sin(query.anim_time * 30) * 22.5", 0, 0]
+					"rotation": ["math.sin(query.anim_time * 30) * -22.5", 0, 0]
 				}
 			}
 		}

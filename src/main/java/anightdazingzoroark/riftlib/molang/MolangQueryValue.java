@@ -37,6 +37,10 @@ public class MolangQueryValue {
         parser.setValue("query.anim_time", value);
     }
 
+    public static void setLifeTime(MolangParser parser, double value) {
+        parser.setValue("query.life_time", value);
+    }
+
     public static void setModifiedDistanceMoved(MolangParser parser, IAnimatable animatable) {
         if (!(animatable instanceof Entity)) {
             parser.setValue("query.modified_distance_moved", 0);

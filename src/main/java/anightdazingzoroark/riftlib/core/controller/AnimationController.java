@@ -108,6 +108,7 @@ public class AnimationController<T extends IAnimatable> {
 	public Function<Double, Double> customEasingMethod;
 	protected boolean needsAnimationReload = false;
 	public double animationSpeed = 1D;
+	private double lastResolvedAnimTick = 0D;
 	private final Set<EventKeyFrame> executedKeyFrames = new HashSet<>();
     private EventKeyFrame.ParticleEventKeyFrame lastParticleEvent;
     private EventKeyFrame.SoundEventKeyFrame lastSoundEvent;
@@ -282,8 +283,9 @@ public class AnimationController<T extends IAnimatable> {
 			HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection, MolangParser parser, MolangScope scope,
 			boolean crashWhenCantFindBone) {
         double tickWithinScope = tick;
+
         parser.withScope(scope, () -> {
-            parser.setValue("query.life_time", tickWithinScope / 20);
+			MolangQueryValue.setLifeTime(parser, tickWithinScope / 20D);
         });
 		if (this.currentAnimation != null) {
 			IAnimatableModel<T> model = getModel(this.animatable);
@@ -298,8 +300,6 @@ public class AnimationController<T extends IAnimatable> {
 		}
 
 		this.createInitialQueues(modelRendererList);
-
-		tick = this.hasAnimTimeExpression() ? this.getAnimTimeExpressionValue(parser, scope) : tick;
 
 		double actualTick = tick;
 		tick = this.adjustTick(tick);
@@ -413,7 +413,7 @@ public class AnimationController<T extends IAnimatable> {
 				}
 			}
 		}
-        else if (getAnimationState() == AnimationState.Running) {
+        else if (this.getAnimationState() == AnimationState.Running) {
 			// Actually run the animation
 			this.processCurrentAnimation(tick, actualTick, parser, scope, crashWhenCantFindBone);
 		}
@@ -453,8 +453,15 @@ public class AnimationController<T extends IAnimatable> {
 
 	private void processCurrentAnimation(double tick, double actualTick, MolangParser parser, MolangScope scope, boolean crashWhenCantFindBone) {
 		assert currentAnimation != null;
+		double resolvedTick = this.resolveAnimTick(tick, parser, scope);
+
+		if (resolvedTick < this.lastResolvedAnimTick) {
+			this.resetEventKeyFrames();
+		}
+		this.lastResolvedAnimTick = resolvedTick;
+
 		//Animation has ended
-		if (tick >= currentAnimation.animationLength) {
+		if (resolvedTick >= currentAnimation.animationLength) {
 			if (this.currentAnimation.loop == LoopType.PLAY_ONCE) {
                 this.resetEventKeyFrames();
 
@@ -476,6 +483,8 @@ public class AnimationController<T extends IAnimatable> {
             //unlike other loop types, hold on last frame doesn't reset key frames
             //until a new animation in the queue shows up
             else if (this.currentAnimation.loop == LoopType.HOLD_ON_LAST_FRAME) {
+				resolvedTick = Math.min(resolvedTick, currentAnimation.animationLength);
+
                 Animation peek = this.animationQueue.peek();
                 if (peek != null) {
                     this.resetEventKeyFrames();
@@ -491,10 +500,14 @@ public class AnimationController<T extends IAnimatable> {
 
 				//Reset the adjusted tick so the next animation starts at tick 0
 				this.shouldResetTick = true;
-				tick = this.adjustTick(actualTick);
+
+				if (!this.hasAnimTimeExpression()) {
+					tick = this.adjustTick(actualTick);
+					resolvedTick = tick;
+				}
 			}
 		}
-		this.setAnimTime(parser, scope, tick);
+		this.setAnimTime(parser, scope, resolvedTick);
 
 		// Loop through every boneanimation in the current animation and process the
 		// values
@@ -513,27 +526,27 @@ public class AnimationController<T extends IAnimatable> {
             VectorKeyFrameList scaleKeyFrames = boneAnimation.scaleKeyFrames;
 
 			if (!rotationKeyFrames.isEmpty()) {
-				boneAnimationQueue.rotationXQueue.add(rotationKeyFrames.getAnimationPointAtTick(parser, scope, tick, Axis.X));
-				boneAnimationQueue.rotationYQueue.add(rotationKeyFrames.getAnimationPointAtTick(parser, scope, tick, Axis.Y));
-				boneAnimationQueue.rotationZQueue.add(rotationKeyFrames.getAnimationPointAtTick(parser, scope, tick, Axis.Z));
+				boneAnimationQueue.rotationXQueue.add(rotationKeyFrames.getAnimationPointAtTick(parser, scope, resolvedTick, Axis.X));
+				boneAnimationQueue.rotationYQueue.add(rotationKeyFrames.getAnimationPointAtTick(parser, scope, resolvedTick, Axis.Y));
+				boneAnimationQueue.rotationZQueue.add(rotationKeyFrames.getAnimationPointAtTick(parser, scope, resolvedTick, Axis.Z));
 			}
 
 			if (!positionKeyFrames.isEmpty()) {
-				boneAnimationQueue.positionXQueue.add(positionKeyFrames.getAnimationPointAtTick(parser, scope, tick, Axis.X));
-				boneAnimationQueue.positionYQueue.add(positionKeyFrames.getAnimationPointAtTick(parser, scope, tick, Axis.Y));
-				boneAnimationQueue.positionZQueue.add(positionKeyFrames.getAnimationPointAtTick(parser, scope, tick, Axis.Z));
+				boneAnimationQueue.positionXQueue.add(positionKeyFrames.getAnimationPointAtTick(parser, scope, resolvedTick, Axis.X));
+				boneAnimationQueue.positionYQueue.add(positionKeyFrames.getAnimationPointAtTick(parser, scope, resolvedTick, Axis.Y));
+				boneAnimationQueue.positionZQueue.add(positionKeyFrames.getAnimationPointAtTick(parser, scope, resolvedTick, Axis.Z));
 			}
 
 			if (!scaleKeyFrames.isEmpty()) {
-				boneAnimationQueue.scaleXQueue.add(scaleKeyFrames.getAnimationPointAtTick(parser, scope, tick, Axis.X));
-				boneAnimationQueue.scaleYQueue.add(scaleKeyFrames.getAnimationPointAtTick(parser, scope, tick, Axis.Y));
-				boneAnimationQueue.scaleZQueue.add(scaleKeyFrames.getAnimationPointAtTick(parser, scope, tick, Axis.Z));
+				boneAnimationQueue.scaleXQueue.add(scaleKeyFrames.getAnimationPointAtTick(parser, scope, resolvedTick, Axis.X));
+				boneAnimationQueue.scaleYQueue.add(scaleKeyFrames.getAnimationPointAtTick(parser, scope, resolvedTick, Axis.Y));
+				boneAnimationQueue.scaleZQueue.add(scaleKeyFrames.getAnimationPointAtTick(parser, scope, resolvedTick, Axis.Z));
 			}
 		}
 
         //create a riftlibrary particle emitter that's attached to a locator
         for (EventKeyFrame.ParticleEventKeyFrame particleEventKeyFrame : this.currentAnimation.particleKeyFrames) {
-            if (!this.executedKeyFrames.contains(particleEventKeyFrame) && tick >= particleEventKeyFrame.getStartTick()) {
+            if (!this.executedKeyFrames.contains(particleEventKeyFrame) && resolvedTick >= particleEventKeyFrame.getStartTick()) {
                 this.lastParticleEvent = particleEventKeyFrame;
                 this.executedKeyFrames.add(particleEventKeyFrame);
             }
@@ -541,7 +554,7 @@ public class AnimationController<T extends IAnimatable> {
 
         //create a riftlibrary sound effect that's attached to a locator
         for (EventKeyFrame.SoundEventKeyFrame soundEventKeyFrame : this.currentAnimation.soundKeyFrames) {
-            if (!this.executedKeyFrames.contains(soundEventKeyFrame) && tick >= soundEventKeyFrame.getStartTick()) {
+            if (!this.executedKeyFrames.contains(soundEventKeyFrame) && resolvedTick >= soundEventKeyFrame.getStartTick()) {
                 this.lastSoundEvent = soundEventKeyFrame;
                 this.executedKeyFrames.add(soundEventKeyFrame);
             }
@@ -575,6 +588,14 @@ public class AnimationController<T extends IAnimatable> {
 		}
         // assert tick - this.tickOffset >= 0;
         else return this.animationSpeed * Math.max(tick - this.tickOffset, 0.0D);
+	}
+
+	private double resolveAnimTick(double fallbackTick, MolangParser parser, MolangScope scope) {
+		double resolved = fallbackTick;
+		if (this.hasAnimTimeExpression()) {
+			resolved = this.getAnimTimeExpressionValue(parser, scope) * this.animationSpeed * 20D;
+		}
+		return Math.max(resolved, 0D);
 	}
 
 

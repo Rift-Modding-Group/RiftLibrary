@@ -10,32 +10,10 @@ import net.minecraft.util.ResourceLocation;
 //this class is, just like with the model classes for rendering an entity
 //is for assigning files to be linked to a creatures hitboxes
 public abstract class EntityHitboxLinker<T extends IAnimatable & IMultiHitboxUser> {
-    //model contains all the locators, it has to be linked to this
-    public abstract ResourceLocation getModelLocation(T object);
-
     //obvious choice
     public abstract ResourceLocation getHitboxFileLocation(T entity);
 
-    public HitboxDefinitionList getHitboxDefinitionList(IMultiHitboxUser animatable) {
-        HitboxDefinitionList toReturn = RiftLibCache.getInstance().getHitboxDefinitions().get(this.getHitboxFileLocation((T) animatable));
-        GeoModel model = RiftLibCache.getInstance().getGeoModels().get(this.getModelLocation((T) animatable));
-
-        //first of all, add initial positions to the definitions from the model locations
-        if (toReturn != null) {
-            //add positions to the hitboxes
-            for (GeoLocator locator : model.getAllLocators()) {
-                if (HitboxUtils.locatorCanBeHitbox(locator.name)) {
-                    String hitboxName = HitboxUtils.locatorHitboxToHitbox(locator.name);
-                    toReturn.editHitboxDefinitionPosition(
-                            hitboxName,
-                            (float) locator.getPosition().x / 16f,
-                            (float) locator.getPosition().y / 16f - toReturn.getHitboxDefinitionByName(hitboxName).height / 2f,
-                            -(float) locator.getPosition().z / 16f
-                    );
-                }
-            }
-        }
-
-        return toReturn;
+    public HitboxDefinitionList getHitboxDefinitionList(T animatable) {
+        return RiftLibCache.getInstance().getHitboxDefinitions().get(this.getHitboxFileLocation(animatable));
     }
 }

@@ -198,7 +198,6 @@ public class DragonEntity extends EntityCreature implements IAnimatable, IMultiH
             @Override
             public PlayState test(AnimationEvent event) {
                 event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.dragon.flying", LoopType.LOOP));
-                //event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.dragon.flame_particles", LoopType.LOOP));
                 return PlayState.CONTINUE;
             }
         }));

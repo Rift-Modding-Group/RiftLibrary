@@ -4,10 +4,17 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import anightdazingzoroark.riftlib.RiftLibConfig;
+import anightdazingzoroark.riftlib.ServerProxy;
 import anightdazingzoroark.riftlib.core.AnimatableValue;
+import anightdazingzoroark.riftlib.hitboxLogic.EntityHitbox;
+import anightdazingzoroark.riftlib.hitboxLogic.IMultiHitboxUser;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateHitboxPos;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateHitboxSize;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 
 import anightdazingzoroark.riftlib.molang.MolangScope;
+import anightdazingzoroark.riftlib.util.HitboxUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.entity.Entity;
@@ -39,7 +46,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 	protected GeoModel currentModel;
 
 	protected AnimatedGeoModel() {
-		this.animationProcessor = new AnimationProcessor(this);
+		this.animationProcessor = new AnimationProcessor();
 	}
 
 	public void registerBone(GeoBone bone) {
@@ -58,7 +65,6 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 
         //create animated locators
         manager.createAnimatedLocators(this.currentModel);
-
 
 		if (manager.ticker == null) {
 			AnimationTicker ticker = new AnimationTicker(manager);
@@ -84,12 +90,91 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 			manager.updateMolangQueries();
 		}
 
+		//update based on animations
 		if (!this.animationProcessor.getModelRendererList().isEmpty()) {
 			this.animationProcessor.tickAnimation(
 					entity, uniqueID, this.seekTime,
 					predicate, RiftLibCache.getInstance().parser,
 					this.shouldCrashOnMissing
 			);
+		}
+
+		//update hitboxes
+		this.setDynamicHitboxes(entity, manager);
+	}
+
+	private void setDynamicHitboxes(T entity, AnimationData manager) {
+		if (!(entity instanceof IMultiHitboxUser)) return;
+		IMultiHitboxUser multiHitboxUser = (IMultiHitboxUser) entity;
+
+		List<AnimatedLocator> animatedLocators = manager.getAnimatedLocators();
+		for (AnimatedLocator animatedLocator : animatedLocators) {
+			if (!HitboxUtils.locatorCanBeHitbox(animatedLocator.getName())) continue;
+			String hitboxName = HitboxUtils.locatorHitboxToHitbox(animatedLocator.getName());
+
+			//get parent bone
+			GeoBone parentBone = animatedLocator.getParentBone();
+
+			//get hitbox associated with the locator
+			EntityHitbox hitbox = multiHitboxUser.getHitboxByName(hitboxName);
+
+			//skip if there's no hitbox
+			if (hitbox == null) continue;
+
+			//skip when hitbox is set to not be affected by animation
+			if (!hitbox.affectedByAnim) continue;
+
+			//packets for hitbox updates will not be sent if their total change
+			//is too miniscule
+			//get positions
+			Vec3d modelSpacePos = animatedLocator.getModelSpacePosition();
+			float newHitboxX = (float) modelSpacePos.x / 16f;
+			float newHitboxY = (float) modelSpacePos.y / 16f - (hitbox.initHeight / 2f) - (parentBone.getScaleY() - 1) / 3;
+			float newHitboxZ = -(float) modelSpacePos.z / 16f;
+
+			//get magnitude of displacement
+			double dPosTotal = Math.sqrt(Math.pow(newHitboxX - hitbox.getHitboxXOffset(), 2) + Math.pow(newHitboxY - hitbox.getHitboxYOffset(), 2) + Math.pow(newHitboxZ - hitbox.getHitboxZOffset(), 2));
+
+			//update positions
+			if (dPosTotal > RiftLibConfig.HITBOX_DISPLACEMENT_TOLERANCE) {
+				ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibUpdateHitboxPos(
+						(Entity) entity,
+						hitboxName,
+						newHitboxX,
+						newHitboxY,
+						newHitboxZ
+				));
+				ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibUpdateHitboxPos(
+						(Entity) entity,
+						hitboxName,
+						newHitboxX,
+						newHitboxY,
+						newHitboxZ
+				));
+			}
+
+			//get sizes
+			float newHitboxWidth = Math.max(parentBone.getScaleX(), parentBone.getScaleZ());
+			float newHitboxHeight = parentBone.getScaleY();
+
+			//get magnitude of resizing
+			double dSizeTotal = Math.sqrt(Math.pow(newHitboxWidth - hitbox.width, 2) + Math.pow(newHitboxHeight - hitbox.height, 2));
+
+			//update sizes
+			if (dSizeTotal > RiftLibConfig.HITBOX_RESIZING_TOLERANCE) {
+				ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibUpdateHitboxSize(
+						(Entity) entity,
+						hitboxName,
+						Math.max(parentBone.getScaleX(), parentBone.getScaleZ()),
+						parentBone.getScaleY()
+				));
+				ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibUpdateHitboxSize(
+						(Entity) entity,
+						hitboxName,
+						Math.max(parentBone.getScaleX(), parentBone.getScaleZ()),
+						parentBone.getScaleY()
+				));
+			}
 		}
 	}
 

@@ -46,11 +46,6 @@ public class AnimationProcessor<T extends IAnimatable> {
 	private final List<IBone> modelRendererList = new ArrayList();
 	private double lastTickValue = -1;
 	private final Set<Integer> animatedEntities = new HashSet<>();
-	private final IAnimatableModel animatedModel;
-
-	public AnimationProcessor(IAnimatableModel animatedModel) {
-		this.animatedModel = animatedModel;
-	}
 
 	public void tickAnimation(IAnimatable entity, Integer uniqueID, double seekTime, AnimationEvent event, MolangParser parser, boolean crashWhenCantFindBone) {
 		if (seekTime != this.lastTickValue) this.animatedEntities.clear();
@@ -208,68 +203,6 @@ public class AnimationProcessor<T extends IAnimatable> {
             //iterate over each locator in each bone
             GeoBone geoBone = (GeoBone) bone;
             for (GeoLocator locator : geoBone.childLocators) {
-                //apply via packets the new positions and sizes of the hitboxes
-                if (entity instanceof IMultiHitboxUser && HitboxUtils.locatorCanBeHitbox(locator.name)) {
-                    String hitboxName = HitboxUtils.locatorHitboxToHitbox(locator.name);
-
-                    //get hitbox associated with the locator
-                    EntityHitbox hitbox = ((IMultiHitboxUser) entity).getHitboxByName(hitboxName);
-
-                    //skip when hitbox is set to not be affected by animation
-                    if (!hitbox.affectedByAnim) continue;
-
-                    //packets for hitbox updates will not be sent if their total change
-                    //is too miniscule
-                    //get positions
-                    float newHitboxX = (float) locator.getPosition().x / 16f;
-                    float newHitboxY = (float) locator.getPosition().y / 16f - (hitbox.initHeight / 2f) - (bone.getScaleY() - 1) / 3;
-                    float newHitboxZ = -(float) locator.getPosition().z / 16f;
-
-                    //get magnitude of displacement
-                    double dPosTotal = Math.sqrt(Math.pow(newHitboxX - hitbox.getHitboxXOffset(), 2) + Math.pow(newHitboxY - hitbox.getHitboxYOffset(), 2) + Math.pow(newHitboxZ - hitbox.getHitboxZOffset(), 2));
-
-                    //update positions
-                    if (dPosTotal > RiftLibConfig.HITBOX_DISPLACEMENT_TOLERANCE) {
-                        ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibUpdateHitboxPos(
-                                (Entity) entity,
-                                hitboxName,
-                                newHitboxX,
-                                newHitboxY,
-                                newHitboxZ
-                        ));
-                        ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibUpdateHitboxPos(
-                                (Entity) entity,
-                                hitboxName,
-                                newHitboxX,
-                                newHitboxY,
-                                newHitboxZ
-                        ));
-                    }
-
-                    //get sizes
-                    float newHitboxWidth = Math.max(bone.getScaleX(), bone.getScaleZ());
-                    float newHitboxHeight = bone.getScaleY();
-
-                    //get magnitude of resizing
-                    double dSizeTotal = Math.sqrt(Math.pow(newHitboxWidth - hitbox.width, 2) + Math.pow(newHitboxHeight - hitbox.height, 2));
-
-                    //update sizes
-                    if (dSizeTotal > RiftLibConfig.HITBOX_RESIZING_TOLERANCE) {
-                        ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibUpdateHitboxSize(
-                                (Entity) entity,
-                                hitboxName,
-                                Math.max(bone.getScaleX(), bone.getScaleZ()),
-                                bone.getScaleY()
-                        ));
-                        ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibUpdateHitboxSize(
-                                (Entity) entity,
-                                hitboxName,
-                                Math.max(bone.getScaleX(), bone.getScaleZ()),
-                                bone.getScaleY()
-                        ));
-                    }
-                }
-
                 //make a definition list of dynamic ride positions and put in it the new positions based on the new locators positions
                 if (entity instanceof IDynamicRideUser && DynamicRidePosUtils.locatorCanBeRidePos(locator.name)) {
                     int ridePosIndex = DynamicRidePosUtils.locatorRideIndex(locator.name);

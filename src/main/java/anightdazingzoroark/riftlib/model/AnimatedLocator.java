@@ -2,6 +2,7 @@ package anightdazingzoroark.riftlib.model;
 
 import anightdazingzoroark.riftlib.ClientProxy;
 import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.geo.render.GeoBone;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.ParticleTicker;
@@ -46,6 +47,10 @@ public class AnimatedLocator {
 
     public String getName() {
         return this.locator.name;
+    }
+
+    public GeoBone getParentBone() {
+        return this.locator.parent;
     }
 
     public void setWorldSpacePosition(double x, double y, double z) {

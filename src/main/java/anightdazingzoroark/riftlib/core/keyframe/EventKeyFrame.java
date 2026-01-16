@@ -34,4 +34,13 @@ public class EventKeyFrame {
             this.effect = effect;
         }
     }
+
+    public static class CustomInstructionKeyFrame extends EventKeyFrame {
+        public final String expression;
+
+        public CustomInstructionKeyFrame(Double startTick, String expression) {
+            super(startTick);
+            this.expression = expression;
+        }
+    }
 }

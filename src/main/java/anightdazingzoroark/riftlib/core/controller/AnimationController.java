@@ -112,6 +112,7 @@ public class AnimationController<T extends IAnimatable> {
 	private final Set<EventKeyFrame> executedKeyFrames = new HashSet<>();
     private EventKeyFrame.ParticleEventKeyFrame lastParticleEvent;
     private EventKeyFrame.SoundEventKeyFrame lastSoundEvent;
+	private EventKeyFrame.CustomInstructionKeyFrame lastCustomInstructionEvent;
 
 	/**
 	 * This method sets the current animation with an animation builder. You can run
@@ -566,6 +567,14 @@ public class AnimationController<T extends IAnimatable> {
             }
         }
 
+		//create a riftlibrary custom instruction
+		for (EventKeyFrame.CustomInstructionKeyFrame customInstructionKeyFrame : this.currentAnimation.customInstructionKeyFrames) {
+			if (!this.executedKeyFrames.contains(customInstructionKeyFrame) && resolvedTick >= customInstructionKeyFrame.getStartTick()) {
+				this.lastCustomInstructionEvent = customInstructionKeyFrame;
+				this.executedKeyFrames.add(customInstructionKeyFrame);
+			}
+		}
+
 		if (this.transitionLengthTicks == 0 && shouldResetTick && this.animationState == AnimationState.Transitioning) {
 			this.currentAnimation = animationQueue.poll();
 		}
@@ -655,6 +664,12 @@ public class AnimationController<T extends IAnimatable> {
         this.lastSoundEvent = null;
         return toReturn;
     }
+
+	public EventKeyFrame.CustomInstructionKeyFrame getCustomInstructionEvent() {
+		EventKeyFrame.CustomInstructionKeyFrame toReturn = this.lastCustomInstructionEvent;
+		this.lastCustomInstructionEvent = null;
+		return toReturn;
+	}
 
 	private void resetEventKeyFrames() {
 		this.executedKeyFrames.clear();

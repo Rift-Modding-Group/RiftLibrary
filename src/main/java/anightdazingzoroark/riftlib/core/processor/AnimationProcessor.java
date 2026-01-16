@@ -11,6 +11,7 @@ import anightdazingzoroark.riftlib.ServerProxy;
 import anightdazingzoroark.riftlib.RiftLibConfig;
 import anightdazingzoroark.riftlib.core.keyframe.*;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
+import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
 import anightdazingzoroark.riftlib.ridePositionLogic.RidePosDefinitionList;
@@ -145,6 +146,18 @@ public class AnimationProcessor<T extends IAnimatable> {
                 AnimatedLocator locator = entity.getFactory().getOrCreateAnimationData(uniqueID).getAnimatedLocator(lastSoundEvent.locator);
                 if (locator != null) RiftLibSoundHelper.playSound(entity, locator, lastSoundEvent.effect);
             }
+
+			//custom instructions
+			EventKeyFrame.CustomInstructionKeyFrame customInstructionEvent = controller.getCustomInstructionEvent();
+			if (customInstructionEvent != null) {
+				MolangScope scope = entity.getFactory().getOrCreateAnimationData(uniqueID).dataScope;
+				parser.withScope(scope, () -> {
+					try {
+						parser.parseExpression(customInstructionEvent.expression).get();
+					}
+					catch (Exception e) {}
+				});
+			}
 		}
 
 		//make a rideposdef list for changine ride positions

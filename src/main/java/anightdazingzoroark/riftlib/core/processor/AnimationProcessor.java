@@ -7,33 +7,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import anightdazingzoroark.riftlib.ServerProxy;
-import anightdazingzoroark.riftlib.RiftLibConfig;
 import anightdazingzoroark.riftlib.core.keyframe.*;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
-import anightdazingzoroark.riftlib.ridePositionLogic.RidePosDefinitionList;
-import anightdazingzoroark.riftlib.geo.render.GeoBone;
-import anightdazingzoroark.riftlib.geo.render.GeoLocator;
-import anightdazingzoroark.riftlib.hitboxLogic.EntityHitbox;
-import anightdazingzoroark.riftlib.hitboxLogic.IMultiHitboxUser;
-import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateHitboxPos;
-import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateHitboxSize;
-import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateRiderPos;
-import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosUtils;
-import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundHelper;
-import anightdazingzoroark.riftlib.util.HitboxUtils;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.Vec3d;
 import org.apache.commons.lang3.tuple.Pair;
 
 import anightdazingzoroark.riftlib.molang.MolangParser;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.IAnimatableModel;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.manager.AnimationData;

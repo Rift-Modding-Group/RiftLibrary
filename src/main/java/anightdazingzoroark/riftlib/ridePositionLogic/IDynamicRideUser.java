@@ -17,19 +17,9 @@ public interface IDynamicRideUser {
     //so its return statement in the entity implementing this should be "return this;"
     EntityLiving getDynamicRideUser();
 
-    //this must be placed in the constructor of the entity
-    //and must be the entity itself being entered
-    default <T extends Entity & IAnimatable & IDynamicRideUser> void initializeRiderPositions(T entity) {
-        DynamicRidePosLinker dynamicRidePosLinker = RiftLibLinkerRegistry.INSTANCE.dynamicRidePosLinkerMap.get(entity.getClass());
-        if (dynamicRidePosLinker == null) return;
-        this.createRidePositions(dynamicRidePosLinker.getDynamicRideDefinitions(entity).finalOrderedRiderPositions());
-    }
+    DynamicRidePosList ridePosList();
 
-    void createRidePositions(List<Vec3d> value);
-
-    List<Vec3d> ridePositions();
-
-    void setRidePosition(int index, Vec3d value);
+    void setRidePosition(DynamicRidePosList ridePosList);
 
     default Vec3d rotateOffset(Vec3d offset) {
         double xOffset = offset.x * ((IAnimatable) this.getDynamicRideUser()).scale();
@@ -47,12 +37,14 @@ public interface IDynamicRideUser {
     }
 
     default void updatePassenger(Entity passenger) {
-        if (this.ridePositions().isEmpty()) return;
+        if (this.ridePosList() == null || this.ridePosList().isEmpty()) return;
 
-        //start with the main seat first, which is always the first item in ridePositions
-        Vec3d firstPos = this.ridePositions().get(0);
+        //start with the controller seat first
+        Vec3d controllerPos = this.ridePosList().getControllerPos();
 
-        if (this.getDynamicRideUser().getControllingPassenger() != null && this.getDynamicRideUser().getControllingPassenger().equals(passenger)) {
+        if (controllerPos != null
+                && this.getDynamicRideUser().getControllingPassenger() != null
+                && this.getDynamicRideUser().getControllingPassenger().equals(passenger)) {
             if (this.canRotateMounted()) {
                 this.getDynamicRideUser().rotationYaw = passenger.rotationYaw;
                 this.getDynamicRideUser().prevRotationYaw = this.getDynamicRideUser().rotationYaw;
@@ -62,17 +54,16 @@ public interface IDynamicRideUser {
             }
 
             passenger.setPosition(
-                    this.getDynamicRideUser().posX + this.rotateOffset(firstPos).x,
-                    this.getDynamicRideUser().posY + this.rotateOffset(firstPos).y + this.playerRideOffset(passenger),
-                    this.getDynamicRideUser().posZ + this.rotateOffset(firstPos).z
+                    this.getDynamicRideUser().posX + this.rotateOffset(controllerPos).x,
+                    this.getDynamicRideUser().posY + this.rotateOffset(controllerPos).y + this.playerRideOffset(passenger),
+                    this.getDynamicRideUser().posZ + this.rotateOffset(controllerPos).z
             );
 
             ((EntityLivingBase)passenger).renderYawOffset = this.getDynamicRideUser().renderYawOffset;
         }
 
         //now deal with other positions
-        List<Vec3d> otherPositions = new ArrayList<>(this.ridePositions());
-        otherPositions.remove(0);
+        List<Vec3d> otherPositions = this.ridePosList().getOrderedPassengerPosList();
 
         if (!otherPositions.isEmpty() && !passenger.equals(this.getDynamicRideUser().getControllingPassenger())) {
             for (Vec3d otherPos : otherPositions)

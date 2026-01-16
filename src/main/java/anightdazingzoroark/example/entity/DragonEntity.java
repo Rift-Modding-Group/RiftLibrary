@@ -10,6 +10,7 @@ import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.manager.AnimationData;
 import anightdazingzoroark.riftlib.core.manager.AnimationFactory;
 import anightdazingzoroark.riftlib.hitboxLogic.IMultiHitboxUser;
+import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosList;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.*;
@@ -30,13 +31,12 @@ public class DragonEntity extends EntityCreature implements IAnimatable, IMultiH
     private static final DataParameter<Boolean> ATTACKING = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
     private final AnimationFactory factory = new AnimationFactory(this);
     private Entity[] hitboxes = {};
-    private List<Vec3d> ridePositions;
+    private DynamicRidePosList ridePositions;
 
     public DragonEntity(World worldIn) {
         super(worldIn);
         this.setSize(4f, 4f);
         this.initializeHitboxes(this);
-        this.initializeRiderPositions(this);
     }
 
     @Override
@@ -101,16 +101,12 @@ public class DragonEntity extends EntityCreature implements IAnimatable, IMultiH
     //hitbox stuff ends here
 
     //ride pos stuff starts here
-    public void createRidePositions(List<Vec3d> value) {
-        this.ridePositions = value;
-    }
-
-    public List<Vec3d> ridePositions() {
+    public DynamicRidePosList ridePosList() {
         return this.ridePositions;
     }
 
-    public void setRidePosition(int index, Vec3d value) {
-        this.ridePositions.set(index, value);
+    public void setRidePosition(DynamicRidePosList dynamicRidePosList) {
+        this.ridePositions = dynamicRidePosList;
     }
 
     public void updatePassenger(Entity passenger) {

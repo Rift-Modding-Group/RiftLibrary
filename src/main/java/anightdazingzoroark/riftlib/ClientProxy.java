@@ -10,7 +10,6 @@ import anightdazingzoroark.example.client.renderer.tile.SprinklerRenderer;
 import anightdazingzoroark.example.entity.*;
 import anightdazingzoroark.example.entity.hitboxLinker.DragonHitboxLinker;
 import anightdazingzoroark.example.entity.hitboxLinker.FlyingPufferfishHitboxLinker;
-import anightdazingzoroark.example.entity.ridePosLinker.DragonRidePosLinker;
 import anightdazingzoroark.example.item.GreenArmorItem;
 import anightdazingzoroark.example.item.SatelliteDishHelmet;
 import anightdazingzoroark.example.ui.HelloWorldUI;
@@ -58,7 +57,6 @@ public class ClientProxy extends ServerProxy {
 
             //linkers
             RiftLibLinkerRegistry.registerEntityHitboxLinker(DragonEntity.class, new DragonHitboxLinker());
-            RiftLibLinkerRegistry.registerDynamicRidePosLinker(DragonEntity.class, new DragonRidePosLinker());
             RiftLibLinkerRegistry.registerEntityHitboxLinker(FlyingPufferfishEntity.class, new FlyingPufferfishHitboxLinker());
 
             //entity renderers

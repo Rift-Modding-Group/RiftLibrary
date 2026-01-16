@@ -72,15 +72,17 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 
 		AnimationEvent<T> predicate;
 		if (customPredicate == null) {
-			predicate = new AnimationEvent<T>(entity, 0, 0, (float) (manager.tick - lastGameTickTime), false, Collections.emptyList());
+			predicate = new AnimationEvent<T>(entity, 0, 0, (float) (manager.tick - this.lastGameTickTime), false, Collections.emptyList());
 		}
         else predicate = customPredicate;
 
 		predicate.animationTick = this.seekTime;
 
 		//update molang related information while the entity is rendered
-		manager.updateAnimationVariables();
-		manager.updateMolangQueries();
+		if (!Minecraft.getMinecraft().isGamePaused() || manager.shouldPlayWhilePaused) {
+			manager.updateAnimationVariables();
+			manager.updateMolangQueries();
+		}
 
 		if (!this.animationProcessor.getModelRendererList().isEmpty()) {
 			this.animationProcessor.tickAnimation(

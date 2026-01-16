@@ -107,8 +107,8 @@ public class AnimationController<T extends IAnimatable> {
 	protected boolean justStartedTransition = false;
 	public Function<Double, Double> customEasingMethod;
 	protected boolean needsAnimationReload = false;
-	public double animationSpeed = 1D;
 	private double lastResolvedAnimTick = 0D;
+	private double lastFrameTick = -1D;
 	private final Set<EventKeyFrame> executedKeyFrames = new HashSet<>();
     private EventKeyFrame.ParticleEventKeyFrame lastParticleEvent;
     private EventKeyFrame.SoundEventKeyFrame lastSoundEvent;
@@ -284,8 +284,14 @@ public class AnimationController<T extends IAnimatable> {
 			boolean crashWhenCantFindBone) {
         double tickWithinScope = tick;
 
+		//set delta time
+		double deltaTime = this.lastFrameTick >= 0 ? tickWithinScope - this.lastFrameTick : 0;
+		this.lastFrameTick = tickWithinScope;
+
+		//set molang variables
         parser.withScope(scope, () -> {
 			MolangQueryValue.setLifeTime(parser, tickWithinScope / 20D);
+			MolangQueryValue.setDeltaTime(parser, deltaTime / 20D);
         });
 		if (this.currentAnimation != null) {
 			IAnimatableModel<T> model = getModel(this.animatable);
@@ -345,7 +351,7 @@ public class AnimationController<T extends IAnimatable> {
                 this.justStartedTransition = false;
 				this.currentAnimation = animationQueue.poll();
 				this.resetEventKeyFrames();
-				saveSnapshotsForAnimation(this.currentAnimation, boneSnapshotCollection);
+				this.saveSnapshotsForAnimation(this.currentAnimation, boneSnapshotCollection);
 			}
 			if (this.currentAnimation != null) {
 				this.setAnimTime(parser, scope, 0);
@@ -452,7 +458,7 @@ public class AnimationController<T extends IAnimatable> {
 	}
 
 	private void processCurrentAnimation(double tick, double actualTick, MolangParser parser, MolangScope scope, boolean crashWhenCantFindBone) {
-		assert currentAnimation != null;
+		assert this.currentAnimation != null;
 		double resolvedTick = this.resolveAnimTick(tick, parser, scope);
 
 		if (resolvedTick < this.lastResolvedAnimTick) {
@@ -483,7 +489,7 @@ public class AnimationController<T extends IAnimatable> {
             //unlike other loop types, hold on last frame doesn't reset key frames
             //until a new animation in the queue shows up
             else if (this.currentAnimation.loop == LoopType.HOLD_ON_LAST_FRAME) {
-				resolvedTick = Math.min(resolvedTick, currentAnimation.animationLength);
+				resolvedTick = Math.min(resolvedTick, this.currentAnimation.animationLength);
 
                 Animation peek = this.animationQueue.peek();
                 if (peek != null) {
@@ -511,7 +517,7 @@ public class AnimationController<T extends IAnimatable> {
 
 		// Loop through every boneanimation in the current animation and process the
 		// values
-		List<BoneAnimation> boneAnimations = currentAnimation.boneAnimations;
+		List<BoneAnimation> boneAnimations = this.currentAnimation.boneAnimations;
 		for (BoneAnimation boneAnimation : boneAnimations) {
 			BoneAnimationQueue boneAnimationQueue = boneAnimationQueues.get(boneAnimation.boneName);
 			if (boneAnimationQueue == null) {
@@ -587,30 +593,51 @@ public class AnimationController<T extends IAnimatable> {
 			return 0;
 		}
         // assert tick - this.tickOffset >= 0;
-        else return this.animationSpeed * Math.max(tick - this.tickOffset, 0.0D);
+        else return this.getAnimationSpeed() * Math.max(tick - this.tickOffset, 0.0D);
 	}
 
+	/**
+	 * This "resolves" the animation tick by replacing it with the custom
+	 * updater, if it does exist.
+	 */
 	private double resolveAnimTick(double fallbackTick, MolangParser parser, MolangScope scope) {
-		double resolved = fallbackTick;
+		if (this.currentAnimation == null) return 0D;
+
+		double toReturn = fallbackTick;
+
+		//resolve based on anim time expression
 		if (this.hasAnimTimeExpression()) {
-			resolved = this.getAnimTimeExpressionValue(parser, scope) * this.animationSpeed * 20D;
+			AtomicReference<Double> atomicResolved = new AtomicReference<>(0D);
+			parser.withScope(scope, () -> {
+				try {
+					double value = parser.parseExpression(this.currentAnimation.animTimeUpdateExpression).get();
+					atomicResolved.set(value);
+				}
+				catch (Exception e) {}
+			});
+
+			toReturn = atomicResolved.get() * this.getAnimationSpeed();
 		}
-		return Math.max(resolved, 0D);
-	}
+		toReturn = Math.max(toReturn, 0D);
 
-
-	private double getAnimTimeExpressionValue(MolangParser parser, MolangScope scope) {
-		if (this.currentAnimation == null) return 0;
-
-		AtomicReference<Double> atomicToReturn = new AtomicReference<>(0D);
-		parser.withScope(scope, () -> {
-			try {
-				double value = parser.parseExpression(this.currentAnimation.animTimeUpdateExpression).get();
-				atomicToReturn.set(value);
+		//resolve based on loop
+		double animLength = this.currentAnimation.animationLength;
+		if (animLength > 0D) {
+			switch (this.currentAnimation.loop) {
+				case LOOP:
+					toReturn = toReturn % animLength;
+					break;
+				case HOLD_ON_LAST_FRAME:
+				case PLAY_ONCE:
+					toReturn = Math.min(toReturn, animLength);
+					break;
+				default:
+					break;
 			}
-			catch (Exception e) {}
-		});
-		return atomicToReturn.get();
+		}
+		else toReturn = 0D;
+
+		return toReturn;
 	}
 
 	private boolean hasAnimTimeExpression() {
@@ -642,12 +669,11 @@ public class AnimationController<T extends IAnimatable> {
         this.resetEventKeyFrames();
 	}
 
+	/**
+	 * This is where the speed of the animation is defined, it must be overridden.
+	 */
 	public double getAnimationSpeed() {
-		return animationSpeed;
-	}
-
-	public void setAnimationSpeed(double animationSpeed) {
-		this.animationSpeed = animationSpeed;
+		return 1D;
 	}
 
 	@FunctionalInterface

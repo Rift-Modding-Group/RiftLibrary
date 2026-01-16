@@ -17,7 +17,7 @@ import java.util.function.Function;
 
 
 /**
- * This class contains all helper functions that involve molang queries.
+ * This class contains all helper functions that involve setting molang queries.
  * This is a great way to organize them.
  */
 public class MolangQueryValue {
@@ -35,6 +35,10 @@ public class MolangQueryValue {
     //being part of molangQueryMap
     public static void setAnimTime(MolangParser parser, double value) {
         parser.setValue("query.anim_time", value);
+    }
+
+    public static void setDeltaTime(MolangParser parser, double value) {
+        parser.setValue("query.delta_time", value);
     }
 
     public static void setLifeTime(MolangParser parser, double value) {
@@ -56,6 +60,7 @@ public class MolangQueryValue {
             double oldValue = parser.getVariable("query.modified_distance_moved").get();
             parser.setValue("query.modified_distance_moved", oldValue + speed);
         }
+        else parser.setValue("query.modified_distance_moved", 0);
     }
 
     public static void registerMolangQueries() {

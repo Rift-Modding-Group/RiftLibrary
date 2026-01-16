@@ -12,9 +12,14 @@ import anightdazingzoroark.riftlib.core.manager.AnimationData;
 import anightdazingzoroark.riftlib.resource.RiftLibCache;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
+/**
+ * I don't think anyone's gonna give 10 shits about this class
+ * And neither might anyone miss this class's deprecation and deletion
+ * :trollface:
+ */
+@Deprecated
 public abstract class AnimatedTickingGeoModel<T extends IAnimatable & IAnimationTickable> extends AnimatedGeoModel<T> {
-	public AnimatedTickingGeoModel() {
-	}
+	public AnimatedTickingGeoModel() {}
 
 	public boolean isInitialized() {
 		return !this.getAnimationProcessor().getModelRendererList().isEmpty();
@@ -32,9 +37,9 @@ public abstract class AnimatedTickingGeoModel<T extends IAnimatable & IAnimation
 		if (!Minecraft.getMinecraft().isGamePaused() || manager.shouldPlayWhilePaused) {
 			manager.tick = (entity.tickTimer() + Minecraft.getMinecraft().getRenderPartialTicks());
 			double gameTick = manager.tick;
-			double deltaTicks = gameTick - lastGameTickTime;
-			seekTime += deltaTicks;
-			lastGameTickTime = gameTick;
+			double deltaTicks = gameTick - this.lastGameTickTime;
+			this.seekTime += deltaTicks;
+			this.lastGameTickTime = gameTick;
 		}
 
 		AnimationEvent<T> predicate;
@@ -46,8 +51,10 @@ public abstract class AnimatedTickingGeoModel<T extends IAnimatable & IAnimation
 		predicate.animationTick = this.seekTime;
 
 		//update molang related information while the entity is rendered
-		manager.updateAnimationVariables();
-		manager.updateMolangQueries();
+		if (!Minecraft.getMinecraft().isGamePaused() || manager.shouldPlayWhilePaused) {
+			manager.updateAnimationVariables();
+			manager.updateMolangQueries();
+		}
 
 		if (!this.getAnimationProcessor().getModelRendererList().isEmpty()) {
 			getAnimationProcessor().tickAnimation(entity, uniqueID, seekTime, predicate,
@@ -55,7 +62,7 @@ public abstract class AnimatedTickingGeoModel<T extends IAnimatable & IAnimation
 		}
 
 		if (!Minecraft.getMinecraft().isGamePaused() || manager.shouldPlayWhilePaused) {
-			codeAnimations(entity, uniqueID, customPredicate);
+			this.codeAnimations(entity, uniqueID, customPredicate);
 		}
 	}
 

@@ -3,6 +3,7 @@
 	"animations": {
       "animation.dragon.flying": {
         "loop": true,
+		"anim_time_update": "query.anim_time + query.delta_time",
         "animation_length": 1,
         "bones": {
           "body": {

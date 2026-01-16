@@ -155,9 +155,6 @@ public class AnimationProcessor<T extends IAnimatable> {
 			}
 		}
 
-		//make a rideposdef list for changine ride positions
-		RidePosDefinitionList definitionList = new RidePosDefinitionList();
-
 		//apply changes from anims to bones, hitboxes, and rideposdeflist
 		for (IBone bone : this.modelRendererList) {
 			BoneSnapshot initialSnapshot = bone.getInitialSnapshot();
@@ -199,49 +196,7 @@ public class AnimationProcessor<T extends IAnimatable> {
 			dirtyTracker.hasRotationChanged = true;
 			dirtyTracker.hasPositionChanged = true;
 			dirtyTracker.hasScaleChanged = true;
-
-            //iterate over each locator in each bone
-            GeoBone geoBone = (GeoBone) bone;
-            for (GeoLocator locator : geoBone.childLocators) {
-                //make a definition list of dynamic ride positions and put in it the new positions based on the new locators positions
-                if (entity instanceof IDynamicRideUser && DynamicRidePosUtils.locatorCanBeRidePos(locator.name)) {
-                    int ridePosIndex = DynamicRidePosUtils.locatorRideIndex(locator.name);
-                    definitionList.map.put(
-                            ridePosIndex,
-                            new Vec3d(locator.getPosition().x / 16f, locator.getPosition().y / 16f, -locator.getPosition().z / 16f)
-                    );
-                }
-            }
 		}
-
-		//apply changes to ride positions
-		if (entity instanceof IDynamicRideUser && !definitionList.map.isEmpty()) {
-            for (int x = 0; x < definitionList.finalOrderedRiderPositions().size(); x++) {
-                //packets for ride position updates will not be sent if
-                //their total change is too miniscule
-                //get displacements
-                double rXDisp = definitionList.finalOrderedRiderPositions().get(x).x - ((IDynamicRideUser) entity).ridePositions().get(x).x;
-                double rYDisp = definitionList.finalOrderedRiderPositions().get(x).y - ((IDynamicRideUser) entity).ridePositions().get(x).y;
-                double rZDisp = definitionList.finalOrderedRiderPositions().get(x).z - ((IDynamicRideUser) entity).ridePositions().get(x).z;
-
-                //get magnitude of displacement
-                double rDispTotal = Math.sqrt(rXDisp * rXDisp + rYDisp * rYDisp + rZDisp * rZDisp);
-
-                //update ride positions
-                if (rDispTotal > RiftLibConfig.RIDE_POS_DISPLACEMENT_TOLERANCE) {
-                    ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibUpdateRiderPos(
-                            (Entity) entity,
-                            x,
-                            definitionList.finalOrderedRiderPositions().get(x)
-                    ));
-                    ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibUpdateRiderPos(
-                            (Entity) entity,
-                            x,
-                            definitionList.finalOrderedRiderPositions().get(x)
-                    ));
-                }
-            }
-        }
 
 		this.reloadAnimations = false;
 

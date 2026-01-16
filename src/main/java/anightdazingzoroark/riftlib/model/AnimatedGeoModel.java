@@ -7,13 +7,18 @@ import javax.annotation.Nullable;
 import anightdazingzoroark.riftlib.RiftLibConfig;
 import anightdazingzoroark.riftlib.ServerProxy;
 import anightdazingzoroark.riftlib.core.AnimatableValue;
+import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitbox;
 import anightdazingzoroark.riftlib.hitboxLogic.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateHitboxPos;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateHitboxSize;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateRiderPos;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 
 import anightdazingzoroark.riftlib.molang.MolangScope;
+import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosUtils;
+import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
+import anightdazingzoroark.riftlib.ridePositionLogic.RidePosDefinitionList;
 import anightdazingzoroark.riftlib.util.HitboxUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
@@ -101,6 +106,9 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 
 		//update hitboxes
 		this.setDynamicHitboxes(entity, manager);
+
+		//update dynamic hitbox positions
+		this.setDynamicRidePositions(entity, manager);
 	}
 
 	private void setDynamicHitboxes(T entity, AnimationData manager) {
@@ -173,6 +181,54 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 						hitboxName,
 						Math.max(parentBone.getScaleX(), parentBone.getScaleZ()),
 						parentBone.getScaleY()
+				));
+			}
+		}
+	}
+
+	private void setDynamicRidePositions(T entity, AnimationData manager) {
+		if (!(entity instanceof IDynamicRideUser)) return;
+		IDynamicRideUser dynamicRideUser = (IDynamicRideUser) entity;
+
+		//make a rideposdef list for changine ride positions
+		RidePosDefinitionList definitionList = new RidePosDefinitionList();
+
+		//make a definition list of dynamic ride positions and put in it the new positions based on the new locators positions
+		for (AnimatedLocator locator : manager.getAnimatedLocators()) {
+			if (!DynamicRidePosUtils.locatorCanBeRidePos(locator.getName())) continue;
+			int ridePosIndex = DynamicRidePosUtils.locatorRideIndex(locator.getName());
+			Vec3d modelSpacePos = locator.getModelSpacePosition();
+
+			definitionList.map.put(
+					ridePosIndex,
+					new Vec3d(modelSpacePos.x / 16f, modelSpacePos.y / 16f, -modelSpacePos.z / 16f)
+			);
+		}
+
+		//apply changes to ride positions
+		if (definitionList.map.isEmpty()) return;
+		for (int x = 0; x < definitionList.finalOrderedRiderPositions().size(); x++) {
+			//packets for ride position updates will not be sent if
+			//their total change is too miniscule
+			//get displacements
+			double rXDisp = definitionList.finalOrderedRiderPositions().get(x).x - dynamicRideUser.ridePositions().get(x).x;
+			double rYDisp = definitionList.finalOrderedRiderPositions().get(x).y - dynamicRideUser.ridePositions().get(x).y;
+			double rZDisp = definitionList.finalOrderedRiderPositions().get(x).z - dynamicRideUser.ridePositions().get(x).z;
+
+			//get magnitude of displacement
+			double rDispTotal = Math.sqrt(rXDisp * rXDisp + rYDisp * rYDisp + rZDisp * rZDisp);
+
+			//update ride positions
+			if (rDispTotal > RiftLibConfig.RIDE_POS_DISPLACEMENT_TOLERANCE) {
+				ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibUpdateRiderPos(
+						(Entity) entity,
+						x,
+						definitionList.finalOrderedRiderPositions().get(x)
+				));
+				ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibUpdateRiderPos(
+						(Entity) entity,
+						x,
+						definitionList.finalOrderedRiderPositions().get(x)
 				));
 			}
 		}

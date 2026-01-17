@@ -30,7 +30,7 @@ public abstract class RiftLibProjectile extends EntityArrow implements IAnimatab
     }
 
     public RiftLibProjectile(World worldIn, EntityLivingBase shooter) {
-        this(worldIn, shooter.posX, shooter.posY + (double)shooter.getEyeHeight() - 0.10000000149011612D, shooter.posZ);
+        this(worldIn, shooter.posX, shooter.posY + (double)shooter.getEyeHeight() - 0.1D, shooter.posZ);
         this.shootingEntity = shooter;
     }
 
@@ -40,15 +40,11 @@ public abstract class RiftLibProjectile extends EntityArrow implements IAnimatab
 
         if (!this.world.isRemote) {
             if (entity != null && this.checkHitEntityShooterNotEqual(entity) && this.checkHitEntityNotRiderOfShooter(entity)) {
-                float f = MathHelper.sqrt(this.motionX * this.motionX + this.motionY * this.motionY + this.motionZ * this.motionZ);
-                int i = MathHelper.ceil((double) f * this.getDamage());
+                double damage = this.getDamage() + this.getDamageMultiplierFromVelocity();
+                if (this.getIsCritical()) damage += this.getDamageBonusFromCrit(damage);
 
-                if (this.getIsCritical()) i += this.rand.nextInt(i / 2 + 2);
-
-                DamageSource damagesource;
-
-                if (this.shootingEntity == null) damagesource = DamageSource.causeArrowDamage(this, this);
-                else damagesource = DamageSource.causeArrowDamage(this, this.shootingEntity);
+                DamageSource damagesource = DamageSource.causeArrowDamage(this, this);
+                if (this.shootingEntity != null) damagesource = DamageSource.causeArrowDamage(this, this.shootingEntity);
 
                 if (entity instanceof MultiPartEntityPart && ((MultiPartEntityPart) entity).parent instanceof EntityLivingBase) {
                     EntityLivingBase parent = (EntityLivingBase)(((MultiPartEntityPart) entity).parent);
@@ -59,8 +55,8 @@ public abstract class RiftLibProjectile extends EntityArrow implements IAnimatab
                     this.projectileEntityEffects(entitylivingbase);
                 }
 
-                if (entity.attackEntityFrom(damagesource, (float) i)) {
-                    this.playSound(this.getOnProjectileHitSound(), 1.0F, 1.2F / (this.rand.nextFloat() * 0.2F + 0.9F));
+                if (entity.attackEntityFrom(damagesource, (float) damage)) {
+                    this.playSound(this.getOnProjectileHitSound(), 1f, 1f / (this.rand.nextFloat() * 0.2f + 0.9f));
                     if (this.canSelfDestroyUponHit()) this.setDead();
                 }
                 else {
@@ -126,6 +122,14 @@ public abstract class RiftLibProjectile extends EntityArrow implements IAnimatab
     }
 
     public abstract double getDamage();
+
+    public double getDamageMultiplierFromVelocity() {
+        return Math.sqrt(this.motionX * this.motionX + this.motionY * this.motionY + this.motionZ * this.motionZ);
+    }
+
+    public double getDamageBonusFromCrit(double initDamage) {
+        return this.rand.nextInt((int) initDamage / 2 + 2);
+    }
 
     @Override
     public AnimationFactory getFactory() {

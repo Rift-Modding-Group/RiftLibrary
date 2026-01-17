@@ -31,7 +31,7 @@ public class BombItem extends Item implements IAnimatable {
 
     public void onPlayerStoppedUsing(ItemStack stack, World worldIn, EntityLivingBase entityLiving, int timeLeft) {
         if (!worldIn.isRemote) {
-            EntityPlayer player = (EntityPlayer)entityLiving;
+            EntityPlayer player = (EntityPlayer) entityLiving;
             BombProjectile bomb = new BombProjectile(worldIn, player);
             bomb.shoot(player, player.rotationPitch, player.rotationYaw, 0f, 1.6f, 1f);
             worldIn.spawnEntity(bomb);

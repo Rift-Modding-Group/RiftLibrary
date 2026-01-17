@@ -39,19 +39,20 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile & IAnimatable> ex
 
 	@Override
 	public void doRender(T entity, double x, double y, double z, float entityYaw, float partialTicks) {
-        GeoModel model = modelProvider.getModel(modelProvider.getModelLocation(entity));
+        GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(entity));
         Integer uniqueID = this.getUniqueID(entity);
 
 		GlStateManager.pushMatrix();
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(x, y, z);
 		GlStateManager.rotate(
-				entity.prevRotationYaw + (entity.rotationYaw - entity.prevRotationYaw) * partialTicks - 90.0F, 0.0F,
-				1.0F, 0.0F);
+				entity.prevRotationYaw + (entity.rotationYaw - entity.prevRotationYaw) * partialTicks - 90.0F,
+				0f, 1f, 0f);
 		if (entity.canRotateVertically()) {
 			GlStateManager.rotate(
-					entity.prevRotationPitch + (entity.rotationPitch - entity.prevRotationPitch) * partialTicks, 0.0F, 0.0F,
-					1.0F);
+					entity.prevRotationPitch + (entity.rotationPitch - entity.prevRotationPitch) * partialTicks,
+					0f, 0f, 1f
+			);
 		}
 
 		float lastLimbDistance = 0.0F;

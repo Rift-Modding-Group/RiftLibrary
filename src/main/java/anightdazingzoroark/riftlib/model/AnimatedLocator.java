@@ -24,6 +24,7 @@ public class AnimatedLocator {
     private Vec3d worldSpacePos = new Vec3d(0, 0, 0);
     private Quaternion worldSpaceYXZQuaternion = new Quaternion();
     private boolean killed;
+    private boolean isUpdated = true;
 
     public AnimatedLocator(GeoLocator geoLocator, IAnimatable iAnimatable) {
         this.locator = geoLocator;
@@ -93,5 +94,13 @@ public class AnimatedLocator {
 
     public void killLocator() {
         this.killed = true;
+    }
+
+    public void setUpdated(boolean value) {
+        this.isUpdated = value;
+    }
+
+    public boolean getIsUpdated() {
+        return this.isUpdated;
     }
 }

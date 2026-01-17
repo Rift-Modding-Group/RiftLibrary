@@ -3,7 +3,6 @@ package anightdazingzoroark.riftlib.renderers.geo;
 import java.util.Collections;
 import java.util.Objects;
 
-import anightdazingzoroark.riftlib.animation.ItemAnimationTicker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
@@ -79,8 +78,6 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
                 (float) renderColor.getRed() / 255f, (float) renderColor.getGreen() / 255f,
 				(float) renderColor.getBlue() / 255f, (float) renderColor.getAlpha() / 255);
 		GlStateManager.popMatrix();
-
-        ItemAnimationTicker.refreshRenderedStackEntry(itemStack, this.getUniqueID(animatable));
 	}
 
 	@Override
@@ -94,8 +91,7 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
                 this.currentItemStack.getItem(),
                 this.currentItemStack.getCount(),
                 this.currentItemStack.hasTagCompound() ? this.currentItemStack.getTagCompound().toString() : 1,
-                this.currentItemStack.hashCode(),
-                this.transformType
+                this.currentItemStack.hashCode()
         );
 	}
 

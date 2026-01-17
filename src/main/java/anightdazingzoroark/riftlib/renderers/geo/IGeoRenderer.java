@@ -131,8 +131,6 @@ public interface IGeoRenderer<T> {
 
         List<AnimatedLocator> animatedLocators = animatableObject.getFactory().getOrCreateAnimationData(uniqueID).getAnimatedLocators();
         for (AnimatedLocator animatedLocator : animatedLocators) {
-
-
             //update location based on animatedLocator if there is
             BufferUtils.createFloatBuffer(16);
             Vector3d position = ParticleUtils.getCurrentRenderPos();

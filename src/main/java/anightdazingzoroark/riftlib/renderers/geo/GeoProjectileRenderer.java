@@ -2,6 +2,7 @@ package anightdazingzoroark.riftlib.renderers.geo;
 
 import java.util.Collections;
 
+import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import anightdazingzoroark.riftlib.projectile.RiftLibProjectile;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -43,11 +44,11 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile & IAnimatable> ex
         Integer uniqueID = this.getUniqueID(entity);
 
 		GlStateManager.pushMatrix();
-		GlStateManager.pushMatrix();
 		GlStateManager.translate(x, y, z);
 		GlStateManager.rotate(
-				entity.prevRotationYaw + (entity.rotationYaw - entity.prevRotationYaw) * partialTicks - 90.0F,
-				0f, 1f, 0f);
+				entity.prevRotationYaw + (entity.rotationYaw - entity.prevRotationYaw) * partialTicks - 180f,
+				0f, 1f, 0f
+		);
 		if (entity.canRotateVertically()) {
 			GlStateManager.rotate(
 					entity.prevRotationPitch + (entity.rotationPitch - entity.prevRotationPitch) * partialTicks,
@@ -55,24 +56,28 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile & IAnimatable> ex
 			);
 		}
 
-		float lastLimbDistance = 0.0F;
-		float limbSwing = 0.0F;
 		EntityModelData entityModelData = new EntityModelData();
-		AnimationEvent<T> predicate = new AnimationEvent<T>(entity, limbSwing, lastLimbDistance, partialTicks,
-				!(lastLimbDistance > -0.15F && lastLimbDistance < 0.15F), Collections.singletonList(entityModelData));
-		if (modelProvider instanceof IAnimatableModel) {
-			((IAnimatableModel<T>) modelProvider).setLivingAnimations(entity, uniqueID, predicate);
-		}
-		GlStateManager.pushMatrix();
-		Minecraft.getMinecraft().renderEngine.bindTexture(getTextureLocation(entity));
-		Color renderColor = getRenderColor(entity, partialTicks);
+		//a projectile not on the ground is usually on the move, whether its from gravity or from following
+		//a trajectory
+		AnimationEvent<T> predicate = new AnimationEvent<T>(entity, 0, 0, partialTicks,
+				!entity.onGround, Collections.singletonList(entityModelData));
 
-		if (!entity.isInvisibleToPlayer(Minecraft.getMinecraft().player))
-			render(model, entity, partialTicks,
-                    (float) renderColor.getRed() / 255f,
-					(float) renderColor.getBlue() / 255f, (float) renderColor.getGreen() / 255f,
-					(float) renderColor.getAlpha() / 255);
-		GlStateManager.popMatrix();
+        this.modelProvider.setLivingAnimations(entity, uniqueID, predicate);
+
+        GlStateManager.pushMatrix();
+		GlStateManager.scale(entity.scale(), entity.scale(), entity.scale());
+		Minecraft.getMinecraft().renderEngine.bindTexture(this.getTextureLocation(entity));
+		Color renderColor = this.getRenderColor(entity, partialTicks);
+
+		if (!entity.isInvisibleToPlayer(Minecraft.getMinecraft().player)) {
+			this.render(
+					model, entity, partialTicks,
+					(float) renderColor.getRed() / 255f,
+					(float) renderColor.getGreen() / 255f,
+					(float) renderColor.getBlue() / 255f,
+					(float) renderColor.getAlpha() / 255f
+			);
+		}
 		GlStateManager.popMatrix();
 		GlStateManager.popMatrix();
 	}
@@ -84,7 +89,7 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile & IAnimatable> ex
 
 	@Override
 	public ResourceLocation getEntityTexture(T instance) {
-		return getTextureLocation(instance);
+		return this.getTextureLocation(instance);
 	}
 
 	@Override
@@ -96,5 +101,4 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile & IAnimatable> ex
 	public ResourceLocation getTextureLocation(T instance) {
 		return this.modelProvider.getTextureLocation(instance);
 	}
-
 }

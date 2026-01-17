@@ -73,7 +73,7 @@ public class CommonListener {
 				.entity(BombProjectile.class)
 				.name("bomb_projectile")
 				.id(new ResourceLocation(RiftLib.ModID, "bomb_projectile"), id++)
-				.tracker(160, 2, false)
+				.tracker(160, 1, true)
 				.build()
 		);
 		event.getRegistry().register(EntityEntryBuilder.create()

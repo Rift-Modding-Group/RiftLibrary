@@ -52,7 +52,7 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile & IAnimatable> ex
 		if (entity.canRotateVertically()) {
 			GlStateManager.rotate(
 					entity.prevRotationPitch + (entity.rotationPitch - entity.prevRotationPitch) * partialTicks,
-					0f, 0f, 1f
+					1f, 0f, 0
 			);
 		}
 

@@ -61,7 +61,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 		AnimationData manager = entity.getFactory().getOrCreateAnimationData(uniqueID);
 
         //create and/or update animated locators
-        manager.createAndUpdateAnimatedLocators(this.currentModel);
+        manager.createAnimatedLocators(this.currentModel);
 
 		if (manager.ticker == null) {
 			AnimationTicker ticker = new AnimationTicker(manager);

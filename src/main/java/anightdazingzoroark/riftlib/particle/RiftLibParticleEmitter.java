@@ -287,7 +287,6 @@ public class RiftLibParticleEmitter {
 
     public void render(float partialTicks) {
         if (this.world == null || this.textureLocation == null || this.particles.isEmpty()) return;
-        if (this.locator != null && !this.locator.getIsUpdated()) return;
 
         Minecraft mc = Minecraft.getMinecraft();
         Entity camera = mc.getRenderViewEntity();
@@ -309,8 +308,6 @@ public class RiftLibParticleEmitter {
 
         tess.draw();
         this.finishMaterialDraw();
-
-        if (this.locator != null) this.locator.setUpdated(false);
     }
 
     //this creates a position based on the emitter shape and provided offset

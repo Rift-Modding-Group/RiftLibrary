@@ -90,7 +90,7 @@ public class AnimationData {
 		return this.animationControllers;
 	}
 
-    public void createAndUpdateAnimatedLocators(GeoModel model) {
+    public void createAnimatedLocators(GeoModel model) {
 		//update animated locators based on the model
         if (this.currentModel != model) {
             this.animatedLocators.clear();
@@ -103,9 +103,6 @@ public class AnimationData {
 
             this.currentModel = model;
         }
-
-		//update all locators
-		for (AnimatedLocator locator : this.animatedLocators) locator.setUpdated(true);
     }
 
     public AnimatedLocator getAnimatedLocator(String name) {

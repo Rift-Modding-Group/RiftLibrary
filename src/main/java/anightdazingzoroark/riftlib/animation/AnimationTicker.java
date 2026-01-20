@@ -19,7 +19,11 @@ public class AnimationTicker {
 		}
 
 		if (event.phase == TickEvent.Phase.END) {
+			//tick animations
 			this.data.tick++;
+
+			//5 tick delay to remove
+			this.data.tickAnimatedLocators();
 		}
 	}
 }

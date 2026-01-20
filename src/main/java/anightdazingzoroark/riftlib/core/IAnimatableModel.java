@@ -17,6 +17,8 @@ public interface IAnimatableModel<E> {
 
 	void setLivingAnimations(E entity, Integer uniqueID, AnimationEvent customPredicate);
 
+	void createAndUpdateAnimatedLocators(E entity, Integer uniqueID);
+
 	AnimationProcessor getAnimationProcessor();
 
 	Animation getAnimation(String name, IAnimatable animatable);

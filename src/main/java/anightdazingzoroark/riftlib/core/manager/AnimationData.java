@@ -28,6 +28,7 @@ public class AnimationData {
 	private HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection;
 	private final HashMap<String, AnimationController> animationControllers = new HashMap<>();
     private final List<AnimatedLocator> animatedLocators = new ArrayList<>();
+	private int animatedLocatorTicker;
 	private final MolangParser parser = RiftLibCache.getInstance().parser;
     private final IAnimatable iAnimatable;
     public final MolangScope dataScope = new MolangScope();
@@ -104,6 +105,22 @@ public class AnimationData {
             this.currentModel = model;
         }
     }
+
+	public void updateAnimatedLocators() {
+		this.animatedLocatorTicker = 0;
+		for (AnimatedLocator locator : this.animatedLocators) locator.setUpdated(true);
+	}
+
+	public void tickAnimatedLocators() {
+		if (this.animatedLocators.isEmpty()) return;
+		if (this.animatedLocatorTicker < 5) {
+			this.animatedLocatorTicker++;
+		}
+		else {
+			for (AnimatedLocator locator : this.animatedLocators) locator.setUpdated(false);
+			this.animatedLocatorTicker = 0;
+		}
+	}
 
     public AnimatedLocator getAnimatedLocator(String name) {
         for (AnimatedLocator animatedLocator : this.animatedLocators) {

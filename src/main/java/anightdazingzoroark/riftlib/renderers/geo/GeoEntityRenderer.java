@@ -125,6 +125,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		AnimationEvent predicate = new AnimationEvent(entity, limbSwing, limbSwingAmount, partialTicks,
 				!(limbSwingAmount > -0.15F && limbSwingAmount < 0.15F), Collections.singletonList(entityModelData));
         this.modelProvider.setLivingAnimations(entity, uniqueID, predicate);
+		this.modelProvider.createAndUpdateAnimatedLocators(entity, uniqueID);
 
         GlStateManager.pushMatrix();
 		GlStateManager.scale(entity.scale(), entity.scale(), entity.scale());

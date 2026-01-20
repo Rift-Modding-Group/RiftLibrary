@@ -63,6 +63,7 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile & IAnimatable> ex
 				!entity.onGround, Collections.singletonList(entityModelData));
 
         this.modelProvider.setLivingAnimations(entity, uniqueID, predicate);
+		this.modelProvider.createAndUpdateAnimatedLocators(entity, uniqueID);
 
         GlStateManager.pushMatrix();
 		GlStateManager.scale(entity.scale(), entity.scale(), entity.scale());

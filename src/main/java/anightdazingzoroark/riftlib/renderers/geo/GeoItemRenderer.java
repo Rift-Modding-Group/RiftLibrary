@@ -37,7 +37,7 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 
 	protected AnimatedGeoModel<T> modelProvider;
 	private ItemStack currentItemStack;
-    private ItemCameraTransforms.TransformType transformType;
+	private ItemCameraTransforms.TransformType transformType;
 
 	public GeoItemRenderer(AnimatedGeoModel<T> modelProvider) {
 		this.modelProvider = modelProvider;
@@ -52,22 +52,16 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 		return this.modelProvider;
 	}
 
-    public void setLastTransformType(ItemCameraTransforms.TransformType transformType) {
-        this.transformType = transformType;
-    }
-
-	@Override
-	public void renderByItem(ItemStack itemStack, float partialTicks) {
-		this.render((T) itemStack.getItem(), itemStack);
-	}
-
-	public void render(T animatable, ItemStack itemStack) {
+	public void render(T animatable, ItemStack itemStack, ItemCameraTransforms.TransformType transformType) {
 		this.currentItemStack = itemStack;
+		this.transformType = transformType;
+
 		GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(animatable));
         Integer uniqueID = this.getUniqueID(animatable);
 		AnimationEvent itemEvent = new AnimationEvent(animatable, 0, 0,
 				Minecraft.getMinecraft().getRenderPartialTicks(), false, Collections.singletonList(itemStack));
 		this.modelProvider.setLivingAnimations(animatable, uniqueID, itemEvent);
+		if (transformType != ItemCameraTransforms.TransformType.GUI) this.modelProvider.createAndUpdateAnimatedLocators(animatable, uniqueID);
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(0, 0.01f, 0);
 		GlStateManager.translate(0.5, 0.5, 0.5);
@@ -76,7 +70,8 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 		Color renderColor = getRenderColor(animatable, 0f);
         this.render(model, animatable, 0f,
                 (float) renderColor.getRed() / 255f, (float) renderColor.getGreen() / 255f,
-				(float) renderColor.getBlue() / 255f, (float) renderColor.getAlpha() / 255);
+				(float) renderColor.getBlue() / 255f, (float) renderColor.getAlpha() / 255
+		);
 		GlStateManager.popMatrix();
 	}
 
@@ -91,13 +86,8 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
                 this.currentItemStack.getItem(),
                 this.currentItemStack.getCount(),
                 this.currentItemStack.hasTagCompound() ? this.currentItemStack.getTagCompound().toString() : 1,
-                this.currentItemStack.hashCode()
+                this.currentItemStack.hashCode(),
+				this.transformType != ItemCameraTransforms.TransformType.GUI
         );
 	}
-
-    @Override
-    public void repositionAnimatedLocators(T animatable) {
-        if (this.transformType == null || this.transformType == ItemCameraTransforms.TransformType.GUI) return;
-        IGeoRenderer.super.repositionAnimatedLocators(animatable);
-    }
 }

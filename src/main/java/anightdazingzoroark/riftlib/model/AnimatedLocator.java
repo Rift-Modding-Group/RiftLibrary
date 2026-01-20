@@ -1,6 +1,5 @@
 package anightdazingzoroark.riftlib.model;
 
-import anightdazingzoroark.riftlib.ClientProxy;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.geo.render.GeoBone;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
@@ -9,7 +8,6 @@ import anightdazingzoroark.riftlib.particle.ParticleTicker;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
-import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.util.vector.Quaternion;
@@ -23,10 +21,19 @@ public class AnimatedLocator {
     private final List<RiftLibParticleEmitter> particleEmitterList = new ArrayList<>();
     private Vec3d worldSpacePos = new Vec3d(0, 0, 0);
     private Quaternion worldSpaceYXZQuaternion = new Quaternion();
+    private boolean isUpdated = true;
 
     public AnimatedLocator(GeoLocator geoLocator, IAnimatable iAnimatable) {
         this.locator = geoLocator;
         this.iAnimatable = iAnimatable;
+    }
+
+    public void setUpdated(boolean value) {
+        this.isUpdated = value;
+    }
+
+    public boolean isUpdated() {
+        return this.isUpdated;
     }
 
     public boolean isValid() {

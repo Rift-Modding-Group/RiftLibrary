@@ -52,6 +52,7 @@ public abstract class GeoBlockRenderer<T extends TileEntity & IAnimatable> exten
 		GeoModel model = modelProvider.getModel(modelProvider.getModelLocation(tile));
         Integer uniqueID = this.getUniqueID(tile);
 		this.modelProvider.setLivingAnimations(tile, uniqueID);
+		this.modelProvider.createAndUpdateAnimatedLocators(tile, uniqueID);
 
 		int light = tile.getWorld().getCombinedLight(tile.getPos(), 0);
 		int lx = light % 65536;

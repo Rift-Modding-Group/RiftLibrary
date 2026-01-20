@@ -87,8 +87,7 @@ public class RenderItemMixin {
                 GlStateManager.enableRescaleNormal();
 
                 GeoItemRenderer geoItemRenderer = (GeoItemRenderer) stack.getItem().getTileEntityItemStackRenderer();
-                geoItemRenderer.setLastTransformType(transformType);
-                geoItemRenderer.renderByItem(stack);
+                geoItemRenderer.render(stack.getItem(), stack, transformType);
             }
             else {
                 thisRenderItem.renderModel(model, stack);

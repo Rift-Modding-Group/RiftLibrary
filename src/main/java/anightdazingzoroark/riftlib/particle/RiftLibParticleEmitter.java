@@ -145,7 +145,7 @@ public class RiftLibParticleEmitter {
 
     //emitter is updated here, particles r created here too
     public void update() throws MolangException {
-        if (this.isDead()) return;
+        if (this.isDead()/* || !this.locatorIsUpdated()*/) return;
 
         this.molangParser.withScope(this.emitterScope, () -> {
             //dynamically set molang variables
@@ -180,7 +180,7 @@ public class RiftLibParticleEmitter {
         }
 
         //create particles based on rate and ability to create them
-        if (this.canCreateParticles() && !this.isDead) {
+        if (this.canCreateParticles() && !this.isDead && this.locatorIsUpdated()) {
             if (this.emitterRate instanceof EmitterInstantComponent) {
                 EmitterInstantComponent emitterInstant = (EmitterInstantComponent) this.emitterRate;
                 double particleCount = emitterInstant.particleCount.get();
@@ -625,5 +625,9 @@ public class RiftLibParticleEmitter {
 
     public AnimatedLocator getLocator() {
         return this.locator;
+    }
+
+    private boolean locatorIsUpdated() {
+        return this.locator == null || this.locator.isUpdated();
     }
 }

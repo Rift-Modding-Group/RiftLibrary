@@ -4,13 +4,10 @@ import anightdazingzoroark.example.block.MerryGoRoundBlock;
 import anightdazingzoroark.example.block.SprinklerBlock;
 import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
 import anightdazingzoroark.example.block.tile.SprinklerTileEntity;
-import anightdazingzoroark.example.client.renderer.item.BubbleGunRenderer;
-import anightdazingzoroark.example.client.renderer.item.FidgetSpinnerRenderer;
-import anightdazingzoroark.example.client.renderer.item.FireworkStickRenderer;
+import anightdazingzoroark.example.client.renderer.item.*;
 import anightdazingzoroark.example.item.*;
 import anightdazingzoroark.example.registry.BlockRegistry;
 import anightdazingzoroark.riftlib.RiftLibMod;
-import anightdazingzoroark.example.client.renderer.item.BombRenderer;
 import anightdazingzoroark.example.entity.*;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -103,7 +100,7 @@ public class CommonListener {
         EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "flying_pufferfish"), 0xffae00, 0xbfc700);
 		EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "alarm_clock"), 0x0000ff, 0xffffff);
 		EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "go_kart"), 0xbf2c12, 0xb3b3b3);
-		EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "avian_runner"), 0x000000, 0xffffff);
+		EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "avian_runner"), 0x383a88, 0xc7ccd2);
 
 		//tile entity registry
         GameRegistry.registerTileEntity(MerryGoRoundTileEntity.class, new ResourceLocation(RiftLib.ModID, "merry_go_round_te"));
@@ -131,8 +128,8 @@ public class CommonListener {
                 new SatelliteDishHelmet(ItemArmor.ArmorMaterial.DIAMOND, 0), "satellite_dish_helmet"
         );
 
-        ItemRegistry.MERRY_GO_ROUND = registerItem(new ItemBlock(BlockRegistry.MERRY_GO_ROUND_BLOCK), "merry_go_round");
-        ItemRegistry.SPRINKLER = registerItem(new ItemBlock(BlockRegistry.SPRINKLER_BLOCK), "sprinkler");
+        ItemRegistry.MERRY_GO_ROUND = registerItem(new AnimatedItemBlock(BlockRegistry.MERRY_GO_ROUND_BLOCK), "merry_go_round");
+        ItemRegistry.SPRINKLER = registerItem(new AnimatedItemBlock(BlockRegistry.SPRINKLER_BLOCK), "sprinkler");
 	}
 
 	public static <T extends Item> T registerItem(T item, String name) {
@@ -187,10 +184,15 @@ public class CommonListener {
 				new ModelResourceLocation(RiftLib.ModID + ":green_leggings", "inventory"));
 		ModelLoader.setCustomModelResourceLocation(ItemRegistry.GREEN_BOOTS, 0,
 				new ModelResourceLocation(RiftLib.ModID + ":green_boots", "inventory"));
+		ModelLoader.setCustomModelResourceLocation(ItemRegistry.SATELLITE_DISH_HELMET, 0,
+				new ModelResourceLocation(RiftLib.ModID + ":satellite_dish_helmet", "inventory"));
 
 		ItemRegistry.BOMB.setTileEntityItemStackRenderer(new BombRenderer());
         ItemRegistry.BUBBLE_GUN.setTileEntityItemStackRenderer(new BubbleGunRenderer());
         ItemRegistry.FIDGET_SPINNER.setTileEntityItemStackRenderer(new FidgetSpinnerRenderer());
         ItemRegistry.FIREWORK_STICK.setTileEntityItemStackRenderer(new FireworkStickRenderer());
+
+		ItemRegistry.MERRY_GO_ROUND.setTileEntityItemStackRenderer(new MerryGoRoundItemRenderer());
+		ItemRegistry.SPRINKLER.setTileEntityItemStackRenderer(new SprinklerItemRenderer());
 	}
 }

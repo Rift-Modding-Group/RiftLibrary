@@ -7,6 +7,7 @@ item.riftlib.bomb.name=Bomb
 item.riftlib.bubble_gun.name=Bubble Gun
 item.riftlib.fidget_spinner.name=Fidget Spinner
 item.riftlib.firework_stick.name=Firework Stick
+item.riftlib.satellite_dish_helmet.name=Satellite Dish Helmet
 
 command.riftlib.mob_family_usage=/riftlibmobfamily OR /riftlibmobfamily [name]
 command.riftlib.mob_family_all=All mob families: %s
@@ -20,6 +21,8 @@ tile.riftlib.sprinkler.name=Sprinkler
 entity.dragon.name=Red Dragon
 entity.flying_pufferfish.name=Flying Pufferfish
 entity.alarm_clock.name=Alarm Clock
+entity.go_kart.name=Go-Kart
+entity.avian_runner.name=Avian Runner
 
 ui.hovered_tool=%s level %s
 ui.open_in_jei=Click to open in JEI

@@ -12,6 +12,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.EntityAILookIdle;
+import net.minecraft.entity.ai.EntityAIWanderAvoidWater;
+import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
@@ -25,9 +28,15 @@ public class AvianRunnerEntity extends EntityCreature implements IAnimatable {
         super(worldIn);
     }
 
+    protected void initEntityAI() {
+        this.tasks.addTask(1, new EntityAIWanderAvoidWater(this, 0.75D));
+        this.tasks.addTask(2, new EntityAIWatchClosest(this, EntityPlayer.class, 8f));
+        this.tasks.addTask(3, new EntityAILookIdle(this));
+    }
+
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.35D);
     }
 
     @Override

@@ -5,7 +5,7 @@ import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
 
-public class MerryGoRoundModel extends AnimatedGeoModel<MerryGoRoundTileEntity> {
+public class MerryGoRoundBlockModel extends AnimatedGeoModel<MerryGoRoundTileEntity> {
     @Override
     public ResourceLocation getModelLocation(MerryGoRoundTileEntity object) {
         return new ResourceLocation(RiftLib.ModID, "geo/merry_go_round.geo.json");

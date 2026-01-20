@@ -259,7 +259,7 @@ public class RiftLibParticle {
             //origin
             Vec3d pointOrigin = new Vec3d(px - camX, py - camY, pz - camZ);
 
-            //half sizes
+            //sizes
             float scaleX = (float) this.size[0].get();
             float scaleY = (float) this.size[1].get();
 
@@ -306,6 +306,12 @@ public class RiftLibParticle {
                     pointThree = this.rotateAroundAxis(pointThree, axis);
                     pointFour = this.rotateAroundAxis(pointFour, axis);
                 }
+
+                Vec3d center = pointOne.add(pointTwo).add(pointThree).add(pointFour);
+                pointOne = pointOne.subtract(center);
+                pointTwo = pointTwo.subtract(center);
+                pointThree = pointThree.subtract(center);
+                pointFour = pointFour.subtract(center);
 
                 this.emitQuad(buffer, pointOrigin, pointOne, pointTwo, pointThree, pointFour, partialTicks);
             }
@@ -385,6 +391,13 @@ public class RiftLibParticle {
                     pointThree = this.rotateAroundAxis(pointThree, axis);
                     pointFour = this.rotateAroundAxis(pointFour, axis);
                 }
+
+                Vec3d center = pointOne.add(pointTwo).add(pointThree).add(pointFour);
+                pointOne = pointOne.subtract(center);
+                pointTwo = pointTwo.subtract(center);
+                pointThree = pointThree.subtract(center);
+                pointFour = pointFour.subtract(center);
+
                 this.emitQuad(buffer, pointOrigin, pointOne, pointTwo, pointThree, pointFour, partialTicks);
             }
         });

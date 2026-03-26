@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlibrary.main.geo;
+package anightdazingzoroark.riftlibrary.main.geo.basic;
 
 import anightdazingzoroark.riftlibrary.main.assetLoader.rawData.model.RawModel;
 
@@ -29,9 +29,7 @@ public class RiftLibModel {
                 return childBone;
             }
             RiftLibBone optionalBone = getBoneRecursively(name, childBone);
-            if (optionalBone != null) {
-                return optionalBone;
-            }
+            if (optionalBone != null) return optionalBone;
         }
         return null;
     }

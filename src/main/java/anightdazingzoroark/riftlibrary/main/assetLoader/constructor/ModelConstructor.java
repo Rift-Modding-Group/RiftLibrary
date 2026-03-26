@@ -1,10 +1,15 @@
 package anightdazingzoroark.riftlibrary.main.assetLoader.constructor;
 
 import anightdazingzoroark.riftlibrary.main.assetLoader.rawData.model.RawGeometryTree;
+import anightdazingzoroark.riftlibrary.main.assetLoader.rawData.model.RawModel;
 import anightdazingzoroark.riftlibrary.main.assetLoader.rawData.model.RawModelBoneGroup;
-import anightdazingzoroark.riftlibrary.main.geo.RiftLibModel;
-
-import javax.vecmath.Vector3f;
+import anightdazingzoroark.riftlibrary.main.assetLoader.rawData.model.RawModelLocatorList;
+import anightdazingzoroark.riftlibrary.main.geo.basic.RiftLibBone;
+import anightdazingzoroark.riftlibrary.main.geo.basic.RiftLibCube;
+import anightdazingzoroark.riftlibrary.main.geo.basic.RiftLibLocator;
+import anightdazingzoroark.riftlibrary.main.geo.basic.RiftLibModel;
+import anightdazingzoroark.riftlibrary.main.util.VectorUtils;
+import org.lwjglx.util.vector.Vector3f;
 
 public class ModelConstructor {
     public static RiftLibModel constructGeoModel(RawGeometryTree geometryTree) {
@@ -16,12 +21,12 @@ public class ModelConstructor {
         return toReturn;
     }
 
-    public static GeoBone constructBone(RawModelBoneGroup bone, RawGeoModel.RawModelDescription description, GeoBone parent) {
-        GeoBone geoBone = new GeoBone();
+    public static RiftLibBone constructBone(RawModelBoneGroup bone, RawModel.RawModelDescription description, RiftLibBone parent) {
+        RiftLibBone geoBone = new RiftLibBone();
 
-        RawGeoModel.RawModelBone rawBone = bone.selfBone;
-        Vector3f rotation = VectorUtils.convertDoubleToFloat(VectorUtils.fromArray(rawBone.rotation));
-        Vector3f pivot = VectorUtils.convertDoubleToFloat(VectorUtils.fromArray(rawBone.pivot));
+        RawModel.RawModelBone rawBone = bone.selfBone;
+        Vector3f rotation = VectorUtils.fromArray(rawBone.rotation);
+        Vector3f pivot = VectorUtils.fromArray(rawBone.pivot);
         rotation.x *= -1;
         rotation.y *= -1;
 
@@ -42,8 +47,8 @@ public class ModelConstructor {
 
         //add cubes
         if (rawBone.cubes != null && !rawBone.cubes.isEmpty()) {
-            for (RawGeoModel.RawModelCube cube : rawBone.cubes) {
-                geoBone.childCubes.add(new GeoCube(
+            for (RawModel.RawModelCube cube : rawBone.cubes) {
+                geoBone.childCubes.add(new RiftLibCube(
                         cube,
                         description,
                         geoBone.inflate == null ? null : geoBone.inflate / 16,
@@ -55,7 +60,7 @@ public class ModelConstructor {
         //add locators
         if (rawBone.locators != null && !rawBone.locators.list.isEmpty()) {
             for (RawModelLocatorList.RawModelLocator rawLocator : rawBone.locators.list) {
-                GeoLocator toAdd = new GeoLocator(geoBone, rawLocator.name);
+                RiftLibLocator toAdd = new RiftLibLocator(geoBone, rawLocator.name);
 
                 toAdd.setPositionX((float) rawLocator.offset[0]);
                 toAdd.setPositionY((float) rawLocator.offset[1]);

@@ -1,26 +1,28 @@
-package anightdazingzoroark.riftlibrary.main.geo;
+package anightdazingzoroark.riftlibrary.main.geo.basic;
 
 import anightdazingzoroark.riftlibrary.main.assetLoader.rawData.model.RawFaceUVUser;
 import anightdazingzoroark.riftlibrary.main.assetLoader.rawData.model.RawModel;
 import anightdazingzoroark.riftlibrary.main.assetLoader.rawData.model.RawUVUnion;
+import anightdazingzoroark.riftlibrary.main.util.VectorUtils;
+import net.minecraft.util.EnumFacing;
 import org.lwjglx.util.vector.Vector3f;
 
-public class RiftLibBone {
-    public GeoQuad[] quads = new GeoQuad[6];
+public class RiftLibCube {
+    public RiftLibQuad[] quads = new RiftLibQuad[6];
     public Vector3f pivot;
     public Vector3f rotation;
     public Vector3f size = new Vector3f();
     public double inflate;
     public Boolean mirror;
 
-    public RiftLibBone(RawModel.RawModelCube cube, RawModel.RawModelDescription description, Double boneInflate, Boolean mirror) {
-        if (cube.size.length >= 3) this.size.set((float) cube.size[0], (float) cube.size[1], (float) cube.size[2]);
+    public RiftLibCube(RawModel.RawModelCube cube, RawModel.RawModelDescription description, Float boneInflate, Boolean mirror) {
+        if (cube.size.length >= 3) this.size.set(cube.size[0], cube.size[1], cube.size[2]);
 
         RawUVUnion uvUnion = cube.uv;
         RawFaceUVUser faces = uvUnion.faceUV;
         boolean isBoxUV = uvUnion.isBoxUV();
         this.mirror = cube.mirror;
-        this.inflate = cube.inflate == null ? (boneInflate == null ? 0 : boneInflate) : cube.inflate / 16;;
+        this.inflate = cube.inflate == null ? (boneInflate == null ? 0 : boneInflate) : cube.inflate / 16;
 
         float textureHeight = description.texture_height;
         float textureWidth = description.texture_width;
@@ -33,7 +35,7 @@ public class RiftLibBone {
         size.y *= 0.0625f;
         size.z *= 0.0625f;
 
-        Vector3f rotation = VectorUtils.convertDoubleToFloat(VectorUtils.fromArray(cube.rotation));
+        Vector3f rotation = VectorUtils.fromArray(cube.rotation);
         rotation.x *= -1;
         rotation.y *= -1;
 
@@ -41,7 +43,7 @@ public class RiftLibBone {
         rotation.setY((float) Math.toRadians(rotation.getY()));
         rotation.setZ((float) Math.toRadians(rotation.getZ()));
 
-        Vector3f pivot = VectorUtils.convertDoubleToFloat(VectorUtils.fromArray(cube.pivot));
+        Vector3f pivot = VectorUtils.fromArray(cube.pivot);
         pivot.x *= -1;
 
         this.pivot = pivot;
@@ -64,12 +66,12 @@ public class RiftLibBone {
         RiftLibVertex P8 = new RiftLibVertex(origin.x + size.x + this.inflate, origin.y + size.y + this.inflate,
                 origin.z + size.z + this.inflate);
 
-        GeoQuad quadWest;
-        GeoQuad quadEast;
-        GeoQuad quadNorth;
-        GeoQuad quadSouth;
-        GeoQuad quadUp;
-        GeoQuad quadDown;
+        RiftLibQuad quadWest;
+        RiftLibQuad quadEast;
+        RiftLibQuad quadNorth;
+        RiftLibQuad quadSouth;
+        RiftLibQuad quadUp;
+        RiftLibQuad quadDown;
 
         if (!isBoxUV) {
             RawFaceUVUser.RawUVFace west = faces.westUV;
@@ -81,37 +83,37 @@ public class RiftLibBone {
             // Pass in vertices starting from the top right corner, then going
             // counter-clockwise
             quadWest = west == null ? null
-                    : new GeoQuad(
+                    : new RiftLibQuad(
                     new RiftLibVertex[] { P4, P3, P1, P2 },
                     west.uv, west.uv_size, textureWidth,
                     textureHeight, cube.mirror, EnumFacing.WEST
             );
             quadEast = east == null ? null
-                    : new GeoQuad(
+                    : new RiftLibQuad(
                     new RiftLibVertex[] { P7, P8, P6, P5 },
                     east.uv, east.uv_size, textureWidth,
                     textureHeight, cube.mirror, EnumFacing.EAST
             );
             quadNorth = north == null ? null
-                    : new GeoQuad(
+                    : new RiftLibQuad(
                     new RiftLibVertex[] { P3, P7, P5, P1 },
                     north.uv, north.uv_size, textureWidth,
                     textureHeight, cube.mirror, EnumFacing.NORTH
             );
             quadSouth = south == null ? null
-                    : new GeoQuad(
+                    : new RiftLibQuad(
                     new RiftLibVertex[] { P8, P4, P2, P6 },
                     south.uv, south.uv_size, textureWidth,
                     textureHeight, cube.mirror, EnumFacing.SOUTH
             );
             quadUp = up == null ? null
-                    : new GeoQuad(
+                    : new RiftLibQuad(
                     new RiftLibVertex[] { P4, P8, P7, P3 },
                     up.uv, up.uv_size, textureWidth,
                     textureHeight, cube.mirror, EnumFacing.UP
             );
             quadDown = down == null ? null
-                    : new GeoQuad(
+                    : new RiftLibQuad(
                     new RiftLibVertex[] { P1, P5, P6, P2 },
                     down.uv, down.uv_size, textureWidth,
                     textureHeight, cube.mirror, EnumFacing.DOWN
@@ -119,37 +121,37 @@ public class RiftLibBone {
 
             if (cube.mirror || mirror) {
                 quadWest = west == null ? null
-                        : new GeoQuad(
+                        : new RiftLibQuad(
                         new RiftLibVertex[] { P7, P8, P6, P5 },
                         west.uv, west.uv_size, textureWidth,
                         textureHeight, cube.mirror, EnumFacing.WEST
                 );
                 quadEast = east == null ? null
-                        : new GeoQuad(
+                        : new RiftLibQuad(
                         new RiftLibVertex[] { P4, P3, P1, P2 },
                         east.uv, east.uv_size, textureWidth,
                         textureHeight, cube.mirror, EnumFacing.EAST
                 );
                 quadNorth = north == null ? null
-                        : new GeoQuad(
+                        : new RiftLibQuad(
                         new RiftLibVertex[] { P3, P7, P5, P1 },
                         north.uv, north.uv_size, textureWidth,
                         textureHeight, cube.mirror, EnumFacing.NORTH
                 );
                 quadSouth = south == null ? null
-                        : new GeoQuad(
+                        : new RiftLibQuad(
                         new RiftLibVertex[] { P8, P4, P2, P6 },
                         south.uv, south.uv_size, textureWidth,
                         textureHeight, cube.mirror, EnumFacing.SOUTH
                 );
                 quadUp = up == null ? null
-                        : new GeoQuad(
+                        : new RiftLibQuad(
                         new RiftLibVertex[] { P1, P5, P6, P2 },
                         up.uv, up.uv_size, textureWidth,
                         textureHeight, cube.mirror, EnumFacing.UP
                 );
                 quadDown = down == null ? null
-                        : new GeoQuad(
+                        : new RiftLibQuad(
                         new RiftLibVertex[] { P4, P8, P7, P3 },
                         down.uv, down.uv_size, textureWidth,
                         textureHeight, cube.mirror, EnumFacing.DOWN
@@ -158,40 +160,40 @@ public class RiftLibBone {
         }
         else {
             int[] UV = cube.uv.boxUV;
-            Vector3d UVSize = VectorUtils.fromArray(cube.size);
-            UVSize = new Vector3d(Math.floor(UVSize.x), Math.floor(UVSize.y), Math.floor(UVSize.z));
+            Vector3f UVSize = VectorUtils.fromArray(cube.size);
+            UVSize = new Vector3f((float) Math.floor(UVSize.x), (float) Math.floor(UVSize.y), (float) Math.floor(UVSize.z));
 
-            quadWest = new GeoQuad(
+            quadWest = new RiftLibQuad(
                     new RiftLibVertex[] { P4, P3, P1, P2 },
                     new int[] { (int) (UV[0] + UVSize.z + UVSize.x), (int) (UV[1] + UVSize.z) },
                     new int[] { (int) UVSize.z, (int) UVSize.y },
                     textureWidth, textureHeight, cube.mirror, EnumFacing.WEST
             );
-            quadEast = new GeoQuad(
+            quadEast = new RiftLibQuad(
                     new RiftLibVertex[] { P7, P8, P6, P5 },
                     new int[] { (int) UV[0], (int) (UV[1] + UVSize.z) },
                     new int[] { (int) UVSize.z, (int) UVSize.y },
                     textureWidth, textureHeight, cube.mirror, EnumFacing.EAST
             );
-            quadNorth = new GeoQuad(
+            quadNorth = new RiftLibQuad(
                     new RiftLibVertex[] { P3, P7, P5, P1 },
                     new int[] { (int) (UV[0] + UVSize.z), (int) (UV[1] + UVSize.z) },
                     new int[] { (int) UVSize.x, (int) UVSize.y },
                     textureWidth, textureHeight, cube.mirror, EnumFacing.NORTH
             );
-            quadSouth = new GeoQuad(
+            quadSouth = new RiftLibQuad(
                     new RiftLibVertex[] { P8, P4, P2, P6 },
                     new int[] { (int) (UV[0] + UVSize.z + UVSize.x + UVSize.z), (int) (UV[1] + UVSize.z) },
                     new int[] { (int) UVSize.x, (int) UVSize.y },
                     textureWidth, textureHeight, cube.mirror, EnumFacing.SOUTH
             );
-            quadUp = new GeoQuad(
+            quadUp = new RiftLibQuad(
                     new RiftLibVertex[] { P4, P8, P7, P3 },
                     new int[] { (int) (UV[0] + UVSize.z), (int) UV[1] },
                     new int[] { (int) UVSize.x, (int) UVSize.z },
                     textureWidth, textureHeight, cube.mirror, EnumFacing.UP
             );
-            quadDown = new GeoQuad(
+            quadDown = new RiftLibQuad(
                     new RiftLibVertex[] { P2, P6, P5, P1 },
                     new int[] { (int) (UV[0] + UVSize.z + UVSize.x), (int) UV[1] },
                     new int[] { (int) UVSize.x, (int) UVSize.z },
@@ -199,37 +201,37 @@ public class RiftLibBone {
             );
 
             if (cube.mirror == Boolean.TRUE) {
-                quadWest = new GeoQuad(
+                quadWest = new RiftLibQuad(
                         new RiftLibVertex[] { P7, P8, P6, P5 },
                         new int[] { (int) (UV[0] + UVSize.z + UVSize.x), (int) (UV[1] + UVSize.z) },
                         new int[] { (int) UVSize.z, (int) UVSize.y },
                         textureWidth, textureHeight, cube.mirror, EnumFacing.WEST
                 );
-                quadEast = new GeoQuad(
+                quadEast = new RiftLibQuad(
                         new RiftLibVertex[] { P4, P3, P1, P2 },
                         new int[] { (int) UV[0], (int) (UV[1] + UVSize.z) },
                         new int[] { (int) UVSize.z, (int) UVSize.y },
                         textureWidth, textureHeight, cube.mirror, EnumFacing.EAST
                 );
-                quadNorth = new GeoQuad(
+                quadNorth = new RiftLibQuad(
                         new RiftLibVertex[] { P3, P7, P5, P1 },
                         new int[] { (int) (UV[0] + UVSize.z), (int) (UV[1] + UVSize.z) },
                         new int[] { (int) UVSize.x, (int) UVSize.y },
                         textureWidth, textureHeight, cube.mirror, EnumFacing.NORTH
                 );
-                quadSouth = new GeoQuad(
+                quadSouth = new RiftLibQuad(
                         new RiftLibVertex[] { P8, P4, P2, P6 },
                         new int[] { (int) (UV[0] + UVSize.z + UVSize.x + UVSize.z), (int) (UV[1] + UVSize.z) },
                         new int[] { (int) UVSize.x, (int) UVSize.y },
                         textureWidth, textureHeight, cube.mirror, EnumFacing.SOUTH
                 );
-                quadUp = new GeoQuad(
+                quadUp = new RiftLibQuad(
                         new RiftLibVertex[] { P4, P8, P7, P3 },
                         new int[] { (int) (UV[0] + UVSize.z), (int) UV[1] },
                         new int[] { (int) UVSize.x, (int) UVSize.z },
                         textureWidth, textureHeight, cube.mirror, EnumFacing.UP
                 );
-                quadDown = new GeoQuad(
+                quadDown = new RiftLibQuad(
                         new RiftLibVertex[] { P1, P5, P6, P2 },
                         new int[] { (int) (UV[0] + UVSize.z + UVSize.x), (int) (UV[1] + UVSize.z) },
                         new int[] { (int) UVSize.x, (int) (-UVSize.z) },

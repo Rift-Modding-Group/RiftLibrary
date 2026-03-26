@@ -12,8 +12,8 @@ public class RawModelLocatorList {
 
     public static class RawModelLocator {
         public String name;
-        public double[] offset = new double[]{0, 0, 0};
-        public double[] rotation = new double[]{0, 0, 0};
+        public float[] offset = new float[]{0, 0, 0};
+        public float[] rotation = new float[]{0, 0, 0};
     }
 
     public static class Deserialize implements JsonDeserializer<RawModelLocatorList> {
@@ -28,7 +28,7 @@ public class RawModelLocatorList {
                 //if its just an array, set that as the offset
                 if (element.isJsonArray()) {
                     rawModelLocator.name = entry.getKey();
-                    rawModelLocator.offset = context.deserialize(element, double[].class);
+                    rawModelLocator.offset = context.deserialize(element, float[].class);
                 }
                 //otherwise, it must be an object, so read it up
                 else if (element.isJsonObject()) {
@@ -37,11 +37,11 @@ public class RawModelLocatorList {
                     rawModelLocator.name = entry.getKey();
 
                     if (object.has("offset")) {
-                        rawModelLocator.offset = context.deserialize(object.get("offset"), double[].class);
+                        rawModelLocator.offset = context.deserialize(object.get("offset"), float[].class);
                     }
 
                     if (object.has("rotation")) {
-                        rawModelLocator.rotation = context.deserialize(object.get("rotation"), double[].class);
+                        rawModelLocator.rotation = context.deserialize(object.get("rotation"), float[].class);
                     }
                 }
                 else throw new JsonParseException("Unexpected type: " + json.toString());

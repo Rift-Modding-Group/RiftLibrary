@@ -1,9 +1,12 @@
 package anightdazingzoroark.riftlibrary.main.assetLoader;
 
 import anightdazingzoroark.riftlibrary.main.RiftLibraryMod;
+import anightdazingzoroark.riftlibrary.main.assetLoader.constructor.ModelConstructor;
 import anightdazingzoroark.riftlibrary.main.assetLoader.rawData.model.RawGeometryTree;
 import anightdazingzoroark.riftlibrary.main.assetLoader.rawData.model.RawModel;
-import anightdazingzoroark.riftlibrary.main.geo.RiftLibModel;
+import anightdazingzoroark.riftlibrary.main.assetLoader.rawData.model.RawModelLocatorList;
+import anightdazingzoroark.riftlibrary.main.assetLoader.rawData.model.RawUVUnion;
+import anightdazingzoroark.riftlibrary.main.geo.basic.RiftLibModel;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.minecraft.client.resources.IResourceManager;
@@ -15,7 +18,10 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 
 public class AssetLoader {
-    private final Gson gson = new GsonBuilder().create();
+    private final Gson gson = new GsonBuilder()
+            .registerTypeAdapter(RawUVUnion.class, new RawUVUnion.Deserializer())
+            .registerTypeAdapter(RawModelLocatorList.class, new RawModelLocatorList.Deserialize())
+            .create();
 
     public RiftLibModel loadModel(IResourceManager resourceManager, ResourceLocation location) {
         //deserialize from json into basic json objects, bones are still stored as a
@@ -27,7 +33,7 @@ public class AssetLoader {
 
         // Build the quads and cubes from the raw tree into a built and ready to be
         // rendered GeoModel
-        return GeoConstructor.constructGeoModel(rawGeometryTree);
+        return ModelConstructor.constructGeoModel(rawGeometryTree);
     }
 
     private String getResourceAsString(ResourceLocation location, IResourceManager manager) {

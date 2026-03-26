@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlibrary.main.geo;
+package anightdazingzoroark.riftlibrary.main.geo.basic;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Validate;

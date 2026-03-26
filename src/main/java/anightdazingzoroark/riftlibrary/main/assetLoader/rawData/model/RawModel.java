@@ -30,13 +30,13 @@ public class RawModel {
         public Integer texture_height;
 
         @SerializedName("visible_bounds_width")
-        public Double visible_bounds_width;
+        public Float visible_bounds_width;
 
         @SerializedName("visible_bounds_height")
-        public Double visible_bounds_height;
+        public Float visible_bounds_height;
 
         @SerializedName("visible_bounds_offset")
-        public double[] visible_bounds_offset;
+        public float[] visible_bounds_offset;
     }
 
     public static class RawModelBone {
@@ -47,13 +47,13 @@ public class RawModel {
         public String parent;
 
         @SerializedName("pivot")
-        public double[] pivot = new double[]{0, 0, 0};
+        public float[] pivot = new float[]{0, 0, 0};
 
         @SerializedName("rotation")
-        public double[] rotation = new double[]{0, 0, 0};
+        public float[] rotation = new float[]{0, 0, 0};
 
         @SerializedName("inflate")
-        public Double inflate;
+        public Float inflate;
 
         @SerializedName("mirror")
         public Boolean mirror;
@@ -67,19 +67,19 @@ public class RawModel {
 
     public static class RawModelCube {
         @SerializedName("origin")
-        public double[] origin;
+        public float[] origin;
 
         @SerializedName("pivot")
-        public double[] pivot = new double[]{0, 0, 0};
+        public float[] pivot = new float[]{0, 0, 0};
 
         @SerializedName("rotation")
-        public double[] rotation = new double[]{0, 0, 0};
+        public float[] rotation = new float[]{0, 0, 0};
 
         @SerializedName("size")
-        public double[] size = new double[]{0, 0, 0};
+        public float[] size = new float[]{0, 0, 0};
 
         @SerializedName("inflate")
-        public Double inflate;
+        public Float inflate;
 
         @SerializedName("mirror")
         public Boolean mirror;

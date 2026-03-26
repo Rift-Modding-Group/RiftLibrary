@@ -1,6 +1,6 @@
 package anightdazingzoroark.riftlib.util;
 
-import org.lwjgl.util.vector.Quaternion;
+import org.lwjglx.util.vector.Quaternion;
 
 public class QuaternionUtils {
     public static Quaternion createXYZQuaternion(double rotationX, double rotationY, double rotationZ) {

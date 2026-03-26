@@ -5,7 +5,7 @@ import java.util.*;
 import javax.annotation.Nullable;
 
 import anightdazingzoroark.riftlib.RiftLibConfig;
-import anightdazingzoroark.riftlib.ServerProxy;
+import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitbox;
 import anightdazingzoroark.riftlib.hitboxLogic.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateRiderPos;

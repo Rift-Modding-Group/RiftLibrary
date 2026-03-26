@@ -5,10 +5,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
+import org.lwjglx.BufferUtils;
+import org.lwjglx.opengl.GL11;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
-import org.lwjgl.util.vector.Quaternion;
+import org.lwjglx.util.vector.Quaternion;
 
 import javax.annotation.Nullable;
 import javax.vecmath.*;

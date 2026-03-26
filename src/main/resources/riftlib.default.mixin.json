@@ -1,10 +1,13 @@
 {
   "required": true,
   "package": "anightdazingzoroark.riftlib.mixin",
-  "refmap": "mixin.prift.refmap.json",
   "compatibilityLevel": "JAVA_8",
-  "minVersion": "0.8",
+  "target": "@env(DEFAULT)",
+  "client": [],
   "mixins": [
     "RenderItemMixin"
-  ]
+  ],
+  "server": [],
+  "setSourceFile": true,
+  "minVersion": "0.8.7"
 }

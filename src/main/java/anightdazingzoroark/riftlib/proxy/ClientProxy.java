@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib;
+package anightdazingzoroark.riftlib.proxy;
 
 import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
 import anightdazingzoroark.example.block.tile.SprinklerTileEntity;
@@ -12,7 +12,8 @@ import anightdazingzoroark.example.entity.hitboxLinker.DragonHitboxLinker;
 import anightdazingzoroark.example.entity.hitboxLinker.FlyingPufferfishHitboxLinker;
 import anightdazingzoroark.example.item.GreenArmorItem;
 import anightdazingzoroark.example.item.SatelliteDishHelmet;
-import anightdazingzoroark.example.ui.HelloWorldUI;
+import anightdazingzoroark.riftlib.RiftLibLinkerRegistry;
+import anightdazingzoroark.riftlib.RiftLibMod;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitbox;
 import anightdazingzoroark.riftlib.hitboxLogic.EntityHitboxRenderer;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
@@ -24,8 +25,6 @@ import anightdazingzoroark.riftlib.renderers.geo.GeoArmorRenderer;
 import anightdazingzoroark.riftlib.renderers.geo.GeoReplacedEntityRenderer;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffect;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffectRegistry;
-import anightdazingzoroark.riftlib.ui.RiftLibUI;
-import anightdazingzoroark.riftlib.ui.RiftLibUIRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.monster.EntityCreeper;
@@ -50,9 +49,6 @@ public class ClientProxy extends ServerProxy {
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {
-            //uis
-            RiftLibUIRegistry.registerUI("helloWorld", HelloWorldUI.class);
-
             //linkers
             RiftLibLinkerRegistry.registerEntityHitboxLinker(DragonEntity.class, new DragonHitboxLinker());
             RiftLibLinkerRegistry.registerEntityHitboxLinker(FlyingPufferfishEntity.class, new FlyingPufferfishHitboxLinker());
@@ -107,12 +103,6 @@ public class ClientProxy extends ServerProxy {
                     messageContext
             ));
         }
-    }
-
-    @SideOnly(Side.CLIENT)
-    public static void showUI(String id, NBTTagCompound nbtTagCompound, int x, int y, int z) {
-        RiftLibUI ui = RiftLibUIRegistry.createUI(id, nbtTagCompound, x, y, z);
-        if (ui != null) Minecraft.getMinecraft().displayGuiScreen(ui);
     }
 
     @SideOnly(Side.CLIENT)

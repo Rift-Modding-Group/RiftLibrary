@@ -10,7 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.Vec3d;
-import org.lwjgl.util.vector.Quaternion;
+import org.lwjglx.util.vector.Quaternion;
 
 import java.util.ArrayList;
 import java.util.List;

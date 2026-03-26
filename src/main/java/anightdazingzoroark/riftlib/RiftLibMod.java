@@ -5,6 +5,7 @@ import anightdazingzoroark.riftlib.command.RiftLibMobFamily;
 import anightdazingzoroark.riftlib.mobFamily.MobFamily;
 import anightdazingzoroark.riftlib.mobFamily.MobFamilyCreator;
 import anightdazingzoroark.riftlib.mobFamily.MobFamilyManager;
+import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemStack;
 import net.minecraft.launchwrapper.Launch;
@@ -21,7 +22,7 @@ import java.io.File;
 
 @Mod(modid = RiftLib.ModID, version = RiftLib.VERSION)
 public class RiftLibMod {
-    @SidedProxy(clientSide = "anightdazingzoroark.riftlib.ClientProxy", serverSide = "anightdazingzoroark.riftlib.ServerProxy")
+    @SidedProxy(clientSide = "anightdazingzoroark.riftlib.proxy.ClientProxy", serverSide = "anightdazingzoroark.riftlib.proxy.ServerProxy")
     public static ServerProxy PROXY;
 	public static Configuration configMain;
 	public static boolean DISABLE_IN_DEV = false;
@@ -116,7 +117,6 @@ public class RiftLibMod {
 	@Mod.EventHandler
 	public void init(FMLInitializationEvent event) {
         if (DEOBF_ENVIRONMENT && !DISABLE_IN_DEV) RiftLib.initialize();
-        PROXY.init(event);
     }
 
 

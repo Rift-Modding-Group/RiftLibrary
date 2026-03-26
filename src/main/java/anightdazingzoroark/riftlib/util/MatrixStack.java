@@ -6,10 +6,9 @@ import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;
 
-import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import net.minecraft.util.math.Vec3d;
-import org.lwjgl.util.vector.Quaternion;
+import org.lwjglx.util.vector.Quaternion;
 
 import anightdazingzoroark.riftlib.geo.render.GeoBone;
 import anightdazingzoroark.riftlib.geo.render.GeoCube;

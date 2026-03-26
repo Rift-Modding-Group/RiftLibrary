@@ -1,6 +1,8 @@
-package anightdazingzoroark.riftlib;
+package anightdazingzoroark.riftlib.proxy;
 
 import anightdazingzoroark.example.CommonListener;
+import anightdazingzoroark.riftlib.RiftLib;
+import anightdazingzoroark.riftlib.RiftLibMod;
 import anightdazingzoroark.riftlib.internalMessage.*;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
 import anightdazingzoroark.riftlib.message.RiftLibMessageSide;
@@ -29,7 +31,6 @@ public class ServerProxy {
         MESSAGE_WRAPPER.registerMessage(RiftLibUpdateHitboxPos.class, RiftLibMessageSide.BOTH);
         MESSAGE_WRAPPER.registerMessage(RiftLibUpdateRiderPos.class, RiftLibMessageSide.BOTH);
         MESSAGE_WRAPPER.registerMessage(RiftLibUpdateHitboxSize.class, RiftLibMessageSide.BOTH);
-        MESSAGE_WRAPPER.registerMessage(RiftLibOpenUI.class, RiftLibMessageSide.CLIENT);
         MESSAGE_WRAPPER.registerMessage(RiftLibCreateParticle.class, RiftLibMessageSide.CLIENT);
         MESSAGE_WRAPPER.registerMessage(RiftLibPlaySoundForPlayer.class, RiftLibMessageSide.CLIENT);
 
@@ -39,11 +40,7 @@ public class ServerProxy {
         }
     }
 
-    public void init(FMLInitializationEvent event) {
-        if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {
-            MinecraftForge.EVENT_BUS.register(new RiftLibEvent());
-        }
-    }
+    public void init(FMLInitializationEvent event) {}
 
     public <T extends RiftLibMessage<T>> void handleMessage(final T message, final MessageContext messageContext) {
         WorldServer world = (WorldServer) messageContext.getServerHandler().player.world;

@@ -1,10 +1,9 @@
 package anightdazingzoroark.riftlib.sounds;
 
-import anightdazingzoroark.riftlib.ServerProxy;
+import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibPlaySoundForPlayer;
 import anightdazingzoroark.riftlib.item.GeoArmorItem;
-import anightdazingzoroark.riftlib.message.RiftLibMessage;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;

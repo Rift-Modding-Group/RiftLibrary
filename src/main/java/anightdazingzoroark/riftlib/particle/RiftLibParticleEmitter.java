@@ -1,7 +1,5 @@
 package anightdazingzoroark.riftlib.particle;
 
-import anightdazingzoroark.riftlib.ClientProxy;
-import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.molang.MolangException;
@@ -34,7 +32,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.vector.Quaternion;
+import org.lwjglx.util.vector.Quaternion;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;

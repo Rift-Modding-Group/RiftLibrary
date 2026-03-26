@@ -1,9 +1,8 @@
 package anightdazingzoroark.riftlib.particle;
 
-import anightdazingzoroark.riftlib.ServerProxy;
+import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibCreateParticle;
 import anightdazingzoroark.riftlib.resource.RiftLibCache;
-import net.minecraft.entity.Entity;
 
 import java.util.Collection;
 

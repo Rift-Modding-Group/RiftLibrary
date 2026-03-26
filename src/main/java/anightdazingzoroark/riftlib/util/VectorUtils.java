@@ -6,7 +6,7 @@ import javax.vecmath.Vector3f;
 import net.minecraft.util.math.Vec3d;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Validate;
-import org.lwjgl.util.vector.Quaternion;
+import org.lwjglx.util.vector.Quaternion;
 
 public class VectorUtils {
 	public static Vector3d fromArray(double[] array) {

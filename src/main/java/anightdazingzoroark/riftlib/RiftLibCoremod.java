@@ -1,6 +1,5 @@
-package anightdazingzoroark.riftlib.mixin;
+package anightdazingzoroark.riftlib;
 
-import anightdazingzoroark.riftlib.RiftLib;
 import net.minecraftforge.common.ForgeVersion;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 import zone.rong.mixinbooter.IEarlyMixinLoader;
@@ -10,10 +9,10 @@ import java.util.*;
 
 @IFMLLoadingPlugin.Name(RiftLib.ModID)
 @IFMLLoadingPlugin.MCVersion(ForgeVersion.mcVersion)
-public class RiftLibMixin implements IEarlyMixinLoader, IFMLLoadingPlugin {
+public class RiftLibCoremod implements IEarlyMixinLoader, IFMLLoadingPlugin {
     @Override
     public List<String> getMixinConfigs() {
-        return Arrays.asList("mixin.riftlib.json");
+        return Arrays.asList("riftlib.default.mixin.json");
         //return new ArrayList<>();
     }
 

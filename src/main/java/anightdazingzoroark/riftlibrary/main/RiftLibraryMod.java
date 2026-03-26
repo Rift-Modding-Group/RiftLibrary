@@ -1,8 +1,11 @@
 package anightdazingzoroark.riftlibrary.main;
 
+import anightdazingzoroark.riftlibrary.example.RiftLibraryExample;
 import anightdazingzoroark.riftlibrary.main.proxy.IProxy;
+import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,8 +20,15 @@ public class RiftLibraryMod {
             modId = RiftLibraryMod.MODID, clientSide = "anightdazingzoroark.riftlibrary.main.proxy.ClientProxy",
             serverSide = "anightdazingzoroark.riftlibrary.main.proxy.CommonProxy"
     )
-    public static IProxy proxy;
+    public static IProxy PROXY;
+    public static boolean DISABLE_IN_DEV = false;
+    public static boolean DEOBF_ENVIRONMENT = (Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment");
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {}
+
+    @Mod.EventHandler
+    public void init(FMLInitializationEvent event) {
+        if (DEOBF_ENVIRONMENT && !DISABLE_IN_DEV) RiftLibraryExample.init(event);
+    }
 }

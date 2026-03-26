@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "anightdazingzoroark.riftlibrary.main.mixin.mod",
+  "plugin": "anightdazingzoroark.riftlibrary.main.RiftLibraryMixinConfigPlugin",
+  "compatibilityLevel": "JAVA_8",
+  "target": "@env(MOD)",
+  "client": [],
+  "mixins": [],
+  "server": [],
+  "setSourceFile": true,
+  "minVersion": "0.8.7"
+}

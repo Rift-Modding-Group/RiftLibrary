@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlibrary.main.assetLoader.rawData.animation;
+package anightdazingzoroark.riftlibrary.main.assetLoader.rawData.model;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;

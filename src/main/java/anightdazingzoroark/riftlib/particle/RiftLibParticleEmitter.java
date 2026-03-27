@@ -56,7 +56,6 @@ public class RiftLibParticleEmitter {
     private boolean isDead;
     public RiftLibEmitterShapeComponent emitterShape;
     public RiftLibEmitterRateComponent emitterRate;
-    private int despawnNoUpdateCountdown;
 
     public final MolangScope emitterScope = new MolangScope();
 
@@ -286,15 +285,15 @@ public class RiftLibParticleEmitter {
     public void render(float partialTicks) {
         if (this.world == null || this.textureLocation == null || this.particles.isEmpty()) return;
 
-        Minecraft mc = Minecraft.getMinecraft();
-        Entity camera = mc.getRenderViewEntity();
+        //get camera
+        Entity camera = Minecraft.getMinecraft().getRenderViewEntity();
         if (camera == null) return;
 
         //bind particle texture directly
-        mc.getTextureManager().bindTexture(this.textureLocation);
+        Minecraft.getMinecraft().getTextureManager().bindTexture(this.textureLocation);
 
         //render particle, start by using info from material to change how it renders
-        this.beginMaterialDraw();
+        this.material.beginDraw();
         Tessellator tess = Tessellator.getInstance();
         BufferBuilder buffer = tess.getBuffer();
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_LMAP_COLOR);
@@ -305,7 +304,7 @@ public class RiftLibParticleEmitter {
         }
 
         tess.draw();
-        this.finishMaterialDraw();
+        this.material.endDraw();
     }
 
     //this creates a position based on the emitter shape and provided offset
@@ -519,56 +518,6 @@ public class RiftLibParticleEmitter {
             ).normalize();
         }
         return Vec3d.ZERO;
-    }
-
-    private void beginMaterialDraw() {
-        if (this.material == ParticleMaterial.ALPHA) {
-            GlStateManager.disableBlend();
-            GlStateManager.enableAlpha();
-            GlStateManager.alphaFunc(GL11.GL_GREATER, 0.99f);
-            GlStateManager.disableCull();
-        }
-        else if (this.material == ParticleMaterial.ADD) {
-            GlStateManager.enableBlend();
-            GlStateManager.disableAlpha();
-            GlStateManager.blendFunc(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE
-            );
-            GlStateManager.depthMask(false);
-        }
-        else if (this.material == ParticleMaterial.BLEND) {
-            GlStateManager.enableBlend();
-            GlStateManager.enableAlpha();
-            GlStateManager.blendFunc(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-            );
-            GlStateManager.alphaFunc(GL11.GL_GREATER, 0.003921569f);
-            GlStateManager.depthMask(true);
-        }
-        else if (this.material == ParticleMaterial.OPAQUE) {
-            GlStateManager.disableBlend();
-            GlStateManager.enableAlpha();
-            GlStateManager.alphaFunc(GL11.GL_ALWAYS, 0f);
-            GlStateManager.disableCull();
-            GlStateManager.depthMask(true);
-        }
-    }
-
-    private void finishMaterialDraw() {
-        //reset default global state
-        GlStateManager.depthMask(true);
-        GlStateManager.enableAlpha();
-        GlStateManager.disableBlend();
-        GlStateManager.enableCull();
-
-        //restore default alpha test and blend func
-        GlStateManager.alphaFunc(GL11.GL_GREATER, 0.1f);
-        GlStateManager.blendFunc(
-                GlStateManager.SourceFactor.SRC_ALPHA,
-                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-        );
     }
 
     //this utilizes the emitter lifetime component to return whether or not particles can be made

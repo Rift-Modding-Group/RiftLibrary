@@ -3,6 +3,7 @@ package anightdazingzoroark.riftlib.molang;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public final class MolangScope {
     private final MolangScope parent;
     private final Map<String, Double> values = new HashMap<>();

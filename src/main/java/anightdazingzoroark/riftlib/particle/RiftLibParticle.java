@@ -244,162 +244,28 @@ public class RiftLibParticle {
         });
     }
 
-    public void renderParticle(BufferBuilder buffer, Entity camera, float partialTicks) {
+    public void renderParticle(BufferBuilder buffer, Entity cameraEntity, float partialTicks) {
         this.molangParser.withScope(this.particleScope, () -> {
+            //sizes
+            float scaleX = (float) this.size[0].get();
+            float scaleY = (float) this.size[1].get();
+
             //camera position (lerped)
-            double camX = camera.lastTickPosX + (camera.posX - camera.lastTickPosX) * partialTicks;
-            double camY = camera.lastTickPosY + (camera.posY - camera.lastTickPosY) * partialTicks;
-            double camZ = camera.lastTickPosZ + (camera.posZ - camera.lastTickPosZ) * partialTicks;
+            double camX = cameraEntity.lastTickPosX + (cameraEntity.posX - cameraEntity.lastTickPosX) * partialTicks;
+            double camY = cameraEntity.lastTickPosY + (cameraEntity.posY - cameraEntity.lastTickPosY) * partialTicks;
+            double camZ = cameraEntity.lastTickPosZ + (cameraEntity.posZ - cameraEntity.lastTickPosZ) * partialTicks;
 
             //particle position (lerped) in camera space
             double px = this.prevX + (this.x - this.prevX) * partialTicks;
             double py = this.prevY + (this.y - this.prevY) * partialTicks;
             double pz = this.prevZ + (this.z - this.prevZ) * partialTicks;
 
-            //origin
+            //origin point
             Vec3d pointOrigin = new Vec3d(px - camX, py - camY, pz - camZ);
 
-            //sizes
-            float scaleX = (float) this.size[0].get();
-            float scaleY = (float) this.size[1].get();
-
-            //camera look direction
-            Vec3d look = camera.getLook(partialTicks);
-
-            //everything from here on out will depend on the camera mode
-            //rotate xyz emulates vanilla particle rendering
-            if (this.cameraMode == ParticleCameraMode.ROTATE_XYZ) {
-                float rotationX = ActiveRenderInfo.getRotationX();
-                float rotationZ = ActiveRenderInfo.getRotationZ();
-                float rotationYZ = ActiveRenderInfo.getRotationYZ();
-                float rotationXY = ActiveRenderInfo.getRotationXY();
-                float rotationXZ = ActiveRenderInfo.getRotationXZ();
-
-                //compute 4 corners (in camera space)
-                Vec3d pointOne = new Vec3d(
-                        -rotationX * scaleX - rotationYZ * scaleX,
-                        -rotationXZ * scaleY,
-                        -rotationZ * scaleX - rotationXY * scaleX
-                );
-                Vec3d pointTwo = new Vec3d(
-                        -rotationX * scaleX + rotationYZ * scaleX,
-                        rotationXZ * scaleY,
-                        -rotationZ * scaleX + rotationXY * scaleX
-                );
-                Vec3d pointThree = new Vec3d(
-                        rotationX * scaleX + rotationYZ * scaleX,
-                        rotationXZ * scaleY,
-                        rotationZ * scaleX + rotationXY * scaleX
-                );
-                Vec3d pointFour = new Vec3d(
-                        rotationX * scaleX - rotationYZ * scaleX,
-                        -rotationXZ * scaleY,
-                        rotationZ * scaleX - rotationXY * scaleX
-                );
-
-                //edit points further based on rotation
-                if (this.rotation != 0) {
-                    Vec3d axis = new Vec3d(0, 0, 1);
-
-                    pointOne = this.rotateAroundAxis(pointOne, axis);
-                    pointTwo = this.rotateAroundAxis(pointTwo, axis);
-                    pointThree = this.rotateAroundAxis(pointThree, axis);
-                    pointFour = this.rotateAroundAxis(pointFour, axis);
-                }
-
-                Vec3d center = pointOne.add(pointTwo).add(pointThree).add(pointFour);
-                pointOne = pointOne.subtract(center);
-                pointTwo = pointTwo.subtract(center);
-                pointThree = pointThree.subtract(center);
-                pointFour = pointFour.subtract(center);
-
-                this.emitQuad(buffer, pointOrigin, pointOne, pointTwo, pointThree, pointFour, partialTicks);
-            }
-            //some camera modes that share common code go here
-            else {
-                //common vectors
-                Vec3d upWorld = new Vec3d(0, 1, 0);
-                Vec3d horizontalVec = Vec3d.ZERO;
-                Vec3d verticalVec = Vec3d.ZERO;
-
-                //rotate only around world Y (billboard stands upright)
-                if (this.cameraMode == ParticleCameraMode.ROTATE_Y) {
-                    float yaw = (float) Math.toRadians(camera.prevRotationYaw + (camera.rotationYaw - camera.prevRotationYaw) * partialTicks);
-
-                    float cos = MathHelper.cos(yaw);
-                    float sin = MathHelper.sin(yaw);
-
-                    horizontalVec = new Vec3d(-cos, 0, -sin);
-                    verticalVec = new Vec3d(0,  1,  0);
-                }
-                //face camera only in XZ plane, keep Y upright
-                else if (this.cameraMode == ParticleCameraMode.LOOKAT_Y) {
-                    horizontalVec = look.crossProduct(upWorld).normalize();
-                    verticalVec = new Vec3d(0, 1, 0);
-                }
-                //face camera in XYZ plane, biased towards world y up
-                else if (this.cameraMode == ParticleCameraMode.LOOKAT_XYZ) {
-                    horizontalVec = look.crossProduct(upWorld);
-
-                    //mainly to make the particle be visible from above
-                    double rightLenSq = horizontalVec.lengthSquared();
-                    if (rightLenSq < 1e-6) {
-                        upWorld = new Vec3d(0, 0, 1);
-                        horizontalVec = look.crossProduct(upWorld);
-                        rightLenSq = horizontalVec.lengthSquared();
-                        if (rightLenSq < 1e-6) {
-                            horizontalVec = new Vec3d(1, 0, 0);
-                        }
-                    }
-
-                    horizontalVec = horizontalVec.normalize();
-                    verticalVec = horizontalVec.crossProduct(look).normalize();
-                }
-
-                //compute 4 corners (in camera space)
-                Vec3d pointOne = new Vec3d(
-                        -horizontalVec.x * scaleX + verticalVec.x * scaleY,
-                        -horizontalVec.y * scaleX + verticalVec.y * scaleY,
-                        -horizontalVec.z * scaleX + verticalVec.z * scaleY
-                );
-                Vec3d pointTwo = new Vec3d(
-                        -horizontalVec.x * scaleX - verticalVec.x * scaleY,
-                        -horizontalVec.y * scaleX - verticalVec.y * scaleY,
-                        -horizontalVec.z * scaleX - verticalVec.z * scaleY
-                );
-                Vec3d pointThree = new Vec3d(
-                        horizontalVec.x * scaleX - verticalVec.x * scaleY,
-                        horizontalVec.y * scaleX - verticalVec.y * scaleY,
-                        horizontalVec.z * scaleX - verticalVec.z * scaleY
-                );
-                Vec3d pointFour = new Vec3d(
-                        horizontalVec.x * scaleX + verticalVec.x * scaleY,
-                        horizontalVec.y * scaleX + verticalVec.y * scaleY,
-                        horizontalVec.z * scaleX + verticalVec.z * scaleY
-                );
-
-
-                //edit points further based on rotation
-                if (this.rotation != 0) {
-                    Vec3d axis = horizontalVec.crossProduct(verticalVec);
-                    double lenSq = axis.lengthSquared();
-                    if (lenSq > 1e-8) axis = axis.normalize();
-                    else axis = new Vec3d(0, 0, 1);
-
-                    pointOne = this.rotateAroundAxis(pointOne, axis);
-                    pointTwo = this.rotateAroundAxis(pointTwo, axis);
-                    pointThree = this.rotateAroundAxis(pointThree, axis);
-                    pointFour = this.rotateAroundAxis(pointFour, axis);
-                }
-
-                Vec3d center = pointOne.add(pointTwo).add(pointThree).add(pointFour);
-                pointOne = pointOne.subtract(center);
-                pointTwo = pointTwo.subtract(center);
-                pointThree = pointThree.subtract(center);
-                pointFour = pointFour.subtract(center);
-
-                this.emitQuad(buffer, pointOrigin, pointOne, pointTwo, pointThree, pointFour, partialTicks);
-            }
+            //get and emit vector quad
+            List<Vec3d> vecQuad = this.cameraMode.getPoints(scaleX, scaleY, partialTicks, this.rotation);
+            this.emitQuad(buffer, pointOrigin, vecQuad.getFirst(), vecQuad.get(1), vecQuad.get(2), vecQuad.getLast(), partialTicks);
         });
     }
 
@@ -619,18 +485,5 @@ public class RiftLibParticle {
         if (v > 0) return Math.max(0, v - amount);
         if (v < 0) return Math.min(0, v + amount);
         return 0;
-    }
-
-    private Vec3d rotateAroundAxis(Vec3d vec, Vec3d axisUnit) {
-        //convert current rotation into rads
-        double radians = Math.toRadians(this.rotation);
-
-        double cos = Math.cos(radians);
-        double sin = Math.sin(radians);
-
-        Vec3d termOne = vec.scale(cos);
-        Vec3d termTwo = axisUnit.crossProduct(vec).scale(sin);
-        Vec3d termThree = axisUnit.scale(axisUnit.dotProduct(vec) * (1 - cos));
-        return termOne.add(termTwo).add(termThree);
     }
 }

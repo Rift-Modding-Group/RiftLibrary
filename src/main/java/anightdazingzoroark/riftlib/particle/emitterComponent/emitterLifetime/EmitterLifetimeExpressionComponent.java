@@ -4,14 +4,15 @@ import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent
 import anightdazingzoroark.riftlib.molang.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.IValue;
+import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 
 import java.util.Map;
 
 public class EmitterLifetimeExpressionComponent extends RiftLibEmitterLifetimeComponent {
     //condition in which emitter activates
-    public IValue emitterActivationValue = MolangParser.ONE;
+    private IValue emitterActivationValue = MolangParser.ONE;
     //condition in which emitter expires
-    public IValue emitterExpirationValue = MolangParser.ZERO;
+    private IValue emitterExpirationValue = MolangParser.ZERO;
 
     @Override
     public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
@@ -27,5 +28,15 @@ public class EmitterLifetimeExpressionComponent extends RiftLibEmitterLifetimeCo
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("expiration_expression");
             this.emitterExpirationValue = parseExpression(parser, componentValue);
         }
+    }
+
+    @Override
+    public boolean canCreateParticles(RiftLibParticleEmitter emitter) {
+        return this.emitterActivationValue.get() != 0;
+    }
+
+    @Override
+    public boolean canExpire(RiftLibParticleEmitter emitter) {
+        return this.emitterExpirationValue.get() != 0;
     }
 }

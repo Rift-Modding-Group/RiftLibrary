@@ -9,4 +9,8 @@ public abstract class RiftLibEmitterLifetimeComponent extends RiftLibEmitterComp
     public void applyComponent(RiftLibParticleEmitter emitter) {
         emitter.emitterLifetime = this;
     }
+
+    public abstract boolean canCreateParticles(RiftLibParticleEmitter emitter);
+
+    public abstract boolean canExpire(RiftLibParticleEmitter emitter);
 }

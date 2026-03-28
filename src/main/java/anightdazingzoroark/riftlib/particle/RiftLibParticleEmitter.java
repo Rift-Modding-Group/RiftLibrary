@@ -50,7 +50,7 @@ public class RiftLibParticleEmitter {
     private final ResourceLocation textureLocation;
     private final ParticleMaterial material;
     private final MolangParser molangParser;
-    private final Random random = new Random();
+    public final Random random = new Random();
     public double posX, posY, posZ;
     public Quaternion rotationQuaternion = new Quaternion(); //assumed to use yxz rotation when created from animations and xyz when created from player orientation
     private boolean isDead;
@@ -161,7 +161,9 @@ public class RiftLibParticleEmitter {
         this.age++;
 
         //set death based on expiry and if theres no particles left
-        if (this.canExpire() && this.particles.isEmpty()) this.killEmitter();
+        if (this.emitterLifetime != null && this.emitterLifetime.canExpire(this) && this.particles.isEmpty()) {
+            this.killEmitter();
+        }
 
         //set death based on if it has an animated locator and if said animatedlocator is dead
         if (this.locator != null && !this.locator.isValid()) this.killEmitter();
@@ -177,29 +179,11 @@ public class RiftLibParticleEmitter {
         }
 
         //create particles based on rate and ability to create them
-        if (this.canCreateParticles() && !this.isDead && this.locatorIsUpdated()) {
-            if (this.emitterRate instanceof EmitterInstantComponent) {
-                EmitterInstantComponent emitterInstant = (EmitterInstantComponent) this.emitterRate;
-                double particleCount = emitterInstant.particleCount.get();
-                while (this.particleCount < particleCount) {
-                    this.particles.add(this.createParticle());
-                    this.particleCount++;
-                }
-            }
-            else if (this.emitterRate instanceof EmitterSteadyComponent) {
-                EmitterSteadyComponent emitterSteady = (EmitterSteadyComponent) this.emitterRate;
-                int maxParticleCount = (int) emitterSteady.maxParticleCount.get();
-                //turn particles per second into particles per tick
-                double particleRate = emitterSteady.spawnRate.get() / 20D;
-
-                this.particleCount += particleRate;
-                while (this.particleCount >= 1 && this.particles.size() < maxParticleCount) {
-                    this.particles.add(this.createParticle());
-                    this.particleCount -= 1;
-                }
-
-                if (this.particles.size() >= maxParticleCount) this.particleCount = Math.min(this.particleCount, 1);
-            }
+        if (this.emitterLifetime != null && this.emitterLifetime.canCreateParticles(this)
+                && this.emitterRate != null
+                && !this.isDead && this.locatorIsUpdated()
+        ) {
+            this.emitterRate.createParticles(this);
         }
 
         //update existing particles
@@ -211,7 +195,7 @@ public class RiftLibParticleEmitter {
         }
     }
 
-    private RiftLibParticle createParticle() throws MolangException {
+    public RiftLibParticle createParticle() {
         RiftLibParticle toReturn = new RiftLibParticle(this.world, this.molangParser, this.emitterScope);
 
         //debug info
@@ -221,18 +205,21 @@ public class RiftLibParticleEmitter {
         //parse init particle components, these mostly apply info that apply every tick
         for (Map.Entry<String, RawParticleComponent> rawParticleComponent : this.rawParticleComponents) {
             //init and parse the component
-            RiftLibParticleComponent component = RiftLibParticleComponentRegistry.createParticleComponent(rawParticleComponent.getKey());
-            if (component != null) {
-                component.parseRawComponent(rawParticleComponent, toReturn.molangParser);
-                component.applyComponent(toReturn);
+            try {
+                RiftLibParticleComponent component = RiftLibParticleComponentRegistry.createParticleComponent(rawParticleComponent.getKey());
+                if (component != null) {
+                    component.parseRawComponent(rawParticleComponent, toReturn.molangParser);
+                    component.applyComponent(toReturn);
+                }
             }
+            catch (Exception e) {}
         }
 
         //molang side operations to pass to the particle go here
         AtomicReference<Vec3d> offset = new AtomicReference<>(Vec3d.ZERO);
         AtomicReference<Vec3d> directionFromShape = new AtomicReference<>(Vec3d.ZERO);
         this.molangParser.withScope(this.emitterScope, () -> {
-            Vec3d obtainedOffset = this.particleOffset();
+            Vec3d obtainedOffset = this.emitterShape != null ? this.emitterShape.defineParticleOffset(this) : Vec3d.ZERO;
             offset.set(obtainedOffset);
             directionFromShape.set(this.particleDirection(
                     this.posX + obtainedOffset.x,
@@ -279,6 +266,7 @@ public class RiftLibParticleEmitter {
             toReturn.uvYMax = (float) ((toReturn.particleUV[1].get() + toReturn.particleUVSize[1].get()) / toReturn.textureHeight);
         }
 
+        //return value
         return toReturn;
     }
 
@@ -307,259 +295,12 @@ public class RiftLibParticleEmitter {
         this.material.endDraw();
     }
 
-    //this creates a position based on the emitter shape and provided offset
-    private Vec3d particleOffset() {
-        if (this.emitterShape instanceof EmitterShapeSphereComponent) {
-            EmitterShapeSphereComponent sphereEmitterShape = (EmitterShapeSphereComponent) this.emitterShape;
-            //sphere formula is x^2 + y^2 + z^2 = r^2,
-            //this offset creator uses the radius to generate the x, y, and z positions of particles to create
-            double radius = sphereEmitterShape.surfaceOnly ? sphereEmitterShape.radius.get() : (2 * this.random.nextDouble() - 1) * sphereEmitterShape.radius.get();
-            double offsetY = (2 * this.random.nextDouble() - 1) * radius;
-            double radiusAtY = Math.sqrt(radius * radius - offsetY * offsetY);
-            double theta = 2 * Math.PI * this.random.nextDouble();
-            double offsetX = radiusAtY * Math.cos(theta);
-            double offsetZ = radiusAtY * Math.sin(theta);
-            return new Vec3d(
-                    offsetX + sphereEmitterShape.offset[0].get(),
-                    offsetY + sphereEmitterShape.offset[1].get(),
-                    offsetZ + sphereEmitterShape.offset[2].get()
-            );
-        }
-        else if (this.emitterShape instanceof EmitterShapeBoxComponent) {
-            EmitterShapeBoxComponent boxEmitterShape = (EmitterShapeBoxComponent) this.emitterShape;
-
-            //in cubes, |x|, |y|, and |z| are less than or equal to associated dimension length
-            double randomX = this.random.nextDouble() * boxEmitterShape.halfDimensions[0].get() * 2 - boxEmitterShape.halfDimensions[0].get();
-            double randomY = this.random.nextDouble() * boxEmitterShape.halfDimensions[1].get() * 2 - boxEmitterShape.halfDimensions[1].get();
-            double randomZ = this.random.nextDouble() * boxEmitterShape.halfDimensions[2].get() * 2 - boxEmitterShape.halfDimensions[2].get();
-
-            if (boxEmitterShape.surfaceOnly) {
-                int face = this.random.nextInt(6);
-
-                switch (face) {
-                    //positive x
-                    case 0: return new Vec3d(
-                                boxEmitterShape.halfDimensions[0].get() + boxEmitterShape.offset[0].get(),
-                                randomY + boxEmitterShape.offset[1].get(),
-                                randomZ + boxEmitterShape.offset[2].get()
-                        );
-                    //negative x
-                    case 1: return new Vec3d(
-                                -boxEmitterShape.halfDimensions[0].get() + boxEmitterShape.offset[0].get(),
-                                randomY + boxEmitterShape.offset[1].get(),
-                                randomZ + boxEmitterShape.offset[2].get()
-                        );
-                    //positive y
-                    case 2: return new Vec3d(
-                                randomX + boxEmitterShape.offset[0].get(),
-                                boxEmitterShape.halfDimensions[1].get() + boxEmitterShape.offset[1].get(),
-                                randomZ + boxEmitterShape.offset[2].get()
-                        );
-                    //negative y
-                    case 3: return new Vec3d(
-                                randomX + boxEmitterShape.offset[0].get(),
-                                -boxEmitterShape.halfDimensions[1].get() + boxEmitterShape.offset[1].get(),
-                                randomZ + boxEmitterShape.offset[2].get()
-                        );
-                    //positive z
-                    case 4: return new Vec3d(
-                                randomX + boxEmitterShape.offset[0].get(),
-                                randomY + boxEmitterShape.offset[1].get(),
-                                boxEmitterShape.halfDimensions[2].get() + boxEmitterShape.offset[2].get()
-                        );
-                    //negative z
-                    case 5: return new Vec3d(
-                                randomX + boxEmitterShape.offset[0].get(),
-                                randomY + boxEmitterShape.offset[1].get(),
-                                -boxEmitterShape.halfDimensions[2].get() + boxEmitterShape.offset[2].get()
-                        );
-                    default: return Vec3d.ZERO;
-                }
-            }
-            else return new Vec3d(
-                    randomX + boxEmitterShape.offset[0].get(),
-                    randomY + boxEmitterShape.offset[1].get(),
-                    randomZ + boxEmitterShape.offset[2].get()
-            );
-        }
-        else if (this.emitterShape instanceof EmitterShapePointComponent) {
-            EmitterShapePointComponent customEmitterShape = (EmitterShapePointComponent) this.emitterShape;
-            return new Vec3d(
-                    customEmitterShape.offset[0].get(),
-                    customEmitterShape.offset[1].get(),
-                    customEmitterShape.offset[2].get()
-            );
-        }
-        else if (this.emitterShape instanceof EmitterShapeDiscComponent) {
-            EmitterShapeDiscComponent discEmitterShape = (EmitterShapeDiscComponent) this.emitterShape;
-
-            //disc formula is x^2 + y^2 = r^2
-            Vec3d vecNormal = new Vec3d(
-                    discEmitterShape.planeNormal[0].get(),
-                    discEmitterShape.planeNormal[1].get(),
-                    discEmitterShape.planeNormal[2].get()
-            ).normalize();
-
-            //orthonormal basis spanning the disc plane
-            Vec3d helper = (Math.abs(vecNormal.y) < 1) ? new Vec3d(0, 1, 0) : new Vec3d(1, 0, 0);
-            Vec3d vecX = vecNormal.crossProduct(helper).normalize();
-            Vec3d vecY = vecNormal.crossProduct(vecX).normalize();
-
-            double radius = discEmitterShape.surfaceOnly ? discEmitterShape.radius.get() : this.random.nextDouble() * discEmitterShape.radius.get();
-            double theta = 2 * Math.PI * this.random.nextDouble();
-
-            Vec3d inPlane = vecX.scale(radius * Math.cos(theta)).add(vecY.scale(radius * Math.sin(theta)));
-
-            return new Vec3d(
-                    inPlane.x + discEmitterShape.offset[0].get(),
-                    inPlane.y + discEmitterShape.offset[1].get(),
-                    inPlane.z + discEmitterShape.offset[2].get()
-            );
-        }
-        else if (this.emitterShape instanceof EmitterShapeCustomComponent) {
-            EmitterShapeCustomComponent customEmitterShape = (EmitterShapeCustomComponent) this.emitterShape;
-            return new Vec3d(
-                    customEmitterShape.offset[0].get(),
-                    customEmitterShape.offset[1].get(),
-                    customEmitterShape.offset[2].get()
-            );
-        }
-        return Vec3d.ZERO;
-    }
-
     private Vec3d particleDirection(double emissionX, double emissionY, double emissionZ) {
         //get from shape first
-        Vec3d directionFromShape = this.particleDirectionFromShape(emissionX, emissionY, emissionZ);
+        Vec3d directionFromShape = this.emitterShape != null ? this.emitterShape.defineDirection(this, emissionX, emissionY, emissionZ) : Vec3d.ZERO;
 
         //rotate using quaternion and return
         return VectorUtils.rotateVectorWithQuaternion(directionFromShape, this.rotationQuaternion).normalize();
-    }
-
-    //this creates a normalized vector that serves as the direction in which
-    //a particle must travel
-    private Vec3d particleDirectionFromShape(double emissionX, double emissionY, double emissionZ) {
-        if (this.emitterShape instanceof EmitterShapeSphereComponent) {
-            EmitterShapeSphereComponent sphereEmitterShape = (EmitterShapeSphereComponent) this.emitterShape;
-
-            //if it has custom particle direction, just return it instead
-            if (sphereEmitterShape.customParticleDirection != null) {
-                return new Vec3d(
-                        sphereEmitterShape.customParticleDirection[0].get(),
-                        sphereEmitterShape.customParticleDirection[1].get(),
-                        sphereEmitterShape.customParticleDirection[2].get()
-                ).normalize();
-            }
-            else {
-                //generally the direction to go towards should be the same as its xyz offset from the center of sphere emitter
-                int pointer = sphereEmitterShape.particleDirection.equals("outwards") ? 1 : sphereEmitterShape.particleDirection.equals("inwards") ? -1 : 0;
-                return new Vec3d(
-                        pointer * (emissionX - this.posX),
-                        pointer * (emissionY - this.posY),
-                        pointer * (emissionZ - this.posZ)
-                ).normalize();
-            }
-        }
-        else if (this.emitterShape instanceof EmitterShapeBoxComponent) {
-            EmitterShapeBoxComponent boxEmitterShape = (EmitterShapeBoxComponent) this.emitterShape;
-
-            //if it has custom particle direction, just return it instead
-            if (boxEmitterShape.customParticleDirection != null) {
-                return new Vec3d(
-                        boxEmitterShape.customParticleDirection[0].get(),
-                        boxEmitterShape.customParticleDirection[1].get(),
-                        boxEmitterShape.customParticleDirection[2].get()
-                ).normalize();
-            }
-            else {
-                //generally the direction to go towards should be the same as its xyz offset from the center of sphere emitter
-                int pointer = boxEmitterShape.particleDirection.equals("outwards") ? 1 : boxEmitterShape.particleDirection.equals("inwards") ? -1 : 0;
-                return new Vec3d(
-                        pointer * (emissionX - this.posX),
-                        pointer * (emissionY - this.posY),
-                        pointer * (emissionZ - this.posZ)
-                ).normalize();
-            }
-        }
-        else if (this.emitterShape instanceof EmitterShapeDiscComponent) {
-            EmitterShapeDiscComponent discEmitterShape = (EmitterShapeDiscComponent) this.emitterShape;
-
-            //if it has custom particle direction, just return it instead
-            if (discEmitterShape.customParticleDirection != null) {
-                return new Vec3d(
-                        discEmitterShape.customParticleDirection[0].get(),
-                        discEmitterShape.customParticleDirection[1].get(),
-                        discEmitterShape.customParticleDirection[2].get()
-                ).normalize();
-            }
-            else {
-                //generally the direction to go towards should be the same as its xyz offset from the center of sphere emitter
-                int pointer = discEmitterShape.particleDirection.equals("outwards") ? 1 : discEmitterShape.particleDirection.equals("inwards") ? -1 : 0;
-                return new Vec3d(
-                        pointer * (emissionX - this.posX),
-                        pointer * (emissionY - this.posY),
-                        pointer * (emissionZ - this.posZ)
-                ).normalize();
-            }
-        }
-        else if (this.emitterShape instanceof EmitterShapePointComponent) {
-            EmitterShapePointComponent customEmitterShape = (EmitterShapePointComponent) this.emitterShape;
-            return new Vec3d(
-                    customEmitterShape.particleDirection[0].get(),
-                    customEmitterShape.particleDirection[1].get(),
-                    customEmitterShape.particleDirection[2].get()
-            ).normalize();
-        }
-        else if (this.emitterShape instanceof EmitterShapeCustomComponent) {
-            EmitterShapeCustomComponent customEmitterShape = (EmitterShapeCustomComponent) this.emitterShape;
-            return new Vec3d(
-                    customEmitterShape.customParticleDirection[0].get(),
-                    customEmitterShape.customParticleDirection[1].get(),
-                    customEmitterShape.customParticleDirection[2].get()
-            ).normalize();
-        }
-        return Vec3d.ZERO;
-    }
-
-    //this utilizes the emitter lifetime component to return whether or not particles can be made
-    private boolean canCreateParticles() {
-        if (this.emitterLifetime instanceof EmitterLifetimeExpressionComponent) {
-            EmitterLifetimeExpressionComponent lifetimeExpression = (EmitterLifetimeExpressionComponent) this.emitterLifetime;
-            IValue canMakeParticles = lifetimeExpression.emitterActivationValue;
-            return canMakeParticles.get() != 0;
-        }
-        else if (this.emitterLifetime instanceof EmitterLifetimeLoopingComponent) {
-            EmitterLifetimeLoopingComponent lifetimeLooping = (EmitterLifetimeLoopingComponent) this.emitterLifetime;
-            IValue activeTime = lifetimeLooping.emitterActiveTime;
-            double activeTimeValue = activeTime.get();
-            IValue sleepTime = lifetimeLooping.emitterSleepTime;
-            double sleepTimeValue = sleepTime.get();
-
-            double totalTimeValue = activeTimeValue + sleepTimeValue;
-            double sleepTimePercent = activeTimeValue / totalTimeValue;
-            double currentTimePercent = (this.age % totalTimeValue) / totalTimeValue;
-
-            return currentTimePercent <= sleepTimePercent;
-        }
-        else if (this.emitterLifetime instanceof EmitterLifetimeOnceComponent) {
-            EmitterLifetimeOnceComponent lifetimeOnce = (EmitterLifetimeOnceComponent) this.emitterLifetime;
-            return this.age < lifetimeOnce.activeTime.get() * 20;
-        }
-        return false;
-    }
-
-    //this utilizes the emitter lifetime component to return whether or not the emitter can
-    //continue existing
-    private boolean canExpire() {
-        if (this.emitterLifetime instanceof EmitterLifetimeExpressionComponent) {
-            EmitterLifetimeExpressionComponent lifetimeExpression = (EmitterLifetimeExpressionComponent) this.emitterLifetime;
-            IValue canExpire = lifetimeExpression.emitterExpirationValue;
-            return canExpire.get() != 0;
-        }
-        else if (this.emitterLifetime instanceof EmitterLifetimeOnceComponent) {
-            EmitterLifetimeOnceComponent lifetimeOnce = (EmitterLifetimeOnceComponent) this.emitterLifetime;
-            return this.age >= lifetimeOnce.activeTime.get() * 20;
-        }
-        return false;
     }
 
     public void killEmitter() {
@@ -576,5 +317,21 @@ public class RiftLibParticleEmitter {
 
     private boolean locatorIsUpdated() {
         return this.locator == null || this.locator.isUpdated();
+    }
+
+    public double getParticleCount() {
+        return this.particleCount;
+    }
+
+    public void setParticleCount(double value) {
+        this.particleCount = value;
+    }
+
+    public int getAge() {
+        return this.age;
+    }
+
+    public List<RiftLibParticle> getParticles() {
+        return this.particles;
     }
 }

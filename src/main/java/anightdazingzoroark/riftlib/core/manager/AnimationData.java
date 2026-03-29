@@ -11,6 +11,7 @@ import java.util.List;
 
 import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
@@ -147,7 +148,11 @@ public class AnimationData {
 					}
 				}
 				else {
-					this.parser.setValue(animatableValue.getConstantValue().left, animatableValue.getConstantValue().right);
+					String name = animatableValue.getConstantValue().left;
+					if (this.parser.isQuery(name)) {
+						throw new RuntimeException(new MolangException("Cannot assign value to query '"+name+"'!"));
+                    }
+					this.parser.setValue(name, animatableValue.getConstantValue().right);
 				}
 			}
 		});
@@ -166,7 +171,11 @@ public class AnimationData {
 					}
 				}
 				else {
-					this.parser.setValue(animatableValue.getConstantValue().left, animatableValue.getConstantValue().right);
+					String name = animatableValue.getConstantValue().left;
+					if (this.parser.isQuery(name)) {
+						throw new RuntimeException(new MolangException("Cannot assign value to query '"+name+"'!"));
+					}
+					this.parser.setValue(name, animatableValue.getConstantValue().right);
 				}
 			}
 		});

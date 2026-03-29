@@ -298,7 +298,7 @@ public class MathBuilder {
 
             Class<? extends Function> function = (Class) this.functions.get(first);
             Constructor<? extends Function> ctor = function.getConstructor(IValue[].class, String.class);
-            return (Function)ctor.newInstance(values.toArray(new IValue[values.size()]), first);
+            return ctor.newInstance(values.toArray(new IValue[values.size()]), first);
         }
     }
 
@@ -343,19 +343,19 @@ public class MathBuilder {
         throw new Exception("There is no such operator '" + op + "'!");
     }
 
-    protected boolean isVariable(Object o) {
+    public boolean isVariable(Object o) {
         return o instanceof String string && !this.isDecimal(string) && !this.isOperator(string);
     }
 
-    protected boolean isOperator(Object o) {
+    public boolean isOperator(Object o) {
         return o instanceof String string && this.isOperator(string);
     }
 
-    protected boolean isOperator(String s) {
+    public boolean isOperator(String s) {
         return Operation.OPERATORS.contains(s) || s.equals("?") || s.equals(":");
     }
 
-    protected boolean isQuery(String s) {
+    public boolean isQuery(String s) {
         return s.startsWith("query.");
     }
 

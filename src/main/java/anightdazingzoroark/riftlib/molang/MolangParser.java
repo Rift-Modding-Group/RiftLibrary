@@ -150,7 +150,7 @@ public class MolangParser extends MathBuilder {
         }
     }
 
-    protected boolean isOperator(String s) {
+    public boolean isOperator(String s) {
         return super.isOperator(s) || s.equals("=");
     }
 }

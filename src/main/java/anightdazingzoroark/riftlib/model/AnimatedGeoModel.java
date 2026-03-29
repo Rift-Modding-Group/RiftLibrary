@@ -107,9 +107,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 	}
 
 	private void setDynamicHitboxes(T entity, AnimationData manager) {
-		if (!(entity instanceof IMultiHitboxUser)) return;
-		IMultiHitboxUser multiHitboxUser = (IMultiHitboxUser) entity;
-
+		if (!(entity instanceof IMultiHitboxUser multiHitboxUser)) return;
 		List<AnimatedLocator> animatedLocators = manager.getAnimatedLocators();
 		for (AnimatedLocator animatedLocator : animatedLocators) {
 			if (!HitboxUtils.locatorCanBeHitbox(animatedLocator.getName())) continue;

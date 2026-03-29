@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 public class MathBuilder {
-    public Map<String, Variable> variables = new HashMap();
-    public Map<String, Class<? extends Function>> functions = new HashMap();
+    public Map<String, Variable> variables = new HashMap<>();
+    public Map<String, Class<? extends Function>> functions = new HashMap<>();
 
     public MathBuilder() {
         this.register(new Variable("PI", Math.PI));
@@ -87,7 +87,7 @@ public class MathBuilder {
         String buffer = "";
         int len = chars.length;
 
-        for(int i = 0; i < len; ++i) {
+        for (int i = 0; i < len; ++i) {
             String s = chars[i];
             boolean longOperator = i > 0 && this.isOperator(chars[i - 1] + s);
             if (!this.isOperator(s) && !longOperator && !s.equals(",")) {
@@ -152,11 +152,11 @@ public class MathBuilder {
         IValue ternary = this.tryTernary(symbols);
         if (ternary != null) {
             return ternary;
-        } else {
+        }
+        else {
             int size = symbols.size();
-            if (size == 1) {
-                return this.valueFromObject(symbols.get(0));
-            } else {
+            if (size == 1) return this.valueFromObject(symbols.getFirst());
+            else {
                 if (size == 2) {
                     Object first = symbols.get(0);
                     Object second = symbols.get(1);
@@ -168,7 +168,7 @@ public class MathBuilder {
                 int lastOp = this.seekLastOperator(symbols);
 
                 int leftOp;
-                for(int op = lastOp; op != -1; op = leftOp) {
+                for (int op = lastOp; op != -1; op = leftOp) {
                     leftOp = this.seekLastOperator(symbols, op - 1);
                     if (leftOp != -1) {
                         Operation left = this.operationForOperator((String)symbols.get(leftOp));
@@ -259,9 +259,8 @@ public class MathBuilder {
 
         if (questions == colons && question > 0 && question + 1 < colon && colon < size - 1) {
             return new Ternary(this.parseSymbols(symbols.subList(0, question)), this.parseSymbols(symbols.subList(question + 1, colon)), this.parseSymbols(symbols.subList(colon + 1, size)));
-        } else {
-            return null;
         }
+        else return null;
     }
 
     protected IValue createFunction(String first, List<Object> args) throws Exception {
@@ -281,8 +280,8 @@ public class MathBuilder {
             throw new Exception("Function '" + first + "' couldn't be found!");
         }
         else {
-            List<IValue> values = new ArrayList();
-            List<Object> buffer = new ArrayList();
+            List<IValue> values = new ArrayList<>();
+            List<Object> buffer = new ArrayList<>();
 
             for(Object o : args) {
                 if (o.equals(",")) {
@@ -296,7 +295,7 @@ public class MathBuilder {
                 values.add(this.parseSymbols(buffer));
             }
 
-            Class<? extends Function> function = (Class) this.functions.get(first);
+            Class<? extends Function> function = this.functions.get(first);
             Constructor<? extends Function> ctor = function.getConstructor(IValue[].class, String.class);
             return ctor.newInstance(values.toArray(new IValue[values.size()]), first);
         }

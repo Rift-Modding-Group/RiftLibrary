@@ -57,7 +57,7 @@ public class AnimationData {
 	 * @param value The value
 	 * @return the animation controller
 	 */
-	public AnimationController addAnimationController(AnimationController value) {
+	public AnimationController<?> addAnimationController(AnimationController<?> value) {
 		return this.animationControllers.put(value.getName(), value);
 	}
 

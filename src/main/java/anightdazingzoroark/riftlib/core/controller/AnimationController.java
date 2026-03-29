@@ -318,7 +318,7 @@ public class AnimationController<T extends IAnimatable> {
 			tick = this.adjustTick(actualTick);
 		}
 
-		assert tick >= 0 : "GeckoLib: Tick was less than zero";
+		assert tick >= 0 : "RiftLib: Tick was less than zero";
 
 		// This tests the animation predicate
 		PlayState playState = this.testAnimationPredicate(event);
@@ -331,13 +331,15 @@ public class AnimationController<T extends IAnimatable> {
 		if (this.justStartedTransition && (this.shouldResetTick || this.justStopped)) {
 			this.justStopped = false;
 			tick = this.adjustTick(actualTick);
-		} else if (currentAnimation == null && !this.animationQueue.isEmpty()) {
+		}
+		else if (currentAnimation == null && !this.animationQueue.isEmpty()) {
 			this.shouldResetTick = true;
 			this.animationState = AnimationState.Transitioning;
 			this.justStartedTransition = true;
 			this.needsAnimationReload = false;
 			tick = this.adjustTick(actualTick);
-		} else {
+		}
+		else {
 			if (this.animationState != AnimationState.Transitioning) {
 				this.animationState = AnimationState.Running;
 			}
@@ -362,7 +364,8 @@ public class AnimationController<T extends IAnimatable> {
 					if (!first.isPresent()) {
 						if (crashWhenCantFindBone) {
 							throw new RuntimeException("Could not find bone: " + boneAnimation.boneName);
-						} else continue;
+						}
+						else continue;
 					}
 					BoneSnapshot initialSnapshot = first.get().getInitialSnapshot();
 					assert boneSnapshot != null : "Bone snapshot was null";
@@ -416,7 +419,8 @@ public class AnimationController<T extends IAnimatable> {
 					}
 				}
 			}
-		} else if (this.getAnimationState() == AnimationState.Running) {
+		}
+		else if (this.getAnimationState() == AnimationState.Running) {
 			// Actually run the animation
 			this.processCurrentAnimation(tick, actualTick, parser, scope, crashWhenCantFindBone);
 		}
@@ -474,7 +478,8 @@ public class AnimationController<T extends IAnimatable> {
 					//No more animations left, stop the animation controller
 					this.animationState = AnimationState.Stopped;
 					return;
-				} else {
+				}
+				else {
 					//Otherwise, set the state to transitioning and start transitioning to the next
 					//animation next frame
 					this.animationState = AnimationState.Transitioning;
@@ -511,15 +516,15 @@ public class AnimationController<T extends IAnimatable> {
 		}
 		this.setAnimTime(parser, scope, resolvedTick);
 
-		// Loop through every boneanimation in the current animation and process the
-		// values
+		//Loop through every boneanimation in the current animation and process the values
 		List<BoneAnimation> boneAnimations = currentAnimation.boneAnimations;
 		for (BoneAnimation boneAnimation : boneAnimations) {
 			BoneAnimationQueue boneAnimationQueue = boneAnimationQueues.get(boneAnimation.boneName);
 			if (boneAnimationQueue == null) {
 				if (crashWhenCantFindBone) {
 					throw new RuntimeException("Could not find bone: " + boneAnimation.boneName);
-				} else continue;
+				}
+				else continue;
 			}
 
 			VectorKeyFrameList rotationKeyFrames = boneAnimation.rotationKeyFrames;
@@ -588,7 +593,8 @@ public class AnimationController<T extends IAnimatable> {
 		if (this.shouldResetTick) {
 			if (this.getAnimationState() == AnimationState.Transitioning) {
 				this.tickOffset = tick;
-			} else if (this.getAnimationState() == AnimationState.Running) {
+			}
+			else if (this.getAnimationState() == AnimationState.Running) {
 				this.tickOffset = tick;
 			}
 			this.shouldResetTick = false;
@@ -625,9 +631,7 @@ public class AnimationController<T extends IAnimatable> {
 		//resolve based on loop
 		if (this.currentAnimation.loop == LoopType.LOOP) {
 			double animLength = this.currentAnimation.animationLength;
-			if (animLength > 0D) {
-				resolved = resolved % animLength;
-			}
+			if (animLength > 0D) resolved = resolved % animLength;
 		}
 
 		return Math.max(resolved, 0D);

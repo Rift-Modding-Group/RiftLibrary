@@ -101,11 +101,8 @@ public class MathBuilder {
 
                     for(int j = i + 1; j < len; ++j) {
                         String c = chars[j];
-                        if (c.equals("(")) {
-                            ++counter;
-                        } else if (c.equals(")")) {
-                            --counter;
-                        }
+                        if (c.equals("(")) ++counter;
+                        else if (c.equals(")")) --counter;
 
                         if (counter == 0) {
                             symbols.add(this.breakdownChars(buffer.split("(?!^)")));
@@ -164,7 +161,7 @@ public class MathBuilder {
                     Object first = symbols.get(0);
                     Object second = symbols.get(1);
                     if ((this.isVariable(first) || first.equals("-")) && second instanceof List) {
-                        return this.createFunction((String)first, (List)second);
+                        return this.createFunction((String)first, (List) second);
                     }
                 }
 
@@ -246,12 +243,11 @@ public class MathBuilder {
             Object object = symbols.get(i);
             if (object instanceof String) {
                 if (object.equals("?")) {
-                    if (question == -1) {
-                        question = i;
-                    }
+                    if (question == -1) question = i;
 
                     ++questions;
-                } else if (object.equals(":")) {
+                }
+                else if (object.equals(":")) {
                     if (colons + 1 == questions && colon == -1) {
                         colon = i;
                     }
@@ -271,15 +267,20 @@ public class MathBuilder {
     protected IValue createFunction(String first, List<Object> args) throws Exception {
         if (first.equals("!")) {
             return new Negate(this.parseSymbols(args));
-        } else if (first.startsWith("!") && first.length() > 1) {
+        }
+        else if (first.startsWith("!") && first.length() > 1) {
             return new Negate(this.createFunction(first.substring(1), args));
-        } else if (first.equals("-")) {
+        }
+        else if (first.equals("-")) {
             return new Negative(new Group(this.parseSymbols(args)));
-        } else if (first.startsWith("-") && first.length() > 1) {
+        }
+        else if (first.startsWith("-") && first.length() > 1) {
             return new Negative(this.createFunction(first.substring(1), args));
-        } else if (!this.functions.containsKey(first)) {
+        }
+        else if (!this.functions.containsKey(first)) {
             throw new Exception("Function '" + first + "' couldn't be found!");
-        } else {
+        }
+        else {
             List<IValue> values = new ArrayList();
             List<Object> buffer = new ArrayList();
 
@@ -287,25 +288,22 @@ public class MathBuilder {
                 if (o.equals(",")) {
                     values.add(this.parseSymbols(buffer));
                     buffer.clear();
-                } else {
-                    buffer.add(o);
                 }
+                else buffer.add(o);
             }
 
             if (!buffer.isEmpty()) {
                 values.add(this.parseSymbols(buffer));
             }
 
-            Class<? extends Function> function = (Class)this.functions.get(first);
+            Class<? extends Function> function = (Class) this.functions.get(first);
             Constructor<? extends Function> ctor = function.getConstructor(IValue[].class, String.class);
-            Function func = (Function)ctor.newInstance(values.toArray(new IValue[values.size()]), first);
-            return func;
+            return (Function)ctor.newInstance(values.toArray(new IValue[values.size()]), first);
         }
     }
 
     public IValue valueFromObject(Object object) throws Exception {
-        if (object instanceof String) {
-            String symbol = (String)object;
+        if (object instanceof String symbol) {
             if (symbol.startsWith("!")) {
                 return new Negate(this.valueFromObject(symbol.substring(1)));
             }
@@ -317,44 +315,40 @@ public class MathBuilder {
             if (this.isVariable(symbol)) {
                 if (symbol.startsWith("-")) {
                     symbol = symbol.substring(1);
-                    anightdazingzoroark.riftlib.molang.math.Variable value = this.getVariable(symbol);
-                    if (value != null) {
-                        return new Negative(value);
-                    }
-                } else {
+                    Variable value = this.getVariable(symbol);
+                    if (value != null) return new Negative(value);
+                }
+                else {
                     IValue value = this.getVariable(symbol);
-                    if (value != null) {
-                        return value;
-                    }
+                    if (value != null) return value;
                 }
             }
-        } else if (object instanceof List) {
-            return new Group(this.parseSymbols((List)object));
+        }
+        else if (object instanceof List) {
+            return new Group(this.parseSymbols((List) object));
         }
 
         throw new Exception("Given object couldn't be converted to value! " + object);
     }
 
-    protected anightdazingzoroark.riftlib.molang.math.Variable getVariable(String name) {
-        return (Variable)this.variables.get(name);
+    protected Variable getVariable(String name) {
+        return this.variables.get(name);
     }
 
     protected Operation operationForOperator(String op) throws Exception {
-        for(Operation operation : Operation.values()) {
-            if (operation.sign.equals(op)) {
-                return operation;
-            }
+        for (Operation operation : Operation.values()) {
+            if (operation.sign.equals(op)) return operation;
         }
 
         throw new Exception("There is no such operator '" + op + "'!");
     }
 
     protected boolean isVariable(Object o) {
-        return o instanceof String && !this.isDecimal((String)o) && !this.isOperator((String)o);
+        return o instanceof String string && !this.isDecimal(string) && !this.isOperator(string);
     }
 
     protected boolean isOperator(Object o) {
-        return o instanceof String && this.isOperator((String)o);
+        return o instanceof String string && this.isOperator(string);
     }
 
     protected boolean isOperator(String s) {

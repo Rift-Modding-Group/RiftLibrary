@@ -1,9 +1,13 @@
 package anightdazingzoroark.riftlib.particle;
 
+import anightdazingzoroark.riftlib.core.util.MathUtil;
+import anightdazingzoroark.riftlib.exceptions.ParticleException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.molang.math.Variable;
+import anightdazingzoroark.riftlib.molang.utils.Interpolations;
+import anightdazingzoroark.riftlib.particle.particleComponent.particleAppearance.AppearanceBillboardComponent;
 import anightdazingzoroark.riftlib.util.MutableAxisAlignedBB;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -30,11 +34,8 @@ public class RiftLibParticle {
     public double rotation;
     public double velRotation;
     public double accelRotation;
-    public float uvXMin, uvYMin, uvXMax, uvYMax;
-    public IValue[] size;
     private boolean isDead;
     public boolean useLocalLighting;
-    public ParticleCameraMode cameraMode;
 
     //debug info
     public int emitterId; //this is mostly for debugging
@@ -65,36 +66,14 @@ public class RiftLibParticle {
     public IValue rotationDragCoefficient = MolangParser.ZERO;
 
     //flipbook data
-    public boolean flipbook;
-    public boolean flipbookStretchToLifetime;
-    public boolean flipbookLoop;
-    public int textureWidth, textureHeight;
-    public IValue[] particleUV;
-    public IValue[] particleUVSize;
-    //only matters if the particle is flipbook mode
-    public IValue[] particleUVStepSize;
-
-    //parsed flipbook data
-    public float baseUVX, baseUVY;
-    public float sizeUVX, sizeUVY;
-    public float stepUVX, stepUVY;
-    public int maxFrame;
-    public float fps;
-
-    //molang particle variables
-    private Variable varParticleAge;
-    private Variable varParticleLifetime;
-    private Variable varParticleRandomOne;
-    private Variable varParticleRandomTwo;
-    private Variable varParticleRandomThree;
-    private Variable varParticleRandomFour;
+    public AppearanceBillboardComponent particleAppearance;
 
     //IValue lifetime info
     public IValue lifetimeExpression;
     public IValue expirationExpression;
 
     //runtime data, are parsed molang variables
-    public int lifetime, age; //REMEMBER THAT THESE ARE IN TICKS
+    private int lifetime, age; //REMEMBER THAT THESE ARE IN TICKS
     public float randomOne, randomTwo, randomThree, randomFour;
 
     //for color
@@ -108,26 +87,18 @@ public class RiftLibParticle {
 
         //init molang stuff
         this.setupMolangVariables();
-        this.initParticleRandoms();
     }
 
     //all molang variables are created here
     private void setupMolangVariables() {
         this.molangParser.withScope(this.particleScope, () -> {
-            this.varParticleAge = this.molangParser.getVariable("variable.particle_age");
-            this.varParticleLifetime = this.molangParser.getVariable("variable.particle_lifetime");
-            this.varParticleRandomOne = this.molangParser.getVariable("variable.particle_random_1");
-            this.varParticleRandomTwo = this.molangParser.getVariable("variable.particle_random_2");
-            this.varParticleRandomThree = this.molangParser.getVariable("variable.particle_random_3");
-            this.varParticleRandomFour = this.molangParser.getVariable("variable.particle_random_4");
+            this.molangParser.setValue("variable.particle_age", 0);
+            this.molangParser.setValue("variable.particle_lifetime", 0);
+            this.molangParser.setValue("variable.particle_random_1", Math.random());
+            this.molangParser.setValue("variable.particle_random_2", Math.random());
+            this.molangParser.setValue("variable.particle_random_3", Math.random());
+            this.molangParser.setValue("variable.particle_random_4", Math.random());
         });
-    }
-
-    private void initParticleRandoms() {
-        this.randomOne = (float) Math.random();
-        this.randomTwo = (float) Math.random();
-        this.randomThree = (float) Math.random();
-        this.randomFour = (float) Math.random();
     }
 
     public void initializeVelocity(Vec3d direction) {
@@ -156,17 +127,6 @@ public class RiftLibParticle {
             //set the lifetime from expression
             this.lifetime = (int) (this.lifetimeExpression.get() * 20);
 
-            //dynamically set molang variables
-            if (this.varParticleAge != null) this.varParticleAge.set(this.age / 20D);
-            if (this.varParticleLifetime != null) this.varParticleLifetime.set(this.lifetime / 20D);
-            if (this.varParticleRandomOne != null) this.varParticleRandomOne.set(this.randomOne);
-            if (this.varParticleRandomTwo != null) this.varParticleRandomTwo.set(this.randomTwo);
-            if (this.varParticleRandomThree != null) this.varParticleRandomThree.set(this.randomThree);
-            if (this.varParticleRandomFour != null) this.varParticleRandomFour.set(this.randomFour);
-
-            //update temp pos
-            this.tempPos.setPos(this.x, this.y, this.z);
-
             //update life based on age and expiration
             if (!this.isDead) {
                 if (this.age < this.lifetime) this.age++;
@@ -176,8 +136,18 @@ public class RiftLibParticle {
                 ) this.isDead = true;
             }
 
+            //dynamically set molang variables
+            this.molangParser.setValue("variable.particle_age", this.age / 20D);
+            this.molangParser.setValue("variable.particle_lifetime", this.lifetime / 20D);
+
+            //update temp pos
+            this.tempPos.setPos(this.x, this.y, this.z);
+
             //update flipbook
-            if (this.flipbook) this.updateFlipbookUV();
+            if (this.particleAppearance == null) {
+                throw new ParticleException("No minecraft:particle_appearance_billboard component has been parsed! Please check the documentation!");
+            }
+            this.particleAppearance.updateAppearance(this);
 
             //-----rotation modification-----
             if (this.velRotation != 0) {
@@ -245,31 +215,39 @@ public class RiftLibParticle {
     }
 
     public void renderParticle(BufferBuilder buffer, Entity cameraEntity, float partialTicks) {
+        if (this.particleAppearance == null) {
+            throw new ParticleException("No minecraft:particle_appearance_billboard component has been parsed! Please check the documentation!");
+        }
+
         this.molangParser.withScope(this.particleScope, () -> {
             //sizes
-            float scaleX = (float) this.size[0].get();
-            float scaleY = (float) this.size[1].get();
+            float scaleX = (float) this.particleAppearance.getSize()[0];
+            float scaleY = (float) this.particleAppearance.getSize()[1];
 
             //camera position (lerped)
-            double camX = cameraEntity.lastTickPosX + (cameraEntity.posX - cameraEntity.lastTickPosX) * partialTicks;
-            double camY = cameraEntity.lastTickPosY + (cameraEntity.posY - cameraEntity.lastTickPosY) * partialTicks;
-            double camZ = cameraEntity.lastTickPosZ + (cameraEntity.posZ - cameraEntity.lastTickPosZ) * partialTicks;
+            double camX = Interpolations.lerp(cameraEntity.lastTickPosX, cameraEntity.posX, partialTicks);
+            double camY = Interpolations.lerp(cameraEntity.lastTickPosY, cameraEntity.posY, partialTicks);
+            double camZ = Interpolations.lerp(cameraEntity.lastTickPosZ, cameraEntity.posZ, partialTicks);
 
             //particle position (lerped) in camera space
-            double px = this.prevX + (this.x - this.prevX) * partialTicks;
-            double py = this.prevY + (this.y - this.prevY) * partialTicks;
-            double pz = this.prevZ + (this.z - this.prevZ) * partialTicks;
+            double particleX = Interpolations.lerp(this.prevX, this.x, partialTicks);
+            double particleY = Interpolations.lerp(this.prevY, this.y, partialTicks);
+            double particleZ = Interpolations.lerp(this.prevZ, this.z, partialTicks);
 
             //origin point
-            Vec3d pointOrigin = new Vec3d(px - camX, py - camY, pz - camZ);
+            Vec3d pointOrigin = new Vec3d(particleX - camX, particleY - camY, particleZ - camZ);
 
             //get and emit vector quad
-            List<Vec3d> vecQuad = this.cameraMode.getPoints(scaleX, scaleY, partialTicks, this.rotation);
+            List<Vec3d> vecQuad = this.particleAppearance.getCameraMode().getPoints(scaleX, scaleY, partialTicks, this.rotation);
             this.emitQuad(buffer, pointOrigin, vecQuad.getFirst(), vecQuad.get(1), vecQuad.get(2), vecQuad.getLast(), partialTicks);
         });
     }
 
     private void emitQuad(BufferBuilder buffer, Vec3d pointOrigin, Vec3d pointOne, Vec3d pointTwo, Vec3d pointThree, Vec3d pointFour, float partialTicks) {
+        if (this.particleAppearance == null) {
+            throw new ParticleException("No minecraft:particle_appearance_billboard component has been parsed! Please check the documentation!");
+        }
+
         //lighting
         int light = this.getBrightnessForRender(partialTicks);
         int j = (light >> 16) & 0xFFFF;
@@ -282,52 +260,57 @@ public class RiftLibParticle {
         float alpha = (float) this.colorAlpha.get();
 
         //emit vertices based on camera mode too
-        if (this.cameraMode == ParticleCameraMode.ROTATE_XYZ) {
+        float[] uvs = this.particleAppearance.getUVs();
+        float uvXMin = uvs[0];
+        float uvYMin = uvs[1];
+        float uvXMax = uvs[2];
+        float uvYMax = uvs[3];
+        if (this.particleAppearance.getCameraMode() == ParticleCameraMode.ROTATE_XYZ) {
             buffer.pos(pointOrigin.x + pointOne.x, pointOrigin.y + pointOne.y, pointOrigin.z + pointOne.z)
-                    .tex(this.uvXMax, this.uvYMax)
+                    .tex(uvXMax, uvYMax)
                     .lightmap(j, k)
                     .color(red, green, blue, alpha)
                     .endVertex();
 
             buffer.pos(pointOrigin.x + pointTwo.x, pointOrigin.y + pointTwo.y, pointOrigin.z + pointTwo.z)
-                    .tex(this.uvXMax, this.uvYMin)
+                    .tex(uvXMax, uvYMin)
                     .lightmap(j, k)
                     .color(red, green, blue, alpha)
                     .endVertex();
 
             buffer.pos(pointOrigin.x + pointThree.x, pointOrigin.y + pointThree.y, pointOrigin.z + pointThree.z)
-                    .tex(this.uvXMin, this.uvYMin)
+                    .tex(uvXMin, uvYMin)
                     .lightmap(j, k)
                     .color(red, green, blue, alpha)
                     .endVertex();
 
             buffer.pos(pointOrigin.x + pointFour.x, pointOrigin.y + pointFour.y, pointOrigin.z + pointFour.z)
-                    .tex(this.uvXMin, this.uvYMax)
+                    .tex(uvXMin, uvYMax)
                     .lightmap(j, k)
                     .color(red, green, blue, alpha)
                     .endVertex();
         }
         else {
             buffer.pos(pointOrigin.x + pointOne.x, pointOrigin.y + pointOne.y, pointOrigin.z + pointOne.z)
-                    .tex(this.uvXMax, this.uvYMin)
+                    .tex(uvXMax, uvYMin)
                     .lightmap(j, k)
                     .color(red, green, blue, alpha)
                     .endVertex();
 
             buffer.pos(pointOrigin.x + pointTwo.x, pointOrigin.y + pointTwo.y, pointOrigin.z + pointTwo.z)
-                    .tex(this.uvXMax, this.uvYMax)
+                    .tex(uvXMax, uvYMax)
                     .lightmap(j, k)
                     .color(red, green, blue, alpha)
                     .endVertex();
 
             buffer.pos(pointOrigin.x + pointThree.x, pointOrigin.y + pointThree.y, pointOrigin.z + pointThree.z)
-                    .tex(this.uvXMin, this.uvYMax)
+                    .tex(uvXMin, uvYMax)
                     .lightmap(j, k)
                     .color(red, green, blue, alpha)
                     .endVertex();
 
             buffer.pos(pointOrigin.x + pointFour.x, pointOrigin.y + pointFour.y, pointOrigin.z + pointFour.z)
-                    .tex(this.uvXMin, this.uvYMin)
+                    .tex(uvXMin, uvYMin)
                     .lightmap(j, k)
                     .color(red, green, blue, alpha)
                     .endVertex();
@@ -344,34 +327,6 @@ public class RiftLibParticle {
 
         BlockPos blockpos = new BlockPos(x, y, z);
         return this.world.isBlockLoaded(blockpos) ? this.world.getCombinedLight(blockpos, 0) : 0;
-    }
-
-    public void updateFlipbookUV() {
-        if (!this.flipbook || this.maxFrame <= 0 || this.textureWidth <= 0 || this.textureHeight <= 0) return;
-
-        //compute frame
-        float timePercentage = this.age / (float) this.lifetime;
-        float ageSeconds = this.age / 20.0f;
-        float frame = this.flipbookStretchToLifetime && this.lifetime > 0 ? timePercentage * this.maxFrame : ageSeconds * this.fps;
-
-        //wrap around
-        if (this.flipbookLoop) {
-            frame = frame % this.maxFrame;
-            if (frame < 0) frame += this.maxFrame;
-        }
-        //clamp
-        else {
-            if (frame >= this.maxFrame) frame = this.maxFrame - 1;
-            if (frame < 0) frame = 0;
-        }
-
-        float uvXPixels = this.baseUVX + this.stepUVX * (float) Math.floor(frame);
-        float uvYPixels = this.baseUVY + this.stepUVY * (float) Math.floor(frame);
-
-        this.uvXMin = uvXPixels / this.textureWidth;
-        this.uvYMin = uvYPixels / this.textureHeight;
-        this.uvXMax = (uvXPixels + this.sizeUVX) / this.textureWidth;
-        this.uvYMax = (uvYPixels + this.sizeUVY) / this.textureHeight;
     }
 
     public boolean isDead() {
@@ -457,7 +412,7 @@ public class RiftLibParticle {
                     if (state.getMaterial().isReplaceable()) continue;
 
                     AxisAlignedBB blockBox = state.getCollisionBoundingBox(this.world, this.tempPos);
-                    if (blockBox == Block.NULL_AABB) continue;
+                    if (blockBox == null) continue;
 
                     if (this.tempAABB.intersects(
                             blockBox.minX + x, blockBox.minY + y, blockBox.minZ + z,
@@ -485,5 +440,13 @@ public class RiftLibParticle {
         if (v > 0) return Math.max(0, v - amount);
         if (v < 0) return Math.min(0, v + amount);
         return 0;
+    }
+
+    public int getAge() {
+        return this.age;
+    }
+
+    public int getLifetime() {
+        return this.lifetime;
     }
 }

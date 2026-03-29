@@ -2,12 +2,11 @@ package anightdazingzoroark.riftlib.jsonParsing.constructor;
 
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticle;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
-import anightdazingzoroark.riftlib.molang.MolangException;
+import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.ParticleMaterial;
 import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
-import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleComponentRegistry;
 import net.minecraft.util.ResourceLocation;
 

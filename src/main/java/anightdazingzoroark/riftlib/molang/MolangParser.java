@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.molang;
 
+import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.math.*;
 import anightdazingzoroark.riftlib.molang.expressions.MolangAssignment;
 import anightdazingzoroark.riftlib.molang.expressions.MolangExpression;
@@ -43,9 +44,7 @@ public class MolangParser extends MathBuilder {
 
     public void setValue(String name, double value) {
         Variable variable = this.getVariable(name);
-        if (variable != null) {
-            variable.set(value);
-        }
+        if (variable != null) variable.set(value);
     }
 
     public Variable getVariable(String name) {

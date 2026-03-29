@@ -1,28 +1,22 @@
 package anightdazingzoroark.riftlib.particle;
 
+import anightdazingzoroark.riftlib.exceptions.ParticleException;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
-import anightdazingzoroark.riftlib.molang.MolangException;
+import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.molang.expressions.MolangExpression;
-import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.molang.math.Variable;
 import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
-import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeOnceComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.*;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
-import anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate.EmitterInstantComponent;
-import anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate.EmitterSteadyComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate.RiftLibEmitterRateComponent;
-import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeExpressionComponent;
-import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeLoopingComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.RiftLibEmitterLifetimeComponent;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
@@ -62,14 +56,6 @@ public class RiftLibParticleEmitter {
     //unparsed particle components
     public final List<Map.Entry<String, RawParticleComponent>> rawParticleComponents;
 
-    //molang emitter variables
-    private Variable varEmitterAge;
-    private Variable varEmitterLifetime;
-    private Variable varEmitterRandomOne;
-    private Variable varEmitterRandomTwo;
-    private Variable varEmitterRandomThree;
-    private Variable varEmitterRandomFour;
-
     //additional molang operations and variables
     private final List<Variable> additionalVariables = new ArrayList<>();
     public List<MolangExpression> initialOperations = new ArrayList<>();
@@ -77,7 +63,6 @@ public class RiftLibParticleEmitter {
 
     //runtime data, are parsed molang variables
     private int age, lifetime;
-    private float emitterRandomOne, emitterRandomTwo, emitterRandomThree, emitterRandomFour;
 
     //for lifetime stuff
     public RiftLibEmitterLifetimeComponent emitterLifetime;
@@ -108,7 +93,6 @@ public class RiftLibParticleEmitter {
 
         //init molang stuff
         this.setupMolangVariables();
-        this.initEmitterRandoms();
 
         //apply components from components in the builder
         for (RiftLibEmitterComponent component : particleBuilder.emitterComponents) {
@@ -124,20 +108,13 @@ public class RiftLibParticleEmitter {
     //all molang variables are created here
     private void setupMolangVariables() {
         this.molangParser.withScope(this.emitterScope, () -> {
-            this.varEmitterAge = this.molangParser.getVariable("variable.emitter_age");
-            this.varEmitterLifetime = this.molangParser.getVariable("variable.emitter_lifetime");
-            this.varEmitterRandomOne = this.molangParser.getVariable("variable.emitter_random_1");
-            this.varEmitterRandomTwo = this.molangParser.getVariable("variable.emitter_random_2");
-            this.varEmitterRandomThree = this.molangParser.getVariable("variable.emitter_random_3");
-            this.varEmitterRandomFour = this.molangParser.getVariable("variable.emitter_random_4");
+            this.molangParser.setValue("variable.emitter_age", 0);
+            this.molangParser.setValue("variable.emitter_lifetime", 0);
+            this.molangParser.setValue("variable.emitter_random_1", Math.random());
+            this.molangParser.setValue("variable.emitter_random_2", Math.random());
+            this.molangParser.setValue("variable.emitter_random_3", Math.random());
+            this.molangParser.setValue("variable.emitter_random_4", Math.random());
         });
-    }
-
-    private void initEmitterRandoms() {
-        this.emitterRandomOne = (float) Math.random();
-        this.emitterRandomTwo = (float) Math.random();
-        this.emitterRandomThree = (float) Math.random();
-        this.emitterRandomFour = (float) Math.random();
     }
 
     //emitter is updated here, particles r created here too
@@ -146,12 +123,8 @@ public class RiftLibParticleEmitter {
 
         this.molangParser.withScope(this.emitterScope, () -> {
             //dynamically set molang variables
-            if (this.varEmitterAge != null) this.varEmitterAge.set(this.age / 20D);
-            if (this.varEmitterLifetime != null) this.varEmitterLifetime.set(this.lifetime / 20D);
-            if (this.varEmitterRandomOne != null) this.varEmitterRandomOne.set(this.emitterRandomOne);
-            if (this.varEmitterRandomTwo != null) this.varEmitterRandomTwo.set(this.emitterRandomTwo);
-            if (this.varEmitterRandomThree != null) this.varEmitterRandomThree.set(this.emitterRandomThree);
-            if (this.varEmitterRandomFour != null) this.varEmitterRandomFour.set(this.emitterRandomFour);
+            this.molangParser.setValue("variable.emitter_age", this.age / 20D);
+            this.molangParser.setValue("variable.emitter_lifetime", this.lifetime / 20D);
 
             //apply repeating operations
             for (MolangExpression expression : this.repeatingOperations) expression.get();
@@ -160,8 +133,13 @@ public class RiftLibParticleEmitter {
         //update emitter age
         this.age++;
 
+        //emitter lifetime exception if it does not exist
+        if (this.emitterLifetime == null) {
+            throw new ParticleException("No emitter lifetime component has been parsed! Please check the documentation!");
+        }
+
         //set death based on expiry and if theres no particles left
-        if (this.emitterLifetime != null && this.emitterLifetime.canExpire(this) && this.particles.isEmpty()) {
+        if (this.emitterLifetime.canExpire(this) && this.particles.isEmpty()) {
             this.killEmitter();
         }
 
@@ -178,11 +156,13 @@ public class RiftLibParticleEmitter {
             this.rotationQuaternion = this.locator.getWorldSpaceYXZQuaternion();
         }
 
+        //emitter rate exception if it does not exist
+        if (this.emitterRate == null) {
+            throw new ParticleException("No emitter rate component has been parsed! Please check the documentation!");
+        }
+
         //create particles based on rate and ability to create them
-        if (this.emitterLifetime != null && this.emitterLifetime.canCreateParticles(this)
-                && this.emitterRate != null
-                && !this.isDead && this.locatorIsUpdated()
-        ) {
+        if (this.emitterLifetime.canCreateParticles(this) && !this.isDead && this.locatorIsUpdated()) {
             this.emitterRate.createParticles(this);
         }
 
@@ -215,17 +195,31 @@ public class RiftLibParticleEmitter {
             catch (Exception e) {}
         }
 
+        //emitter shape exception
+        if (this.emitterShape == null) {
+            throw new ParticleException("No emitter shape component has been parsed! Please check the documentation!");
+        }
+
         //molang side operations to pass to the particle go here
         AtomicReference<Vec3d> offset = new AtomicReference<>(Vec3d.ZERO);
         AtomicReference<Vec3d> directionFromShape = new AtomicReference<>(Vec3d.ZERO);
         this.molangParser.withScope(this.emitterScope, () -> {
-            Vec3d obtainedOffset = this.emitterShape != null ? this.emitterShape.defineParticleOffset(this) : Vec3d.ZERO;
+            Vec3d obtainedOffset = this.emitterShape.defineParticleOffset(this);
             offset.set(obtainedOffset);
-            directionFromShape.set(this.particleDirection(
+
+            //get from shape first
+            Vec3d obtainedDirectionFromShape = this.emitterShape.defineDirection(
+                    this,
                     this.posX + obtainedOffset.x,
                     this.posY + obtainedOffset.y,
                     this.posZ + obtainedOffset.z
-            ));
+            );
+
+            //rotate using quaternion and return
+            obtainedDirectionFromShape = VectorUtils.rotateVectorWithQuaternion(obtainedDirectionFromShape, this.rotationQuaternion).normalize();
+
+            //final value
+            directionFromShape.set(obtainedDirectionFromShape);
         });
 
         //set particle init position
@@ -241,30 +235,6 @@ public class RiftLibParticleEmitter {
 
         //init particle rotation
         toReturn.initializeRotation();
-
-        //particle texturing and uv application is only evaluated when the moment a particle is created
-        //it should be ok to define it here, though i need to figure out how to make them within scope of
-        //the emitterScope
-        //flipbook UV behaviour
-        if (toReturn.flipbook) {
-            //store UV info in pixels
-            toReturn.baseUVX = (float) toReturn.particleUV[0].get();
-            toReturn.baseUVY = (float) toReturn.particleUV[1].get();
-            toReturn.sizeUVX = (float) toReturn.particleUVSize[0].get();
-            toReturn.sizeUVY = (float) toReturn.particleUVSize[1].get();
-            toReturn.stepUVX = (float) toReturn.particleUVStepSize[0].get();
-            toReturn.stepUVY = (float) toReturn.particleUVStepSize[1].get();
-
-            //initialise UVs for frame 0
-            toReturn.updateFlipbookUV();
-        }
-        //static UV behaviour
-        else {
-            toReturn.uvXMin = (float) (toReturn.particleUV[0].get() / toReturn.textureWidth);
-            toReturn.uvYMin = (float) (toReturn.particleUV[1].get() / toReturn.textureHeight);
-            toReturn.uvXMax = (float) ((toReturn.particleUV[0].get() + toReturn.particleUVSize[0].get()) / toReturn.textureWidth);
-            toReturn.uvYMax = (float) ((toReturn.particleUV[1].get() + toReturn.particleUVSize[1].get()) / toReturn.textureHeight);
-        }
 
         //return value
         return toReturn;
@@ -293,14 +263,6 @@ public class RiftLibParticleEmitter {
 
         tess.draw();
         this.material.endDraw();
-    }
-
-    private Vec3d particleDirection(double emissionX, double emissionY, double emissionZ) {
-        //get from shape first
-        Vec3d directionFromShape = this.emitterShape != null ? this.emitterShape.defineDirection(this, emissionX, emissionY, emissionZ) : Vec3d.ZERO;
-
-        //rotate using quaternion and return
-        return VectorUtils.rotateVectorWithQuaternion(directionFromShape, this.rotationQuaternion).normalize();
     }
 
     public void killEmitter() {

@@ -1,6 +1,6 @@
 package anightdazingzoroark.riftlib.particle;
 
-import anightdazingzoroark.riftlib.molang.MolangException;
+import anightdazingzoroark.riftlib.exceptions.MolangException;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.world.WorldEvent;

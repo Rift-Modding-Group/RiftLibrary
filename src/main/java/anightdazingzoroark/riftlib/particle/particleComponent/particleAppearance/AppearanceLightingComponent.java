@@ -1,7 +1,7 @@
 package anightdazingzoroark.riftlib.particle.particleComponent.particleAppearance;
 
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
-import anightdazingzoroark.riftlib.molang.MolangException;
+import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.particle.RiftLibParticle;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;

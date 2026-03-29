@@ -1,12 +1,11 @@
 package anightdazingzoroark.riftlib.particle.particleComponent.particleAppearance;
 
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
-import anightdazingzoroark.riftlib.molang.MolangException;
+import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.particle.ParticleCameraMode;
 import anightdazingzoroark.riftlib.particle.RiftLibParticle;
-import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 
 import java.util.Map;
@@ -17,6 +16,7 @@ public class AppearanceBillboardComponent extends RiftLibParticleComponent {
     private int textureWidth, textureHeight;
     private IValue[] uv;
     private IValue[] uvSize;
+
     //these only matter if the particle is flipbook mode
     private boolean particleFlipbook;
     private IValue[] particleUVStepSize;
@@ -24,6 +24,12 @@ public class AppearanceBillboardComponent extends RiftLibParticleComponent {
     private IValue particleMaxFrame;
     private boolean particleFlipbookStretchToLifetime;
     private boolean particleFlipbookLoop;
+
+    //return values
+    private float uvXMin;
+    private float uvYMin;
+    private float uvXMax;
+    private float uvYMax;
 
     @Override
     public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
@@ -97,28 +103,56 @@ public class AppearanceBillboardComponent extends RiftLibParticleComponent {
 
     @Override
     public void applyComponent(RiftLibParticle particle) {
-        particle.textureWidth = this.textureWidth;
-        particle.textureHeight = this.textureHeight;
-        particle.cameraMode = this.cameraMode;
-        particle.size = this.size;
+        particle.particleAppearance = this;
+    }
 
-        //differentiate between particle flipbook or not
-        if (this.particleFlipbook) {
-            particle.flipbook = true;
-            particle.flipbookStretchToLifetime = this.particleFlipbookStretchToLifetime;
-            particle.flipbookLoop = this.particleFlipbookLoop;
-            particle.fps = this.particleFPS;
-            particle.maxFrame = (int) this.particleMaxFrame.get();
+    public double[] getSize() {
+        return new double[]{this.size[0].get(), this.size[1].get()};
+    }
 
-            //store UV info
-            particle.particleUV = this.uv;
-            particle.particleUVSize = this.uvSize;
-            particle.particleUVStepSize = this.particleUVStepSize;
+    public ParticleCameraMode getCameraMode() {
+        return this.cameraMode;
+    }
+
+    public void updateAppearance(RiftLibParticle particle) {
+        //static appearance
+        if (!this.particleFlipbook) {
+            this.uvXMin = (float) (this.uv[0].get() / this.textureWidth);
+            this.uvYMin = (float) (this.uv[1].get() / this.textureHeight);
+            this.uvXMax = (float) ((this.uv[0].get() + this.uvSize[0].get()) / this.textureWidth);
+            this.uvYMax = (float) ((this.uv[1].get() + this.uvSize[1].get()) / this.textureHeight);
+            return;
         }
+        //flipbook appearance from here on out
+
+        //compute frame
+        float timePercentage = particle.getAge() / (float) particle.getLifetime();
+        float ageSeconds = particle.getAge() / 20f;
+        float frame = this.particleFlipbookStretchToLifetime && particle.getLifetime() > 0 ?
+                (float) (timePercentage * this.particleMaxFrame.get()) : ageSeconds * this.particleFPS;
+
+        //wrap around
+        if (this.particleFlipbookLoop) {
+            frame = (float) (frame % this.particleMaxFrame.get());
+            if (frame < 0) frame += (float) this.particleMaxFrame.get();
+        }
+        //clamp
         else {
-            particle.flipbook = false;
-            particle.particleUV = this.uv;
-            particle.particleUVSize = this.uvSize;
+            if (frame >= this.particleMaxFrame.get()) frame = (int) this.particleMaxFrame.get() - 1;
+            if (frame < 0) frame = 0;
         }
+
+        float uvXPixels = (float) (this.uv[0].get() + this.particleUVStepSize[0].get() * Math.floor(frame));
+        float uvYPixels = (float) (this.uv[1].get() + this.particleUVStepSize[1].get() * Math.floor(frame));
+
+        //set values
+        this.uvXMin = uvXPixels / this.textureWidth;
+        this.uvYMin = uvYPixels / this.textureHeight;
+        this.uvXMax = (float) (uvXPixels + this.uvSize[0].get()) / this.textureWidth;
+        this.uvYMax = (float) (uvYPixels + this.uvSize[1].get()) / this.textureHeight;
+    }
+
+    public float[] getUVs() {
+        return new float[]{this.uvXMin, this.uvYMin, this.uvXMax, this.uvYMax};
     }
 }

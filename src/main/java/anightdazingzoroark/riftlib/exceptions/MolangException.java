@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.molang;
+package anightdazingzoroark.riftlib.exceptions;
 
 public class MolangException extends Exception {
     private static final long serialVersionUID = 1470247726869768015L;

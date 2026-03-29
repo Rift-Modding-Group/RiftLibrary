@@ -32,7 +32,7 @@ public class AppearanceBillboardComponent extends RiftLibParticleComponent {
     private float uvYMax;
 
     @Override
-    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
+    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) {
         //specifies the x/y size of the billboard
         //evaluated every frame
         if (rawComponent.getValue().componentValues.containsKey("size")) {

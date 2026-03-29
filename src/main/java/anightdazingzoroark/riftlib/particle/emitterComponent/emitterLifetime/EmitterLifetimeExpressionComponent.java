@@ -15,7 +15,7 @@ public class EmitterLifetimeExpressionComponent extends RiftLibEmitterLifetimeCo
     private IValue emitterExpirationValue = MolangParser.ZERO;
 
     @Override
-    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
+    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) {
         //when the expression is non-zero, the emitter will emit particles.
         //evaluated every frame
         if (rawComponent.getValue().componentValues.containsKey("activation_expression")) {

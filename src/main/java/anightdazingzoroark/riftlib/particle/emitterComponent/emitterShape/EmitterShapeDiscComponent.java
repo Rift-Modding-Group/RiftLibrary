@@ -18,7 +18,7 @@ public class EmitterShapeDiscComponent extends RiftLibEmitterShapeComponent {
     private IValue[] customParticleDirection;
 
     @Override
-    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
+    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) {
         if (rawComponent.getValue().componentValues.containsKey("plane_normal")) {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("plane_normal");
 
@@ -35,7 +35,7 @@ public class EmitterShapeDiscComponent extends RiftLibEmitterShapeComponent {
                         this.planeNormal = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ONE};
                         break;
                     default:
-                        throw new MolangException("Invalid value for plane direction!");
+                        throw new RuntimeException(new MolangException("Invalid value for plane direction!"));
                 }
             }
             else if (componentValue.valueType == RawParticleComponent.ComponentValueType.ARRAY) {

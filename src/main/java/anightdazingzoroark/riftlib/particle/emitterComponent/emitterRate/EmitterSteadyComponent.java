@@ -14,7 +14,7 @@ public class EmitterSteadyComponent extends RiftLibEmitterRateComponent {
     public IValue maxParticleCount = new Constant(50);
 
     @Override
-    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
+    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) {
         if (rawComponent.getValue().componentValues.containsKey("spawn_rate")) {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("spawn_rate");
             this.spawnRate = this.parseExpression(parser, componentValue);

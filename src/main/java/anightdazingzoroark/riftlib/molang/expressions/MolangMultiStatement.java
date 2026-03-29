@@ -6,8 +6,8 @@ import anightdazingzoroark.riftlib.molang.MolangParser;
 import java.util.*;
 
 public class MolangMultiStatement extends MolangExpression {
-    public List<MolangExpression> expressions = new ArrayList();
-    public Map<String, Variable> locals = new HashMap();
+    public List<MolangExpression> expressions = new ArrayList<>();
+    public Map<String, Variable> locals = new HashMap<>();
 
     public MolangMultiStatement(MolangParser context) {
         super(context);

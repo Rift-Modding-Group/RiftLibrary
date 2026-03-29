@@ -74,7 +74,7 @@ public class MolangParser extends MathBuilder {
             this.currentStatement = result;
 
             try {
-                for(String line : lines) {
+                for (String line : lines) {
                     result.expressions.add(this.parseOneLine(line));
                 }
             }
@@ -92,43 +92,51 @@ public class MolangParser extends MathBuilder {
         expression = expression.trim();
         if (expression.startsWith("return ")) {
             try {
-                return (new MolangValue(this, this.parse(expression.substring("return ".length())))).addReturn();
+                return new MolangValue(this, this.parse(expression.substring("return ".length()))).addReturn();
             }
             catch (Exception var5) {
                 throw new MolangException("Couldn't parse return '" + expression + "' expression!");
             }
         }
         else {
+            List<Object> symbols;
             try {
-                List<Object> symbols = this.breakdownChars(this.breakdown(expression));
-                if (symbols.size() >= 3
-                        && symbols.get(0) instanceof String
-                        && this.isVariable(symbols.get(0))
-                        && symbols.get(1).equals("=")) {
-
-                    String name = (String) symbols.get(0);
-                    symbols = symbols.subList(2, symbols.size());
-
-                    Variable variable;
-
-                    // Create a statement-local variable if it doesn't exist anywhere yet
-                    if (this.currentStatement != null
-                            && !this.variables.containsKey(name)
-                            && !this.currentStatement.locals.containsKey(name)) {
-
-                        variable = new ScopedVariable(this, name, 0f);
-                        this.currentStatement.locals.put(name, variable);
-                    }
-                    //returns ScopedVariable if needed
-                    else variable = this.getVariable(name);
-
-                    return new MolangAssignment(this, variable, this.parseSymbolsMolang(symbols));
-                }
-                else return new MolangValue(this, this.parseSymbolsMolang(symbols));
+                symbols = this.breakdownChars(this.breakdown(expression));
             }
-            catch (Exception var6) {
+            catch (Exception e) {
                 throw new MolangException("Couldn't parse '" + expression + "' expression!");
             }
+
+            if (symbols.size() >= 3
+                    && symbols.get(0) instanceof String
+                    && this.isVariable(symbols.get(0))
+                    && symbols.get(1).equals("=")) {
+                //-----variable stuff-----
+                String name = (String) symbols.getFirst();
+
+                //block assignment to queries
+                if (this.isQuery(name)) {
+                    throw new MolangException("Cannot assign value to query '" + name + "' in '" + expression + "'!");
+                }
+
+                //continue with variable stuff
+                Variable variable = this.getVariable(name);
+
+                //create a statement-local variable if it doesn't exist anywhere yet
+                if (this.currentStatement != null
+                        && !this.variables.containsKey(name)
+                        && !this.currentStatement.locals.containsKey(name)) {
+
+                    variable = new ScopedVariable(this, name, 0f);
+                    this.currentStatement.locals.put(name, variable);
+                }
+
+                //-----other symbols-----
+                symbols = symbols.subList(2, symbols.size());
+
+                return new MolangAssignment(this, variable, this.parseSymbolsMolang(symbols));
+            }
+            else return new MolangValue(this, this.parseSymbolsMolang(symbols));
         }
     }
 

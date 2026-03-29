@@ -1,7 +1,6 @@
 package anightdazingzoroark.riftlib.particle.particleComponent.particleLifetime;
 
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
-import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.Constant;
 import anightdazingzoroark.riftlib.molang.math.IValue;
@@ -17,7 +16,7 @@ public class ParticleLifetimeExpressionComponent extends RiftLibParticleComponen
     public IValue lifetimeValue = new Constant(Integer.MAX_VALUE);
 
     @Override
-    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
+    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) {
         //this expression makes the particle expire when true (non-zero)
         //evaluated once per particle
         //evaluated every frame

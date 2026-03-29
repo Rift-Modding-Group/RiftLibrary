@@ -15,25 +15,39 @@ public abstract class RiftLibParticleComponent {
 
     public abstract void applyComponent(RiftLibParticle particle);
 
-    protected IValue parseExpression(MolangParser parser, RawParticleComponent.ComponentValue componentValue) throws MolangException {
+    protected IValue parseExpression(MolangParser parser, RawParticleComponent.ComponentValue componentValue) {
         //component value was a string
-        if (componentValue.valueType == RawParticleComponent.ComponentValueType.STRING) return parser.parseExpression(componentValue.string);
+        if (componentValue.valueType == RawParticleComponent.ComponentValueType.STRING) {
+            try {
+                return parser.parseExpression(componentValue.string);
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
         //component value was a double
         else return ConstantValue.fromDouble(componentValue.number);
     }
 
-    protected IValue parseBooleanExpression(MolangParser parser, RawParticleComponent.ComponentValue componentValue) throws MolangException {
+    protected IValue parseBooleanExpression(MolangParser parser, RawParticleComponent.ComponentValue componentValue) {
         //component value was a string
-        if (componentValue.valueType == RawParticleComponent.ComponentValueType.STRING) return parser.parseExpression(componentValue.string);
+        if (componentValue.valueType == RawParticleComponent.ComponentValueType.STRING) {
+            try {
+                return parser.parseExpression(componentValue.string);
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
         //component value was a boolean
         else return componentValue.bool ? MolangParser.ONE : MolangParser.ZERO;
     }
 
-    protected IValue[] parseExpressionArray(MolangParser parser, int intendedSize, RawParticleComponent.ComponentValue componentValue) throws MolangException {
+    protected IValue[] parseExpressionArray(MolangParser parser, int intendedSize, RawParticleComponent.ComponentValue componentValue) {
         return this.parseExpressionArray(parser, intendedSize, componentValue, false);
     }
 
-    protected IValue[] parseExpressionArray(MolangParser parser, int intendedSize, RawParticleComponent.ComponentValue componentValue, boolean floatOnly) throws MolangException {
+    protected IValue[] parseExpressionArray(MolangParser parser, int intendedSize, RawParticleComponent.ComponentValue componentValue, boolean floatOnly) {
         if (componentValue.valueType == RawParticleComponent.ComponentValueType.ARRAY) {
             if (componentValue.array.size() != intendedSize) throw new InvalidValueException("Invalid array length!");
 

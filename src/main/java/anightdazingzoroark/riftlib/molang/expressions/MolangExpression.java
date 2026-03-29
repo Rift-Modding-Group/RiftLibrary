@@ -19,16 +19,14 @@ public abstract class MolangExpression implements IValue {
     }
 
     public static boolean isConstant(MolangExpression expression, double x) {
-        if (expression instanceof MolangValue) {
-            MolangValue value = (MolangValue)expression;
+        if (expression instanceof MolangValue value) {
             return value.value instanceof Constant && Operation.equals(value.value.get(), x);
         }
         return false;
     }
 
     public static boolean isExpressionConstant(MolangExpression expression) {
-        if (expression instanceof MolangValue) {
-            MolangValue value = (MolangValue)expression;
+        if (expression instanceof MolangValue value) {
             return value.value instanceof Constant;
         }
         return false;

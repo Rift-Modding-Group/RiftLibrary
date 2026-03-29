@@ -142,7 +142,9 @@ public class AnimationData {
 					try {
 						this.parser.parseExpression(animatableValue.getExpressionValue()).get();
 					}
-					catch (Exception e) {}
+					catch (Exception e) {
+						throw new RuntimeException(e);
+					}
 				}
 				else {
 					this.parser.setValue(animatableValue.getConstantValue().left, animatableValue.getConstantValue().right);
@@ -159,7 +161,9 @@ public class AnimationData {
 					try {
 						this.parser.parseExpression(animatableValue.getExpressionValue()).get();
 					}
-					catch (Exception e) {}
+					catch (Exception e) {
+						throw new RuntimeException(e);
+					}
 				}
 				else {
 					this.parser.setValue(animatableValue.getConstantValue().left, animatableValue.getConstantValue().right);

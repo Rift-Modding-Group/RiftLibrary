@@ -13,7 +13,7 @@ public class ParticleInitialSpeedComponent extends RiftLibParticleComponent {
     private IValue initialSpeed = MolangParser.ZERO;
 
     @Override
-    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
+    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) {
         if (rawComponent.getValue().componentValues.containsKey("$value")) {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("$value");
             this.initialSpeed = this.parseExpression(parser, componentValue);

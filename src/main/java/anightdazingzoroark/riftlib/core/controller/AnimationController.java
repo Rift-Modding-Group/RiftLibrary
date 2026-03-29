@@ -615,7 +615,9 @@ public class AnimationController<T extends IAnimatable> {
 					double value = parser.parseExpression(this.currentAnimation.animTimeUpdateExpression).get();
 					atomicResolved.set(value);
 				}
-				catch (Exception e) {}
+				catch (Exception e) {
+					throw new RuntimeException(e);
+				}
 			});
 			resolved = atomicResolved.get() * this.animationSpeed * 20D;
 		}

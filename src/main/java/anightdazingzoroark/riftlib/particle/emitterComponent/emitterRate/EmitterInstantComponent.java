@@ -13,7 +13,7 @@ public class EmitterInstantComponent extends RiftLibEmitterRateComponent {
     public IValue particleCount = new Constant(10f);
 
     @Override
-    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
+    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) {
         if (rawComponent.getValue().componentValues.containsKey("num_particles")) {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("num_particles");
             this.particleCount = parseExpression(parser, componentValue);

@@ -16,7 +16,7 @@ public class ParticleMotionDynamicComponent extends RiftLibParticleComponent {
     private IValue rotationDragCoefficient = MolangParser.ZERO;
 
     @Override
-    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
+    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) {
         if (rawComponent.getValue().componentValues.containsKey("linear_acceleration")) {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("linear_acceleration");
             this.linearAcceleration = this.parseExpressionArray(parser, 3, componentValue);

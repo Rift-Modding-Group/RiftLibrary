@@ -3,7 +3,6 @@ package anightdazingzoroark.riftlib.particle.emitterComponent;
 import anightdazingzoroark.riftlib.core.ConstantValue;
 import anightdazingzoroark.riftlib.exceptions.InvalidValueException;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
-import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
@@ -11,22 +10,29 @@ import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import java.util.Map;
 
 public abstract class RiftLibEmitterComponent {
-    public abstract void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException;
+    public abstract void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser);
 
     public abstract void applyComponent(RiftLibParticleEmitter emitter);
 
-    protected IValue parseExpression(MolangParser parser, RawParticleComponent.ComponentValue componentValue) throws MolangException {
+    protected IValue parseExpression(MolangParser parser, RawParticleComponent.ComponentValue componentValue) {
         //component value was a string
-        if (componentValue.valueType == RawParticleComponent.ComponentValueType.STRING) return parser.parseExpression(componentValue.string);
-            //component value was a double
+        if (componentValue.valueType == RawParticleComponent.ComponentValueType.STRING) {
+            try {
+                return parser.parseExpression(componentValue.string);
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        //component value was a double
         else return ConstantValue.fromDouble(componentValue.number);
     }
 
-    protected IValue[] parseExpressionArray(MolangParser parser, int intendedSize, RawParticleComponent.ComponentValue componentValue) throws MolangException {
+    protected IValue[] parseExpressionArray(MolangParser parser, int intendedSize, RawParticleComponent.ComponentValue componentValue) {
         return this.parseExpressionArray(parser, intendedSize, componentValue, false);
     }
 
-    protected IValue[] parseExpressionArray(MolangParser parser, int intendedSize, RawParticleComponent.ComponentValue componentValue, boolean floatOnly) throws MolangException {
+    protected IValue[] parseExpressionArray(MolangParser parser, int intendedSize, RawParticleComponent.ComponentValue componentValue, boolean floatOnly) {
         if (componentValue.valueType == RawParticleComponent.ComponentValueType.ARRAY) {
             if (componentValue.array.size() != intendedSize) throw new InvalidValueException("Invalid array length!");
 

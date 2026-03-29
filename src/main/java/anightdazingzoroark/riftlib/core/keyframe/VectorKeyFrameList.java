@@ -64,7 +64,9 @@ public class VectorKeyFrameList {
                         parser.parseExpression(endValueUnparsed.getExpressionValue()).get() : endValueUnparsed.getConstValue();
                 atomicEndValue.set(scopedEndValue);
             }
-            catch (Exception e) {}
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         });
 
         startValue = atomicStartValue.get();

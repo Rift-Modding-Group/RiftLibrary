@@ -17,7 +17,7 @@ public class ParticleExpireInBlockComponent extends RiftLibParticleComponent {
     private List<String> blocksExpireIfIn = new ArrayList<>();
 
     @Override
-    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
+    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) {
         if (rawComponent.getValue().componentValues.containsKey("$value")) {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("$value");
 

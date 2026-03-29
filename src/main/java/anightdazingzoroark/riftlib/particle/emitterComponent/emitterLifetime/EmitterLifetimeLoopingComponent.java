@@ -14,7 +14,7 @@ public class EmitterLifetimeLoopingComponent extends RiftLibEmitterLifetimeCompo
     private IValue emitterSleepTime = MolangParser.ZERO;
 
     @Override
-    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
+    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) {
         //amount of time the looping emitter will be active
         if (rawComponent.getValue().componentValues.containsKey("active_time")) {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("active_time");

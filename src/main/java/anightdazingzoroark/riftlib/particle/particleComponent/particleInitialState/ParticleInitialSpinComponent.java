@@ -14,7 +14,7 @@ public class ParticleInitialSpinComponent extends RiftLibParticleComponent {
     private IValue rotationRate = MolangParser.ZERO;
 
     @Override
-    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
+    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) {
         if (rawComponent.getValue().componentValues.containsKey("rotation")) {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("rotation");
             this.initialRotation = this.parseExpression(parser, componentValue);

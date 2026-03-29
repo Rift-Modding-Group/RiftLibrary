@@ -83,7 +83,7 @@ public class MathBuilder {
     }
 
     public List<Object> breakdownChars(String[] chars) {
-        List<Object> symbols = new ArrayList();
+        List<Object> symbols = new ArrayList<>();
         String buffer = "";
         int len = chars.length;
 
@@ -99,7 +99,7 @@ public class MathBuilder {
 
                     int counter = 1;
 
-                    for(int j = i + 1; j < len; ++j) {
+                    for (int j = i + 1; j < len; ++j) {
                         String c = chars[j];
                         if (c.equals("(")) ++counter;
                         else if (c.equals(")")) --counter;
@@ -113,10 +113,10 @@ public class MathBuilder {
 
                         buffer = buffer + c;
                     }
-                } else {
-                    buffer = buffer + s;
                 }
-            } else {
+                else buffer = buffer + s;
+            }
+            else {
                 if (s.equals("-")) {
                     int size = symbols.size();
                     boolean isFirst = size == 0 && buffer.isEmpty();
@@ -353,6 +353,10 @@ public class MathBuilder {
 
     protected boolean isOperator(String s) {
         return Operation.OPERATORS.contains(s) || s.equals("?") || s.equals(":");
+    }
+
+    protected boolean isQuery(String s) {
+        return s.startsWith("query.");
     }
 
     protected boolean isDecimal(String s) {

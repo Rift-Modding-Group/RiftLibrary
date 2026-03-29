@@ -17,7 +17,7 @@ public class EmitterShapeSphereComponent extends RiftLibEmitterShapeComponent {
     private IValue[] customParticleDirection;
 
     @Override
-    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException {
+    public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) {
         if (rawComponent.getValue().componentValues.containsKey("offset")) {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("offset");
             this.offset = parseExpressionArray(parser, 3, componentValue);

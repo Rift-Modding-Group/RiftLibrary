@@ -134,7 +134,9 @@ public class AnimationProcessor<T extends IAnimatable> {
 					try {
 						parser.parseExpression(customInstructionEvent.expression).get();
 					}
-					catch (Exception e) {}
+					catch (Exception e) {
+						throw new RuntimeException(e);
+					}
 				});
 			}
 		}

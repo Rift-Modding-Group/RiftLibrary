@@ -63,9 +63,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		//rest is good ol rendering code
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(x, y, z);
-		// TODO: entity.isPassenger() looks redundant here
-		boolean shouldSit = /* entity.isPassenger() && */ (entity.getRidingEntity() != null
-				&& entity.getRidingEntity().shouldRiderSit());
+		boolean shouldSit = (entity.getRidingEntity() != null && entity.getRidingEntity().shouldRiderSit());
 		EntityModelData entityModelData = new EntityModelData();
 		entityModelData.isSitting = shouldSit;
 		entityModelData.isChild = entity.isChild();
@@ -73,52 +71,24 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		float f = Interpolations.lerpYaw(entity.prevRenderYawOffset, entity.renderYawOffset, partialTicks);
 		float f1 = Interpolations.lerpYaw(entity.prevRotationYawHead, entity.rotationYawHead, partialTicks);
 		float netHeadYaw = f1 - f;
-		if (shouldSit && entity.getRidingEntity() instanceof EntityLivingBase) {
-			EntityLivingBase livingentity = (EntityLivingBase) entity.getRidingEntity();
-			f = Interpolations.lerpYaw(livingentity.prevRenderYawOffset, livingentity.renderYawOffset, partialTicks);
+		if (shouldSit && entity.getRidingEntity() instanceof EntityLivingBase livingentity) {
+            f = Interpolations.lerpYaw(livingentity.prevRenderYawOffset, livingentity.renderYawOffset, partialTicks);
 			netHeadYaw = f1 - f;
-			float f3 = MathHelper.wrapDegrees(netHeadYaw);
-			if (f3 < -85.0F) {
-				f3 = -85.0F;
-			}
 
-			if (f3 >= 85.0F) {
-				f3 = 85.0F;
-			}
+			float f3 = MathHelper.wrapDegrees(netHeadYaw);
+			if (f3 < -85f) f3 = -85f;
+			if (f3 >= 85f) f3 = 85f;
 
 			f = f1 - f3;
-			if (f3 * f3 > 2500.0F) {
-				f += f3 * 0.2F;
-			}
+			if (f3 * f3 > 2500.0F) f += f3 * 0.2f;
 
 			netHeadYaw = f1 - f;
 		}
 
 		float headPitch = Interpolations.lerp(entity.prevRotationPitch, entity.rotationPitch, partialTicks);
-		/*
-		 * TODO: vanilla mobs can't sleep in beds in 1.12.2 and below if
-		 * (entity.getPose() == Pose.SLEEPING) { Direction direction =
-		 * entity.getBedDirection(); if (direction != null) { float f4 =
-		 * entity.getEyeHeight(Pose.STANDING) - 0.1F; stack.translate((double) ((float)
-		 * (-direction.getXOffset()) * f4), 0.0D, (double) ((float)
-		 * (-direction.getZOffset()) * f4)); } }
-		 */
 		float f7 = this.handleRotationFloat(entity, partialTicks);
 		this.applyRotations(entity, f7, f, partialTicks);
 
-		float limbSwingAmount = 0.0F;
-		float limbSwing = 0.0F;
-		if (!shouldSit && entity.isEntityAlive()) {
-			limbSwingAmount = Interpolations.lerp(entity.prevLimbSwingAmount, entity.limbSwingAmount, partialTicks);
-			limbSwing = entity.limbSwing - entity.limbSwingAmount * (1.0F - partialTicks);
-			if (entity.isChild()) {
-				limbSwing *= 3.0F;
-			}
-
-			if (limbSwingAmount > 1.0F) {
-				limbSwingAmount = 1.0F;
-			}
-		}
 		entityModelData.headPitch = -headPitch;
 		entityModelData.netHeadYaw = -netHeadYaw;
 
@@ -142,8 +112,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 
 		if (!(entity instanceof EntityPlayer) || !((EntityPlayer) entity).isSpectator()) {
 			for (GeoLayerRenderer<T> layerRenderer : this.layerRenderers) {
-				layerRenderer.render(entity, limbSwing, limbSwingAmount, partialTicks, limbSwing, netHeadYaw, headPitch,
-						renderColor);
+				layerRenderer.render(entity, partialTicks, 0, netHeadYaw, headPitch, renderColor);
 			}
 		}
 		if (entity instanceof EntityLiving) {

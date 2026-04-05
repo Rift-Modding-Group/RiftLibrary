@@ -150,7 +150,7 @@ public abstract class GeoReplacedEntityRenderer<T extends IAnimatable> extends R
 		if (entity instanceof EntityPlayer && !((EntityPlayer) entity).isSpectator()) {
 			for (GeoLayerRenderer layerRenderer : this.layerRenderers) {
 				layerRenderer.doRenderLayer(entity, limbSwing, limbSwingAmount, partialTicks, f7, netHeadYaw, headPitch,
-						1 / 16F);
+						1 / 16f);
 			}
 		}
 		if (entity instanceof EntityLiving) {

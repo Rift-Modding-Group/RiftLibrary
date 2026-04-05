@@ -16,23 +16,27 @@ public abstract class GeoLayerRenderer<T extends EntityLivingBase & IAnimatable>
 		this.entityRenderer = entityRendererIn;
 	}
 
-	protected static <T extends EntityLivingBase> void renderCopyCutoutModel(ModelBase modelParentIn, ModelBase modelIn,
-			ResourceLocation textureLocationIn, T entityIn, float limbSwing, float limbSwingAmount, float ageInTicks,
-			float netHeadYaw, float headPitch, float partialTicks, float red, float green, float blue) {
-		if (!entityIn.isInvisible()) {
-			modelParentIn.setModelAttributes(modelIn);
-			modelIn.setLivingAnimations(entityIn, limbSwing, limbSwingAmount, partialTicks);
-			modelIn.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, 1 / 16F, entityIn);
-			renderCutoutModel(modelIn, textureLocationIn, entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw,
-					headPitch, 1 / 16F, red, green, blue);
-		}
+	protected static <T extends EntityLivingBase> void renderCopyCutoutModel(
+			ModelBase modelParentIn, ModelBase modelIn,
+			T entityIn, float ageInTicks,
+			float netHeadYaw, float headPitch, float partialTicks, float red, float green, float blue
+	) {
+		if (entityIn.isInvisible()) return;
+		modelParentIn.setModelAttributes(modelIn);
+		modelIn.setLivingAnimations(entityIn, 0, 0, partialTicks);
+		modelIn.setRotationAngles(0, 0, ageInTicks, netHeadYaw, headPitch, 1 / 16f, entityIn);
+		renderCutoutModel(
+				modelIn, entityIn, ageInTicks, netHeadYaw,
+				headPitch, 1 / 16F, red, green, blue
+		);
 	}
 
-	protected static <T extends EntityLivingBase> void renderCutoutModel(ModelBase modelIn,
-			ResourceLocation textureLocationIn, T entityIn, float limbSwing, float limbSwingAmount, float ageInTicks,
-			float netHeadYaw, float headPitch, float scale, float red, float green, float blue) {
+	protected static <T extends EntityLivingBase> void renderCutoutModel(
+			ModelBase modelIn, T entityIn, float ageInTicks, float netHeadYaw, float headPitch, float scale,
+			float red, float green, float blue
+	) {
 		GlStateManager.color(red, green, blue, 1f);
-		modelIn.render(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale);
+		modelIn.render(entityIn, 0, 0, ageInTicks, netHeadYaw, headPitch, scale);
 	}
 
 	@Override
@@ -53,6 +57,5 @@ public abstract class GeoLayerRenderer<T extends EntityLivingBase & IAnimatable>
 		return this.entityRenderer.getTextureLocation(entityIn);
 	}
 
-	public abstract void render(T entitylivingbaseIn, float limbSwing, float limbSwingAmount, float partialTicks,
-			float ageInTicks, float netHeadYaw, float headPitch, Color renderColor);
+	public abstract void render(T entitylivingbaseIn, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, Color renderColor);
 }

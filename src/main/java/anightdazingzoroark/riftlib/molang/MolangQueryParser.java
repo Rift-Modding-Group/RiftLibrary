@@ -117,6 +117,10 @@ public class MolangQueryParser {
             float prevEntityYaw = Interpolations.lerpYaw(entity.prevRotationYaw, entity.rotationYaw, partialTick - 0.1f);
             return (double) (currentEntityYaw - prevEntityYaw);
         });
+        this.animatableQueryMap.put("query.is_riding", (iAnimatable, parser) -> {
+            if (!(iAnimatable instanceof Entity entity)) return 0D;
+            return MolangUtils.booleanToDouble(entity.isRiding());
+        });
     }
 
     public void updateQueries(AnimationData data, MolangParser parser, MolangScope scope) {

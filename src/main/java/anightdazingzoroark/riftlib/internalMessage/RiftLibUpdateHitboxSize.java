@@ -57,9 +57,8 @@ public class RiftLibUpdateHitboxSize extends RiftLibMessage<RiftLibUpdateHitboxS
     public void executeOnServer(MinecraftServer server, RiftLibUpdateHitboxSize message, EntityPlayer player, MessageContext messageContext) {
         Entity entity = player.world.getEntityByID(message.entityId);
 
-        if (entity instanceof IMultiHitboxUser) {
-            IMultiHitboxUser hitboxUser = (IMultiHitboxUser) entity;
-            hitboxUser.updateHitboxScaleFromAnim(message.hitboxName, message.width, message.height);
+        if (entity instanceof IMultiHitboxUser hitboxUser) {
+            hitboxUser.resizeHitboxByAnim(message.hitboxName, message.width, message.height);
         }
     }
 
@@ -67,9 +66,8 @@ public class RiftLibUpdateHitboxSize extends RiftLibMessage<RiftLibUpdateHitboxS
     public void executeOnClient(Minecraft client, RiftLibUpdateHitboxSize message, EntityPlayer player, MessageContext messageContext) {
         Entity entity = player.world.getEntityByID(message.entityId);
 
-        if (entity instanceof IMultiHitboxUser) {
-            IMultiHitboxUser hitboxUser = (IMultiHitboxUser) entity;
-            hitboxUser.updateHitboxScaleFromAnim(message.hitboxName, message.width, message.height);
+        if (entity instanceof IMultiHitboxUser hitboxUser) {
+            hitboxUser.resizeHitboxByAnim(message.hitboxName, message.width, message.height);
         }
     }
 }

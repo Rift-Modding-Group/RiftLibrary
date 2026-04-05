@@ -1,25 +1,38 @@
 package anightdazingzoroark.riftlib.hitboxLogic;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.util.QuaternionUtils;
+import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MultiPartEntityPart;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.NotNull;
+import org.lwjglx.util.vector.Quaternion;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class EntityHitbox extends MultiPartEntityPart {
     private final float damageMultiplier;
-    public final float initWidth;
-    public final float initHeight;
-    private float widthScaleFromAnim = 1f;
-    private float heightScaleFromAnim = 1f;
-    private float xOffset;
-    private float yOffset;
-    private float zOffset;
+    //these are the final definitive scales of the hitbox and will be used for such
+    public final float fixedWidth;
+    public final float fixedHeight;
+    //these are the anim dependent scales
+    private float widthScaleDisplacement = 1f;
+    private float heightScaleDisplacement = 1f;
+    //these are the final definitive displacements of the hitbox from the center of the entity
+    private final float xOffset;
+    private final float yOffset;
+    private final float zOffset;
+    //these are anim dependent displacments due to animations
+    private float xDisplacement;
+    private float yDisplacement;
+    private float zDisplacement;
+    //others
     public final boolean affectedByAnim;
     private boolean isDisabled;
     public final List<EntityHitboxDamageDefinition> damageDefinitions = new ArrayList<>();
@@ -27,8 +40,8 @@ public class EntityHitbox extends MultiPartEntityPart {
     public EntityHitbox(IMultiHitboxUser parent, String partName, float damageMultiplier, float width, float height, float xOffset, float yOffset, float zOffset, boolean affectedByAnim) {
         super(parent, partName, width, height);
         this.damageMultiplier = damageMultiplier;
-        this.initWidth = width;
-        this.initHeight = height;
+        this.fixedWidth = width;
+        this.fixedHeight = height;
         this.xOffset = xOffset;
         this.yOffset = yOffset;
         this.zOffset = zOffset;
@@ -37,24 +50,31 @@ public class EntityHitbox extends MultiPartEntityPart {
 
     @Override
     public void onUpdate() {
-        double xOffset = this.xOffset * this.width / this.initWidth;
-        double yOffset = this.yOffset * this.height / this.initHeight;
-        double zOffset = this.zOffset * this.width / this.initWidth;
+        EntityLivingBase parentEntityLiving = this.getParentAsEntityLiving();
 
-        double yawRadians = Math.toRadians(this.getParentAsEntityLiving().renderYawOffset);
-        double cosYaw = Math.cos(yawRadians);
-        double sinYaw = Math.sin(yawRadians);
+        //set scale
+        float parentScale = parentEntityLiving instanceof IAnimatable animatable ? animatable.scale() : 1f;
+        float finalWidth = this.fixedWidth * parentScale * this.widthScaleDisplacement;
+        float finalHeight = this.fixedHeight * parentScale * this.heightScaleDisplacement;
+        this.setSize(finalWidth, finalHeight);
 
-        double rotatedX = xOffset * cosYaw - zOffset * sinYaw;
-        double rotatedZ = xOffset * sinYaw + zOffset * cosYaw;
-
+        //set pos and rotate based on entity
+        Vec3d posVec = new Vec3d(
+                (this.xOffset + this.xDisplacement) * parentScale,
+                (this.yOffset + this.yDisplacement) * parentScale,
+                (this.zOffset + this.zDisplacement) * parentScale
+        );
+        double yawRadians = -Math.toRadians(parentEntityLiving.renderYawOffset);
+        Quaternion quaternion = QuaternionUtils.createXYZQuaternion(0, yawRadians, 0);
+        posVec = VectorUtils.rotateVectorWithQuaternion(posVec, quaternion);
         this.setPositionAndUpdate(
-                this.getParentAsEntityLiving().posX + rotatedX,
-                this.getParentAsEntityLiving().posY + yOffset,
-                this.getParentAsEntityLiving().posZ + rotatedZ
+                this.getParentAsEntityLiving().posX + posVec.x,
+                this.getParentAsEntityLiving().posY + posVec.y,
+                this.getParentAsEntityLiving().posZ + posVec.z
         );
 
-        if (!this.getParentAsEntityLiving().isEntityAlive()) {
+        //remove if entity is dead or no longer exists
+        if (this.getParentAsEntityLiving() == null || !this.getParentAsEntityLiving().isEntityAlive()) {
             this.world.removeEntityDangerously(this);
         }
         super.onUpdate();
@@ -86,31 +106,27 @@ public class EntityHitbox extends MultiPartEntityPart {
         return false;
     }
 
-    public void resize(float scale) {
-        this.setSize(this.initWidth * this.widthScaleFromAnim * scale, this.initHeight * this.heightScaleFromAnim * scale);
+    public void resizeByAnim(float widthScaleDisplacement, float heightScaleDisplacement) {
+        this.widthScaleDisplacement = widthScaleDisplacement;
+        this.heightScaleDisplacement = heightScaleDisplacement;
     }
 
-    public void resizeByAnim(float newWidth, float newHeight) {
-        this.widthScaleFromAnim = newWidth;
-        this.heightScaleFromAnim = newHeight;
+    public void displaceByAnim(float xDisplacement, float yDisplacement, float zDisplacement) {
+        this.xDisplacement = xDisplacement;
+        this.yDisplacement = yDisplacement;
+        this.zDisplacement = zDisplacement;
     }
 
-    public void changeOffset(float xOffset, float yOffset, float zOffset) {
-        this.xOffset = xOffset;
-        this.yOffset = yOffset;
-        this.zOffset = zOffset;
+    public float getWidthScaleDisplacement() {
+        return this.widthScaleDisplacement;
     }
 
-    public float getHitboxXOffset() {
-        return this.xOffset;
+    public float getHeightScaleDisplacement() {
+        return this.heightScaleDisplacement;
     }
 
-    public float getHitboxYOffset() {
-        return this.yOffset;
-    }
-
-    public float getHitboxZOffset() {
-        return this.zOffset;
+    public Vec3d getDisplacementVec() {
+        return new Vec3d(this.xDisplacement, this.yDisplacement, this.zDisplacement);
     }
 
     //recommended instead of using the parent variable
@@ -199,24 +215,15 @@ public class EntityHitbox extends MultiPartEntityPart {
         return toReturn;
     }
 
-    static class EntityHitboxDamageDefinition {
-        public final String damageSource;
-        public final String damageType;
-        public final float damageMultiplier;
-
-        //either one of damageSource or damageType must be null
-        //damageSource is an instance of the DamageSource object (arrow, cactus, etc)
-        //damageType is one of the booleans associated with a DamageSource object (projectile, magic, etc)
-        //if damageSource or damageType both not null, damageSource will be prioritized
-        public EntityHitboxDamageDefinition(String damageSource, String damageType, float damageMultiplier) {
-            this.damageSource = damageSource;
-            this.damageType = damageType;
-            this.damageMultiplier = damageMultiplier;
-        }
-
+    //either one of damageSource or damageType must be null
+    //damageSource is an instance of the DamageSource object (arrow, cactus, etc)
+    //damageType is one of the booleans associated with a DamageSource object (projectile, magic, etc)
+    //if damageSource or damageType both not null, damageSource will be prioritized
+    public record EntityHitboxDamageDefinition(String damageSource, String damageType, float damageMultiplier) {
         @Override
+        @NotNull
         public String toString() {
-            return "[source="+this.damageSource+", type="+this.damageType+", multiplier="+this.damageMultiplier+"]";
+            return "[source=" + this.damageSource + ", type=" + this.damageType + ", multiplier=" + this.damageMultiplier + "]";
         }
     }
 }

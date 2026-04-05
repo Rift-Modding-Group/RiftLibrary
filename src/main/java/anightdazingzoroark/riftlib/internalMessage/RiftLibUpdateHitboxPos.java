@@ -61,9 +61,8 @@ public class RiftLibUpdateHitboxPos extends RiftLibMessage<RiftLibUpdateHitboxPo
     public void executeOnServer(MinecraftServer server, RiftLibUpdateHitboxPos message, EntityPlayer player, MessageContext messageContext) {
         Entity entity = player.world.getEntityByID(message.entityId);
 
-        if (entity instanceof IMultiHitboxUser) {
-            IMultiHitboxUser hitboxUser = (IMultiHitboxUser) entity;
-            hitboxUser.updateHitboxPos(message.hitboxName, message.x, message.y, message.z);
+        if (entity instanceof IMultiHitboxUser hitboxUser) {
+            hitboxUser.displaceHitboxByAnim(message.hitboxName, message.x, message.y, message.z);
         }
     }
 
@@ -71,9 +70,8 @@ public class RiftLibUpdateHitboxPos extends RiftLibMessage<RiftLibUpdateHitboxPo
     public void executeOnClient(Minecraft client, RiftLibUpdateHitboxPos message, EntityPlayer player, MessageContext messageContext) {
         Entity entity = player.world.getEntityByID(message.entityId);
 
-        if (entity instanceof IMultiHitboxUser) {
-            IMultiHitboxUser hitboxUser = (IMultiHitboxUser) entity;
-            hitboxUser.updateHitboxPos(message.hitboxName, message.x, message.y, message.z);
+        if (entity instanceof IMultiHitboxUser hitboxUser) {
+            hitboxUser.displaceHitboxByAnim(message.hitboxName, message.x, message.y, message.z);
         }
     }
 }

@@ -35,6 +35,7 @@ import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 import anightdazingzoroark.riftlib.model.provider.IAnimatableModelProvider;
 import anightdazingzoroark.riftlib.resource.RiftLibCache;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelProvider<T>
@@ -125,56 +126,58 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 			//skip when hitbox is set to not be affected by animation
 			if (!hitbox.affectedByAnim) continue;
 
+			//set point in which the packets are to be sent from
+			NetworkRegistry.TargetPoint targetPoint = new NetworkRegistry.TargetPoint(
+					multiHitboxUser.getMultiHitboxUser().dimension,
+					multiHitboxUser.getMultiHitboxUser().posX,
+					multiHitboxUser.getMultiHitboxUser().posY,
+					multiHitboxUser.getMultiHitboxUser().posZ,
+					RiftLibConfig.HITBOX_UPDATE_RANGE
+			);
+
 			//packets for hitbox updates will not be sent if their total change
 			//is too miniscule
 			//get positions
 			Vec3d modelSpacePos = animatedLocator.getModelSpacePosition();
 			float newHitboxX = (float) modelSpacePos.x / 16f;
-			float newHitboxY = (float) modelSpacePos.y / 16f - (hitbox.initHeight / 2f) - (parentBone.getScaleY() - 1) / 3;
+			float newHitboxY = (float) modelSpacePos.y / 16f - (hitbox.fixedHeight / 2f) - (parentBone.getScaleY() - 1) / 3;
 			float newHitboxZ = -(float) modelSpacePos.z / 16f;
 
 			//get magnitude of displacement
-			double dPosTotal = Math.sqrt(Math.pow(newHitboxX - hitbox.getHitboxXOffset(), 2) + Math.pow(newHitboxY - hitbox.getHitboxYOffset(), 2) + Math.pow(newHitboxZ - hitbox.getHitboxZOffset(), 2));
+			double dPosTotal = Math.sqrt(Math.pow(newHitboxX - hitbox.getDisplacementVec().x, 2) + Math.pow(newHitboxY - hitbox.getDisplacementVec().y, 2) + Math.pow(newHitboxZ - hitbox.getDisplacementVec().z, 2));
 
 			//update positions
 			if (dPosTotal > RiftLibConfig.HITBOX_DISPLACEMENT_TOLERANCE) {
-				ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibUpdateHitboxPos(
+				RiftLibUpdateHitboxPos updateHitboxPos = new RiftLibUpdateHitboxPos(
 						(Entity) entity,
 						hitboxName,
 						newHitboxX,
 						newHitboxY,
 						newHitboxZ
-				));
-				ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibUpdateHitboxPos(
-						(Entity) entity,
-						hitboxName,
-						newHitboxX,
-						newHitboxY,
-						newHitboxZ
-				));
+				);
+
+				ServerProxy.HITBOX_MESSAGE_WRAPPER.sendToAllTracking(updateHitboxPos, targetPoint);
+				ServerProxy.HITBOX_MESSAGE_WRAPPER.sendToServer(updateHitboxPos);
 			}
 
 			//get sizes
-			float newHitboxWidth = Math.max(parentBone.getScaleX(), parentBone.getScaleZ());
-			float newHitboxHeight = parentBone.getScaleY();
+			float newHitboxWidthScale = Math.max(parentBone.getScaleX(), parentBone.getScaleZ());
+			float newHitboxHeightScale = parentBone.getScaleY();
 
 			//get magnitude of resizing
-			double dSizeTotal = Math.sqrt(Math.pow(newHitboxWidth - hitbox.width, 2) + Math.pow(newHitboxHeight - hitbox.height, 2));
+			double dSizeTotal = Math.sqrt(Math.pow(newHitboxWidthScale - hitbox.getWidthScaleDisplacement(), 2) + Math.pow(newHitboxHeightScale - hitbox.getHeightScaleDisplacement(), 2));
 
 			//update sizes
 			if (dSizeTotal > RiftLibConfig.HITBOX_RESIZING_TOLERANCE) {
-				ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibUpdateHitboxSize(
+				RiftLibUpdateHitboxSize updateHitboxSize = new RiftLibUpdateHitboxSize(
 						(Entity) entity,
 						hitboxName,
 						Math.max(parentBone.getScaleX(), parentBone.getScaleZ()),
 						parentBone.getScaleY()
-				));
-				ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibUpdateHitboxSize(
-						(Entity) entity,
-						hitboxName,
-						Math.max(parentBone.getScaleX(), parentBone.getScaleZ()),
-						parentBone.getScaleY()
-				));
+				);
+
+				ServerProxy.HITBOX_MESSAGE_WRAPPER.sendToAllTracking(updateHitboxSize, targetPoint);
+				ServerProxy.HITBOX_MESSAGE_WRAPPER.sendToServer(updateHitboxSize);
 			}
 		}
 	}

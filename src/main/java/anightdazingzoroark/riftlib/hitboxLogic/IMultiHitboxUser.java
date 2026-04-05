@@ -76,7 +76,6 @@ public interface IMultiHitboxUser extends IEntityMultiPart {
         for (Entity entity : this.getMultiHitboxUser().getParts()) {
             if (entity instanceof EntityHitbox) {
                 entity.onUpdate();
-                ((EntityHitbox) entity).resize(((IAnimatable) this.getMultiHitboxUser()).scale());
             }
         }
     }
@@ -96,19 +95,21 @@ public interface IMultiHitboxUser extends IEntityMultiPart {
         return false;
     }
 
-    default void updateHitboxPos(String hitboxName, float x, float y, float z) {
+    default void displaceHitboxByAnim(String hitboxName, float x, float y, float z) {
         for (int i = 0; i < this.getMultiHitboxUser().getParts().length; i++) {
-            if (((EntityHitbox) this.getMultiHitboxUser().getParts()[i]).partName.equals(hitboxName)) {
-                EntityHitbox hitbox = (EntityHitbox) this.getMultiHitboxUser().getParts()[i];
-                hitbox.changeOffset(x, y, z);
+            if (!(this.getMultiHitboxUser().getParts()[i] instanceof EntityHitbox hitbox)) continue;
+
+            if (hitbox.partName.equals(hitboxName)) {
+                hitbox.displaceByAnim(x, y, z);
             }
         }
     }
 
-    default void updateHitboxScaleFromAnim(String hitboxName, float width, float height) {
+    default void resizeHitboxByAnim(String hitboxName, float width, float height) {
         for (int i = 0; i < this.getMultiHitboxUser().getParts().length; i++) {
-            if (((EntityHitbox) this.getMultiHitboxUser().getParts()[i]).partName.equals(hitboxName)) {
-                EntityHitbox hitbox = (EntityHitbox) this.getMultiHitboxUser().getParts()[i];
+            if (!(this.getMultiHitboxUser().getParts()[i] instanceof EntityHitbox hitbox)) continue;
+
+            if (hitbox.partName.equals(hitboxName)) {
                 hitbox.resizeByAnim(width, height);
             }
         }

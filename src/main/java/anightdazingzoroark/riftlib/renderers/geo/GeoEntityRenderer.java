@@ -64,10 +64,12 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(x, y, z);
 
-		//here, yaw rotation on the head applies to the entire entity
-		//because yes
+		//here, yaw rotation on the head applies to the entire entity when not ridden
+		//and the yaw rotation on the body when ridden because yes
 		float trueYaw = Interpolations.lerpYaw(entity.prevRotationYawHead, entity.rotationYawHead, partialTicks);
-		this.applyRotations(entity, trueYaw, partialTicks);
+		float riddenYaw = Interpolations.lerpYaw(entity.prevRotationYaw, entity.rotationYaw, partialTicks);
+		float finalYaw = entity.isBeingRidden() ? riddenYaw : trueYaw;
+		this.applyRotations(entity, finalYaw, partialTicks);
 
 		AnimationEvent predicate = new AnimationEvent(entity, partialTicks,  Collections.emptyList());
         this.modelProvider.setLivingAnimations(entity, uniqueID, predicate);

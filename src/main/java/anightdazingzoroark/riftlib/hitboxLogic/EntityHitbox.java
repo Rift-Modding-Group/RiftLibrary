@@ -58,15 +58,23 @@ public class EntityHitbox extends MultiPartEntityPart {
         float finalHeight = this.fixedHeight * parentScale * this.heightScaleDisplacement;
         this.setSize(finalWidth, finalHeight);
 
-        //set pos and rotate based on entity
+        //set initial entity offset from center
         Vec3d posVec = new Vec3d(
                 (this.xOffset + this.xDisplacement) * parentScale,
                 (this.yOffset + this.yDisplacement) * parentScale,
                 (this.zOffset + this.zDisplacement) * parentScale
         );
-        double yawRadians = -Math.toRadians(parentEntityLiving.rotationYawHead);
-        Quaternion quaternion = QuaternionUtils.createXYZQuaternion(0, yawRadians, 0);
+
+        //determine yaw
+        double normalYawRadians = -Math.toRadians(parentEntityLiving.rotationYawHead);
+        double riddenYawRadians = -Math.toRadians(parentEntityLiving.rotationYaw);
+        double finalYawRadians = parentEntityLiving.isBeingRidden() ? riddenYawRadians : normalYawRadians;
+
+        //rotate vector around yaw
+        Quaternion quaternion = QuaternionUtils.createXYZQuaternion(0, finalYawRadians, 0);
         posVec = VectorUtils.rotateVectorWithQuaternion(posVec, quaternion);
+
+        //put in world
         this.setPositionAndUpdate(
                 this.getParentAsEntityLiving().posX + posVec.x,
                 this.getParentAsEntityLiving().posY + posVec.y,

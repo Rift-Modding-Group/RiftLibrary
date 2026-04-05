@@ -2,11 +2,14 @@ package anightdazingzoroark.riftlib.ridePositionLogic;
 
 import anightdazingzoroark.riftlib.RiftLibLinkerRegistry;
 import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.util.QuaternionUtils;
+import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.Vec3d;
+import org.lwjglx.util.vector.Quaternion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,18 +25,23 @@ public interface IDynamicRideUser {
     void setRidePosition(DynamicRidePosList ridePosList);
 
     default Vec3d rotateOffset(Vec3d offset) {
-        double xOffset = offset.x * ((IAnimatable) this.getDynamicRideUser()).scale();
-        double yOffset = offset.y * ((IAnimatable) this.getDynamicRideUser()).scale();
-        double zOffset = offset.z * ((IAnimatable) this.getDynamicRideUser()).scale();
+        //determine scale of parent
+        float parentScale = this.getDynamicRideUser() instanceof IAnimatable animatable ? animatable.scale() : 1f;
 
-        double radians = Math.toRadians(this.getDynamicRideUser().rotationYaw);
-        double cos = Math.cos(radians);
-        double sin = Math.sin(radians);
+        //scale offset
+        offset = offset.scale(parentScale);
 
-        double rotatedX = xOffset * cos - zOffset * sin;
-        double rotatedZ = xOffset * sin + zOffset * cos;
+        //determine yaw
+        double normalYawRadians = -Math.toRadians(this.getDynamicRideUser().rotationYawHead);
+        double riddenYawRadians = -Math.toRadians(this.getDynamicRideUser().rotationYaw);
+        double finalYawRadians = this.getDynamicRideUser().isBeingRidden() ? riddenYawRadians : normalYawRadians;
 
-        return new Vec3d(rotatedX, yOffset, rotatedZ);
+        //rotate vector around yaw
+        Quaternion quaternion = QuaternionUtils.createXYZQuaternion(0, finalYawRadians, 0);
+        offset = VectorUtils.rotateVectorWithQuaternion(offset, quaternion);
+
+        //return
+        return offset;
     }
 
     default void updatePassenger(Entity passenger) {
@@ -55,7 +63,7 @@ public interface IDynamicRideUser {
 
             passenger.setPosition(
                     this.getDynamicRideUser().posX + this.rotateOffset(controllerPos).x,
-                    this.getDynamicRideUser().posY + this.rotateOffset(controllerPos).y + this.playerRideOffset(passenger),
+                    this.getDynamicRideUser().posY + this.rotateOffset(controllerPos).y + this.passengerOffset(passenger),
                     this.getDynamicRideUser().posZ + this.rotateOffset(controllerPos).z
             );
 
@@ -69,7 +77,7 @@ public interface IDynamicRideUser {
             for (Vec3d otherPos : otherPositions)
                 passenger.setPosition(
                         this.getDynamicRideUser().posX + this.rotateOffset(otherPos).x,
-                        this.getDynamicRideUser().posY + this.rotateOffset(otherPos).y + this.playerRideOffset(passenger),
+                        this.getDynamicRideUser().posY + this.rotateOffset(otherPos).y + this.passengerOffset(passenger),
                         this.getDynamicRideUser().posZ + this.rotateOffset(otherPos).z
                 );
         }
@@ -77,7 +85,7 @@ public interface IDynamicRideUser {
         if (this.getDynamicRideUser().isDead) passenger.dismountRidingEntity();
     }
 
-    default float playerRideOffset(Entity entity) {
+    default float passengerOffset(Entity entity) {
         if (entity instanceof EntityPlayer) return -0.6f;
         return 0f;
     }

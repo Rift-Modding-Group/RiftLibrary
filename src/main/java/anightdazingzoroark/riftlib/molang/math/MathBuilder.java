@@ -10,6 +10,8 @@ import anightdazingzoroark.riftlib.molang.math.functions.rounding.Floor;
 import anightdazingzoroark.riftlib.molang.math.functions.rounding.Round;
 import anightdazingzoroark.riftlib.molang.math.functions.rounding.Trunc;
 import anightdazingzoroark.riftlib.molang.math.functions.utility.*;
+import anightdazingzoroark.riftlib.molang.math.variable.AbstractVariable;
+import anightdazingzoroark.riftlib.molang.math.variable.StaticVariable;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -18,12 +20,12 @@ import java.util.List;
 import java.util.Map;
 
 public class MathBuilder {
-    public Map<String, Variable> variables = new HashMap<>();
-    public Map<String, Class<? extends Function>> functions = new HashMap<>();
+    public final Map<String, AbstractVariable> variables = new HashMap<>();
+    public final Map<String, Class<? extends Function>> functions = new HashMap<>();
 
     public MathBuilder() {
-        this.register(new Variable("PI", Math.PI));
-        this.register(new Variable("E", Math.E));
+        this.register(new StaticVariable("math.pi", Math.PI));
+        this.register(new StaticVariable("math.e", Math.E));
         this.functions.put("math.floor", Floor.class);
         this.functions.put("math.round", Round.class);
         this.functions.put("math.ceil", Ceil.class);
@@ -52,7 +54,7 @@ public class MathBuilder {
         this.functions.put("math.random_integer", RandomInteger.class);
     }
 
-    public void register(Variable variable) {
+    public void register(AbstractVariable variable) {
         this.variables.put(variable.getName(), variable);
     }
 
@@ -314,7 +316,7 @@ public class MathBuilder {
             if (this.isVariable(symbol)) {
                 if (symbol.startsWith("-")) {
                     symbol = symbol.substring(1);
-                    Variable value = this.getVariable(symbol);
+                    AbstractVariable value = this.getVariable(symbol);
                     if (value != null) return new Negative(value);
                 }
                 else {
@@ -330,7 +332,7 @@ public class MathBuilder {
         throw new Exception("Given object couldn't be converted to value! " + object);
     }
 
-    protected Variable getVariable(String name) {
+    protected AbstractVariable getVariable(String name) {
         return this.variables.get(name);
     }
 

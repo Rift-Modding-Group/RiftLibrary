@@ -1,10 +1,12 @@
-package anightdazingzoroark.riftlib.molang.math;
+package anightdazingzoroark.riftlib.molang.math.variable;
 
-public class Variable implements IValue {
+import anightdazingzoroark.riftlib.molang.math.IValue;
+
+public abstract class AbstractVariable implements IValue {
     private final String name;
     private double value;
 
-    public Variable(String name, double value) {
+    public AbstractVariable(String name, double value) {
         this.name = name;
         this.value = value;
     }

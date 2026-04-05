@@ -1,17 +1,13 @@
 package anightdazingzoroark.riftlib.particle;
 
-import anightdazingzoroark.riftlib.core.util.MathUtil;
 import anightdazingzoroark.riftlib.exceptions.ParticleException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.molang.math.IValue;
-import anightdazingzoroark.riftlib.molang.math.Variable;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleAppearance.AppearanceBillboardComponent;
 import anightdazingzoroark.riftlib.util.MutableAxisAlignedBB;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.AxisAlignedBB;

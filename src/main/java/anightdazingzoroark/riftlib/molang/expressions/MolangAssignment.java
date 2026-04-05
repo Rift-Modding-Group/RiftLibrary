@@ -1,14 +1,14 @@
 package anightdazingzoroark.riftlib.molang.expressions;
 
 import anightdazingzoroark.riftlib.molang.math.IValue;
-import anightdazingzoroark.riftlib.molang.math.Variable;
+import anightdazingzoroark.riftlib.molang.math.variable.AbstractVariable;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 
 public class MolangAssignment extends MolangExpression {
-    public Variable variable;
+    public AbstractVariable variable;
     public IValue expression;
 
-    public MolangAssignment(MolangParser context, Variable variable, IValue expression) {
+    public MolangAssignment(MolangParser context, AbstractVariable variable, IValue expression) {
         super(context);
         this.variable = variable;
         this.expression = expression;

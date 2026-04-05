@@ -51,6 +51,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable, IMultiH
         this.updateParts();
     }
 
+    @Override
     protected void initEntityAI() {
         this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<>(this, EntityCow.class, true));
 

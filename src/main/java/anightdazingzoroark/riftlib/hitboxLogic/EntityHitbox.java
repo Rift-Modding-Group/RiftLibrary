@@ -64,7 +64,7 @@ public class EntityHitbox extends MultiPartEntityPart {
                 (this.yOffset + this.yDisplacement) * parentScale,
                 (this.zOffset + this.zDisplacement) * parentScale
         );
-        double yawRadians = -Math.toRadians(parentEntityLiving.renderYawOffset);
+        double yawRadians = -Math.toRadians(parentEntityLiving.rotationYawHead);
         Quaternion quaternion = QuaternionUtils.createXYZQuaternion(0, yawRadians, 0);
         posVec = VectorUtils.rotateVectorWithQuaternion(posVec, quaternion);
         this.setPositionAndUpdate(

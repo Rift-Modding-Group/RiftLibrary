@@ -40,9 +40,7 @@ public abstract class GeoLayerRenderer<T extends EntityLivingBase & IAnimatable>
 	}
 
 	@Override
-	public void doRenderLayer(T entityIn, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks,
-			float netHeadYaw, float headPitch, float scaleIn) {
-	}
+	public void doRenderLayer(T entityIn, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scaleIn) {}
 
 	public IGeoRenderer<T> getRenderer() {
 		return this.entityRenderer;

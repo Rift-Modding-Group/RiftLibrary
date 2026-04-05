@@ -79,11 +79,14 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		Minecraft.getMinecraft().renderEngine.bindTexture(getEntityTexture(entity));
 		Color renderColor = this.getRenderColor(entity, partialTicks);
 
+		boolean flag = this.setDoRenderBrightness(entity, partialTicks);
+
 		if (!entity.isInvisibleToPlayer(Minecraft.getMinecraft().player)) {
 			this.render(model, entity, partialTicks,
 					(float) renderColor.getRed() / 255f,
-					(float) renderColor.getBlue() / 255f, (float) renderColor.getGreen() / 255f,
-					(float) renderColor.getAlpha() / 255
+					(float) renderColor.getGreen() / 255f,
+					(float) renderColor.getBlue() / 255f,
+					(float) renderColor.getAlpha() / 255f
 			);
 		}
 
@@ -99,7 +102,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 			}
 		}
 
-		if (this.setDoRenderBrightness(entity, partialTicks)) RenderHurtColor.unset();
+		if (flag) RenderHurtColor.unset();
 
 		GlStateManager.popMatrix();
 		GlStateManager.popMatrix();
@@ -121,7 +124,8 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		//rotate pitch while dying
 		if (entityLiving.deathTime > 0) {
 			float f = ((float) entityLiving.deathTime + partialTicks - 1f) / 20f * 1.6f;
-			f = Math.max(MathHelper.sqrt(f), 1f);
+			f = MathHelper.sqrt(f);
+			if (f > 1f) f = 1f;
 			GlStateManager.rotate(f * this.getDeathMaxRotation(entityLiving), 0, 0, 1);
 		}
 		//dinnerbone and grumm easter eggs
@@ -144,7 +148,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 	}
 
 	protected float getDeathMaxRotation(T entityLivingBaseIn) {
-		return 90.0F;
+		return 90f;
 	}
 
 	@Override

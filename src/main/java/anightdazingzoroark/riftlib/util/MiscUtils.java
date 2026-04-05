@@ -6,7 +6,7 @@ import net.minecraft.entity.Entity;
 
 public class MiscUtils {
     //better than using the motion variables :tm:
-    public static double getEntitySpeed(Entity entity) {
+    public static double getEntityHorizontalSpeed(Entity entity) {
         float partialTicks = Minecraft.getMinecraft().getRenderPartialTicks();
 
         //query.modified_distance_moved is to be modifiable based on entity speed
@@ -18,5 +18,11 @@ public class MiscUtils {
         double dz = currentPosZ - entity.prevPosZ;
 
         return Math.sqrt(dx * dx + dz * dz);
+    }
+
+    public static double getEntityVerticalSpeed(Entity entity) {
+        float partialTicks = Minecraft.getMinecraft().getRenderPartialTicks();
+        double currentPosY = Interpolations.lerp(entity.prevPosY, entity.posY, partialTicks);
+        return currentPosY - entity.prevPosY;
     }
 }

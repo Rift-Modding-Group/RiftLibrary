@@ -44,7 +44,7 @@ public class AnimationEvent<T extends IAnimatable> {
 		//a projectile not on the ground is usually on the move, whether its from gravity or from following
 		//a trajectory
 		if (this.animatable instanceof RiftLibProjectile projectile) return !projectile.onGround;
-		else if (this.animatable instanceof Entity entity) return MiscUtils.getEntitySpeed(entity) > 0;
+		else if (this.animatable instanceof Entity entity) return MiscUtils.getEntityHorizontalSpeed(entity) > 0;
 		return false;
 	}
 

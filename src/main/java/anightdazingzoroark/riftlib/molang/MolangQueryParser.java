@@ -34,7 +34,7 @@ public class MolangQueryParser {
         //-----ianimatable queries-----
         this.animatableQueryMap.put("query.modified_distance_moved", (iAnimatable, parser) -> {
             if (!(iAnimatable instanceof Entity entity)) return 0D;
-            double speed = MiscUtils.getEntitySpeed(entity);
+            double speed = MiscUtils.getEntityHorizontalSpeed(entity);
 
             //the reason why modified_distance_moved is calculated as such is because
             //getEntitySpeed returns the speed of an entity within the tick, which is
@@ -108,7 +108,11 @@ public class MolangQueryParser {
         });
         this.animatableQueryMap.put("query.ground_speed", (iAnimatable, parser) -> {
             if (!(iAnimatable instanceof Entity entity)) return 0D;
-            return MiscUtils.getEntitySpeed(entity);
+            return MiscUtils.getEntityHorizontalSpeed(entity);
+        });
+        this.animatableQueryMap.put("query.vertical_speed", (iAnimatable, parser) -> {
+            if (!(iAnimatable instanceof Entity entity)) return 0D;
+            return MiscUtils.getEntityVerticalSpeed(entity);
         });
         this.animatableQueryMap.put("query.yaw_speed", (iAnimatable, parser) -> {
             if (!(iAnimatable instanceof EntityLivingBase entity)) return 0D;

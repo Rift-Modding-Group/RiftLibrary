@@ -57,8 +57,7 @@ public abstract class GeoReplacedEntityRenderer<T extends IAnimatable> extends R
 		this.animatable = animatable;
 	}
 
-	public static void registerReplacedEntity(Class<? extends IAnimatable> itemClass,
-			GeoReplacedEntityRenderer renderer) {
+	public static void registerReplacedEntity(Class<? extends IAnimatable> itemClass, GeoReplacedEntityRenderer renderer) {
 		renderers.put(itemClass, renderer);
 	}
 
@@ -133,8 +132,7 @@ public abstract class GeoReplacedEntityRenderer<T extends IAnimatable> extends R
 		entityModelData.headPitch = -headPitch;
 		entityModelData.netHeadYaw = -netHeadYaw;
 
-		AnimationEvent predicate = new AnimationEvent(animatable, limbSwing, limbSwingAmount, partialTicks,
-				!(limbSwingAmount > -0.15F && limbSwingAmount < 0.15F), Collections.singletonList(entityModelData));
+		AnimationEvent predicate = new AnimationEvent(animatable, partialTicks, Collections.singletonList(entityModelData));
         this.modelProvider.setLivingAnimations(this.animatable, uniqueID, predicate);
 		this.modelProvider.createAndUpdateAnimatedLocators(this.animatable, uniqueID);
 

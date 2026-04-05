@@ -57,10 +57,7 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile & IAnimatable> ex
 		}
 
 		EntityModelData entityModelData = new EntityModelData();
-		//a projectile not on the ground is usually on the move, whether its from gravity or from following
-		//a trajectory
-		AnimationEvent<T> predicate = new AnimationEvent<T>(entity, 0, 0, partialTicks,
-				!entity.onGround, Collections.singletonList(entityModelData));
+		AnimationEvent<T> predicate = new AnimationEvent<T>(entity, partialTicks, Collections.singletonList(entityModelData));
 
         this.modelProvider.setLivingAnimations(entity, uniqueID, predicate);
 		this.modelProvider.createAndUpdateAnimatedLocators(entity, uniqueID);

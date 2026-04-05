@@ -16,6 +16,7 @@ import anightdazingzoroark.riftlib.hitboxLogic.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.jsonParsing.RiftLibLoader;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 
+import anightdazingzoroark.riftlib.molang.MolangQueryParser;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import net.minecraft.client.resources.AbstractResourcePack;
 import net.minecraft.client.resources.FileResourcePack;
@@ -37,6 +38,7 @@ public class RiftLibCache implements IResourceManagerReloadListener {
     private final RiftLibLoader loader;
 
 	public final MolangParser parser = new MolangParser();
+	public final MolangQueryParser queryParser = new MolangQueryParser();
 
 	public HashMap<ResourceLocation, AnimationFile> getAnimations() {
 		if (!RiftLib.isInitialized()) {

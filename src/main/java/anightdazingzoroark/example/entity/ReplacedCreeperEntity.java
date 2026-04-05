@@ -15,13 +15,17 @@ public class ReplacedCreeperEntity implements IAnimatable {
 	@Override
 	public void registerControllers(AnimationData data) {
 		data.addAnimationController(
-				new AnimationController<ReplacedCreeperEntity>(this, "controller", 20, this::predicate));
+				new AnimationController<ReplacedCreeperEntity>(this, "controller", 20, this::predicate)
+		);
 	}
 
 	private <P extends IAnimatable> PlayState predicate(AnimationEvent<P> event) {
-		if (!(event.getLimbSwingAmount() > -0.15F && event.getLimbSwingAmount() < 0.15F)) {
+		if (event.isMoving()) {
+			System.out.println("moving");
 			event.getController().setAnimation(new AnimationBuilder().addAnimation("creeper_walk", LoopType.LOOP));
-		} else {
+		}
+		else {
+			System.out.println("not moving");
 			event.getController().setAnimation(new AnimationBuilder().addAnimation("creeper_idle", LoopType.LOOP));
 		}
 		return PlayState.CONTINUE;

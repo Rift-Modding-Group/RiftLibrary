@@ -44,7 +44,7 @@ public abstract class AnimatedTickingGeoModel<T extends IAnimatable & IAnimation
 
 		AnimationEvent<T> predicate;
 		if (customPredicate == null) {
-			predicate = new AnimationEvent<T>(entity, 0, 0, 0, false, Collections.emptyList());
+			predicate = new AnimationEvent<T>(entity, 0, Collections.emptyList());
 		}
 		else predicate = customPredicate;
 

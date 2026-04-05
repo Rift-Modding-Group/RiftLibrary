@@ -64,7 +64,7 @@ public class AnimationProcessor<T extends IAnimatable> {
 			controller.isJustStarting = manager.isFirstTick;
 			event.setController(controller);
 
-			controller.process(seekTime, event, this.modelRendererList, boneSnapshots, parser, manager.dataScope, crashWhenCantFindBone);
+			controller.process(manager, seekTime, event, this.modelRendererList, boneSnapshots, parser, manager.dataScope, crashWhenCantFindBone);
 
 			for (BoneAnimationQueue boneAnimation : controller.getBoneAnimationQueues().values()) {
 				IBone bone = boneAnimation.bone;
@@ -112,7 +112,7 @@ public class AnimationProcessor<T extends IAnimatable> {
             //animation effects
             EventKeyFrame.ParticleEventKeyFrame lastParticleEvent = controller.getLastParticleEvent();
             if (lastParticleEvent != null) {
-                AnimatedLocator locator = entity.getFactory().getOrCreateAnimationData(uniqueID).getAnimatedLocator(lastParticleEvent.locator);
+                AnimatedLocator locator = manager.getAnimatedLocator(lastParticleEvent.locator);
                 if (locator != null) {
                     ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(lastParticleEvent.effect);
                     if (particleBuilder != null) locator.createParticleEmitter(particleBuilder);
@@ -122,14 +122,14 @@ public class AnimationProcessor<T extends IAnimatable> {
             //sound effects
             EventKeyFrame.SoundEventKeyFrame lastSoundEvent = controller.getLastSoundEvent();
             if (lastSoundEvent != null) {
-                AnimatedLocator locator = entity.getFactory().getOrCreateAnimationData(uniqueID).getAnimatedLocator(lastSoundEvent.locator);
+                AnimatedLocator locator = manager.getAnimatedLocator(lastSoundEvent.locator);
                 if (locator != null) RiftLibSoundHelper.playSound(entity, locator, lastSoundEvent.effect);
             }
 
 			//custom instructions
 			EventKeyFrame.CustomInstructionKeyFrame customInstructionEvent = controller.getCustomInstructionEvent();
 			if (customInstructionEvent != null) {
-				MolangScope scope = entity.getFactory().getOrCreateAnimationData(uniqueID).dataScope;
+				MolangScope scope = manager.dataScope;
 				parser.withScope(scope, () -> {
 					try {
 						parser.parseExpression(customInstructionEvent.expression).get();

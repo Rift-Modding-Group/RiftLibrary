@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.easing.EasingManager;
 import anightdazingzoroark.riftlib.core.keyframe.*;
-import anightdazingzoroark.riftlib.molang.MolangQueryValue;
+import anightdazingzoroark.riftlib.core.manager.AnimationData;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -280,20 +280,16 @@ public class AnimationController<T extends IAnimatable> {
 	 * @param modelRendererList      The list of all AnimatedModelRender's
 	 * @param boneSnapshotCollection The bone snapshot collection
 	 */
-	public void process(double tick, AnimationEvent<T> event, List<IBone> modelRendererList,
+	public void process(AnimationData data, double tick, AnimationEvent<T> event, List<IBone> modelRendererList,
 						HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection, MolangParser parser, MolangScope scope,
 						boolean crashWhenCantFindBone) {
-		double tickWithinScope = tick;
-
 		//set delta time
-		double deltaTime = this.lastFrameTick >= 0 ? tickWithinScope - this.lastFrameTick : 0;
-		this.lastFrameTick = tickWithinScope;
+		double deltaTime = this.lastFrameTick >= 0 ? tick - this.lastFrameTick : 0;
+		this.lastFrameTick = tick;
 
 		//set molang variables
-		parser.withScope(scope, () -> {
-			MolangQueryValue.setLifeTime(parser, tickWithinScope / 20D);
-			MolangQueryValue.setDeltaTime(parser, deltaTime / 20D);
-		});
+		data.lifeTime = tick / 20D;
+		data.deltaTime = deltaTime / 20D;
 		if (this.currentAnimation != null) {
 			IAnimatableModel<T> model = getModel(this.animatable);
 			if (model != null) {
@@ -355,7 +351,7 @@ public class AnimationController<T extends IAnimatable> {
 				this.saveSnapshotsForAnimation(this.currentAnimation, boneSnapshotCollection);
 			}
 			if (this.currentAnimation != null) {
-				this.setAnimTime(parser, scope, 0);
+				this.setAnimTime(data, 0);
 				for (BoneAnimation boneAnimation : this.currentAnimation.boneAnimations) {
 					BoneAnimationQueue boneAnimationQueue = this.boneAnimationQueues.get(boneAnimation.boneName);
 					BoneSnapshot boneSnapshot = this.boneSnapshots.get(boneAnimation.boneName);
@@ -422,12 +418,12 @@ public class AnimationController<T extends IAnimatable> {
 		}
 		else if (this.getAnimationState() == AnimationState.Running) {
 			// Actually run the animation
-			this.processCurrentAnimation(tick, actualTick, parser, scope, crashWhenCantFindBone);
+			this.processCurrentAnimation(data, tick, actualTick, parser, scope, crashWhenCantFindBone);
 		}
 	}
 
-	private void setAnimTime(MolangParser parser, MolangScope scope, double tick) {
-		parser.withScope(scope, () -> MolangQueryValue.setAnimTime(parser, tick / 20D));
+	private void setAnimTime(AnimationData data, double tick) {
+		data.animTime = tick / 20D;
 	}
 
 	private IAnimatableModel<T> getModel(T animatable) {
@@ -458,7 +454,7 @@ public class AnimationController<T extends IAnimatable> {
 		}
 	}
 
-	private void processCurrentAnimation(double tick, double actualTick, MolangParser parser, MolangScope scope, boolean crashWhenCantFindBone) {
+	private void processCurrentAnimation(AnimationData data, double tick, double actualTick, MolangParser parser, MolangScope scope, boolean crashWhenCantFindBone) {
 		assert currentAnimation != null;
 		double resolvedTick = this.resolveAnimTick(tick, parser, scope);
 
@@ -514,7 +510,7 @@ public class AnimationController<T extends IAnimatable> {
 				}
 			}
 		}
-		this.setAnimTime(parser, scope, resolvedTick);
+		this.setAnimTime(data, resolvedTick);
 
 		//Loop through every boneanimation in the current animation and process the values
 		List<BoneAnimation> boneAnimations = currentAnimation.boneAnimations;

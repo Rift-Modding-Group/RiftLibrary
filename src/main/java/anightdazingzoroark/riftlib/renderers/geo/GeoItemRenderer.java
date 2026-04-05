@@ -58,8 +58,10 @@ public abstract class GeoItemRenderer<T extends Item & IAnimatable> extends Tile
 
 		GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(animatable));
         Integer uniqueID = this.getUniqueID(animatable);
-		AnimationEvent itemEvent = new AnimationEvent(animatable, 0, 0,
-				Minecraft.getMinecraft().getRenderPartialTicks(), false, Collections.singletonList(itemStack));
+		AnimationEvent itemEvent = new AnimationEvent(
+				animatable, Minecraft.getMinecraft().getRenderPartialTicks(),
+				Collections.singletonList(itemStack)
+		);
 		this.modelProvider.setLivingAnimations(animatable, uniqueID, itemEvent);
 		if (transformType != ItemCameraTransforms.TransformType.GUI) this.modelProvider.createAndUpdateAnimatedLocators(animatable, uniqueID);
 		GlStateManager.pushMatrix();

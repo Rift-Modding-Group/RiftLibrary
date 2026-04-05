@@ -16,7 +16,7 @@ import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.molang.MolangParser;
-import anightdazingzoroark.riftlib.molang.MolangQueryValue;
+import anightdazingzoroark.riftlib.molang.MolangQueryParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.resource.RiftLibCache;
 import org.apache.commons.lang3.tuple.Pair;
@@ -31,7 +31,8 @@ public class AnimationData {
     private final List<AnimatedLocator> animatedLocators = new ArrayList<>();
 	private int animatedLocatorTicker;
 	private final MolangParser parser = RiftLibCache.getInstance().parser;
-    private final IAnimatable iAnimatable;
+    private final MolangQueryParser queryParser = RiftLibCache.getInstance().queryParser;
+	public final IAnimatable iAnimatable;
     public final MolangScope dataScope = new MolangScope();
     private GeoModel currentModel;
 	public double tick;
@@ -40,6 +41,11 @@ public class AnimationData {
 	public Double startTick;
 	public Object ticker;
 	public boolean shouldPlayWhilePaused = false;
+
+	//values meant for molang queries
+	public double animTime;
+	public double deltaTime;
+	public double lifeTime;
 
 	/**
 	 * Instantiates a new Animation controller collection.
@@ -182,17 +188,6 @@ public class AnimationData {
 	}
 
 	public void updateMolangQueries() {
-		this.parser.withScope(this.dataScope, () -> {
-			//generic molang queries
-			MolangQueryValue.updateMolangQueryValues(this.parser, this.iAnimatable);
-
-			//special molang queries
-			MolangQueryValue.setModifiedDistanceMoved(this.parser, this.iAnimatable);
-		});
+		this.queryParser.updateQueries(this, this.parser, this.dataScope);
 	}
-
-	/**
-	 * Only relevant if the data is for an entity. This is for updating speed related values
-	 */
-	public void updateAnimatableEntitySpeed() {}
 }

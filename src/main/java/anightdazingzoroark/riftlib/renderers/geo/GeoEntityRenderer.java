@@ -122,8 +122,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		entityModelData.headPitch = -headPitch;
 		entityModelData.netHeadYaw = -netHeadYaw;
 
-		AnimationEvent predicate = new AnimationEvent(entity, limbSwing, limbSwingAmount, partialTicks,
-				!(limbSwingAmount > -0.15F && limbSwingAmount < 0.15F), Collections.singletonList(entityModelData));
+		AnimationEvent predicate = new AnimationEvent(entity, partialTicks, Collections.singletonList(entityModelData));
         this.modelProvider.setLivingAnimations(entity, uniqueID, predicate);
 		this.modelProvider.createAndUpdateAnimatedLocators(entity, uniqueID);
 

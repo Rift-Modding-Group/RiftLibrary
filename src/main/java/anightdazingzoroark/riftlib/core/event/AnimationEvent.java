@@ -5,24 +5,20 @@ import java.util.stream.Collectors;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
+import anightdazingzoroark.riftlib.projectile.RiftLibProjectile;
+import anightdazingzoroark.riftlib.util.MiscUtils;
+import net.minecraft.entity.Entity;
 
 public class AnimationEvent<T extends IAnimatable> {
 	private final T animatable;
 	public double animationTick;
-	private final float limbSwing;
-	private final float limbSwingAmount;
 	private final float partialTick;
-	private final boolean isMoving;
 	private final List<Object> extraData;
 	protected AnimationController controller;
 
-	public AnimationEvent(T animatable, float limbSwing, float limbSwingAmount, float partialTick, boolean isMoving,
-			List<Object> extraData) {
+	public AnimationEvent(T animatable, float partialTick, List<Object> extraData) {
 		this.animatable = animatable;
-		this.limbSwing = limbSwing;
-		this.limbSwingAmount = limbSwingAmount;
 		this.partialTick = partialTick;
-		this.isMoving = isMoving;
 		this.extraData = extraData;
 	}
 
@@ -33,27 +29,23 @@ public class AnimationEvent<T extends IAnimatable> {
 	 * @return the animation tick
 	 */
 	public double getAnimationTick() {
-		return animationTick;
+		return this.animationTick;
 	}
 
 	public T getAnimatable() {
-		return animatable;
-	}
-
-	public float getLimbSwing() {
-		return limbSwing;
-	}
-
-	public float getLimbSwingAmount() {
-		return limbSwingAmount;
+		return this.animatable;
 	}
 
 	public float getPartialTick() {
-		return partialTick;
+		return this.partialTick;
 	}
 
 	public boolean isMoving() {
-		return isMoving;
+		//a projectile not on the ground is usually on the move, whether its from gravity or from following
+		//a trajectory
+		if (this.animatable instanceof RiftLibProjectile projectile) return !projectile.onGround;
+		else if (this.animatable instanceof Entity entity) return MiscUtils.getEntitySpeed(entity) > 0;
+		return false;
 	}
 
 	public AnimationController getController() {

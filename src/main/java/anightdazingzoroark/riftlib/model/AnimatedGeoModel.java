@@ -73,7 +73,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 
 		AnimationEvent<T> predicate;
 		if (customPredicate == null) {
-			predicate = new AnimationEvent<T>(entity, 0, 0, (float) (manager.tick - this.lastGameTickTime), false, Collections.emptyList());
+			predicate = new AnimationEvent<T>(entity, (float) (manager.tick - this.lastGameTickTime), Collections.emptyList());
 		}
         else predicate = customPredicate;
 

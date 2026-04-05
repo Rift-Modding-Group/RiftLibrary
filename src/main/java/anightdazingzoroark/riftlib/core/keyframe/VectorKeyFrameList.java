@@ -48,9 +48,6 @@ public class VectorKeyFrameList {
         KeyFrame.KeyFrameAxisValue startValueUnparsed = currentFrame.getStartValue().getValueFromAxis(axis);
         KeyFrame.KeyFrameAxisValue endValueUnparsed = currentFrame.getEndValue().getValueFromAxis(axis);
 
-        double startValue = 0;
-        double endValue = 0;
-
         AtomicReference<Double> atomicStartValue = new AtomicReference<>(0D);
         AtomicReference<Double> atomicEndValue = new AtomicReference<>(0D);
 
@@ -69,8 +66,8 @@ public class VectorKeyFrameList {
             }
         });
 
-        startValue = atomicStartValue.get();
-        endValue = atomicEndValue.get();
+        double startValue = atomicStartValue.get();
+        double endValue = atomicEndValue.get();
 
         if (this.isRotation) {
             if (currentFrame.getStartValue().getValueFromAxis(axis).isExpression()) {
@@ -103,6 +100,6 @@ public class VectorKeyFrameList {
                 return new KeyFrameLocation(frame, tickToTest);
             }
         }
-        return new KeyFrameLocation(this.keyFrames.get(this.keyFrames.size() - 1), tick);
+        return new KeyFrameLocation(this.keyFrames.getLast(), tick);
     }
 }

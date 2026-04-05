@@ -7,7 +7,6 @@ import anightdazingzoroark.riftlib.internalMessage.*;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
 import anightdazingzoroark.riftlib.message.RiftLibMessageSide;
 import anightdazingzoroark.riftlib.message.RiftLibMessageWrapper;
-import anightdazingzoroark.riftlib.molang.MolangQueryValue;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleComponentRegistry;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
@@ -23,9 +22,6 @@ public class ServerProxy {
     public void preInit(FMLPreInitializationEvent e) {
         //register particle component registry
         RiftLibParticleComponentRegistry.initializeMap();
-
-        //register molang query values
-        MolangQueryValue.registerMolangQueries();
 
         //register internal messages
         MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID);

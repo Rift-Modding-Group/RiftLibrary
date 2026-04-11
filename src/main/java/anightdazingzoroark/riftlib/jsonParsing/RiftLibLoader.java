@@ -2,7 +2,7 @@ package anightdazingzoroark.riftlib.jsonParsing;
 
 import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.animation.AnimationFile;
-import anightdazingzoroark.riftlib.hitboxLogic.HitboxDefinitionList;
+import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.exceptions.GeoModelException;
 import anightdazingzoroark.riftlib.jsonParsing.constructor.AnimationConstructor;
 import anightdazingzoroark.riftlib.jsonParsing.constructor.HitboxConstructor;

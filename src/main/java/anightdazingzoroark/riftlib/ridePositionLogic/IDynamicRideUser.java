@@ -20,16 +20,17 @@ public interface IDynamicRideUser {
     //so its return statement in the entity implementing this should be "return this;"
     EntityLiving getDynamicRideUser();
 
+    default float dynamicRiderUserScale() {
+        return 1f;
+    }
+
     DynamicRidePosList ridePosList();
 
     void setRidePosition(DynamicRidePosList ridePosList);
 
     default Vec3d rotateOffset(Vec3d offset) {
-        //determine scale of parent
-        float parentScale = this.getDynamicRideUser() instanceof IAnimatable animatable ? animatable.scale() : 1f;
-
         //scale offset
-        offset = offset.scale(parentScale);
+        offset = offset.scale(this.dynamicRiderUserScale());
 
         //determine yaw
         double normalYawRadians = -Math.toRadians(this.getDynamicRideUser().rotationYawHead);

@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.hitboxLogic;
+package anightdazingzoroark.riftlib.hitbox;
 
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;

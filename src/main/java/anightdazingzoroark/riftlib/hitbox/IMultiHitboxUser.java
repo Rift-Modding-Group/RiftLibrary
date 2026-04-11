@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.hitboxLogic;
+package anightdazingzoroark.riftlib.hitbox;
 
 import anightdazingzoroark.riftlib.RiftLibLinkerRegistry;
 import anightdazingzoroark.riftlib.core.IAnimatable;
@@ -12,6 +12,10 @@ public interface IMultiHitboxUser extends IEntityMultiPart {
     //must always return the entity its being implemented in
     //so its return statement in the entity implementing this should be "return this;"
     Entity getMultiHitboxUser();
+
+    default float multiHitboxUserScale() {
+        return 1f;
+    }
 
     //this must be placed in the constructor of the entity
     //and must be the entity itself being entered
@@ -66,18 +70,6 @@ public interface IMultiHitboxUser extends IEntityMultiPart {
             if (hitbox.partName.equals(name)) return hitbox;
         }
         return null;
-    }
-
-    //this is to be placed in a method like onUpdate() or onLivingUpdate()
-    //to update all hitboxes every tick
-    default void updateParts() {
-        if (this.getMultiHitboxUser() == null) return;
-        if (this.getMultiHitboxUser().getParts() == null) return;
-        for (Entity entity : this.getMultiHitboxUser().getParts()) {
-            if (entity instanceof EntityHitbox) {
-                entity.onUpdate();
-            }
-        }
     }
 
     //this is for dealing with damage multipliers from attacking at different parts

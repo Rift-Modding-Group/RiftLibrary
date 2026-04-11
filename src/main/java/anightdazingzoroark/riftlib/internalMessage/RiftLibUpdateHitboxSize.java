@@ -1,18 +1,13 @@
 package anightdazingzoroark.riftlib.internalMessage;
 
-import anightdazingzoroark.riftlib.hitboxLogic.IMultiHitboxUser;
+import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
-import anightdazingzoroark.riftlib.message.RiftLibMessageSide;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
 
 public class RiftLibUpdateHitboxSize extends RiftLibMessage<RiftLibUpdateHitboxSize> {
     private int entityId;

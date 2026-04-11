@@ -8,7 +8,7 @@ import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.manager.AnimationData;
 import anightdazingzoroark.riftlib.core.manager.AnimationFactory;
-import anightdazingzoroark.riftlib.hitboxLogic.IMultiHitboxUser;
+import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityFlying;
 import net.minecraft.network.datasync.DataParameter;
@@ -37,7 +37,6 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable,
     @Override
     public void onLivingUpdate() {
         super.onLivingUpdate();
-        this.updateParts();
 
         if (!this.world.isRemote) {
             if (this.canReset()) {
@@ -72,6 +71,11 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable,
     }
 
     @Override
+    public float multiHitboxUserScale() {
+        return 2f;
+    }
+
+    @Override
     public Entity[] getParts() {
         return this.hitboxes;
     }
@@ -86,12 +90,6 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable,
         return this.world;
     }
     //hitbox stuff ends here
-
-
-    @Override
-    public float scale() {
-        return 2f;
-    }
 
     @Override
     public void registerControllers(AnimationData data) {

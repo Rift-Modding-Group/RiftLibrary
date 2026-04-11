@@ -9,4 +9,9 @@ public class DragonRenderer extends GeoEntityRenderer<DragonEntity> {
     public DragonRenderer(RenderManager renderManager) {
         super(renderManager, new DragonModel());
     }
+
+    @Override
+    protected float entityScale() {
+        return 3f;
+    }
 }

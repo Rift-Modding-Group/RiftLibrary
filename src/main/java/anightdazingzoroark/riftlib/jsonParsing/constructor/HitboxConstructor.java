@@ -1,6 +1,6 @@
 package anightdazingzoroark.riftlib.jsonParsing.constructor;
 
-import anightdazingzoroark.riftlib.hitboxLogic.HitboxDefinitionList;
+import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.jsonParsing.raw.hitbox.RawHitboxDefinition;
 import anightdazingzoroark.riftlib.util.HitboxUtils;
 

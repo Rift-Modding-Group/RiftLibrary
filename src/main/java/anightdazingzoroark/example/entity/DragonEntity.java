@@ -9,7 +9,7 @@ import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.manager.AnimationData;
 import anightdazingzoroark.riftlib.core.manager.AnimationFactory;
-import anightdazingzoroark.riftlib.hitboxLogic.IMultiHitboxUser;
+import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosList;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
 import net.minecraft.entity.*;
@@ -21,11 +21,9 @@ import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 public class DragonEntity extends EntityCreature implements IAnimatable, IMultiHitboxUser, IDynamicRideUser {
     private static final DataParameter<Boolean> ATTACKING = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
@@ -37,18 +35,13 @@ public class DragonEntity extends EntityCreature implements IAnimatable, IMultiH
         super(worldIn);
         this.setSize(4f, 4f);
         this.initializeHitboxes(this);
+        this.enablePersistence();
     }
 
     @Override
     protected void entityInit() {
         super.entityInit();
         this.dataManager.register(ATTACKING, false);
-    }
-
-    @Override
-    public void onLivingUpdate() {
-        super.onLivingUpdate();
-        this.updateParts();
     }
 
     @Override
@@ -86,6 +79,11 @@ public class DragonEntity extends EntityCreature implements IAnimatable, IMultiH
     }
 
     @Override
+    public float multiHitboxUserScale() {
+        return 3f;
+    }
+
+    @Override
     public Entity[] getParts() {
         return this.hitboxes;
     }
@@ -102,14 +100,22 @@ public class DragonEntity extends EntityCreature implements IAnimatable, IMultiH
     //hitbox stuff ends here
 
     //ride pos stuff starts here
+    @Override
     public DynamicRidePosList ridePosList() {
         return this.ridePositions;
     }
 
+    @Override
+    public float dynamicRiderUserScale() {
+        return 3f;
+    }
+
+    @Override
     public void setRidePosition(DynamicRidePosList dynamicRidePosList) {
         this.ridePositions = dynamicRidePosList;
     }
 
+    @Override
     public void updatePassenger(Entity passenger) {
         IDynamicRideUser.super.updatePassenger(passenger);
     }
@@ -162,10 +168,6 @@ public class DragonEntity extends EntityCreature implements IAnimatable, IMultiH
         }
     }
     //ride management stuff ends here
-
-    public float scale() {
-        return 3f;
-    }
 
     public boolean isAttacking() {
         return this.dataManager.get(ATTACKING);

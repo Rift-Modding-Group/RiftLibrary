@@ -1,6 +1,6 @@
 package anightdazingzoroark.riftlib;
 
-import anightdazingzoroark.riftlib.hitboxLogic.EntityHitboxLinker;
+import anightdazingzoroark.riftlib.hitbox.EntityHitboxLinker;
 import com.google.common.collect.Maps;
 import net.minecraft.entity.EntityLiving;
 

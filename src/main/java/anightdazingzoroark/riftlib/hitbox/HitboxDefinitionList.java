@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.hitboxLogic;
+package anightdazingzoroark.riftlib.hitbox;
 
 import net.minecraft.util.math.Vec3d;
 

@@ -63,7 +63,7 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile & IAnimatable> ex
 		this.modelProvider.createAndUpdateAnimatedLocators(entity, uniqueID);
 
         GlStateManager.pushMatrix();
-		GlStateManager.scale(entity.scale(), entity.scale(), entity.scale());
+		GlStateManager.scale(this.projectileScale(), this.projectileScale(), this.projectileScale());
 		Minecraft.getMinecraft().renderEngine.bindTexture(this.getTextureLocation(entity));
 		Color renderColor = this.getRenderColor(entity, partialTicks);
 
@@ -88,6 +88,13 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile & IAnimatable> ex
 	@Override
 	public ResourceLocation getEntityTexture(T instance) {
 		return this.getTextureLocation(instance);
+	}
+
+	/**
+	 * This must be overriden to effectively rescale the projectile's model
+	 */
+	protected float projectileScale() {
+		return 1f;
 	}
 
 	@Override

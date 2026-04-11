@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.hitboxLogic;
+package anightdazingzoroark.riftlib.hitbox;
 
 import anightdazingzoroark.riftlib.RiftLib;
 import com.google.common.base.Strings;

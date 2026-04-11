@@ -18,11 +18,6 @@ public interface IAnimatable {
 
 	AnimationFactory getFactory();
 
-	//this will be pretty important when it comes to hitbox and creature model scaling
-	default float scale() {
-		return 1f;
-	}
-
     /**
      * This only runs once and will run when this object just started rendering
      *

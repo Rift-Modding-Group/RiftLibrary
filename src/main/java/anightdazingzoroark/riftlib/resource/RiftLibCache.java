@@ -12,7 +12,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import anightdazingzoroark.riftlib.animation.AnimationFile;
-import anightdazingzoroark.riftlib.hitboxLogic.HitboxDefinitionList;
+import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.jsonParsing.RiftLibLoader;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 

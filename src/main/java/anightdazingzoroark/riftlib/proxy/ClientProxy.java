@@ -14,8 +14,9 @@ import anightdazingzoroark.example.item.GreenArmorItem;
 import anightdazingzoroark.example.item.SatelliteDishHelmet;
 import anightdazingzoroark.riftlib.RiftLibLinkerRegistry;
 import anightdazingzoroark.riftlib.RiftLibMod;
-import anightdazingzoroark.riftlib.hitboxLogic.EntityHitbox;
-import anightdazingzoroark.riftlib.hitboxLogic.EntityHitboxRenderer;
+import anightdazingzoroark.riftlib.hitbox.EntityHitbox;
+import anightdazingzoroark.riftlib.hitbox.EntityHitboxRenderer;
+import anightdazingzoroark.riftlib.hitbox.HitboxTicker;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.ParticleTicker;
@@ -28,7 +29,6 @@ import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffectRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.monster.EntityCreeper;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
@@ -46,6 +46,7 @@ public class ClientProxy extends ServerProxy {
         RenderingRegistry.registerEntityRenderingHandler(EntityHitbox.class, new EntityHitboxRenderer.Factory());
         MinecraftForge.EVENT_BUS.register(new ParticleTicker());
         MinecraftForge.EVENT_BUS.register(new RiftLibSoundEffectRegistry());
+        MinecraftForge.EVENT_BUS.register(new HitboxTicker.Client());
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {

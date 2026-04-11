@@ -3,6 +3,7 @@ package anightdazingzoroark.riftlib.proxy;
 import anightdazingzoroark.example.CommonListener;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.RiftLibMod;
+import anightdazingzoroark.riftlib.hitbox.HitboxTicker;
 import anightdazingzoroark.riftlib.internalMessage.*;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
 import anightdazingzoroark.riftlib.message.RiftLibMessageSide;
@@ -32,6 +33,8 @@ public class ServerProxy {
         HITBOX_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_hitbox");
         HITBOX_MESSAGE_WRAPPER.registerMessage(RiftLibUpdateHitboxPos.class, RiftLibMessageSide.BOTH);
         HITBOX_MESSAGE_WRAPPER.registerMessage(RiftLibUpdateHitboxSize.class, RiftLibMessageSide.BOTH);
+
+        MinecraftForge.EVENT_BUS.register(new HitboxTicker.Server());
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {

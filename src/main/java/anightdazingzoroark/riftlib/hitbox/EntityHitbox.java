@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.hitboxLogic;
+package anightdazingzoroark.riftlib.hitbox;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
@@ -28,7 +28,7 @@ public class EntityHitbox extends MultiPartEntityPart {
     private final float xOffset;
     private final float yOffset;
     private final float zOffset;
-    //these are anim dependent displacments due to animations
+    //these are anim dependent displacements due to animations
     private float xDisplacement;
     private float yDisplacement;
     private float zDisplacement;
@@ -46,23 +46,24 @@ public class EntityHitbox extends MultiPartEntityPart {
         this.yOffset = yOffset;
         this.zOffset = zOffset;
         this.affectedByAnim = affectedByAnim;
+        this.onAddedToWorld();
     }
 
     @Override
     public void onUpdate() {
+        IMultiHitboxUser parent = (IMultiHitboxUser) this.parent;
         EntityLivingBase parentEntityLiving = this.getParentAsEntityLiving();
 
         //set scale
-        float parentScale = parentEntityLiving instanceof IAnimatable animatable ? animatable.scale() : 1f;
-        float finalWidth = this.fixedWidth * parentScale * this.widthScaleDisplacement;
-        float finalHeight = this.fixedHeight * parentScale * this.heightScaleDisplacement;
+        float finalWidth = this.fixedWidth * parent.multiHitboxUserScale() * this.widthScaleDisplacement;
+        float finalHeight = this.fixedHeight * parent.multiHitboxUserScale() * this.heightScaleDisplacement;
         this.setSize(finalWidth, finalHeight);
 
         //set initial entity offset from center
         Vec3d posVec = new Vec3d(
-                (this.xOffset + this.xDisplacement) * parentScale,
-                (this.yOffset + this.yDisplacement) * parentScale,
-                (this.zOffset + this.zDisplacement) * parentScale
+                (this.xOffset + this.xDisplacement) * parent.multiHitboxUserScale(),
+                (this.yOffset + this.yDisplacement) * parent.multiHitboxUserScale(),
+                (this.zOffset + this.zDisplacement) * parent.multiHitboxUserScale()
         );
 
         //determine yaw
@@ -144,14 +145,6 @@ public class EntityHitbox extends MultiPartEntityPart {
 
     public EntityLiving getParentAsEntityLiving() {
         return (EntityLiving) this.parent;
-    }
-
-    //get the scale of the parent as an IAnimatable
-    private float getParentScale() {
-        if (this.parent instanceof IAnimatable) {
-            return ((IAnimatable) this.parent).scale();
-        }
-        return 1f;
     }
 
     public void setDisabled(boolean value) {

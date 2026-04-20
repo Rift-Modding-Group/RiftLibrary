@@ -3,6 +3,8 @@ package anightdazingzoroark.riftlib.renderers.geo;
 import java.util.Collections;
 import java.util.List;
 
+import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import com.google.common.collect.Lists;
 
@@ -18,12 +20,9 @@ import net.minecraft.entity.EntityHanging;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EnumPlayerModelParts;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
-import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.event.AnimationEvent;
@@ -31,16 +30,14 @@ import anightdazingzoroark.riftlib.core.util.Color;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
-import anightdazingzoroark.riftlib.model.provider.data.EntityModelData;
 import anightdazingzoroark.riftlib.util.AnimationUtils;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable> extends Render<T>
-		implements IGeoRenderer<T> {
+public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable<AnimationDataEntity>> extends Render<T> implements IGeoRenderer<T> {
 	static {
-		AnimationController.addModelFetcher((IAnimatable object) -> {
-			if (object instanceof Entity) {
-				return (IAnimatableModel<Object>) AnimationUtils.getGeoModelForEntity((Entity) object);
+		AnimationController.addModelFetcher((IAnimatable<?> object) -> {
+			if (object instanceof Entity entity) {
+				return (IAnimatableModel<Object>) AnimationUtils.getGeoModelForEntity(entity);
 			}
 			return null;
 		});
@@ -58,7 +55,6 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 	public void doRender(T entity, double x, double y, double z, float entityYaw, float partialTicks) {
         //get model
         GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(entity));
-        Integer uniqueID = this.getUniqueID(entity);
 
 		//rest is good ol rendering code
 		GlStateManager.pushMatrix();
@@ -71,9 +67,9 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		float finalYaw = entity.isBeingRidden() ? riddenYaw : trueYaw;
 		this.applyRotations(entity, finalYaw, partialTicks);
 
-		AnimationEvent predicate = new AnimationEvent(entity, partialTicks,  Collections.emptyList());
-        this.modelProvider.setLivingAnimations(entity, uniqueID, predicate);
-		this.modelProvider.createAndUpdateAnimatedLocators(entity, uniqueID);
+		AnimationEvent predicate = new AnimationEvent(partialTicks,  Collections.emptyList());
+        this.modelProvider.setLivingAnimations(entity, predicate);
+		this.modelProvider.createAndUpdateAnimatedLocators(entity);
 
         GlStateManager.pushMatrix();
 		GlStateManager.scale(this.entityScale(), this.entityScale(), this.entityScale());
@@ -149,11 +145,6 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 
 	protected boolean isVisible(T livingEntityIn) {
 		return !livingEntityIn.isInvisible();
-	}
-
-	@Override
-	public Integer getUniqueID(T animatable) {
-		return animatable.getUniqueID().hashCode();
 	}
 
 	protected float getDeathMaxRotation(T entityLivingBaseIn) {

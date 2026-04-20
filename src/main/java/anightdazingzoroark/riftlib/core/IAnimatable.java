@@ -1,22 +1,23 @@
-/*
- * Copyright (c) 2020.
- * Author: Bernie G. (Gecko)
- */
 package anightdazingzoroark.riftlib.core;
 
-import anightdazingzoroark.riftlib.core.manager.AnimationData;
-import anightdazingzoroark.riftlib.core.manager.AnimationFactory;
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
  * This interface must be applied to any object that wants to be animated
  */
-public interface IAnimatable {
-	void registerControllers(AnimationData data);
+public interface IAnimatable<T extends AbstractAnimationData<?>> {
+    T getAnimationData();
 
-	AnimationFactory getFactory();
+    void registerControllers(T data);
+
+    default void initializeAnimationData() {
+        T data = this.getAnimationData();
+        if (data != null) data.initialize();
+    }
 
     /**
      * This only runs once and will run when this object just started rendering
@@ -37,12 +38,9 @@ public interface IAnimatable {
     }
 
     /**
-     * There might be times where the user would want their custom variable to
-     * update on specific events that tickAnimationVariables() is not suited
-     * for, or maybe their custom operation is also not suited for use there too,
-     * hence, this method.
-     */
-    default void updateAnimationVariable(AnimatableValue value) {
-
+     * This allows for running custom code from animations on the server
+     * */
+    default HashMap<String, Runnable> animationMessageEffects() {
+        return new HashMap<>();
     }
 }

@@ -1,13 +1,11 @@
 package anightdazingzoroark.riftlib.mixin;
 
-import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.renderers.geo.GeoItemRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,8 +22,7 @@ public class RenderItemMixin {
     @Inject(method = "renderItemModel", at = @At(value = "HEAD"), cancellable = true)
     public void renderItemModel(ItemStack stack, IBakedModel bakedmodel, ItemCameraTransforms.TransformType transform, boolean leftHanded, CallbackInfo ci) {
         RenderItem thisRenderItem = (RenderItem) ((Object) this);
-        Item item = stack.getItem();
-        if (!stack.isEmpty() && item instanceof IAnimatable) {
+        if (this.hasAnimationDataItemStack(stack)) {
             thisRenderItem.textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
             thisRenderItem.textureManager.getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false);
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
@@ -51,8 +48,7 @@ public class RenderItemMixin {
     @Inject(method = "renderItemModelIntoGUI", at = @At(value = "HEAD"), cancellable = true)
     public void renderItemModelIntoGUI(ItemStack stack, int x, int y, IBakedModel bakedmodel, CallbackInfo ci) {
         RenderItem thisRenderItem = (RenderItem) ((Object) this);
-        Item item = stack.getItem();
-        if (item instanceof IAnimatable) {
+        if (this.hasAnimationDataItemStack(stack)) {
             GlStateManager.pushMatrix();
             thisRenderItem.textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
             thisRenderItem.textureManager.getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false);
@@ -87,7 +83,7 @@ public class RenderItemMixin {
                 GlStateManager.enableRescaleNormal();
 
                 GeoItemRenderer geoItemRenderer = (GeoItemRenderer) stack.getItem().getTileEntityItemStackRenderer();
-                geoItemRenderer.render(stack.getItem(), stack, transformType);
+                geoItemRenderer.render(stack, transformType);
             }
             else {
                 thisRenderItem.renderModel(model, stack);
@@ -96,5 +92,9 @@ public class RenderItemMixin {
 
             GlStateManager.popMatrix();
         }
+    }
+
+    private boolean hasAnimationDataItemStack(ItemStack stack) {
+        return !stack.isEmpty() && stack.getItem().getTileEntityItemStackRenderer() instanceof GeoItemRenderer;
     }
 }

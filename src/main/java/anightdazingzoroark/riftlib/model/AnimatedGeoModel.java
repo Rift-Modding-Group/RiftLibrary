@@ -5,6 +5,8 @@ import java.util.*;
 import javax.annotation.Nullable;
 
 import anightdazingzoroark.riftlib.RiftLibConfig;
+import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import anightdazingzoroark.riftlib.hitbox.EntityHitbox;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
@@ -22,11 +24,9 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.common.MinecraftForge;
 import anightdazingzoroark.riftlib.animation.AnimationTicker;
-import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
 import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.core.event.AnimationEvent;
-import anightdazingzoroark.riftlib.core.manager.AnimationData;
 import anightdazingzoroark.riftlib.core.processor.AnimationProcessor;
 import anightdazingzoroark.riftlib.core.processor.IBone;
 import anightdazingzoroark.riftlib.exceptions.GeoModelException;
@@ -38,7 +38,7 @@ import anightdazingzoroark.riftlib.resource.RiftLibCache;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelProvider<T>
+public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoModelProvider<T>
 		implements IAnimatableModel<T>, IAnimatableModelProvider<T> {
 	private final AnimationProcessor animationProcessor;
 	protected GeoModel currentModel;
@@ -56,61 +56,60 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 	}
 
 	@Override
-	public void setLivingAnimations(T entity, Integer uniqueID, @Nullable AnimationEvent customPredicate) {
+	public void setLivingAnimations(T entity, @Nullable AnimationEvent customPredicate) {
 		// Each animation has it's own collection of animations (called the
 		// EntityAnimationManager), which allows for multiple independent animations
-		AnimationData manager = entity.getFactory().getOrCreateAnimationData(uniqueID);
+		AbstractAnimationData<?> animData = entity.getAnimationData();
+		animData.initialize();
 
-		if (manager.ticker == null) {
-			AnimationTicker ticker = new AnimationTicker(manager);
-			manager.ticker = ticker;
+		if (animData.ticker == null) {
+			AnimationTicker ticker = new AnimationTicker(animData);
+			animData.ticker = ticker;
 			MinecraftForge.EVENT_BUS.register(ticker);
 		}
-		if (!Minecraft.getMinecraft().isGamePaused() || manager.shouldPlayWhilePaused) {
-            this.seekTime = manager.tick + Minecraft.getMinecraft().getRenderPartialTicks();
+		if (!Minecraft.getMinecraft().isGamePaused() || animData.shouldPlayWhilePaused) {
+            this.seekTime = animData.tick + Minecraft.getMinecraft().getRenderPartialTicks();
 		}
-        else this.seekTime = manager.tick;
+        else this.seekTime = animData.tick;
 
-		AnimationEvent<T> predicate;
-		if (customPredicate == null) {
-			predicate = new AnimationEvent<T>(entity, (float) (manager.tick - this.lastGameTickTime), Collections.emptyList());
-		}
-        else predicate = customPredicate;
-
+		AnimationEvent predicate = Objects.requireNonNullElseGet(
+				customPredicate, () -> new AnimationEvent((float) (animData.tick - this.lastGameTickTime), Collections.emptyList())
+		);
 		predicate.animationTick = this.seekTime;
 
 		//update molang related information while the entity is rendered
-		if (!Minecraft.getMinecraft().isGamePaused() || manager.shouldPlayWhilePaused) {
-			manager.updateAnimationVariables();
-			manager.updateMolangQueries();
+		if (!Minecraft.getMinecraft().isGamePaused() || animData.shouldPlayWhilePaused) {
+			animData.updateAnimationVariables();
+			animData.updateMolangQueries();
 		}
 
 		//update based on animations
 		if (!this.animationProcessor.getModelRendererList().isEmpty()) {
 			this.animationProcessor.tickAnimation(
-					entity, uniqueID, this.seekTime,
+					entity, this.seekTime,
 					predicate, RiftLibCache.getInstance().parser,
 					this.shouldCrashOnMissing
 			);
 		}
 
 		//update hitboxes
-		this.setDynamicHitboxes(entity, manager);
+		this.setDynamicHitboxes(entity, animData);
 
 		//update dynamic hitbox positions
-		this.setDynamicRidePositions(entity, manager);
+		this.setDynamicRidePositions(entity, animData);
 	}
 
-	public void createAndUpdateAnimatedLocators(T entity, Integer uniqueID) {
-		AnimationData manager = entity.getFactory().getOrCreateAnimationData(uniqueID);
-		manager.createAnimatedLocators(this.currentModel);
-		manager.updateAnimatedLocators();
+	public void createAndUpdateAnimatedLocators(T entity) {
+		AbstractAnimationData<?> animData = entity.getAnimationData();
+		animData.initialize();
+		animData.createAnimatedLocators(this.currentModel);
+		animData.updateAnimatedLocators();
 	}
 
-	private void setDynamicHitboxes(T entity, AnimationData manager) {
+	private void setDynamicHitboxes(T entity, AbstractAnimationData<?> animData) {
 		if (!(entity instanceof IMultiHitboxUser multiHitboxUser)) return;
-		List<AnimatedLocator> animatedLocators = manager.getAnimatedLocators();
-		for (AnimatedLocator animatedLocator : animatedLocators) {
+		List<AnimatedLocatorNew> animatedLocators = animData.getAnimatedLocators();
+		for (AnimatedLocatorNew animatedLocator : animatedLocators) {
 			if (!HitboxUtils.locatorCanBeHitbox(animatedLocator.getName())) continue;
 			String hitboxName = HitboxUtils.locatorHitboxToHitbox(animatedLocator.getName());
 
@@ -182,14 +181,14 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 		}
 	}
 
-	private void setDynamicRidePositions(T entity, AnimationData manager) {
+	private void setDynamicRidePositions(T entity, AbstractAnimationData<?> animData) {
 		if (!(entity instanceof IDynamicRideUser)) return;
 
 		//make a rideposdef list for changine ride positions
 		DynamicRidePosList definitionList = new DynamicRidePosList();
 
 		//make a definition list of dynamic ride positions and put in it the new positions based on the new locators positions
-		for (AnimatedLocator locator : manager.getAnimatedLocators()) {
+		for (AnimatedLocatorNew locator : animData.getAnimatedLocators()) {
 			if (!DynamicRidePosUtils.locatorCanBeRidePos(locator.getName())) continue;
 			definitionList.addPosition(locator);
 		}
@@ -214,7 +213,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable> extends GeoModelPr
 	}
 
 	@Override
-	public Animation getAnimation(String name, IAnimatable animatable) {
+	public Animation getAnimation(String name, IAnimatable<?> animatable) {
 		return RiftLibCache.getInstance().getAnimations()
                 .get(this.getAnimationFileLocation((T) animatable))
 				.getAnimation(name);

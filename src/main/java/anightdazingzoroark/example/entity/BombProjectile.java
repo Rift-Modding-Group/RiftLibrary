@@ -4,8 +4,7 @@ import anightdazingzoroark.riftlib.core.PlayState;
 import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
-import anightdazingzoroark.riftlib.core.event.AnimationEvent;
-import anightdazingzoroark.riftlib.core.manager.AnimationData;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataProjectile;
 import anightdazingzoroark.riftlib.projectile.RiftLibProjectile;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.SoundEvent;
@@ -45,21 +44,21 @@ public class BombProjectile extends RiftLibProjectile {
     }
 
     @Override
-    public void registerControllers(AnimationData data) {
-        data.addAnimationController(new AnimationController(this, "bomb_flames", 0, new AnimationController.IAnimationPredicate() {
-            @Override
-            public PlayState test(AnimationEvent event) {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.bomb.flame_particles", LoopType.PLAY_ONCE));
-                return PlayState.CONTINUE;
-            }
-        }));
-        data.addAnimationController(new AnimationController(this, "bomb_sounds", 0, new AnimationController.IAnimationPredicate() {
-            @Override
-            public PlayState test(AnimationEvent event) {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.bomb.sounds", LoopType.PLAY_ONCE));
-                return PlayState.CONTINUE;
-            }
-        }));
+    public void registerControllers(AnimationDataProjectile data) {
+        data.addAnimationController(new AnimationController<>(
+                this, "bomb_flames", 0,
+                event -> {
+                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.bomb.flame_particles", LoopType.PLAY_ONCE));
+                    return PlayState.CONTINUE;
+                }
+        ));
+        data.addAnimationController(new AnimationController<>(
+                this, "bomb_sounds", 0,
+                event -> {
+                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.bomb.sounds", LoopType.PLAY_ONCE));
+                    return PlayState.CONTINUE;
+                }
+        ));
     }
 
     @Override

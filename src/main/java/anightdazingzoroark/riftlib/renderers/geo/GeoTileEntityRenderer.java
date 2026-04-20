@@ -1,5 +1,7 @@
 package anightdazingzoroark.riftlib.renderers.geo;
 
+import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataTileEntity;
 import org.lwjgl.opengl.GL11;
 
 import net.minecraft.block.BlockDirectional;
@@ -13,7 +15,6 @@ import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
-import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.util.Color;
@@ -21,16 +22,15 @@ import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 
 @SuppressWarnings({ "unchecked" })
-public abstract class GeoBlockRenderer<T extends TileEntity & IAnimatable> extends TileEntitySpecialRenderer<T>
+public abstract class GeoTileEntityRenderer<T extends TileEntity & IAnimatable<AnimationDataTileEntity>> extends TileEntitySpecialRenderer<T>
 		implements IGeoRenderer<T> {
 	static {
-		AnimationController.addModelFetcher((IAnimatable object) -> {
-			if (object instanceof TileEntity) {
-				TileEntity tile = (TileEntity) object;
+		AnimationController.addModelFetcher((IAnimatable<?> object) -> {
+			if (object instanceof TileEntity tile) {
 				TileEntitySpecialRenderer<TileEntity> renderer = TileEntityRendererDispatcher.instance
 						.getRenderer(tile);
-				if (renderer instanceof GeoBlockRenderer) {
-					return (IAnimatableModel<Object>) ((GeoBlockRenderer<?>) renderer).getGeoModelProvider();
+				if (renderer instanceof GeoTileEntityRenderer) {
+					return (IAnimatableModel<Object>) ((GeoTileEntityRenderer<?>) renderer).getGeoModelProvider();
 				}
 			}
 			return null;
@@ -39,7 +39,7 @@ public abstract class GeoBlockRenderer<T extends TileEntity & IAnimatable> exten
 
 	private final AnimatedGeoModel<T> modelProvider;
 
-	public GeoBlockRenderer(AnimatedGeoModel<T> modelProvider) {
+	public GeoTileEntityRenderer(AnimatedGeoModel<T> modelProvider) {
 		this.modelProvider = modelProvider;
 	}
 
@@ -50,9 +50,8 @@ public abstract class GeoBlockRenderer<T extends TileEntity & IAnimatable> exten
 
 	public void render(T tile, double x, double y, double z, float partialTicks, int destroyStage) {
 		GeoModel model = modelProvider.getModel(modelProvider.getModelLocation(tile));
-        Integer uniqueID = this.getUniqueID(tile);
-		this.modelProvider.setLivingAnimations(tile, uniqueID);
-		this.modelProvider.createAndUpdateAnimatedLocators(tile, uniqueID);
+		this.modelProvider.setLivingAnimations(tile);
+		this.modelProvider.createAndUpdateAnimatedLocators(tile);
 
 		int light = tile.getWorld().getCombinedLight(tile.getPos(), 0);
 		int lx = light % 65536;

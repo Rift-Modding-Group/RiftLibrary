@@ -2,9 +2,6 @@ package anightdazingzoroark.example.item;
 
 import anightdazingzoroark.riftlib.RiftLibMod;
 import anightdazingzoroark.example.entity.BombProjectile;
-import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.manager.AnimationData;
-import anightdazingzoroark.riftlib.core.manager.AnimationFactory;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -14,9 +11,7 @@ import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 
-public class BombItem extends Item implements IAnimatable {
-    private final AnimationFactory factory = new AnimationFactory(this);
-
+public class BombItem extends Item {
     public BombItem() {
         super();
         this.maxStackSize = 1;
@@ -39,13 +34,5 @@ public class BombItem extends Item implements IAnimatable {
     @Override
     public int getMaxItemUseDuration(ItemStack stack) {
         return 72000;
-    }
-
-    @Override
-    public void registerControllers(AnimationData data) {}
-
-    @Override
-    public AnimationFactory getFactory() {
-        return this.factory;
     }
 }

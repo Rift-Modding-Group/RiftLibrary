@@ -1,31 +1,31 @@
 package anightdazingzoroark.riftlib.model;
 
-import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataTileEntity;
 import anightdazingzoroark.riftlib.geo.render.GeoBone;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.ParticleTicker;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.Vec3d;
 import org.lwjglx.util.vector.Quaternion;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class AnimatedLocator {
+public class AnimatedLocatorNew {
     private final GeoLocator locator;
-    private final IAnimatable iAnimatable;
+    private final AbstractAnimationData<?> animationData;
     private final List<RiftLibParticleEmitter> particleEmitterList = new ArrayList<>();
     private Vec3d worldSpacePos = new Vec3d(0, 0, 0);
     private Quaternion worldSpaceYXZQuaternion = new Quaternion();
     private boolean isUpdated = true;
 
-    public AnimatedLocator(GeoLocator geoLocator, IAnimatable iAnimatable) {
+    public AnimatedLocatorNew(GeoLocator geoLocator, AbstractAnimationData<?> animationData) {
         this.locator = geoLocator;
-        this.iAnimatable = iAnimatable;
+        this.animationData = animationData;
     }
 
     public void setUpdated(boolean value) {
@@ -37,13 +37,11 @@ public class AnimatedLocator {
     }
 
     public boolean isValid() {
-        if (this.iAnimatable instanceof Entity) {
-            Entity entityAnimatable = (Entity) this.iAnimatable;
-            return entityAnimatable.isEntityAlive();
+        if (this.animationData instanceof AnimationDataEntity entityData) {
+            return entityData.getHolder().isEntityAlive();
         }
-        else if (this.iAnimatable instanceof TileEntity) {
-            TileEntity tileEntityAnimatable = (TileEntity) this.iAnimatable;
-            return !tileEntityAnimatable.isInvalid();
+        else if (this.animationData instanceof AnimationDataTileEntity tileEntityData) {
+            return !tileEntityData.getHolder().isInvalid();
         }
         return true;
     }

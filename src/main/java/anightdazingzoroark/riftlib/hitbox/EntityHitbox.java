@@ -1,6 +1,5 @@
 package anightdazingzoroark.riftlib.hitbox;
 
-import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.entity.EntityLiving;

@@ -4,8 +4,7 @@ import javax.vecmath.*;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.geo.render.*;
-import anightdazingzoroark.riftlib.model.AnimatedLocator;
-import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
+import anightdazingzoroark.riftlib.model.AnimatedLocatorNew;
 import anightdazingzoroark.riftlib.util.MatrixUtils;
 import anightdazingzoroark.riftlib.util.ParticleUtils;
 import net.minecraft.client.renderer.RenderHelper;
@@ -125,12 +124,10 @@ public interface IGeoRenderer<T> {
 	default void renderAfter(T animatable, float ticks, float red, float green, float blue, float partialTicks) {}
 
     default void repositionAnimatedLocators(T animatable) {
-        if (!(animatable instanceof IAnimatable)) return;
-        IAnimatable animatableObject = (IAnimatable) animatable;
-        Integer uniqueID = this.getUniqueID(animatable);
+        if (!(animatable instanceof IAnimatable<?> animatableObject)) return;
 
-        List<AnimatedLocator> animatedLocators = animatableObject.getFactory().getOrCreateAnimationData(uniqueID).getAnimatedLocators();
-        for (AnimatedLocator animatedLocator : animatedLocators) {
+        List<AnimatedLocatorNew> animatedLocators = animatableObject.getAnimationData().getAnimatedLocators();
+        for (AnimatedLocatorNew animatedLocator : animatedLocators) {
             //update location based on animatedLocator if there is
             BufferUtils.createFloatBuffer(16);
             Vector3d position = ParticleUtils.getCurrentRenderPos();
@@ -190,9 +187,5 @@ public interface IGeoRenderer<T> {
 
 	default Color getRenderColor(T animatable, float partialTicks) {
 		return Color.ofRGBA(255, 255, 255, 255);
-	}
-
-	default Integer getUniqueID(T animatable) {
-		return animatable.hashCode();
 	}
 }

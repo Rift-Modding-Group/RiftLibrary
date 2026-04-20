@@ -11,17 +11,15 @@ public interface IAnimatableModel<E> {
 		return (System.nanoTime() / 1000000L / 50.0);
 	}
 
-	default void setLivingAnimations(E entity, Integer uniqueID) {
-		this.setLivingAnimations(entity, uniqueID, null);
+	default void setLivingAnimations(E entity) {
+		this.setLivingAnimations(entity, null);
 	}
 
-	void setLivingAnimations(E entity, Integer uniqueID, AnimationEvent customPredicate);
-
-	void createAndUpdateAnimatedLocators(E entity, Integer uniqueID);
+	void setLivingAnimations(E entity, AnimationEvent customPredicate);
 
 	AnimationProcessor getAnimationProcessor();
 
-	Animation getAnimation(String name, IAnimatable animatable);
+	Animation getAnimation(String name, IAnimatable<?> animatable);
 
 	/**
 	 * Gets a bone by name.

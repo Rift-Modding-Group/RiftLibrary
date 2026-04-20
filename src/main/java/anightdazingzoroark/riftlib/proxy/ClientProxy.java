@@ -10,8 +10,8 @@ import anightdazingzoroark.example.client.renderer.tile.SprinklerRenderer;
 import anightdazingzoroark.example.entity.*;
 import anightdazingzoroark.example.entity.hitboxLinker.DragonHitboxLinker;
 import anightdazingzoroark.example.entity.hitboxLinker.FlyingPufferfishHitboxLinker;
-import anightdazingzoroark.example.item.GreenArmorItem;
-import anightdazingzoroark.example.item.SatelliteDishHelmet;
+import anightdazingzoroark.example.armor.GreenArmor;
+import anightdazingzoroark.example.armor.SatelliteDishHelmet;
 import anightdazingzoroark.riftlib.RiftLibLinkerRegistry;
 import anightdazingzoroark.riftlib.RiftLibMod;
 import anightdazingzoroark.riftlib.hitbox.EntityHitbox;
@@ -23,12 +23,10 @@ import anightdazingzoroark.riftlib.particle.ParticleTicker;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
 import anightdazingzoroark.riftlib.renderers.geo.GeoArmorRenderer;
-import anightdazingzoroark.riftlib.renderers.geo.GeoReplacedEntityRenderer;
+import anightdazingzoroark.riftlib.renderers.geo.GeoItemRendererTicker;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffect;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffectRegistry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
@@ -47,6 +45,7 @@ public class ClientProxy extends ServerProxy {
         MinecraftForge.EVENT_BUS.register(new ParticleTicker());
         MinecraftForge.EVENT_BUS.register(new RiftLibSoundEffectRegistry());
         MinecraftForge.EVENT_BUS.register(new HitboxTicker.Client());
+        MinecraftForge.EVENT_BUS.register(new GeoItemRendererTicker());
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {
@@ -63,7 +62,7 @@ public class ClientProxy extends ServerProxy {
             RenderingRegistry.registerEntityRenderingHandler(AvianRunnerEntity.class, AvianRunnerRenderer::new);
 
             //armor renderer
-            GeoArmorRenderer.registerArmorRenderer(GreenArmorItem.class, new GreenArmorRenderer());
+            GeoArmorRenderer.registerArmorRenderer(GreenArmor.class, new GreenArmorRenderer());
             GeoArmorRenderer.registerArmorRenderer(SatelliteDishHelmet.class, new SatelliteDishHelmetRenderer());
 
             //block renderers
@@ -82,14 +81,6 @@ public class ClientProxy extends ServerProxy {
     @Override
     public void init(FMLInitializationEvent e) {
         super.init(e);
-
-        //these will only happen in a deobfuscated environment
-        if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {
-            RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
-            ReplacedCreeperRenderer creeperRenderer = new ReplacedCreeperRenderer(renderManager);
-            renderManager.entityRenderMap.put(EntityCreeper.class, creeperRenderer);
-            GeoReplacedEntityRenderer.registerReplacedEntity(ReplacedCreeperEntity.class, creeperRenderer);
-        }
     }
 
     @SideOnly(Side.CLIENT)

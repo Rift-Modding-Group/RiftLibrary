@@ -6,9 +6,7 @@ import anightdazingzoroark.riftlib.core.PlayState;
 import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
-import anightdazingzoroark.riftlib.core.event.AnimationEvent;
-import anightdazingzoroark.riftlib.core.manager.AnimationData;
-import anightdazingzoroark.riftlib.core.manager.AnimationFactory;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosList;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
@@ -25,9 +23,9 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 
-public class DragonEntity extends EntityCreature implements IAnimatable, IMultiHitboxUser, IDynamicRideUser {
+public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IMultiHitboxUser, IDynamicRideUser {
     private static final DataParameter<Boolean> ATTACKING = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
-    private final AnimationFactory factory = new AnimationFactory(this);
+    private final AnimationDataEntity animationData = new AnimationDataEntity(this);
     private Entity[] hitboxes = {};
     private DynamicRidePosList ridePositions;
 
@@ -192,31 +190,31 @@ public class DragonEntity extends EntityCreature implements IAnimatable, IMultiH
     }
 
     @Override
-    public void registerControllers(AnimationData data) {
-        data.addAnimationController(new AnimationController(this, "movement", 0, new AnimationController.IAnimationPredicate() {
-            @Override
-            public PlayState test(AnimationEvent event) {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.dragon.flying", LoopType.LOOP));
-                return PlayState.CONTINUE;
-            }
-        }));
-        data.addAnimationController(new AnimationController(this, "attack", 0, new AnimationController.IAnimationPredicate() {
-            @Override
-            public PlayState test(AnimationEvent event) {
-                if (isAttacking()) {
-                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.dragon.attack_while_flying", LoopType.LOOP));
-                    return PlayState.CONTINUE;
-                }
-                else {
-                    event.getController().clearAnimationCache();
-                    return PlayState.STOP;
-                }
-            }
-        }));
+    public AnimationDataEntity getAnimationData() {
+        return this.animationData;
     }
 
     @Override
-    public AnimationFactory getFactory() {
-        return this.factory;
+    public void registerControllers(AnimationDataEntity data) {
+        data.addAnimationController(new AnimationController<>(
+                this, "movement", 0,
+                event -> {
+                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.dragon.flying", LoopType.LOOP));
+                    return PlayState.CONTINUE;
+                }
+        ));
+        data.addAnimationController(new AnimationController<>(
+                this, "attack", 0,
+                event -> {
+                    if (isAttacking()) {
+                        event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.dragon.attack_while_flying", LoopType.LOOP));
+                        return PlayState.CONTINUE;
+                    }
+                    else {
+                        event.getController().clearAnimationCache();
+                        return PlayState.STOP;
+                    }
+                }
+        ));
     }
 }

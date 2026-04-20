@@ -2,14 +2,13 @@ package anightdazingzoroark.riftlib.renderers.geo;
 
 import java.util.Collections;
 
-import anightdazingzoroark.riftlib.molang.utils.Interpolations;
+import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.projectile.RiftLibProjectile;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.util.ResourceLocation;
-import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.event.AnimationEvent;
@@ -21,9 +20,9 @@ import anightdazingzoroark.riftlib.model.provider.data.EntityModelData;
 import anightdazingzoroark.riftlib.util.AnimationUtils;
 
 @SuppressWarnings("unchecked")
-public class GeoProjectileRenderer<T extends RiftLibProjectile & IAnimatable> extends Render<T> implements IGeoRenderer<T> {
+public class GeoProjectileRenderer<T extends RiftLibProjectile> extends Render<T> implements IGeoRenderer<T> {
 	static {
-		AnimationController.addModelFetcher((IAnimatable object) -> {
+		AnimationController.addModelFetcher((IAnimatable<?> object) -> {
 			if (object instanceof RiftLibProjectile) {
 				return (IAnimatableModel<Object>) AnimationUtils.getGeoModelForEntity((RiftLibProjectile) object);
 			}
@@ -41,7 +40,6 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile & IAnimatable> ex
 	@Override
 	public void doRender(T entity, double x, double y, double z, float entityYaw, float partialTicks) {
         GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(entity));
-        Integer uniqueID = this.getUniqueID(entity);
 
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(x, y, z);
@@ -57,10 +55,10 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile & IAnimatable> ex
 		}
 
 		EntityModelData entityModelData = new EntityModelData();
-		AnimationEvent<T> predicate = new AnimationEvent<T>(entity, partialTicks, Collections.singletonList(entityModelData));
+		AnimationEvent predicate = new AnimationEvent(partialTicks, Collections.singletonList(entityModelData));
 
-        this.modelProvider.setLivingAnimations(entity, uniqueID, predicate);
-		this.modelProvider.createAndUpdateAnimatedLocators(entity, uniqueID);
+        this.modelProvider.setLivingAnimations(entity, predicate);
+		this.modelProvider.createAndUpdateAnimatedLocators(entity);
 
         GlStateManager.pushMatrix();
 		GlStateManager.scale(this.projectileScale(), this.projectileScale(), this.projectileScale());
@@ -95,11 +93,6 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile & IAnimatable> ex
 	 */
 	protected float projectileScale() {
 		return 1f;
-	}
-
-	@Override
-	public Integer getUniqueID(T animatable) {
-		return animatable.getUniqueID().hashCode();
 	}
 
 	@Override

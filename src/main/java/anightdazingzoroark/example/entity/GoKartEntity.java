@@ -5,9 +5,7 @@ import anightdazingzoroark.riftlib.core.PlayState;
 import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
-import anightdazingzoroark.riftlib.core.event.AnimationEvent;
-import anightdazingzoroark.riftlib.core.manager.AnimationData;
-import anightdazingzoroark.riftlib.core.manager.AnimationFactory;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumHand;
@@ -15,8 +13,8 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 
-public class GoKartEntity extends EntityCreature implements IAnimatable {
-    private final AnimationFactory factory = new AnimationFactory(this);
+public class GoKartEntity extends EntityCreature implements IAnimatable<AnimationDataEntity> {
+    private final AnimationDataEntity animationData = new AnimationDataEntity(this);
 
     public GoKartEntity(World worldIn) {
         super(worldIn);
@@ -90,22 +88,22 @@ public class GoKartEntity extends EntityCreature implements IAnimatable {
     //ride management stuff ends here
 
     @Override
-    public void registerControllers(AnimationData data) {
-        data.addAnimationController(new AnimationController(this, "movement", 0, new AnimationController.IAnimationPredicate() {
-            @Override
-            public PlayState test(AnimationEvent event) {
-                if (event.isMoving()) {
-                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.go_kart.move", LoopType.LOOP));
-                    return PlayState.CONTINUE;
+    public void registerControllers(AnimationDataEntity data) {
+        data.addAnimationController(new AnimationController<>(
+                this, "movement", 0,
+                event -> {
+                    if (data.isMoving()) {
+                        event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.go_kart.move", LoopType.LOOP));
+                        return PlayState.CONTINUE;
+                    }
+                    event.getController().clearAnimationCache();
+                    return PlayState.STOP;
                 }
-                event.getController().clearAnimationCache();
-                return PlayState.STOP;
-            }
-        }));
+        ));
     }
 
     @Override
-    public AnimationFactory getFactory() {
-        return this.factory;
+    public AnimationDataEntity getAnimationData() {
+        return this.animationData;
     }
 }

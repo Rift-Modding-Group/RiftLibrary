@@ -1,7 +1,7 @@
 package anightdazingzoroark.example.client.renderer.armor;
 
 import anightdazingzoroark.example.client.model.armor.SatelliteDishHelmetModel;
-import anightdazingzoroark.example.item.SatelliteDishHelmet;
+import anightdazingzoroark.example.armor.SatelliteDishHelmet;
 import anightdazingzoroark.riftlib.renderers.geo.GeoArmorRenderer;
 
 public class SatelliteDishHelmetRenderer extends GeoArmorRenderer<SatelliteDishHelmet> {

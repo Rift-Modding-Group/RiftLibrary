@@ -1,5 +1,7 @@
 package anightdazingzoroark.example;
 
+import anightdazingzoroark.example.armor.GreenArmor;
+import anightdazingzoroark.example.armor.SatelliteDishHelmet;
 import anightdazingzoroark.example.block.MerryGoRoundBlock;
 import anightdazingzoroark.example.block.SprinklerBlock;
 import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
@@ -112,24 +114,30 @@ public class CommonListener {
 		itemRegistry = event.getRegistry();
 		ItemRegistry.BOMB = registerItem(new BombItem(), "bomb");
         ItemRegistry.BUBBLE_GUN = registerItem(new BubbleGunItem(), "bubble_gun");
-        ItemRegistry.FIDGET_SPINNER = registerItem(new FidgetSpinnerItem(), "fidget_spinner");
-        ItemRegistry.FIREWORK_STICK = registerItem(new FireworkStickItem(), "firework_stick");
+        ItemRegistry.FIDGET_SPINNER = registerItem(
+				new Item().setMaxStackSize(1).setCreativeTab(RiftLibMod.getRiftlibItemGroup()),
+				"fidget_spinner"
+		);
+        ItemRegistry.FIREWORK_STICK = registerItem(
+				new Item().setMaxStackSize(1).setCreativeTab(RiftLibMod.getRiftlibItemGroup()),
+				"firework_stick"
+		);
 
 		ItemRegistry.GREEN_HEAD = registerItem(
-				new GreenArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.HEAD), "green_helmet");
+				new GreenArmor(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.HEAD), "green_helmet");
 		ItemRegistry.GREEN_CHEST = registerItem(
-				new GreenArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.CHEST), "green_chest");
+				new GreenArmor(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.CHEST), "green_chest");
 		ItemRegistry.GREEN_LEGGINGS = registerItem(
-				new GreenArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.LEGS), "green_leggings");
+				new GreenArmor(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.LEGS), "green_leggings");
 		ItemRegistry.GREEN_BOOTS = registerItem(
-				new GreenArmorItem(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.FEET), "green_boots");
+				new GreenArmor(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.FEET), "green_boots");
 
         ItemRegistry.SATELLITE_DISH_HELMET = registerItem(
                 new SatelliteDishHelmet(ItemArmor.ArmorMaterial.DIAMOND, 0), "satellite_dish_helmet"
         );
 
-        ItemRegistry.MERRY_GO_ROUND = registerItem(new AnimatedItemBlock(BlockRegistry.MERRY_GO_ROUND_BLOCK), "merry_go_round");
-        ItemRegistry.SPRINKLER = registerItem(new AnimatedItemBlock(BlockRegistry.SPRINKLER_BLOCK), "sprinkler");
+        ItemRegistry.MERRY_GO_ROUND = registerItem(new ItemBlock(BlockRegistry.MERRY_GO_ROUND_BLOCK), "merry_go_round");
+        ItemRegistry.SPRINKLER = registerItem(new ItemBlock(BlockRegistry.SPRINKLER_BLOCK), "sprinkler");
 	}
 
 	public static <T extends Item> T registerItem(T item, String name) {

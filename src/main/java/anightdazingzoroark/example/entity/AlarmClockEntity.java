@@ -6,9 +6,7 @@ import anightdazingzoroark.riftlib.core.PlayState;
 import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
-import anightdazingzoroark.riftlib.core.event.AnimationEvent;
-import anightdazingzoroark.riftlib.core.manager.AnimationData;
-import anightdazingzoroark.riftlib.core.manager.AnimationFactory;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.util.MathUtils;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.world.World;
@@ -16,27 +14,27 @@ import net.minecraft.world.World;
 import java.util.Arrays;
 import java.util.List;
 
-public class AlarmClockEntity extends EntityLiving implements IAnimatable {
-    private final AnimationFactory factory = new AnimationFactory(this);
+public class AlarmClockEntity extends EntityLiving implements IAnimatable<AnimationDataEntity> {
+    private final AnimationDataEntity animationData = new AnimationDataEntity(this);
 
     public AlarmClockEntity(World worldIn) {
         super(worldIn);
     }
 
     @Override
-    public void registerControllers(AnimationData data) {
-        data.addAnimationController(new AnimationController(this, "clock", 0, new AnimationController.IAnimationPredicate() {
-            @Override
-            public PlayState test(AnimationEvent event) {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.alarm_clock.hour_rotation", LoopType.LOOP));
-                return PlayState.CONTINUE;
-            }
-        }));
+    public void registerControllers(AnimationDataEntity data) {
+        data.addAnimationController(new AnimationController<>(
+                this, "clock", 0,
+                event -> {
+                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.alarm_clock.hour_rotation", LoopType.LOOP));
+                    return PlayState.CONTINUE;
+                }
+        ));
     }
 
     @Override
-    public AnimationFactory getFactory() {
-        return this.factory;
+    public AnimationDataEntity getAnimationData() {
+        return this.animationData;
     }
 
     @Override

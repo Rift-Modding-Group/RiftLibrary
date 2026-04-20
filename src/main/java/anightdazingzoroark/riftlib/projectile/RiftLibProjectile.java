@@ -1,8 +1,7 @@
 package anightdazingzoroark.riftlib.projectile;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.manager.AnimationData;
-import anightdazingzoroark.riftlib.core.manager.AnimationFactory;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataProjectile;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -17,8 +16,8 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
-public abstract class RiftLibProjectile extends EntityArrow implements IAnimatable {
-    private final AnimationFactory factory = new AnimationFactory(this);
+public abstract class RiftLibProjectile extends EntityArrow implements IAnimatable<AnimationDataProjectile> {
+    private final AnimationDataProjectile data = new AnimationDataProjectile(this);
 
     public RiftLibProjectile(World worldIn) {
         super(worldIn);
@@ -132,12 +131,12 @@ public abstract class RiftLibProjectile extends EntityArrow implements IAnimatab
     }
 
     @Override
-    public AnimationFactory getFactory() {
-        return this.factory;
+    public AnimationDataProjectile getAnimationData() {
+        return this.data;
     }
 
     @Override
-    public abstract void registerControllers(AnimationData data);
+    public abstract void registerControllers(AnimationDataProjectile data);
 
     public abstract SoundEvent getOnProjectileHitSound();
 

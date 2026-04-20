@@ -1,7 +1,5 @@
 package anightdazingzoroark.riftlib.ridePositionLogic;
 
-import anightdazingzoroark.riftlib.RiftLibLinkerRegistry;
-import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.entity.Entity;

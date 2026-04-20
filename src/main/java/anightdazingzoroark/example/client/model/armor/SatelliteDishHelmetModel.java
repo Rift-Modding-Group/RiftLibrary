@@ -1,6 +1,6 @@
 package anightdazingzoroark.example.client.model.armor;
 
-import anightdazingzoroark.example.item.SatelliteDishHelmet;
+import anightdazingzoroark.example.armor.SatelliteDishHelmet;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;

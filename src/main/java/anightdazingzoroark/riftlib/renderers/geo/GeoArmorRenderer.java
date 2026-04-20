@@ -2,10 +2,12 @@ package anightdazingzoroark.riftlib.renderers.geo;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import anightdazingzoroark.riftlib.RiftLib;
+import anightdazingzoroark.riftlib.armor.RiftLibArmor;
+import anightdazingzoroark.riftlib.core.IAnimatableModel;
+import anightdazingzoroark.riftlib.core.IAnimatable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.model.ModelRenderer;
@@ -14,10 +16,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.processor.IBone;
@@ -27,15 +27,15 @@ import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import anightdazingzoroark.riftlib.util.GeoUtils;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extends ModelBiped
+public abstract class GeoArmorRenderer<T extends RiftLibArmor> extends ModelBiped
 		implements IGeoRenderer<T> {
-	private static Map<Class<? extends ItemArmor>, GeoArmorRenderer> renderers = new ConcurrentHashMap<>();
+	private static final Map<Class<? extends RiftLibArmor>, GeoArmorRenderer<?>> renderers = new ConcurrentHashMap<>();
 
 	static {
-		AnimationController.addModelFetcher((IAnimatable object) -> {
-			if (object instanceof ItemArmor) {
-				GeoArmorRenderer renderer = renderers.get(object.getClass());
-				return renderer == null ? null : renderer.getGeoModelProvider();
+		AnimationController.addModelFetcher((IAnimatable<?> object) -> {
+			if (object instanceof RiftLibArmor armor) {
+				GeoArmorRenderer<?> renderer = renderers.get(armor.getClass());
+				return renderer == null ? null : (IAnimatableModel<Object>) renderer.getGeoModelProvider();
 			}
 			return null;
 		});
@@ -56,11 +56,11 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
     private String rightBootBone = "";
     private String leftBootBone = "";
 
-	public static void registerArmorRenderer(Class<? extends ItemArmor> itemClass, GeoArmorRenderer renderer) {
+	public static void registerArmorRenderer(Class<? extends RiftLibArmor> itemClass, GeoArmorRenderer<?> renderer) {
 		renderers.put(itemClass, renderer);
 	}
 
-	public static GeoArmorRenderer getRenderer(Class<? extends ItemArmor> item) {
+	public static GeoArmorRenderer<?> getRenderer(Class<? extends RiftLibArmor> item) {
 		return renderers.get(item);
 	}
 
@@ -80,17 +80,16 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 
 	public void render(float partialTicks) {
         GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(this.currentArmorItem));
-        Integer uniqueID = this.getUniqueID(this.currentArmorItem);
 
 		GlStateManager.translate(0.0D, 1.501F, 0.0D);
 		GlStateManager.scale(-1.0F, -1.0F, 1.0F);
 
 		AnimationEvent itemEvent = new AnimationEvent(
-                this.currentArmorItem, 0,
+               0,
 				Arrays.asList(this.itemStack, this.entityLiving, this.armorSlot)
         );
-		this.modelProvider.setLivingAnimations(this.currentArmorItem, uniqueID, itemEvent);
-        this.modelProvider.createAndUpdateAnimatedLocators(this.currentArmorItem, uniqueID);
+		this.modelProvider.setLivingAnimations(this.currentArmorItem, itemEvent);
+        this.modelProvider.createAndUpdateAnimatedLocators(this.currentArmorItem);
 		this.fitToBiped();
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(0, 0.01f, 0);
@@ -188,6 +187,10 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 		return this.modelProvider.getTextureLocation(instance);
 	}
 
+	public ResourceLocation getArmorTexture(ItemStack stack) {
+		return this.getTextureLocation((T) stack.getItem());
+	}
+
 	/**
 	 * Everything after this point needs to be called every frame before rendering
 	 */
@@ -196,6 +199,7 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
 		this.itemStack = itemStack;
 		this.armorSlot = armorSlot;
 		this.currentArmorItem = (T) itemStack.getItem();
+		this.currentArmorItem.getAnimationData().setRenderContext(entityLiving, itemStack, armorSlot);
 	}
 
 	public final GeoArmorRenderer applyEntityStats(ModelBiped defaultArmor) {
@@ -248,17 +252,6 @@ public abstract class GeoArmorRenderer<T extends ItemArmor & IAnimatable> extend
         IBone boneToHide = this.modelProvider.getBone(boneName);
         if (boneToHide != null) boneToHide.setHidden(value);
     }
-
-	@Override
-	public Integer getUniqueID(T animatable) {
-		return Objects.hash(
-                this.armorSlot,
-                this.itemStack.getItem(),
-                this.itemStack.getCount(),
-				this.itemStack.hasTagCompound() ? this.itemStack.getTagCompound().toString() : 1,
-				this.entityLiving.getUniqueID().toString()
-        );
-	}
 
     //setting bones here
     public void setHeadBone(String name) {

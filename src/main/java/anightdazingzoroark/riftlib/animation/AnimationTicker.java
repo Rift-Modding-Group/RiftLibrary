@@ -1,14 +1,14 @@
 package anightdazingzoroark.riftlib.animation;
 
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import anightdazingzoroark.riftlib.core.manager.AnimationData;
 
 public class AnimationTicker {
-	private final AnimationData data;
+	private final AbstractAnimationData<?> data;
 
-	public AnimationTicker(AnimationData data) {
+	public AnimationTicker(AbstractAnimationData<?> data) {
 		this.data = data;
 	}
 

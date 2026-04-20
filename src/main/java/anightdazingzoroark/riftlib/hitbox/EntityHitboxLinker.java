@@ -1,12 +1,13 @@
 package anightdazingzoroark.riftlib.hitbox;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.resource.RiftLibCache;
 import net.minecraft.util.ResourceLocation;
 
 //this class is, just like with the model classes for rendering an entity
 //is for assigning files to be linked to a creatures hitboxes
-public abstract class EntityHitboxLinker<T extends IAnimatable & IMultiHitboxUser> {
+public abstract class EntityHitboxLinker<T extends IAnimatable<AnimationDataEntity> & IMultiHitboxUser> {
     //obvious choice
     public abstract ResourceLocation getHitboxFileLocation(T entity);
 

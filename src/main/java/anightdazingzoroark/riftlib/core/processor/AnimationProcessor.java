@@ -2,13 +2,13 @@ package anightdazingzoroark.riftlib.core.processor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.keyframe.*;
-import anightdazingzoroark.riftlib.model.AnimatedLocator;
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
+import anightdazingzoroark.riftlib.model.AnimatedLocatorNew;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
@@ -17,54 +17,44 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import anightdazingzoroark.riftlib.molang.MolangParser;
 
-import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.event.AnimationEvent;
-import anightdazingzoroark.riftlib.core.manager.AnimationData;
 import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
 import anightdazingzoroark.riftlib.core.snapshot.DirtyTracker;
 import anightdazingzoroark.riftlib.core.util.MathUtil;
 
-public class AnimationProcessor<T extends IAnimatable> {
+public class AnimationProcessor<T extends IAnimatable<?>> {
 	public boolean reloadAnimations = false;
-	private final List<IBone> modelRendererList = new ArrayList();
-	private double lastTickValue = -1;
-	private final Set<Integer> animatedEntities = new HashSet<>();
+	private final List<IBone> modelRendererList = new ArrayList<>();
 
-	public void tickAnimation(IAnimatable entity, Integer uniqueID, double seekTime, AnimationEvent event, MolangParser parser, boolean crashWhenCantFindBone) {
-		if (seekTime != this.lastTickValue) this.animatedEntities.clear();
-		// Entity already animated on this tick
-		else if (this.animatedEntities.contains(uniqueID)) return;
-
-		this.lastTickValue = seekTime;
-		this.animatedEntities.add(uniqueID);
-
+	public void tickAnimation(IAnimatable<?> entity, double seekTime, AnimationEvent event, MolangParser parser, boolean crashWhenCantFindBone) {
 		// Each animation has it's own collection of animations (called the
 		// EntityAnimationManager), which allows for multiple independent animations
-		AnimationData manager = entity.getFactory().getOrCreateAnimationData(uniqueID);
+		AbstractAnimationData<?> animationData = entity.getAnimationData();
+		animationData.initialize();
 		// Keeps track of which bones have had animations applied to them, and
 		// eventually sets the ones that don't have an animation to their default values
 		HashMap<String, DirtyTracker> modelTracker = createNewDirtyTracker();
 
 		// Store the current value of each bone rotation/position/scale
-		this.updateBoneSnapshots(manager.getBoneSnapshotCollection());
+		this.updateBoneSnapshots(animationData.getBoneSnapshotCollection());
 
-		HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshots = manager.getBoneSnapshotCollection();
+		HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshots = animationData.getBoneSnapshotCollection();
 
 		//create anim values list to store the changes in
 		BoneAnimationValuesList boneAnimationValues = new BoneAnimationValuesList();
 
 		//get changes from all anim controllers
-		for (AnimationController<T> controller : manager.getAnimationControllers().values()) {
+		for (AnimationController<?> controller : animationData.getAnimationControllers().values()) {
 			if (this.reloadAnimations) {
 				controller.markNeedsReload();
 				controller.getBoneAnimationQueues().clear();
 			}
 
-			controller.isJustStarting = manager.isFirstTick;
+			controller.isJustStarting = animationData.isFirstTick;
 			event.setController(controller);
 
-			controller.process(manager, seekTime, event, this.modelRendererList, boneSnapshots, parser, manager.dataScope, crashWhenCantFindBone);
+			controller.process(animationData, seekTime, event, this.modelRendererList, boneSnapshots, parser, animationData.dataScope, crashWhenCantFindBone);
 
 			for (BoneAnimationQueue boneAnimation : controller.getBoneAnimationQueues().values()) {
 				IBone bone = boneAnimation.bone;
@@ -112,7 +102,7 @@ public class AnimationProcessor<T extends IAnimatable> {
             //animation effects
             EventKeyFrame.ParticleEventKeyFrame lastParticleEvent = controller.getLastParticleEvent();
             if (lastParticleEvent != null) {
-                AnimatedLocator locator = manager.getAnimatedLocator(lastParticleEvent.locator);
+                AnimatedLocatorNew locator = animationData.getAnimatedLocator(lastParticleEvent.locator);
                 if (locator != null) {
                     ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(lastParticleEvent.effect);
                     if (particleBuilder != null) locator.createParticleEmitter(particleBuilder);
@@ -122,14 +112,14 @@ public class AnimationProcessor<T extends IAnimatable> {
             //sound effects
             EventKeyFrame.SoundEventKeyFrame lastSoundEvent = controller.getLastSoundEvent();
             if (lastSoundEvent != null) {
-                AnimatedLocator locator = manager.getAnimatedLocator(lastSoundEvent.locator);
+                AnimatedLocatorNew locator = animationData.getAnimatedLocator(lastSoundEvent.locator);
                 if (locator != null) RiftLibSoundHelper.playSound(entity, locator, lastSoundEvent.effect);
             }
 
 			//custom instructions
 			EventKeyFrame.CustomInstructionKeyFrame customInstructionEvent = controller.getCustomInstructionEvent();
 			if (customInstructionEvent != null) {
-				MolangScope scope = manager.dataScope;
+				MolangScope scope = animationData.dataScope;
 				parser.withScope(scope, () -> {
 					try {
 						parser.parseExpression(customInstructionEvent.expression).get();
@@ -186,7 +176,7 @@ public class AnimationProcessor<T extends IAnimatable> {
 
 		this.reloadAnimations = false;
 
-		double resetTickLength = manager.getResetSpeed();
+		double resetTickLength = animationData.getResetSpeed();
 		BoneAnimationValuesList dBoneAnimationValues = new BoneAnimationValuesList();
 		for (Map.Entry<String, DirtyTracker> tracker : modelTracker.entrySet()) {
 			IBone model = tracker.getValue().model;
@@ -275,7 +265,7 @@ public class AnimationProcessor<T extends IAnimatable> {
 				}
 			}
 		}
-		manager.isFirstTick = false;
+		animationData.isFirstTick = false;
 	}
 
 	private HashMap<String, DirtyTracker> createNewDirtyTracker() {

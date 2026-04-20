@@ -19,19 +19,16 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import anightdazingzoroark.riftlib.core.*;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.easing.EasingManager;
 import anightdazingzoroark.riftlib.core.keyframe.*;
-import anightdazingzoroark.riftlib.core.manager.AnimationData;
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import org.apache.commons.lang3.tuple.Pair;
 
 import anightdazingzoroark.riftlib.molang.MolangParser;
 
-import anightdazingzoroark.riftlib.core.AnimationState;
-import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.IAnimatableModel;
-import anightdazingzoroark.riftlib.core.PlayState;
 import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
 import anightdazingzoroark.riftlib.core.easing.EasingType;
@@ -45,7 +42,7 @@ import anightdazingzoroark.riftlib.core.util.Axis;
  *
  * @param <T> the type parameter
  */
-public class AnimationController<T extends IAnimatable> {
+public class AnimationController<T extends IAnimatable<?>> {
 	static List<ModelFetcher<?>> modelFetchers = new ArrayList<>();
 	/**
 	 * The Entity.
@@ -54,7 +51,7 @@ public class AnimationController<T extends IAnimatable> {
 	/**
 	 * The animation predicate, is tested in every process call (i.e. every frame)
 	 */
-	protected IAnimationPredicate<T> animationPredicate;
+	protected IAnimationPredicate animationPredicate;
 
 	/**
 	 * The name of the animation controller
@@ -85,7 +82,7 @@ public class AnimationController<T extends IAnimatable> {
 	 * restart, etc.
 	 */
 	@FunctionalInterface
-	public interface IAnimationPredicate<P extends IAnimatable> {
+	public interface IAnimationPredicate {
 		/**
 		 * An AnimationPredicate is run every render frame for ever AnimationController.
 		 * The "test" method is where you should change animations, stop animations,
@@ -93,7 +90,7 @@ public class AnimationController<T extends IAnimatable> {
 		 *
 		 * @return CONTINUE if the animation should continue, STOP if it should stop.
 		 */
-		PlayState test(AnimationEvent<P> event);
+		PlayState test(AnimationEvent event);
 	}
 
 	private final HashMap<String, BoneAnimationQueue> boneAnimationQueues = new HashMap<>();
@@ -122,17 +119,18 @@ public class AnimationController<T extends IAnimatable> {
 	 * animation states.
 	 */
 	public void setAnimation(AnimationBuilder builder) {
-		IAnimatableModel<T> model = getModel(this.animatable);
+		IAnimatableModel<T> model = this.getModel(this.animatable);
 		if (model != null) {
 			if (builder == null || builder.getRawAnimationList().isEmpty()) {
 				this.animationState = AnimationState.Stopped;
-			} else if (!builder.getRawAnimationList().equals(currentAnimationBuilder.getRawAnimationList())
+			}
+			else if (!builder.getRawAnimationList().equals(this.currentAnimationBuilder.getRawAnimationList())
 					|| this.needsAnimationReload) {
 				AtomicBoolean encounteredError = new AtomicBoolean(false);
 				// Convert the list of animation names to the actual list, keeping track of the
 				// loop boolean along the way
 				LinkedList<Animation> animations = builder.getRawAnimationList().stream().map((rawAnimation) -> {
-					Animation animation = model.getAnimation(rawAnimation.animationName, animatable);
+					Animation animation = model.getAnimation(rawAnimation.animationName, this.animatable);
 					if (animation == null) {
 						System.out.printf("Could not load animation: %s. Is it missing?", rawAnimation.animationName);
 						encounteredError.set(true);
@@ -175,7 +173,7 @@ public class AnimationController<T extends IAnimatable> {
 	 * @param transitionLengthTicks How long it takes to transition between
 	 *                              animations (IN TICKS!!)
 	 */
-	public AnimationController(T animatable, String name, float transitionLengthTicks, IAnimationPredicate<T> animationPredicate) {
+	public AnimationController(T animatable, String name, float transitionLengthTicks, IAnimationPredicate animationPredicate) {
 		this.animatable = animatable;
 		this.name = name;
 		this.transitionLengthTicks = transitionLengthTicks;
@@ -198,7 +196,7 @@ public class AnimationController<T extends IAnimatable> {
 	 * @param easingtype            The method of easing to use. The other
 	 *                              constructor defaults to no easing.
 	 */
-	public AnimationController(T animatable, String name, float transitionLengthTicks, EasingType easingtype, IAnimationPredicate<T> animationPredicate) {
+	public AnimationController(T animatable, String name, float transitionLengthTicks, EasingType easingtype, IAnimationPredicate animationPredicate) {
 		this.animatable = animatable;
 		this.name = name;
 		this.transitionLengthTicks = transitionLengthTicks;
@@ -226,14 +224,14 @@ public class AnimationController<T extends IAnimatable> {
 	 *                              number also within 0 and 1. Take a look at
 	 *                              {@link EasingManager}
 	 */
-	public AnimationController(T animatable, String name, float transitionLengthTicks, Function<Double, Double> customEasingMethod, IAnimationPredicate<T> animationPredicate) {
+	public AnimationController(T animatable, String name, float transitionLengthTicks, Function<Double, Double> customEasingMethod, IAnimationPredicate animationPredicate) {
 		this.animatable = animatable;
 		this.name = name;
 		this.transitionLengthTicks = transitionLengthTicks;
 		this.customEasingMethod = customEasingMethod;
 		this.easingType = EasingType.CUSTOM;
 		this.animationPredicate = animationPredicate;
-		this.tickOffset = 0.0d;
+		this.tickOffset = 0.0D;
 	}
 
 	/**
@@ -280,9 +278,9 @@ public class AnimationController<T extends IAnimatable> {
 	 * @param modelRendererList      The list of all AnimatedModelRender's
 	 * @param boneSnapshotCollection The bone snapshot collection
 	 */
-	public void process(AnimationData data, double tick, AnimationEvent<T> event, List<IBone> modelRendererList,
-						HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection, MolangParser parser, MolangScope scope,
-						boolean crashWhenCantFindBone) {
+	public void process(AbstractAnimationData<?> data, double tick, AnimationEvent event, List<IBone> modelRendererList,
+	                    HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection, MolangParser parser, MolangScope scope,
+	                    boolean crashWhenCantFindBone) {
 		//set delta time
 		double deltaTime = this.lastFrameTick >= 0 ? tick - this.lastFrameTick : 0;
 		this.lastFrameTick = tick;
@@ -422,7 +420,7 @@ public class AnimationController<T extends IAnimatable> {
 		}
 	}
 
-	private void setAnimTime(AnimationData data, double tick) {
+	private void setAnimTime(AbstractAnimationData<?> data, double tick) {
 		data.animTime = tick / 20D;
 	}
 
@@ -437,7 +435,7 @@ public class AnimationController<T extends IAnimatable> {
 		return null;
 	}
 
-	protected PlayState testAnimationPredicate(AnimationEvent<T> event) {
+	protected PlayState testAnimationPredicate(AnimationEvent event) {
 		return this.animationPredicate.test(event);
 	}
 
@@ -454,7 +452,7 @@ public class AnimationController<T extends IAnimatable> {
 		}
 	}
 
-	private void processCurrentAnimation(AnimationData data, double tick, double actualTick, MolangParser parser, MolangScope scope, boolean crashWhenCantFindBone) {
+	private void processCurrentAnimation(AbstractAnimationData<?> data, double tick, double actualTick, MolangParser parser, MolangScope scope, boolean crashWhenCantFindBone) {
 		assert currentAnimation != null;
 		double resolvedTick = this.resolveAnimTick(tick, parser, scope);
 
@@ -677,5 +675,5 @@ public class AnimationController<T extends IAnimatable> {
 	}
 
 	@FunctionalInterface
-	public interface ModelFetcher<T> extends Function<IAnimatable, IAnimatableModel<T>> {}
+	public interface ModelFetcher<T> extends Function<IAnimatable<?>, IAnimatableModel<T>> {}
 }

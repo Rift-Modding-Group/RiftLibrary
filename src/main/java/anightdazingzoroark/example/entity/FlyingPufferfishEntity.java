@@ -5,9 +5,7 @@ import anightdazingzoroark.riftlib.core.PlayState;
 import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
-import anightdazingzoroark.riftlib.core.event.AnimationEvent;
-import anightdazingzoroark.riftlib.core.manager.AnimationData;
-import anightdazingzoroark.riftlib.core.manager.AnimationFactory;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityFlying;
@@ -16,9 +14,9 @@ import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.world.World;
 
-public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable, IMultiHitboxUser {
+public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<AnimationDataEntity>, IMultiHitboxUser {
     private static final DataParameter<Boolean> RESET = EntityDataManager.createKey(FlyingPufferfishEntity.class, DataSerializers.BOOLEAN);
-    private final AnimationFactory factory = new AnimationFactory(this);
+    private final AnimationDataEntity animationData = new AnimationDataEntity(this);
     private Entity[] hitboxes = {};
     private int resetTick;
 
@@ -92,32 +90,32 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable,
     //hitbox stuff ends here
 
     @Override
-    public void registerControllers(AnimationData data) {
-        data.addAnimationController(new AnimationController(this, "goUp", 0, new AnimationController.IAnimationPredicate() {
-            @Override
-            public PlayState test(AnimationEvent event) {
-                if (canReset()) {
-                    event.getController().clearAnimationCache();
-                    return PlayState.STOP;
+    public void registerControllers(AnimationDataEntity data) {
+        data.addAnimationController(new AnimationController<>(
+                this, "goUp", 0,
+                event -> {
+                    if (canReset()) {
+                        event.getController().clearAnimationCache();
+                        return PlayState.STOP;
+                    }
+                    else {
+                        event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.flying_pufferfish.go_up", LoopType.HOLD_ON_LAST_FRAME));
+                        return PlayState.CONTINUE;
+                    }
                 }
-                else {
-                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.flying_pufferfish.go_up", LoopType.HOLD_ON_LAST_FRAME));
+        ));
+
+        data.addAnimationController(new AnimationController<>(
+                this, "puff", 0,
+                event -> {
+                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.flying_pufferfish.inflate_loop", LoopType.LOOP));
                     return PlayState.CONTINUE;
                 }
-            }
-        }));
-
-        data.addAnimationController(new AnimationController(this, "puff", 0, new AnimationController.IAnimationPredicate() {
-            @Override
-            public PlayState test(AnimationEvent event) {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.flying_pufferfish.inflate_loop", LoopType.LOOP));
-                return PlayState.CONTINUE;
-            }
-        }));
+        ));
     }
 
     @Override
-    public AnimationFactory getFactory() {
-        return this.factory;
+    public AnimationDataEntity getAnimationData() {
+        return this.animationData;
     }
 }

@@ -5,27 +5,25 @@ import anightdazingzoroark.riftlib.core.PlayState;
 import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
-import anightdazingzoroark.riftlib.core.event.AnimationEvent;
-import anightdazingzoroark.riftlib.core.manager.AnimationData;
-import anightdazingzoroark.riftlib.core.manager.AnimationFactory;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataTileEntity;
 import net.minecraft.tileentity.TileEntity;
 
-public class MerryGoRoundTileEntity extends TileEntity implements IAnimatable {
-    private final AnimationFactory factory = new AnimationFactory(this);
+public class MerryGoRoundTileEntity extends TileEntity implements IAnimatable<AnimationDataTileEntity> {
+    private final AnimationDataTileEntity animationData = new AnimationDataTileEntity(this);
 
     @Override
-    public void registerControllers(AnimationData data) {
-        data.addAnimationController(new AnimationController(this, "rotate", 0, new AnimationController.IAnimationPredicate() {
-            @Override
-            public PlayState test(AnimationEvent event) {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.merry_go_round.rotate", LoopType.LOOP));
-                return PlayState.CONTINUE;
-            }
-        }));
+    public void registerControllers(AnimationDataTileEntity data) {
+        data.addAnimationController(new AnimationController<>(
+                this, "rotate", 0,
+                event -> {
+                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.merry_go_round.rotate", LoopType.LOOP));
+                    return PlayState.CONTINUE;
+                }
+        ));
     }
 
     @Override
-    public AnimationFactory getFactory() {
-        return this.factory;
+    public AnimationDataTileEntity getAnimationData() {
+        return this.animationData;
     }
 }

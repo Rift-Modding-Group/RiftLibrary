@@ -1,17 +1,17 @@
 package anightdazingzoroark.example.registry;
 
+import anightdazingzoroark.example.armor.GreenArmor;
 import anightdazingzoroark.example.item.BombItem;
-import anightdazingzoroark.example.item.GreenArmorItem;
-import anightdazingzoroark.example.item.SatelliteDishHelmet;
+import anightdazingzoroark.example.armor.SatelliteDishHelmet;
 import net.minecraft.item.Item;
 
 public class ItemRegistry {
 	public static BombItem BOMB;
 
-	public static GreenArmorItem GREEN_HEAD;
-	public static GreenArmorItem GREEN_CHEST;
-	public static GreenArmorItem GREEN_LEGGINGS;
-	public static GreenArmorItem GREEN_BOOTS;
+	public static GreenArmor GREEN_HEAD;
+	public static GreenArmor GREEN_CHEST;
+	public static GreenArmor GREEN_LEGGINGS;
+	public static GreenArmor GREEN_BOOTS;
 
     public static SatelliteDishHelmet SATELLITE_DISH_HELMET;
 

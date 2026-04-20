@@ -19,9 +19,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * **/
 @Mixin(RenderItem.class)
 public class RenderItemMixin {
+    @Inject(method = "renderItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/renderer/block/model/IBakedModel;)V", at = @At(value = "HEAD"), cancellable = true)
+    public void renderItem(ItemStack stack, IBakedModel model, CallbackInfo ci) {
+        if (this.hasAnimationDataItemStack(stack)) {
+            this.finalRenderItem(stack, model, ItemCameraTransforms.TransformType.GROUND);
+            ci.cancel();
+        }
+    }
+
     @Inject(method = "renderItemModel", at = @At(value = "HEAD"), cancellable = true)
     public void renderItemModel(ItemStack stack, IBakedModel bakedmodel, ItemCameraTransforms.TransformType transform, boolean leftHanded, CallbackInfo ci) {
         RenderItem thisRenderItem = (RenderItem) ((Object) this);
+        System.out.println("hello world!!!");
         if (this.hasAnimationDataItemStack(stack)) {
             thisRenderItem.textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
             thisRenderItem.textureManager.getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false);
@@ -78,7 +87,7 @@ public class RenderItemMixin {
             GlStateManager.pushMatrix();
             GlStateManager.translate(-0.5F, -0.5F, -0.5F);
 
-            if (model.isBuiltInRenderer()) {
+            if (this.hasAnimationDataItemStack(stack)) {
                 GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
                 GlStateManager.enableRescaleNormal();
 

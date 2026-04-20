@@ -130,7 +130,7 @@ public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder> extends
 		GlStateManager.translate(0.5, 0.5, 0.5);
 
 		Minecraft.getMinecraft().renderEngine.bindTexture(this.getTextureLocation(animatable));
-		Color renderColor = getRenderColor(animatable, 0f);
+		Color renderColor = this.getRenderColor(animatable, 0f);
         this.render(model, animatable, 0f,
                 (float) renderColor.getRed() / 255f, (float) renderColor.getGreen() / 255f,
 				(float) renderColor.getBlue() / 255f, (float) renderColor.getAlpha() / 255

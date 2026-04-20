@@ -48,6 +48,12 @@ public class AnimationDataArmor extends AbstractAnimationData<RiftLibArmor> {
 
     @Override
     public @NotNull NBTTagCompound asNBT() {
-        return new NBTTagCompound();
+        NBTTagCompound toReturn = new NBTTagCompound();
+        toReturn.setString("AnimationTargetType", "Armor");
+        toReturn.setString("ArmorClass", this.getHolder().getClass().getName());
+        toReturn.setInteger("WearerID", this.wearer != null ? this.wearer.getEntityId() : -1);
+        toReturn.setInteger("ArmorSlot", this.slot != null ? this.slot.ordinal() : -1);
+        toReturn.setTag("Stack", this.stack.writeToNBT(new NBTTagCompound()));
+        return toReturn;
     }
 }

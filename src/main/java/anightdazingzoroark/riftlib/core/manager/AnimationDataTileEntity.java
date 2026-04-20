@@ -3,6 +3,7 @@ package anightdazingzoroark.riftlib.core.manager;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;
 
 public class AnimationDataTileEntity extends AbstractAnimationData<TileEntity> {
@@ -12,7 +13,11 @@ public class AnimationDataTileEntity extends AbstractAnimationData<TileEntity> {
 
     @Override
     public @NotNull NBTTagCompound asNBT() {
-        return new NBTTagCompound();
+        NBTTagCompound toReturn = new NBTTagCompound();
+        BlockPos tileEntityPos = this.getHolder().getPos();
+        toReturn.setString("AnimationTargetType", "TileEntity");
+        toReturn.setIntArray("TileEntityPos", new int[]{tileEntityPos.getX(), tileEntityPos.getY(), tileEntityPos.getZ()});
+        return toReturn;
     }
 
     private static IAnimatable<?> getAnimatable(TileEntity holder) {

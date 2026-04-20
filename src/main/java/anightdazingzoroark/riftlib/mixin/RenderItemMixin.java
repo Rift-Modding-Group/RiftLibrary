@@ -30,7 +30,6 @@ public class RenderItemMixin {
     @Inject(method = "renderItemModel", at = @At(value = "HEAD"), cancellable = true)
     public void renderItemModel(ItemStack stack, IBakedModel bakedmodel, ItemCameraTransforms.TransformType transform, boolean leftHanded, CallbackInfo ci) {
         RenderItem thisRenderItem = (RenderItem) ((Object) this);
-        System.out.println("hello world!!!");
         if (this.hasAnimationDataItemStack(stack)) {
             thisRenderItem.textureManager.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
             thisRenderItem.textureManager.getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE).setBlurMipmap(false, false);

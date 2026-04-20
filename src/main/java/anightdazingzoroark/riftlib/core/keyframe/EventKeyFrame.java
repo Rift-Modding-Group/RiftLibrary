@@ -36,11 +36,11 @@ public class EventKeyFrame {
     }
 
     public static class CustomInstructionKeyFrame extends EventKeyFrame {
-        public final String expression;
+        public final String instruction;
 
-        public CustomInstructionKeyFrame(Double startTick, String expression) {
+        public CustomInstructionKeyFrame(Double startTick, String instruction) {
             super(startTick);
-            this.expression = expression;
+            this.instruction = instruction;
         }
     }
 }

@@ -61,6 +61,11 @@ public abstract class AbstractAnimationData<T> {
         return this.holder;
     }
 
+    @NotNull
+    public IAnimatable<?> getAnimatable() {
+        return this.animatable;
+    }
+
     public void initialize() {
         if (this.initialized) return;
         this.initialized = true;

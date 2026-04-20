@@ -12,15 +12,14 @@ import java.util.List;
 public interface IAnimatable<T extends AbstractAnimationData<?>> {
     T getAnimationData();
 
+    /**
+     * This registers animation controllers
+     * */
     void registerControllers(T data);
-
-    default void initializeAnimationData() {
-        T data = this.getAnimationData();
-        if (data != null) data.initialize();
-    }
 
     /**
      * This only runs once and will run when this object just started rendering
+     * This is meant for updating molang variables once
      *
      * @return A List of AnimatableValues.
      */
@@ -30,6 +29,7 @@ public interface IAnimatable<T extends AbstractAnimationData<?>> {
 
     /**
      * This runs as long as the rendered object gets rendered
+     * This is meant for updating molang variables repeatedly
      *
      * @return A List of AnimatableValues.
      */

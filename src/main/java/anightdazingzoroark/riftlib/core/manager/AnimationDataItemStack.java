@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,7 +16,19 @@ public class AnimationDataItemStack extends AbstractAnimationData<AnimatedItemSt
 
     @Override
     public @NotNull NBTTagCompound asNBT() {
-        return new NBTTagCompound();
+        NBTTagCompound toReturn = new NBTTagCompound();
+        ItemStack stack = this.getHolder().getStack();
+        EntityPlayer playerHolder = this.getPlayerHolder();
+        EnumHand playerHolderHand = playerHolder == null ? null : this.getPlayerHoldingHand(playerHolder, stack);
+
+        toReturn.setString("AnimationTargetType", "ItemStack");
+        toReturn.setString("HolderClass", this.getHolder().getClass().getName());
+        toReturn.setTag("Stack", stack.writeToNBT(new NBTTagCompound()));
+
+        int playerHolderID = playerHolder != null ? playerHolder.getEntityId() : -1;
+        toReturn.setInteger("PlayerHolderID", playerHolderID);
+        toReturn.setInteger("PlayerHolderHand", playerHolderHand != null ? playerHolderHand.ordinal() : -1);
+        return toReturn;
     }
 
     //get the player holding the itemstack. null if its not held
@@ -33,6 +46,14 @@ public class AnimationDataItemStack extends AbstractAnimationData<AnimatedItemSt
         }
 
         return null;
+    }
+
+    public EnumHand getPlayerHolderHand() {
+        ItemStack stack = this.getHolder().getStack();
+        if (stack.isEmpty()) return null;
+
+        EntityPlayer playerHolder = this.getPlayerHolder();
+        return playerHolder == null ? null : this.getPlayerHoldingHand(playerHolder, stack);
     }
 
     //check if an item is being right click held on
@@ -57,5 +78,11 @@ public class AnimationDataItemStack extends AbstractAnimationData<AnimatedItemSt
                 && !second.isEmpty()
                 && ItemStack.areItemsEqual(first, second)
                 && ItemStack.areItemStackTagsEqual(first, second);
+    }
+
+    private EnumHand getPlayerHoldingHand(EntityPlayer player, ItemStack stack) {
+        if (this.isSameStack(player.getHeldItemMainhand(), stack)) return EnumHand.MAIN_HAND;
+        if (this.isSameStack(player.getHeldItemOffhand(), stack)) return EnumHand.OFF_HAND;
+        return null;
     }
 }

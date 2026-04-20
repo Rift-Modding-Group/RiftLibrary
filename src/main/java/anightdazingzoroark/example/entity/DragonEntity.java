@@ -22,6 +22,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 
 public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IMultiHitboxUser, IDynamicRideUser {
     private static final DataParameter<Boolean> ATTACKING = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
@@ -216,5 +217,14 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
                     }
                 }
         ));
+    }
+
+    @Override
+    public HashMap<String, Runnable> animationMessageEffects() {
+        HashMap<String, Runnable> toReturn = new HashMap<>();
+        toReturn.put("rawr", () -> {
+            System.out.println("RAWRRRRRRRRRRRRRR");
+        });
+        return toReturn;
     }
 }

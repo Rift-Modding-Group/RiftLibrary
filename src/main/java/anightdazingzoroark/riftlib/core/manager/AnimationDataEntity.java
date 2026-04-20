@@ -25,6 +25,7 @@ public class AnimationDataEntity extends AbstractAnimationData<EntityLivingBase>
     @NonNull
     public NBTTagCompound asNBT() {
         NBTTagCompound toReturn = new NBTTagCompound();
+        toReturn.setString("AnimationTargetType", "Entity");
         toReturn.setInteger("EntityID", this.getHolder().getEntityId());
         return toReturn;
     }

@@ -6,12 +6,14 @@ import java.util.List;
 import java.util.Map;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibRunAnimationMessageEffect;
 import anightdazingzoroark.riftlib.core.keyframe.*;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.model.AnimatedLocatorNew;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
+import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundHelper;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -22,6 +24,7 @@ import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
 import anightdazingzoroark.riftlib.core.snapshot.DirtyTracker;
 import anightdazingzoroark.riftlib.core.util.MathUtil;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class AnimationProcessor<T extends IAnimatable<?>> {
 	public boolean reloadAnimations = false;
@@ -119,15 +122,14 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 			//custom instructions
 			EventKeyFrame.CustomInstructionKeyFrame customInstructionEvent = controller.getCustomInstructionEvent();
 			if (customInstructionEvent != null) {
-				MolangScope scope = animationData.dataScope;
-				parser.withScope(scope, () -> {
-					try {
-						parser.parseExpression(customInstructionEvent.expression).get();
-					}
-					catch (Exception e) {
-						throw new RuntimeException(e);
-					}
-				});
+				HashMap<String, Runnable> messageEffects = animationData.getAnimatable().animationMessageEffects();
+				Runnable localMessageEffect = messageEffects.get(customInstructionEvent.instruction);
+				if (localMessageEffect != null) {
+					ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibRunAnimationMessageEffect(
+							customInstructionEvent.instruction,
+							animationData.asNBT()
+					));
+				}
 			}
 		}
 

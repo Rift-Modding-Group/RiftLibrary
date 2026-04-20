@@ -48,6 +48,18 @@ public class AnimationConstructor {
             }
         }
 
+        //create instructions. are completely reserved for animation message effects
+        Map<String, String> rawInstructionAnimations = rawAnimation.getValue().instructions;
+        if (rawInstructionAnimations != null) {
+            for (Map.Entry<String, String> rawInstructionAnim : rawInstructionAnimations.entrySet()) {
+                EventKeyFrame.CustomInstructionKeyFrame soundEventKeyFrame = new EventKeyFrame.CustomInstructionKeyFrame(
+                        Double.parseDouble(rawInstructionAnim.getKey()) * 20,
+                        rawInstructionAnim.getValue()
+                );
+                toReturn.customInstructionKeyFrames.add(soundEventKeyFrame);
+            }
+        }
+
         //create bone animations
         Map<String, RawAnimationFile.RawBoneAnimations> rawBoneAnimations = rawAnimation.getValue().bones;
         if (rawBoneAnimations != null) {

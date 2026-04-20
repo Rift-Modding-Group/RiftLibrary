@@ -19,6 +19,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 public class ServerProxy {
     public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> MESSAGE_WRAPPER;
     public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> HITBOX_MESSAGE_WRAPPER;
+    public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> INSTRUCTION_MESSAGE_WRAPPER;
 
     public void preInit(FMLPreInitializationEvent e) {
         //register particle component registry
@@ -33,6 +34,9 @@ public class ServerProxy {
         HITBOX_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_hitbox");
         HITBOX_MESSAGE_WRAPPER.registerMessage(RiftLibUpdateHitboxPos.class, RiftLibMessageSide.BOTH);
         HITBOX_MESSAGE_WRAPPER.registerMessage(RiftLibUpdateHitboxSize.class, RiftLibMessageSide.BOTH);
+
+        INSTRUCTION_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_instruction");
+        MESSAGE_WRAPPER.registerMessage(RiftLibRunAnimationMessageEffect.class, RiftLibMessageSide.SERVER);
 
         MinecraftForge.EVENT_BUS.register(new HitboxTicker.Server());
 

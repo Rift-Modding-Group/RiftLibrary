@@ -26,6 +26,9 @@ public class RawAnimationFile {
 
         @SerializedName("sound_effects")
         public Map<String, RawSoundEffectAnimations> soundEffects;
+
+        @SerializedName("timeline")
+        public Map<String, String> instructions;
     }
 
     public static class RawBoneAnimations {

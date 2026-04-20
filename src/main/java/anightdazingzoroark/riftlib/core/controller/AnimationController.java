@@ -448,7 +448,7 @@ public class AnimationController<T extends IAnimatable<?>> {
 	}
 
 	private void processCurrentAnimation(AbstractAnimationData<?> data, double tick, double actualTick, MolangParser parser, MolangScope scope, boolean crashWhenCantFindBone) {
-		assert currentAnimation != null;
+		assert this.currentAnimation != null;
 		double resolvedTick = this.resolveAnimTick(tick, parser, scope);
 
 		if (resolvedTick < this.lastResolvedAnimTick) {
@@ -457,29 +457,32 @@ public class AnimationController<T extends IAnimatable<?>> {
 		this.lastResolvedAnimTick = resolvedTick;
 
 		//Animation has ended
-		if (resolvedTick >= currentAnimation.animationLength) {
+		if (resolvedTick >= this.currentAnimation.animationLength) {
 			if (this.currentAnimation.loop == LoopType.PLAY_ONCE) {
-				this.resetEventKeyFrames();
+				resolvedTick = Math.min(resolvedTick, this.currentAnimation.animationLength);
+				this.collectEventKeyFrames(resolvedTick);
 
 				//pull the next animation from the queue
 				Animation peek = this.animationQueue.peek();
 				if (peek == null) {
 					//No more animations left, stop the animation controller
 					this.animationState = AnimationState.Stopped;
-					return;
-				}
+                }
 				else {
 					//Otherwise, set the state to transitioning and start transitioning to the next
 					//animation next frame
+					this.resetEventKeyFrames();
 					this.animationState = AnimationState.Transitioning;
 					this.shouldResetTick = true;
 					this.currentAnimation = this.animationQueue.peek();
-				}
-			}
+                }
+                return;
+            }
 			//unlike other loop types, hold on last frame doesn't reset key frames
 			//until a new animation in the queue shows up
 			else if (this.currentAnimation.loop == LoopType.HOLD_ON_LAST_FRAME) {
 				resolvedTick = Math.min(resolvedTick, currentAnimation.animationLength);
+				this.collectEventKeyFrames(resolvedTick);
 
 				Animation peek = this.animationQueue.peek();
 				if (peek != null) {
@@ -539,6 +542,14 @@ public class AnimationController<T extends IAnimatable<?>> {
 			}
 		}
 
+		this.collectEventKeyFrames(resolvedTick);
+
+		if (this.transitionLengthTicks == 0 && shouldResetTick && this.animationState == AnimationState.Transitioning) {
+			this.currentAnimation = animationQueue.poll();
+		}
+	}
+
+	private void collectEventKeyFrames(double resolvedTick) {
 		//create a riftlibrary particle emitter that's attached to a locator
 		for (EventKeyFrame.ParticleEventKeyFrame particleEventKeyFrame : this.currentAnimation.particleKeyFrames) {
 			if (!this.executedKeyFrames.contains(particleEventKeyFrame) && resolvedTick >= particleEventKeyFrame.getStartTick()) {
@@ -561,10 +572,6 @@ public class AnimationController<T extends IAnimatable<?>> {
 				this.lastCustomInstructionEvent = customInstructionKeyFrame;
 				this.executedKeyFrames.add(customInstructionKeyFrame);
 			}
-		}
-
-		if (this.transitionLengthTicks == 0 && shouldResetTick && this.animationState == AnimationState.Transitioning) {
-			this.currentAnimation = animationQueue.poll();
 		}
 	}
 

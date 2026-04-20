@@ -47,7 +47,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     protected void initEntityAI() {
         this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<>(this, EntityCow.class, true));
 
-        this.tasks.addTask(1, new DragonAttackAI(this, 1.0D, 0.75f, 0.375f));
+        this.tasks.addTask(1, new DragonAttackAI(this, 1.0D));
         this.tasks.addTask(2, new EntityAIWanderAvoidWater(this, 1.0D));
         this.tasks.addTask(3, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
         this.tasks.addTask(4, new EntityAILookIdle(this));
@@ -182,6 +182,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
 
     @Override
     public boolean attackEntityAsMob(Entity entityIn) {
+        if (entityIn == null) return false;
         boolean flag = entityIn.attackEntityFrom(DamageSource.causeMobDamage(this), (float)((int)this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getAttributeValue()));
         if (flag) {
             this.applyEnchantments(this, entityIn);
@@ -207,8 +208,8 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
         data.addAnimationController(new AnimationController<>(
                 this, "attack", 0,
                 event -> {
-                    if (isAttacking()) {
-                        event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.dragon.attack_while_flying", LoopType.LOOP));
+                    if (this.isAttacking()) {
+                        event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.dragon.attack_while_flying", LoopType.PLAY_ONCE));
                         return PlayState.CONTINUE;
                     }
                     else {
@@ -222,8 +223,11 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     @Override
     public HashMap<String, Runnable> animationMessageEffects() {
         HashMap<String, Runnable> toReturn = new HashMap<>();
-        toReturn.put("rawr", () -> {
-            System.out.println("RAWRRRRRRRRRRRRRR");
+        toReturn.put("performAttack", () -> {
+            this.attackEntityAsMob(this.getAttackTarget());
+        });
+        toReturn.put("endAttack", () -> {
+            this.setAttacking(false);
         });
         return toReturn;
     }

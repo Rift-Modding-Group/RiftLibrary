@@ -4,7 +4,6 @@
 		"animation.dragon.flying": {
 			"loop": true,
 			"animation_length": 1,
-			"anim_time_update": "query.anim_time + query.delta_time",
 			"bones": {
 				"body": {
 					"rotation": [-22.5, 0, 0]
@@ -142,6 +141,10 @@
 						"0.375": [0, 0, 0]
 					}
 				}
+			},
+			"timeline": {
+				"0.375": "performAttack",
+				"0.75": "endAttack"
 			}
 		},
 		"animation.dragon.land_pose": {

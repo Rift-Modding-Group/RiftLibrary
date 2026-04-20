@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2020.
- * Author: Bernie G. (Gecko)
- */
-
 package anightdazingzoroark.riftlib.core.controller;
 
 import java.util.ArrayList;

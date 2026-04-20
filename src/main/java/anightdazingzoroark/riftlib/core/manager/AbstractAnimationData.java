@@ -10,26 +10,33 @@ import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedLocatorNew;
 import anightdazingzoroark.riftlib.molang.MolangParser;
-import anightdazingzoroark.riftlib.molang.MolangQueryParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.resource.RiftLibCache;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
 
+/**
+ * This class is to hold information pertaining to animation data for an animated object
+ * */
 public abstract class AbstractAnimationData<T> {
+    @NotNull
     private final T holder;
+    @NotNull
     private final IAnimatable<?> animatable;
     private HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection = new HashMap<>();
     private final HashMap<String, AnimationController<?>> animationControllers = new HashMap<>();
     private final List<AnimatedLocatorNew> animatedLocators = new ArrayList<>();
     private int animatedLocatorTicker;
     private final MolangParser parser = RiftLibCache.getInstance().parser;
-    private final MolangQueryParser queryParser = RiftLibCache.getInstance().queryParser;
     public final MolangScope dataScope = new MolangScope();
     private GeoModel currentModel;
     public double tick;
@@ -44,11 +51,12 @@ public abstract class AbstractAnimationData<T> {
     public double deltaTime;
     public double lifeTime;
 
-    public AbstractAnimationData(T holder, IAnimatable<?> animatable) {
+    public AbstractAnimationData(@NotNull T holder, @NotNull IAnimatable<?> animatable) {
         this.holder = holder;
         this.animatable = animatable;
     }
 
+    @NotNull
     public T getHolder() {
         return this.holder;
     }
@@ -192,7 +200,11 @@ public abstract class AbstractAnimationData<T> {
     }
 
     public void updateMolangQueries() {
-        this.queryParser.updateQueries(this, this.parser, this.dataScope);
+        this.parser.withScope(this.dataScope, () -> {
+            for (Map.Entry<String, BiFunction<AbstractAnimationData<T>, MolangParser, Double>> entry : this.getMolangQueries().entrySet()) {
+                this.parser.setValue(entry.getKey(), entry.getValue().apply(this, this.parser));
+            }
+        });
     }
 
     /**
@@ -200,4 +212,38 @@ public abstract class AbstractAnimationData<T> {
      * */
     @NotNull
     public abstract NBTTagCompound asNBT();
+
+    /**
+     * Each AnimationData class is to have their own molang queries in addition to the ones here shared amongst all
+     * */
+    protected HashMap<String, BiFunction<AbstractAnimationData<T>, MolangParser, Double>> getMolangQueries() {
+        HashMap<String, BiFunction<AbstractAnimationData<T>, MolangParser, Double>> toReturn = new HashMap<>();
+        //-----for data specifically-----
+        toReturn.put("query.anim_time", (animData, parser) -> {
+            return animData.animTime;
+        });
+        toReturn.put("query.delta_time", (animData, parser) -> {
+            return animData.deltaTime;
+        });
+        toReturn.put("query.life_time", (animData, parser) -> {
+            return animData.lifeTime;
+        });
+        //for world for some reason
+        toReturn.put("query.actor_count", (animData, parser) -> {
+            World world = Minecraft.getMinecraft().world;
+            if (world == null) return 0D;
+            return (double) world.getLoadedEntityList().size();
+        });
+        toReturn.put("query.time_of_day", (animData, parser) -> {
+            World world = Minecraft.getMinecraft().world;
+            if (world == null) return 0D;
+            return world.getTotalWorldTime() / 24000D;
+        });
+        toReturn.put("query.moon_phase", (animData, parser) -> {
+            World world = Minecraft.getMinecraft().world;
+            if (world == null) return 0D;
+            return (double) world.getMoonPhase();
+        });
+        return toReturn;
+    }
 }

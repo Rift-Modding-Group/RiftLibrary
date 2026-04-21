@@ -44,7 +44,6 @@ public class ClientProxy extends ServerProxy {
         RenderingRegistry.registerEntityRenderingHandler(EntityHitbox.class, new EntityHitboxRenderer.Factory());
         MinecraftForge.EVENT_BUS.register(new ParticleTicker());
         MinecraftForge.EVENT_BUS.register(new RiftLibSoundEffectRegistry());
-        MinecraftForge.EVENT_BUS.register(new HitboxTicker.Client());
         MinecraftForge.EVENT_BUS.register(new GeoItemRendererTicker());
 
         //these will only happen in a deobfuscated environment

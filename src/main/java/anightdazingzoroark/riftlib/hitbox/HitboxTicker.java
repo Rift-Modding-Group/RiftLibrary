@@ -1,107 +1,44 @@
 package anightdazingzoroark.riftlib.hitbox;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
-import net.minecraft.world.World;
-import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+/**
+ * One issue I've had with the hitbox system in previous versions was how there's a good chance that
+ * when an entity is removed from the world, so do its hitboxes, mainly from how hitboxes were ticked
+ * from the entity. This should fix this by cleaning up orphaned hitboxes that couldn't be removed
+ * when the parent was disappeared.
+ * */
 public class HitboxTicker {
-    private static void manageLoadedUsersHitboxes(HashMap<Integer, List<EntityHitbox>> hitboxMap, World world) {
-        List<Integer> hitboxUserIDs = new ArrayList<>();
-        for (Entity entity : world.getLoadedEntityList()) {
-            if (!(entity instanceof IMultiHitboxUser)) continue;
+    private static final int CLEANUP_INTERVAL = 20;
 
-            //get and put loaded entity ids
-            hitboxUserIDs.add(entity.getEntityId());
-        }
+    @SubscribeEvent
+    public void tickHitboxesFromParent(LivingEvent.LivingUpdateEvent event) {
+        if (!(event.getEntity() instanceof IMultiHitboxUser hitboxUser)) return;
 
-        //add hitboxes next
-        //iterate over every id to see if the entity is loaded
-        //if it is already in the map, add it
-        //otherwise ignore
-        for (int hitboxUserID : hitboxUserIDs) {
-            if (hitboxMap.containsKey(hitboxUserID)) continue;
+        Entity[] parts = hitboxUser.getMultiHitboxUser().getParts();
+        if (parts == null) return;
 
-            Entity entity = world.getEntityByID(hitboxUserID);
-            List<EntityHitbox> hitboxes = new ArrayList<>();
-            if (entity == null) continue;
-            for (Entity entityPart : entity.getParts()) {
-                if (!(entityPart instanceof EntityHitbox entityHitbox)) continue;
-                hitboxes.add(entityHitbox);
-            }
-            hitboxMap.put(hitboxUserID, hitboxes);
+        for (Entity part : parts) {
+            if (!(part instanceof EntityHitbox entityHitbox)) continue;
+            entityHitbox.onUpdate();
         }
     }
 
-    private static void updateLoadedUsersHitboxes(HashMap<Integer, List<EntityHitbox>> hitboxMap) {
-        for (Map.Entry<Integer, List<EntityHitbox>> entry : hitboxMap.entrySet()) {
-            //update the hitboxes only
-            for (EntityHitbox entityHitbox : entry.getValue()) {
-                entityHitbox.onUpdate();
-            }
-        }
-    }
+    @SubscribeEvent
+    public void cleanupOrphanedHitboxes(TickEvent.WorldTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        if (event.world.getTotalWorldTime() % CLEANUP_INTERVAL != 0) return;
 
-    private static void cleanupLoadedUsersHitboxes(HashMap<Integer, List<EntityHitbox>> hitboxMap) {
-        List<Integer> userIDsToRemove = new ArrayList<>();
-        outer: for (Map.Entry<Integer, List<EntityHitbox>> entry : hitboxMap.entrySet()) {
-            for (EntityHitbox entityHitbox : entry.getValue()) {
-                //if the part exists, it might be because its parent still does too
-                //so skip them
-                if (entityHitbox.isAddedToWorld()) continue outer;
-                userIDsToRemove.add(entry.getKey());
-            }
-        }
+        for (Entity entity : event.world.getLoadedEntityList()) {
+            if (!(entity instanceof EntityHitbox entityHitbox)) continue;
 
-        for (int hitboxUserID : userIDsToRemove) hitboxMap.remove(hitboxUserID);
-    }
+            Entity parent = entityHitbox.getParentAsEntityLiving();
+            if (parent != null && parent.isEntityAlive() && !parent.isDead) continue;
 
-    public static class Server {
-        private final HashMap<Integer, List<EntityHitbox>> hitboxMap = new HashMap<>();
-
-        @SubscribeEvent
-        public void tickHitboxes(TickEvent.WorldTickEvent event) {
-            if (event.phase != TickEvent.Phase.END) return;
-            manageLoadedUsersHitboxes(hitboxMap, event.world);
-            updateLoadedUsersHitboxes(hitboxMap);
-            cleanupLoadedUsersHitboxes(hitboxMap);
-        }
-
-        @SubscribeEvent
-        public void onWorldUnload(WorldEvent.Unload event) {
-            hitboxMap.clear();
-        }
-    }
-
-    public static class Client {
-        private final HashMap<Integer, List<EntityHitbox>> hitboxMap = new HashMap<>();
-
-        @SubscribeEvent
-        @SideOnly(Side.CLIENT)
-        public void tickHitboxes(TickEvent.ClientTickEvent event) {
-            if (event.phase != TickEvent.Phase.END) return;
-
-            World world = Minecraft.getMinecraft().world;
-            if (world == null) return;
-
-            manageLoadedUsersHitboxes(hitboxMap, world);
-            updateLoadedUsersHitboxes(hitboxMap);
-            cleanupLoadedUsersHitboxes(hitboxMap);
-        }
-
-        @SubscribeEvent
-        @SideOnly(Side.CLIENT)
-        public void onWorldUnload(WorldEvent.Unload event) {
-            hitboxMap.clear();
+            event.world.removeEntityDangerously(entityHitbox);
         }
     }
 }

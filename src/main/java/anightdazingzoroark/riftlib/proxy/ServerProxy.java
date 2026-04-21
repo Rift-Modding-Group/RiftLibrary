@@ -38,7 +38,7 @@ public class ServerProxy {
         INSTRUCTION_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_instruction");
         MESSAGE_WRAPPER.registerMessage(RiftLibRunAnimationMessageEffect.class, RiftLibMessageSide.SERVER);
 
-        MinecraftForge.EVENT_BUS.register(new HitboxTicker.Server());
+        MinecraftForge.EVENT_BUS.register(new HitboxTicker());
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {

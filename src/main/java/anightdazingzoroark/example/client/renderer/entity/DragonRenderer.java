@@ -11,7 +11,7 @@ public class DragonRenderer extends GeoEntityRenderer<DragonEntity> {
     }
 
     @Override
-    protected float entityScale() {
+    protected float entityScale(DragonEntity entity) {
         return 3f;
     }
 }

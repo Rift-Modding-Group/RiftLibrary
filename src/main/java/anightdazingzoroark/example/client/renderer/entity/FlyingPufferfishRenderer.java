@@ -11,7 +11,7 @@ public class FlyingPufferfishRenderer extends GeoEntityRenderer<FlyingPufferfish
     }
 
     @Override
-    protected float entityScale() {
+    protected float entityScale(FlyingPufferfishEntity entity) {
         return 2f;
     }
 }

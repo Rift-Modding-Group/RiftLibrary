@@ -72,7 +72,8 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		this.modelProvider.createAndUpdateAnimatedLocators(entity);
 
         GlStateManager.pushMatrix();
-		GlStateManager.scale(this.entityScale(), this.entityScale(), this.entityScale());
+		float scaleValue = this.entityScale(entity);
+		GlStateManager.scale(scaleValue, scaleValue, scaleValue);
 		GlStateManager.translate(0, 0.01f, 0);
 		Minecraft.getMinecraft().renderEngine.bindTexture(getEntityTexture(entity));
 		Color renderColor = this.getRenderColor(entity, partialTicks);
@@ -119,7 +120,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 	/**
 	 * This must be overriden to effectively rescale the entity's model
 	 */
-	protected float entityScale() {
+	protected float entityScale(T entityLiving) {
 		return 1f;
 	}
 

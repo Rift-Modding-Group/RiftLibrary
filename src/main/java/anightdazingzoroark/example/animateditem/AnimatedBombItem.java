@@ -10,5 +10,5 @@ public class AnimatedBombItem extends AnimatedItemStackHolder {
     }
 
     @Override
-    public void registerControllers(AnimationDataItemStack data) {}
+    public void registerAnimationControllers(AnimationDataItemStack data) {}
 }

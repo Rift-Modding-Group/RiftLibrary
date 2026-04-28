@@ -136,7 +136,7 @@ public abstract class RiftLibProjectile extends EntityArrow implements IAnimatab
     }
 
     @Override
-    public abstract void registerControllers(AnimationDataProjectile data);
+    public abstract void registerAnimationControllers(AnimationDataProjectile data);
 
     public abstract SoundEvent getOnProjectileHitSound();
 

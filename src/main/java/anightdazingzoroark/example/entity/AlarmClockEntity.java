@@ -22,7 +22,7 @@ public class AlarmClockEntity extends EntityLiving implements IAnimatable<Animat
     }
 
     @Override
-    public void registerControllers(AnimationDataEntity data) {
+    public void registerAnimationControllers(AnimationDataEntity data) {
         data.addAnimationController(new AnimationController<>(
                 this, "clock", 0,
                 event -> {

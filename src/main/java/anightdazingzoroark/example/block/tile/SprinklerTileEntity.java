@@ -12,7 +12,7 @@ public class SprinklerTileEntity extends TileEntity implements IAnimatable<Anima
     private final AnimationDataTileEntity animationData = new AnimationDataTileEntity(this);
 
     @Override
-    public void registerControllers(AnimationDataTileEntity data) {
+    public void registerAnimationControllers(AnimationDataTileEntity data) {
         data.addAnimationController(new AnimationController<>(
                 this, "sprinker_spin", 0,
                 event -> {

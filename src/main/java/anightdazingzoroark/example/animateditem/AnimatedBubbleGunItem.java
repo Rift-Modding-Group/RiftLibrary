@@ -14,7 +14,7 @@ public class AnimatedBubbleGunItem extends AnimatedItemStackHolder {
     }
 
     @Override
-    public void registerControllers(AnimationDataItemStack data) {
+    public void registerAnimationControllers(AnimationDataItemStack data) {
         data.addAnimationController(new AnimationController<>(this, "blow", 0, event -> {
             if (data.isBeingUsed()) {
                 event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.bubble_gun.blow_bubbles", LoopType.PLAY_ONCE));

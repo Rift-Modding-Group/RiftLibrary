@@ -16,7 +16,7 @@ public class SatelliteDishHelmet extends RiftLibArmor {
     }
 
     @Override
-    public void registerControllers(AnimationDataArmor data) {
+    public void registerAnimationControllers(AnimationDataArmor data) {
         data.addAnimationController(new AnimationController<>(
                 this, "spin", 0,
                 event -> {

@@ -44,7 +44,7 @@ public class BombProjectile extends RiftLibProjectile {
     }
 
     @Override
-    public void registerControllers(AnimationDataProjectile data) {
+    public void registerAnimationControllers(AnimationDataProjectile data) {
         data.addAnimationController(new AnimationController<>(
                 this, "bomb_flames", 0,
                 event -> {

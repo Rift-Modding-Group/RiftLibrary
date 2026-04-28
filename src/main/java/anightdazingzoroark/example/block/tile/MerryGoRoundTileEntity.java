@@ -12,7 +12,7 @@ public class MerryGoRoundTileEntity extends TileEntity implements IAnimatable<An
     private final AnimationDataTileEntity animationData = new AnimationDataTileEntity(this);
 
     @Override
-    public void registerControllers(AnimationDataTileEntity data) {
+    public void registerAnimationControllers(AnimationDataTileEntity data) {
         data.addAnimationController(new AnimationController<>(
                 this, "rotate", 0,
                 event -> {

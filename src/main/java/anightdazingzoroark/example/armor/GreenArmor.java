@@ -12,5 +12,5 @@ public class GreenArmor extends RiftLibArmor {
 	}
 
 	@Override
-	public void registerControllers(AnimationDataArmor data) {}
+	public void registerAnimationControllers(AnimationDataArmor data) {}
 }

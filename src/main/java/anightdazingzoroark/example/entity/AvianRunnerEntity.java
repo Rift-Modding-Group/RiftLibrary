@@ -100,7 +100,7 @@ public class AvianRunnerEntity extends EntityCreature implements IAnimatable<Ani
     //ride management stuff ends here
 
     @Override
-    public void registerControllers(AnimationDataEntity data) {
+    public void registerAnimationControllers(AnimationDataEntity data) {
         data.addAnimationController(new AnimationController<>(
                 this, "movement", 0,
                 event -> {

@@ -14,7 +14,7 @@ public class AnimatedFidgetSpinnerItem extends AnimatedItemStackHolder {
     }
 
     @Override
-    public void registerControllers(AnimationDataItemStack data) {
+    public void registerAnimationControllers(AnimationDataItemStack data) {
         data.addAnimationController(new AnimationController<>(this, "spin", 0, event -> {
             event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.fidget_spinner.spin", LoopType.LOOP));
             return PlayState.CONTINUE;

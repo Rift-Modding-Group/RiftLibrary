@@ -88,7 +88,7 @@ public class GoKartEntity extends EntityCreature implements IAnimatable<Animatio
     //ride management stuff ends here
 
     @Override
-    public void registerControllers(AnimationDataEntity data) {
+    public void registerAnimationControllers(AnimationDataEntity data) {
         data.addAnimationController(new AnimationController<>(
                 this, "movement", 0,
                 event -> {

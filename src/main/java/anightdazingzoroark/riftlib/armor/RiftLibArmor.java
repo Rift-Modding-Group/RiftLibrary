@@ -51,5 +51,5 @@ public abstract class RiftLibArmor extends ItemArmor implements IAnimatable<Anim
 	}
 
 	@Override
-	public abstract void registerControllers(AnimationDataArmor data);
+	public abstract void registerAnimationControllers(AnimationDataArmor data);
 }

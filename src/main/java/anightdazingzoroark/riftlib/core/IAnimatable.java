@@ -15,7 +15,7 @@ public interface IAnimatable<T extends AbstractAnimationData<?>> {
     /**
      * This registers animation controllers
      * */
-    void registerControllers(T data);
+    void registerAnimationControllers(T data);
 
     /**
      * This only runs once and will run when this object just started rendering

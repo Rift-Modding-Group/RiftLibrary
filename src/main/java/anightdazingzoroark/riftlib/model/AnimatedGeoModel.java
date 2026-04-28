@@ -60,7 +60,6 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		// Each animation has it's own collection of animations (called the
 		// EntityAnimationManager), which allows for multiple independent animations
 		AbstractAnimationData<?> animData = entity.getAnimationData();
-		animData.initialize();
 
 		if (animData.ticker == null) {
 			AnimationTicker ticker = new AnimationTicker(animData);
@@ -101,7 +100,6 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 
 	public void createAndUpdateAnimatedLocators(T entity) {
 		AbstractAnimationData<?> animData = entity.getAnimationData();
-		animData.initialize();
 		animData.createAnimatedLocators(this.currentModel);
 		animData.updateAnimatedLocators();
 	}

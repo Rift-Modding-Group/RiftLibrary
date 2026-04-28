@@ -90,7 +90,7 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
     //hitbox stuff ends here
 
     @Override
-    public void registerControllers(AnimationDataEntity data) {
+    public void registerAnimationControllers(AnimationDataEntity data) {
         data.addAnimationController(new AnimationController<>(
                 this, "goUp", 0,
                 event -> {

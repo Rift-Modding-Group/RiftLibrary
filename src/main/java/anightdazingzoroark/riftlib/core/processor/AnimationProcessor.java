@@ -34,7 +34,6 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 		// Each animation has it's own collection of animations (called the
 		// EntityAnimationManager), which allows for multiple independent animations
 		AbstractAnimationData<?> animationData = entity.getAnimationData();
-		animationData.initialize();
 		// Keeps track of which bones have had animations applied to them, and
 		// eventually sets the ones that don't have an animation to their default values
 		HashMap<String, DirtyTracker> modelTracker = createNewDirtyTracker();

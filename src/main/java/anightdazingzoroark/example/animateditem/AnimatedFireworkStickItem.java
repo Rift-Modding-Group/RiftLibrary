@@ -14,7 +14,7 @@ public class AnimatedFireworkStickItem extends AnimatedItemStackHolder {
     }
 
     @Override
-    public void registerControllers(AnimationDataItemStack data) {
+    public void registerAnimationControllers(AnimationDataItemStack data) {
         data.addAnimationController(new AnimationController<>(this, "sparks", 0, event -> {
             event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.firework_stick.create_sparks", LoopType.PLAY_ONCE));
             return PlayState.CONTINUE;

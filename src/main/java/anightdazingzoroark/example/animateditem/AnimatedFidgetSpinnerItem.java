@@ -1,6 +1,6 @@
 package anightdazingzoroark.example.animateditem;
 
-import anightdazingzoroark.riftlib.core.controller.AnimationControllerNew;
+import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataItemStack;
 import anightdazingzoroark.riftlib.item.AnimatedItemStackHolder;
@@ -14,9 +14,9 @@ public class AnimatedFidgetSpinnerItem extends AnimatedItemStackHolder<AnimatedF
     }
 
     @Override
-    public List<AnimationControllerNew<?, AnimationDataItemStack>> createAnimationControllers() {
+    public List<AnimationController<?, AnimationDataItemStack>> createAnimationControllers() {
         return List.of(
-                new AnimationControllerNew<AnimatedFidgetSpinnerItem, AnimationDataItemStack>(
+                new AnimationController<AnimatedFidgetSpinnerItem, AnimationDataItemStack>(
                         this, "spin", "default",
                         new AnimationControllerState<AnimationDataItemStack>("default")
                                 .addAnimation("animation.fidget_spinner.spin")

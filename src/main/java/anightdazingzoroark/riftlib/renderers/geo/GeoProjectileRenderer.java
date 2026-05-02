@@ -3,6 +3,7 @@ package anightdazingzoroark.riftlib.renderers.geo;
 import java.util.Collections;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.projectile.RiftLibProjectile;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -10,7 +11,6 @@ import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
-import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.util.Color;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;

@@ -1,11 +1,7 @@
 package anightdazingzoroark.example.entity;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.PlayState;
-import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
-import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
-import anightdazingzoroark.riftlib.core.controller.AnimationControllerNew;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
@@ -94,9 +90,9 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
     //hitbox stuff ends here
 
     @Override
-    public List<AnimationControllerNew<?, AnimationDataEntity>> createAnimationControllers() {
+    public List<AnimationController<?, AnimationDataEntity>> createAnimationControllers() {
         return List.of(
-                new AnimationControllerNew<FlyingPufferfishEntity, AnimationDataEntity>(
+                new AnimationController<FlyingPufferfishEntity, AnimationDataEntity>(
                         this, "goUp", "default",
                         new AnimationControllerState<AnimationDataEntity>("default")
                                 .addAnimation("animation.flying_pufferfish.go_up")
@@ -104,7 +100,7 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
                         new AnimationControllerState<AnimationDataEntity>("ascend")
                                 .addStateTransition("default", data -> !this.canReset())
                 ),
-                new AnimationControllerNew<FlyingPufferfishEntity, AnimationDataEntity>(
+                new AnimationController<FlyingPufferfishEntity, AnimationDataEntity>(
                         this, "puff", "default",
                         new AnimationControllerState<AnimationDataEntity>("default")
                                 .addAnimation("animation.flying_pufferfish.inflate_loop")

@@ -1,13 +1,8 @@
 package anightdazingzoroark.example.entity;
 
 import anightdazingzoroark.example.entity.ai.DragonAttackAI;
-import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.PlayState;
-import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
-import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
-import anightdazingzoroark.riftlib.core.controller.AnimationControllerNew;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
@@ -201,14 +196,14 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     }
 
     @Override
-    public List<AnimationControllerNew<?, AnimationDataEntity>> createAnimationControllers() {
+    public List<AnimationController<?, AnimationDataEntity>> createAnimationControllers() {
         return List.of(
-                new AnimationControllerNew<DragonEntity, AnimationDataEntity>(
+                new AnimationController<DragonEntity, AnimationDataEntity>(
                         this, "movement", "default",
                         new AnimationControllerState<AnimationDataEntity>("default")
                                 .addAnimation("animation.dragon.flying")
                 ),
-                new AnimationControllerNew<DragonEntity, AnimationDataEntity>(
+                new AnimationController<DragonEntity, AnimationDataEntity>(
                         this, "attack", "default",
                         new AnimationControllerState<AnimationDataEntity>("default")
                                 .addStateTransition("attack", data -> this.isAttacking()),

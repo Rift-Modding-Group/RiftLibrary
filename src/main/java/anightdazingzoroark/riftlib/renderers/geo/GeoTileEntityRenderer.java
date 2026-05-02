@@ -1,6 +1,7 @@
 package anightdazingzoroark.riftlib.renderers.geo;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataTileEntity;
 import org.lwjgl.opengl.GL11;
 
@@ -16,7 +17,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
-import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.util.Color;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;

@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibRunAnimationMessageEffect;
 import anightdazingzoroark.riftlib.core.keyframe.*;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.model.AnimatedLocatorNew;
-import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
@@ -19,12 +19,10 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import anightdazingzoroark.riftlib.molang.MolangParser;
 
-import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
 import anightdazingzoroark.riftlib.core.snapshot.DirtyTracker;
 import anightdazingzoroark.riftlib.core.util.MathUtil;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public class AnimationProcessor<T extends IAnimatable<?>> {
 	public boolean reloadAnimations = false;
@@ -47,7 +45,7 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 		BoneAnimationValuesList boneAnimationValues = new BoneAnimationValuesList();
 
 		//get changes from all anim controllers
-		for (AnimationController<?> controller : animationData.getAnimationControllers().values()) {
+		for (AnimationController<?, ?> controller : animationData.getAnimationControllers().values()) {
 			if (this.reloadAnimations) {
 				controller.markNeedsReload();
 				controller.getBoneAnimationQueues().clear();
@@ -102,25 +100,22 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 			}
 
             //animation effects
-            EventKeyFrame.ParticleEventKeyFrame lastParticleEvent = controller.getLastParticleEvent();
-            if (lastParticleEvent != null) {
-                AnimatedLocatorNew locator = animationData.getAnimatedLocator(lastParticleEvent.locator);
+            for (EventKeyFrame.ParticleEventKeyFrame particleEvent : controller.drainParticleEvents()) {
+                AnimatedLocatorNew locator = animationData.getAnimatedLocator(particleEvent.locator);
                 if (locator != null) {
-                    ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(lastParticleEvent.effect);
+                    ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(particleEvent.effect);
                     if (particleBuilder != null) locator.createParticleEmitter(particleBuilder);
                 }
             }
 
             //sound effects
-            EventKeyFrame.SoundEventKeyFrame lastSoundEvent = controller.getLastSoundEvent();
-            if (lastSoundEvent != null) {
-                AnimatedLocatorNew locator = animationData.getAnimatedLocator(lastSoundEvent.locator);
-                if (locator != null) RiftLibSoundHelper.playSound(entity, locator, lastSoundEvent.effect);
+            for (EventKeyFrame.SoundEventKeyFrame soundEvent : controller.drainSoundEvents()) {
+                AnimatedLocatorNew locator = animationData.getAnimatedLocator(soundEvent.locator);
+                if (locator != null) RiftLibSoundHelper.playSound(entity, locator, soundEvent.effect);
             }
 
 			//custom instructions
-			EventKeyFrame.CustomInstructionKeyFrame customInstructionEvent = controller.getCustomInstructionEvent();
-			if (customInstructionEvent != null) {
+			for (EventKeyFrame.CustomInstructionKeyFrame customInstructionEvent : controller.drainCustomInstructionEvents()) {
 				//todo: modify molang parser so that expressions that contain only strings
 				//surrounded with ' are considered messages to send to server
 				HashMap<String, Runnable> messageEffects = animationData.getAnimatable().animationMessageEffects();

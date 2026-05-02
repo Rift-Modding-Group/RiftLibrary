@@ -5,11 +5,12 @@ import java.util.stream.Collectors;
 
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 
+@Deprecated //looks completely useless
 public class AnimationEvent {
 	public double animationTick;
 	private final float partialTick;
 	private final List<Object> extraData;
-	protected AnimationController<?> controller;
+	protected AnimationController<?, ?> controller;
 
 	public AnimationEvent(float partialTick, List<Object> extraData) {
 		this.partialTick = partialTick;
@@ -30,11 +31,11 @@ public class AnimationEvent {
 		return this.partialTick;
 	}
 
-	public AnimationController<?> getController() {
+	public AnimationController<?, ?> getController() {
 		return controller;
 	}
 
-	public void setController(AnimationController<?> controller) {
+	public void setController(AnimationController<?, ?> controller) {
 		this.controller = controller;
 	}
 

@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.item.AnimatedItemStackHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -16,7 +17,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
-import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.util.Color;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;

@@ -3,7 +3,6 @@ package anightdazingzoroark.riftlib.core.manager;
 import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
-import anightdazingzoroark.riftlib.core.controller.AnimationControllerNew;
 import anightdazingzoroark.riftlib.core.processor.IBone;
 import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
@@ -34,7 +33,7 @@ public abstract class AbstractAnimationData<T> {
     @NotNull
     private final IAnimatable<?> animatable;
     private HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection = new HashMap<>();
-    private final HashMap<String, AnimationController<?>> animationControllers = new HashMap<>();
+    private final HashMap<String, AnimationController<?, ?>> animationControllers = new HashMap<>();
     private final List<AnimatedLocatorNew> animatedLocators = new ArrayList<>();
     private int animatedLocatorTicker;
     private final MolangParser parser = RiftLibCache.getInstance().parser;
@@ -76,7 +75,7 @@ public abstract class AbstractAnimationData<T> {
      * @param value The value
      * @return the animation controller
      */
-    public AnimationController<?> addAnimationController(AnimationController<?> value) {
+    public AnimationController<?, ?> addAnimationController(AnimationController<?, ?> value) {
         return this.animationControllers.put(value.getName(), value);
     }
 
@@ -107,7 +106,7 @@ public abstract class AbstractAnimationData<T> {
         this.resetTickLength = resetTickLength < 0 ? 0 : resetTickLength;
     }
 
-    public HashMap<String, AnimationController<?>> getAnimationControllers() {
+    public HashMap<String, AnimationController<?, ?>> getAnimationControllers() {
         return this.animationControllers;
     }
 
@@ -157,8 +156,8 @@ public abstract class AbstractAnimationData<T> {
     public void initAnimationControllers() {
         IAnimatable<? extends AbstractAnimationData<?>> animatable = (IAnimatable<? extends AbstractAnimationData<?>>) this.animatable;
 
-        List<? extends AnimationControllerNew<?, ?>> controllers = animatable.createAnimationControllers();
-        for (AnimationControllerNew<?, ?> controller : controllers) {
+        List<? extends AnimationController<?, ?>> controllers = animatable.createAnimationControllers();
+        for (AnimationController<?, ?> controller : controllers) {
             this.addAnimationController(controller);
         }
     }

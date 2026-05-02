@@ -1,7 +1,6 @@
 package anightdazingzoroark.riftlib.core;
 
-import anightdazingzoroark.riftlib.core.controller.AnimationControllerNew;
-import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
+import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 
 import java.util.ArrayList;
@@ -17,7 +16,7 @@ public interface IAnimatable<D extends AbstractAnimationData<?>> {
     /**
      * This registers animation controllers
      * */
-    List<AnimationControllerNew<?, D>> createAnimationControllers();
+    List<AnimationController<?, D>> createAnimationControllers();
 
     /**
      * This only runs once and will run when this object just started rendering

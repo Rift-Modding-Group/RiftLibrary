@@ -1,6 +1,6 @@
 package anightdazingzoroark.example.animateditem;
 
-import anightdazingzoroark.riftlib.core.controller.AnimationControllerNew;
+import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataItemStack;
 import anightdazingzoroark.riftlib.item.AnimatedItemStackHolder;
@@ -14,9 +14,9 @@ public class AnimatedBubbleGunItem extends AnimatedItemStackHolder<AnimatedBubbl
     }
 
     @Override
-    public List<AnimationControllerNew<?, AnimationDataItemStack>> createAnimationControllers() {
+    public List<AnimationController<?, AnimationDataItemStack>> createAnimationControllers() {
         return List.of(
-                new AnimationControllerNew<AnimatedBubbleGunItem, AnimationDataItemStack>(
+                new AnimationController<AnimatedBubbleGunItem, AnimationDataItemStack>(
                         this, "blow", "default",
                         new AnimationControllerState<AnimationDataItemStack>("default")
                                 .addStateTransition("blow", AnimationDataItemStack::isBeingUsed),

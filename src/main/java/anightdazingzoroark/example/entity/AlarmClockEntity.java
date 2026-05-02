@@ -2,18 +2,13 @@ package anightdazingzoroark.example.entity;
 
 import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.PlayState;
-import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
-import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
-import anightdazingzoroark.riftlib.core.controller.AnimationControllerNew;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.util.MathUtils;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.world.World;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class AlarmClockEntity extends EntityLiving implements IAnimatable<AnimationDataEntity> {
@@ -24,9 +19,9 @@ public class AlarmClockEntity extends EntityLiving implements IAnimatable<Animat
     }
 
     @Override
-    public List<AnimationControllerNew<?, AnimationDataEntity>> createAnimationControllers() {
+    public List<AnimationController<?, AnimationDataEntity>> createAnimationControllers() {
         return List.of(
-                new AnimationControllerNew<AlarmClockEntity, AnimationDataEntity>(
+                new AnimationController<AlarmClockEntity, AnimationDataEntity>(
                         this, "clock", "default",
                         new AnimationControllerState<AnimationDataEntity>("default")
                                 .addAnimation("animation.alarm_clock.hour_rotation")

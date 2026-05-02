@@ -1,12 +1,7 @@
 package anightdazingzoroark.example.armor;
 
 import anightdazingzoroark.riftlib.RiftLibMod;
-import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.PlayState;
-import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
-import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
-import anightdazingzoroark.riftlib.core.controller.AnimationControllerNew;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataArmor;
 import anightdazingzoroark.riftlib.armor.RiftLibArmor;
@@ -21,9 +16,9 @@ public class SatelliteDishHelmet extends RiftLibArmor {
     }
 
     @Override
-    public List<AnimationControllerNew<?, AnimationDataArmor>> createAnimationControllers() {
+    public List<AnimationController<?, AnimationDataArmor>> createAnimationControllers() {
         return List.of(
-                new AnimationControllerNew<SatelliteDishHelmet, AnimationDataArmor>(
+                new AnimationController<SatelliteDishHelmet, AnimationDataArmor>(
                         this, "satelliteDish", "default",
                         new AnimationControllerState<AnimationDataArmor>("default")
                                 .addAnimation("animation.satellite_dish_helmet.spin")

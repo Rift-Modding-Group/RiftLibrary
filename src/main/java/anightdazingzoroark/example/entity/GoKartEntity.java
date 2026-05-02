@@ -1,11 +1,7 @@
 package anightdazingzoroark.example.entity;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.PlayState;
-import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
-import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
-import anightdazingzoroark.riftlib.core.controller.AnimationControllerNew;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import net.minecraft.entity.*;
@@ -91,9 +87,9 @@ public class GoKartEntity extends EntityCreature implements IAnimatable<Animatio
     //ride management stuff ends here
 
     @Override
-    public List<AnimationControllerNew<?, AnimationDataEntity>> createAnimationControllers() {
+    public List<AnimationController<?, AnimationDataEntity>> createAnimationControllers() {
         return List.of(
-                new AnimationControllerNew<GoKartEntity, AnimationDataEntity>(
+                new AnimationController<GoKartEntity, AnimationDataEntity>(
                         this, "movement", "default",
                         new AnimationControllerState<AnimationDataEntity>("default")
                                 .addAnimation("animation.go_kart.move", AnimationDataEntity::isMoving)

@@ -1,11 +1,7 @@
 package anightdazingzoroark.example.block.tile;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.PlayState;
-import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
-import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
-import anightdazingzoroark.riftlib.core.controller.AnimationControllerNew;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -16,9 +12,9 @@ public class MerryGoRoundTileEntity extends TileEntity implements IAnimatable<An
     private final AnimationDataTileEntity animationData = new AnimationDataTileEntity(this);
 
     @Override
-    public List<AnimationControllerNew<?, AnimationDataTileEntity>> createAnimationControllers() {
+    public List<AnimationController<?, AnimationDataTileEntity>> createAnimationControllers() {
         return List.of(
-                new AnimationControllerNew<MerryGoRoundTileEntity, AnimationDataTileEntity>(
+                new AnimationController<MerryGoRoundTileEntity, AnimationDataTileEntity>(
                         this, "rotate", "default",
                         new AnimationControllerState<AnimationDataTileEntity>("default")
                                 .addAnimation("animation.merry_go_round.rotate")

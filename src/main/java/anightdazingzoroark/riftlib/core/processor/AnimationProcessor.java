@@ -121,6 +121,8 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 			//custom instructions
 			EventKeyFrame.CustomInstructionKeyFrame customInstructionEvent = controller.getCustomInstructionEvent();
 			if (customInstructionEvent != null) {
+				//todo: modify molang parser so that expressions that contain only strings
+				//surrounded with ' are considered messages to send to server
 				HashMap<String, Runnable> messageEffects = animationData.getAnimatable().animationMessageEffects();
 				Runnable localMessageEffect = messageEffects.get(customInstructionEvent.instruction);
 				if (localMessageEffect != null) {

@@ -72,7 +72,7 @@
 			}
 		},
 		"animation.dragon.attack_while_flying": {
-			"loop": true,
+			"loop": false,
 			"animation_length": 0.75,
 			"bones": {
 				"neck": {

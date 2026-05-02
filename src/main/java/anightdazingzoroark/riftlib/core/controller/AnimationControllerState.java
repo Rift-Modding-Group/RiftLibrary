@@ -16,11 +16,11 @@ import java.util.function.Function;
  * better than what we currently got for animations. And ye its based
  * on Bedrock's animation controller system but adapted to java.
  * */
-public class AnimationControllerState<T extends AbstractAnimationData<?>> {
+public class AnimationControllerState<D extends AbstractAnimationData<?>> {
     public final String name;
     public final double transitionLength;
-    private final LinkedHashMap<String, Function<T, Boolean>> animationNames = new LinkedHashMap<>();
-    private final List<ImmutablePair<String, Function<T, Boolean>>> stateTransitions = new ArrayList<>();
+    private final LinkedHashMap<String, Function<D, Boolean>> animationNames = new LinkedHashMap<>();
+    private final List<ImmutablePair<String, Function<D, Boolean>>> stateTransitions = new ArrayList<>();
     private final List<AnimatableValue> onEntryAnimatableValues = new ArrayList<>();
     private final List<AnimatableValue> onExitAnimatableValues = new ArrayList<>();
 
@@ -37,7 +37,7 @@ public class AnimationControllerState<T extends AbstractAnimationData<?>> {
         this.transitionLength = transitionLength;
     }
 
-    public AnimationControllerState<T> addAnimation(String animationName) {
+    public AnimationControllerState<D> addAnimation(String animationName) {
         return this.addAnimation(animationName, (data) -> true);
     }
 
@@ -45,12 +45,12 @@ public class AnimationControllerState<T extends AbstractAnimationData<?>> {
      * @param animationName The name of the animation
      * @param animationPredicate The predicate that ensures that the animation should play when in this state
      * */
-    public AnimationControllerState<T> addAnimation(String animationName, Function<T, Boolean> animationPredicate) {
+    public AnimationControllerState<D> addAnimation(String animationName, Function<D, Boolean> animationPredicate) {
         this.animationNames.put(animationName, animationPredicate);
         return this;
     }
 
-    public Map<String, Function<T, Boolean>> getAnimations() {
+    public Map<String, Function<D, Boolean>> getAnimations() {
         return this.animationNames;
     }
 
@@ -58,12 +58,12 @@ public class AnimationControllerState<T extends AbstractAnimationData<?>> {
      * @param stateName The name of the state to transition to
      * @param transition The condition in which to transition to that state
      * */
-    public AnimationControllerState<T> addStateTransition(String stateName, Function<T, Boolean> transition) {
+    public AnimationControllerState<D> addStateTransition(String stateName, Function<D, Boolean> transition) {
         this.stateTransitions.add(new ImmutablePair<>(stateName, transition));
         return this;
     }
 
-    public List<ImmutablePair<String, Function<T, Boolean>>> getStateTransitions() {
+    public List<ImmutablePair<String, Function<D, Boolean>>> getStateTransitions() {
         return this.stateTransitions;
     }
 
@@ -71,7 +71,7 @@ public class AnimationControllerState<T extends AbstractAnimationData<?>> {
      * This is basically a MoLang expression or a message that will take effect when entering this state
      * It also takes effect when initializing in this state
      * */
-    public AnimationControllerState<T> addEntryEffect(AnimatableValue animatableValue) {
+    public AnimationControllerState<D> addEntryEffect(AnimatableValue animatableValue) {
         this.onEntryAnimatableValues.add(animatableValue);
         return this;
     }
@@ -83,7 +83,7 @@ public class AnimationControllerState<T extends AbstractAnimationData<?>> {
     /**
      * Same as addEntryEffect but for when exiting the state
      * */
-    public AnimationControllerState<T> addExitEffect(AnimatableValue animatableValue) {
+    public AnimationControllerState<D> addExitEffect(AnimatableValue animatableValue) {
         this.onExitAnimatableValues.add(animatableValue);
         return this;
     }

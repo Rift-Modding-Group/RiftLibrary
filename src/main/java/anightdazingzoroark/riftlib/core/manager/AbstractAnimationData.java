@@ -3,6 +3,7 @@ package anightdazingzoroark.riftlib.core.manager;
 import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
+import anightdazingzoroark.riftlib.core.controller.AnimationControllerNew;
 import anightdazingzoroark.riftlib.core.processor.IBone;
 import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
@@ -55,6 +56,7 @@ public abstract class AbstractAnimationData<T> {
         this.holder = holder;
         this.animatable = animatable;
         ((IAnimatable) this.animatable).registerAnimationControllers(this);
+        this.initAnimationControllers();
         this.initAnimationVariables();
     }
 
@@ -151,6 +153,15 @@ public abstract class AbstractAnimationData<T> {
 
     public List<AnimatedLocatorNew> getAnimatedLocators() {
         return this.animatedLocators;
+    }
+
+    public void initAnimationControllers() {
+        IAnimatable<? extends AbstractAnimationData<?>> animatable = (IAnimatable<? extends AbstractAnimationData<?>>) this.animatable;
+
+        List<? extends AnimationControllerNew<?, ?>> controllers = animatable.createAnimationControllers();
+        for (AnimationControllerNew<?, ?> controller : controllers) {
+            this.addAnimationController(controller);
+        }
     }
 
     public void initAnimationVariables() {

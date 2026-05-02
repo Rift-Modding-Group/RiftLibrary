@@ -1,11 +1,14 @@
 package anightdazingzoroark.example.entity;
 
 import anightdazingzoroark.example.entity.ai.DragonAttackAI;
+import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.PlayState;
 import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
+import anightdazingzoroark.riftlib.core.controller.AnimationControllerNew;
+import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosList;
@@ -23,6 +26,7 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.List;
 
 public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IMultiHitboxUser, IDynamicRideUser {
     private static final DataParameter<Boolean> ATTACKING = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
@@ -197,27 +201,28 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     }
 
     @Override
-    public void registerAnimationControllers(AnimationDataEntity data) {
-        data.addAnimationController(new AnimationController<>(
-                this, "movement", 0,
-                event -> {
-                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.dragon.flying", LoopType.LOOP));
-                    return PlayState.CONTINUE;
-                }
-        ));
-        data.addAnimationController(new AnimationController<>(
-                this, "attack", 0,
-                event -> {
-                    if (this.isAttacking()) {
-                        event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.dragon.attack_while_flying", LoopType.PLAY_ONCE));
-                        return PlayState.CONTINUE;
-                    }
-                    else {
-                        event.getController().clearAnimationCache();
-                        return PlayState.STOP;
-                    }
-                }
-        ));
+    public void registerAnimationControllers(AnimationDataEntity data) {}
+
+    @Override
+    public List<AnimationControllerNew<?, AnimationDataEntity>> createAnimationControllers() {
+        return List.of(
+                new AnimationControllerNew<DragonEntity, AnimationDataEntity>(
+                        this, "movement", "default",
+                        new AnimationControllerState<AnimationDataEntity>("default")
+                                .addAnimation("animation.dragon.flying")
+                ),
+                new AnimationControllerNew<DragonEntity, AnimationDataEntity>(
+                        this, "attack", "default",
+                        new AnimationControllerState<AnimationDataEntity>("default")
+                                .addStateTransition("attack", data -> this.isAttacking()),
+                        new AnimationControllerState<AnimationDataEntity>("attack")
+                                .addAnimation("animation.dragon.attack_while_flying")
+                                .addStateTransition("default", data -> !this.isAttacking()) //todo: add allanimationsfinished
+                                //todo: modify molang parser so that expressions that contain only strings
+                                //surrounded with ' are considered messages to send to server
+                                //.addExitEffect(new AnimatableValue("'testExit'"))
+                )
+        );
     }
 
     @Override
@@ -225,8 +230,10 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
         HashMap<String, Runnable> toReturn = new HashMap<>();
         toReturn.put("performAttack", () -> {
             this.attackEntityAsMob(this.getAttackTarget());
+            System.out.println("attack mob!");
         });
         toReturn.put("endAttack", () -> {
+            System.out.println("end attack!");
             this.setAttacking(false);
         });
         return toReturn;

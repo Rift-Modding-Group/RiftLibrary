@@ -1,23 +1,26 @@
 package anightdazingzoroark.example.animateditem;
 
-import anightdazingzoroark.riftlib.core.PlayState;
-import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
-import anightdazingzoroark.riftlib.core.builder.LoopType;
-import anightdazingzoroark.riftlib.core.controller.AnimationController;
+import anightdazingzoroark.riftlib.core.controller.AnimationControllerNew;
+import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataItemStack;
 import anightdazingzoroark.riftlib.item.AnimatedItemStackHolder;
 import net.minecraft.item.ItemStack;
 
-public class AnimatedFidgetSpinnerItem extends AnimatedItemStackHolder {
+import java.util.List;
+
+public class AnimatedFidgetSpinnerItem extends AnimatedItemStackHolder<AnimatedFidgetSpinnerItem> {
     public AnimatedFidgetSpinnerItem(ItemStack stack) {
         super(stack);
     }
 
     @Override
-    public void registerAnimationControllers(AnimationDataItemStack data) {
-        data.addAnimationController(new AnimationController<>(this, "spin", 0, event -> {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.fidget_spinner.spin", LoopType.LOOP));
-            return PlayState.CONTINUE;
-        }));
+    public List<AnimationControllerNew<?, AnimationDataItemStack>> createAnimationControllers() {
+        return List.of(
+                new AnimationControllerNew<AnimatedFidgetSpinnerItem, AnimationDataItemStack>(
+                        this, "spin", "default",
+                        new AnimationControllerState<AnimationDataItemStack>("default")
+                                .addAnimation("animation.fidget_spinner.spin")
+                )
+        );
     }
 }

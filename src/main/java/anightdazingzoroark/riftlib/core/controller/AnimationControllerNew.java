@@ -20,6 +20,7 @@ import org.jspecify.annotations.NonNull;
 import java.util.*;
 import java.util.function.Function;
 
+//todo: replace the old animation controller entirely with this
 public class AnimationControllerNew<A extends IAnimatable<D>, D extends AbstractAnimationData<?>> extends AnimationController<A> {
     private final Map<String, AnimationControllerState<D>> animControllerStates = new LinkedHashMap<>();
     private final String initialState;
@@ -115,7 +116,7 @@ public class AnimationControllerNew<A extends IAnimatable<D>, D extends Abstract
 
         AnimationBuilder animationBuilder = new AnimationBuilder();
         for (Map.Entry<String, Function<D, Boolean>> animationEntry : currentControllerState.getAnimations().entrySet()) {
-            if (Boolean.TRUE.equals(animationEntry.getValue().apply(this.processingData))) {
+            if (animationEntry.getValue().apply(this.processingData)) {
                 animationBuilder.addAnimation(animationEntry.getKey());
             }
         }

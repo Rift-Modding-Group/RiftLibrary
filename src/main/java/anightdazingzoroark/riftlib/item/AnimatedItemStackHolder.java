@@ -4,7 +4,7 @@ import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataItemStack;
 import net.minecraft.item.ItemStack;
 
-public abstract class AnimatedItemStackHolder implements IAnimatable<AnimationDataItemStack> {
+public abstract class AnimatedItemStackHolder<T extends AnimatedItemStackHolder<?>> implements IAnimatable<AnimationDataItemStack> {
     private ItemStack stack;
     private final AnimationDataItemStack animationData = new AnimationDataItemStack(this);
 

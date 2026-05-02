@@ -201,9 +201,6 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     }
 
     @Override
-    public void registerAnimationControllers(AnimationDataEntity data) {}
-
-    @Override
     public List<AnimationControllerNew<?, AnimationDataEntity>> createAnimationControllers() {
         return List.of(
                 new AnimationControllerNew<DragonEntity, AnimationDataEntity>(

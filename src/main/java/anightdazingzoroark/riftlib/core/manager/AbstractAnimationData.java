@@ -55,7 +55,6 @@ public abstract class AbstractAnimationData<T> {
     public AbstractAnimationData(@NotNull T holder, @NotNull IAnimatable<?> animatable) {
         this.holder = holder;
         this.animatable = animatable;
-        ((IAnimatable) this.animatable).registerAnimationControllers(this);
         this.initAnimationControllers();
         this.initAnimationVariables();
     }

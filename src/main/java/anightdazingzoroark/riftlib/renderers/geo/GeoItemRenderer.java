@@ -24,7 +24,7 @@ import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder> extends TileEntityItemStackRenderer implements IGeoRenderer<T> {
+public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder<?>> extends TileEntityItemStackRenderer implements IGeoRenderer<T> {
 	/**
 	 * these constants are for cleaning up cache related to rendering of itemstacks
 	 */

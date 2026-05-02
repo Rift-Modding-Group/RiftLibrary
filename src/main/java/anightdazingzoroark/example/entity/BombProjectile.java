@@ -4,13 +4,17 @@ import anightdazingzoroark.riftlib.core.PlayState;
 import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
+import anightdazingzoroark.riftlib.core.controller.AnimationControllerNew;
+import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataProjectile;
 import anightdazingzoroark.riftlib.projectile.RiftLibProjectile;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 
-public class BombProjectile extends RiftLibProjectile {
+import java.util.List;
+
+public class BombProjectile extends RiftLibProjectile<BombProjectile> {
     public BombProjectile(World worldIn) {
         super(worldIn);
     }
@@ -44,21 +48,15 @@ public class BombProjectile extends RiftLibProjectile {
     }
 
     @Override
-    public void registerAnimationControllers(AnimationDataProjectile data) {
-        data.addAnimationController(new AnimationController<>(
-                this, "bomb_flames", 0,
-                event -> {
-                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.bomb.flame_particles", LoopType.PLAY_ONCE));
-                    return PlayState.CONTINUE;
-                }
-        ));
-        data.addAnimationController(new AnimationController<>(
-                this, "bomb_sounds", 0,
-                event -> {
-                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.bomb.sounds", LoopType.PLAY_ONCE));
-                    return PlayState.CONTINUE;
-                }
-        ));
+    public List<AnimationControllerNew<?, AnimationDataProjectile>> createAnimationControllers() {
+        return List.of(
+                new AnimationControllerNew<BombProjectile, AnimationDataProjectile>(
+                        this, "bomb", "default",
+                        new AnimationControllerState<AnimationDataProjectile>("default")
+                                .addAnimation("animation.bomb.flame_particles")
+                                .addAnimation("animation.bomb.sounds")
+                )
+        );
     }
 
     @Override

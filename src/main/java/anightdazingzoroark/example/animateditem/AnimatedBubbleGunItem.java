@@ -1,28 +1,29 @@
 package anightdazingzoroark.example.animateditem;
 
-import anightdazingzoroark.riftlib.core.PlayState;
-import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
-import anightdazingzoroark.riftlib.core.builder.LoopType;
-import anightdazingzoroark.riftlib.core.controller.AnimationController;
+import anightdazingzoroark.riftlib.core.controller.AnimationControllerNew;
+import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataItemStack;
 import anightdazingzoroark.riftlib.item.AnimatedItemStackHolder;
 import net.minecraft.item.ItemStack;
 
-public class AnimatedBubbleGunItem extends AnimatedItemStackHolder {
+import java.util.List;
+
+public class AnimatedBubbleGunItem extends AnimatedItemStackHolder<AnimatedBubbleGunItem> {
     public AnimatedBubbleGunItem(ItemStack stack) {
         super(stack);
     }
 
     @Override
-    public void registerAnimationControllers(AnimationDataItemStack data) {
-        data.addAnimationController(new AnimationController<>(this, "blow", 0, event -> {
-            if (data.isBeingUsed()) {
-                event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.bubble_gun.blow_bubbles", LoopType.PLAY_ONCE));
-                return PlayState.CONTINUE;
-            }
-
-            event.getController().clearAnimationCache();
-            return PlayState.STOP;
-        }));
+    public List<AnimationControllerNew<?, AnimationDataItemStack>> createAnimationControllers() {
+        return List.of(
+                new AnimationControllerNew<AnimatedBubbleGunItem, AnimationDataItemStack>(
+                        this, "blow", "default",
+                        new AnimationControllerState<AnimationDataItemStack>("default")
+                                .addStateTransition("blow", AnimationDataItemStack::isBeingUsed),
+                        new AnimationControllerState<AnimationDataItemStack>("blow")
+                                .addAnimation("animation.bubble_gun.blow_bubbles")
+                                .addStateTransition("default", data -> !data.isBeingUsed())
+                )
+        );
     }
 }

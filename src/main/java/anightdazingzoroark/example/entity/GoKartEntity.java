@@ -5,6 +5,8 @@ import anightdazingzoroark.riftlib.core.PlayState;
 import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
+import anightdazingzoroark.riftlib.core.controller.AnimationControllerNew;
+import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import net.minecraft.entity.*;
 import net.minecraft.entity.player.EntityPlayer;
@@ -12,6 +14,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class GoKartEntity extends EntityCreature implements IAnimatable<AnimationDataEntity> {
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
@@ -88,18 +91,14 @@ public class GoKartEntity extends EntityCreature implements IAnimatable<Animatio
     //ride management stuff ends here
 
     @Override
-    public void registerAnimationControllers(AnimationDataEntity data) {
-        data.addAnimationController(new AnimationController<>(
-                this, "movement", 0,
-                event -> {
-                    if (data.isMoving()) {
-                        event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.go_kart.move", LoopType.LOOP));
-                        return PlayState.CONTINUE;
-                    }
-                    event.getController().clearAnimationCache();
-                    return PlayState.STOP;
-                }
-        ));
+    public List<AnimationControllerNew<?, AnimationDataEntity>> createAnimationControllers() {
+        return List.of(
+                new AnimationControllerNew<GoKartEntity, AnimationDataEntity>(
+                        this, "movement", "default",
+                        new AnimationControllerState<AnimationDataEntity>("default")
+                                .addAnimation("animation.go_kart.move", AnimationDataEntity::isMoving)
+                )
+        );
     }
 
     @Override

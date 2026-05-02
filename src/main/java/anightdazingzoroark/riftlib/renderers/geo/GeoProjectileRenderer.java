@@ -20,7 +20,7 @@ import anightdazingzoroark.riftlib.model.provider.data.EntityModelData;
 import anightdazingzoroark.riftlib.util.AnimationUtils;
 
 @SuppressWarnings("unchecked")
-public class GeoProjectileRenderer<T extends RiftLibProjectile> extends Render<T> implements IGeoRenderer<T> {
+public class GeoProjectileRenderer<T extends RiftLibProjectile<?>> extends Render<T> implements IGeoRenderer<T> {
 	static {
 		AnimationController.addModelFetcher((IAnimatable<?> object) -> {
 			if (object instanceof RiftLibProjectile) {

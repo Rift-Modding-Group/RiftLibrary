@@ -49,7 +49,4 @@ public abstract class RiftLibArmor extends ItemArmor implements IAnimatable<Anim
 	public AnimationDataArmor getAnimationData() {
 		return this.animationData;
 	}
-
-	@Override
-	public abstract void registerAnimationControllers(AnimationDataArmor data);
 }

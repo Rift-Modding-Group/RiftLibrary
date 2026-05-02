@@ -15,14 +15,9 @@ public interface IAnimatable<D extends AbstractAnimationData<?>> {
     D getAnimationData();
 
     /**
-     * (old) This registers animation controllers
+     * This registers animation controllers
      * */
-    @Deprecated
-    void registerAnimationControllers(D data);
-
-    default List<AnimationControllerNew<?, D>> createAnimationControllers() {
-        return List.of();
-    }
+    List<AnimationControllerNew<?, D>> createAnimationControllers();
 
     /**
      * This only runs once and will run when this object just started rendering

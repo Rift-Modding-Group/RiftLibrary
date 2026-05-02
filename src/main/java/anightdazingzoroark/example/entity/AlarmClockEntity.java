@@ -6,6 +6,8 @@ import anightdazingzoroark.riftlib.core.PlayState;
 import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
+import anightdazingzoroark.riftlib.core.controller.AnimationControllerNew;
+import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.util.MathUtils;
 import net.minecraft.entity.EntityLiving;
@@ -22,14 +24,14 @@ public class AlarmClockEntity extends EntityLiving implements IAnimatable<Animat
     }
 
     @Override
-    public void registerAnimationControllers(AnimationDataEntity data) {
-        data.addAnimationController(new AnimationController<>(
-                this, "clock", 0,
-                event -> {
-                    event.getController().setAnimation(new AnimationBuilder().addAnimation("animation.alarm_clock.hour_rotation", LoopType.LOOP));
-                    return PlayState.CONTINUE;
-                }
-        ));
+    public List<AnimationControllerNew<?, AnimationDataEntity>> createAnimationControllers() {
+        return List.of(
+                new AnimationControllerNew<AlarmClockEntity, AnimationDataEntity>(
+                        this, "clock", "default",
+                        new AnimationControllerState<AnimationDataEntity>("default")
+                                .addAnimation("animation.alarm_clock.hour_rotation")
+                )
+        );
     }
 
     @Override
@@ -39,7 +41,7 @@ public class AlarmClockEntity extends EntityLiving implements IAnimatable<Animat
 
     @Override
     public List<AnimatableValue> createAnimationVariables() {
-        return Arrays.asList(
+        return List.of(
                 new AnimatableValue("hour_rotation", MathUtils.randomInRange(0D, 360D)),
                 new AnimatableValue("minute_rotation = math.random(0, 360);")
         );
@@ -47,7 +49,7 @@ public class AlarmClockEntity extends EntityLiving implements IAnimatable<Animat
 
     @Override
     public List<AnimatableValue> tickAnimationVariables() {
-        return Arrays.asList(
+        return List.of(
                 new AnimatableValue("minute_rotation = minute_rotation + 1;")
         );
     }

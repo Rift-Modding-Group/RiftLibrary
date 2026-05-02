@@ -8,7 +8,6 @@ import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.core.builder.AnimationBuilder;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.easing.EasingType;
-import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.keyframe.AnimationPoint;
 import anightdazingzoroark.riftlib.core.keyframe.BoneAnimation;
 import anightdazingzoroark.riftlib.core.keyframe.BoneAnimationQueue;
@@ -220,7 +219,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
         return this.boneAnimationQueues;
     }
 
-    public void process(AbstractAnimationData<?> data, double tick, AnimationEvent event,
+    public void process(AbstractAnimationData<?> data, double tick,
                         List<IBone> modelRendererList,
                         HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection,
                         MolangParser parser, MolangScope scope, boolean crashWhenCantFindBone) {
@@ -240,7 +239,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             }
 
             AnimationControllerState<D> currentControllerState = this.getCurrentControllerState();
-            this.applyTransitions(currentControllerState);
+            double transitionLength = this.applyTransitions(currentControllerState);
             currentControllerState = this.getCurrentControllerState();
 
             LinkedHashMap<String, AnimationControllerState.StateAnimation<D>> desiredAnimations = new LinkedHashMap<>();
@@ -250,7 +249,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                 }
             }
 
-            this.syncActiveAnimationRuntimes(desiredAnimations, currentControllerState.transitionLength);
+            this.syncActiveAnimationRuntimes(desiredAnimations, transitionLength);
 
             if (this.needsAnimationReload) {
                 for (SingleAnimationRuntime runtime : this.activeAnimationRuntimes.values()) {
@@ -269,12 +268,14 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             Set<String> positionBones = new HashSet<>();
             Set<String> scaleBones = new HashSet<>();
 
-            for (SingleAnimationRuntime runtime : this.activeAnimationRuntimes.values()) {
+            List<String> runtimesToRemove = new ArrayList<>();
+            for (Map.Entry<String, SingleAnimationRuntime> runtimeEntry : this.activeAnimationRuntimes.entrySet()) {
+                SingleAnimationRuntime runtime = runtimeEntry.getValue();
                 runtime.isJustStarting = this.isJustStarting;
                 runtime.easingType = this.easingType;
                 runtime.customEasingMethod = this.customEasingMethod;
                 runtime.animationSpeed = this.animationSpeed;
-                runtime.process(this.processingData, tick, event, modelRendererList, boneSnapshotCollection, parser, scope, crashWhenCantFindBone);
+                runtime.process(this.processingData, tick, modelRendererList, boneSnapshotCollection, parser, scope, crashWhenCantFindBone);
                 this.animationState = mergeAnimationStates(this.animationState, runtime.getAnimationState());
 
                 for (BoneAnimationQueue boneAnimation : runtime.getBoneAnimationQueues().values()) {
@@ -326,6 +327,14 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                 this.particleEvents.addAll(runtime.drainParticleEvents());
                 this.soundEvents.addAll(runtime.drainSoundEvents());
                 this.customInstructionEvents.addAll(runtime.drainCustomInstructionEvents());
+
+                if (runtime.shouldRemove()) {
+                    runtimesToRemove.add(runtimeEntry.getKey());
+                }
+            }
+
+            for (String runtimeName : runtimesToRemove) {
+                this.activeAnimationRuntimes.remove(runtimeName);
             }
 
             for (String boneName : rotationBones) {
@@ -396,19 +405,25 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
 
     private void syncActiveAnimationRuntimes(LinkedHashMap<String, AnimationControllerState.StateAnimation<D>> desiredAnimations,
                                              double transitionLength) {
-        this.activeAnimationRuntimes.entrySet().removeIf(entry -> !desiredAnimations.containsKey(entry.getKey()));
+        for (Map.Entry<String, SingleAnimationRuntime> runtimeEntry : this.activeAnimationRuntimes.entrySet()) {
+            if (!desiredAnimations.containsKey(runtimeEntry.getKey())) {
+                runtimeEntry.getValue().beginFadeOut(transitionLength);
+            }
+        }
 
         for (AnimationControllerState.StateAnimation<D> desiredAnimation : desiredAnimations.values()) {
             SingleAnimationRuntime runtime = this.activeAnimationRuntimes.computeIfAbsent(
                     desiredAnimation.getName(),
                     key -> new SingleAnimationRuntime(desiredAnimation.getName(), desiredAnimation.getLoopType(), transitionLength)
             );
+            runtime.cancelFadeOut();
             runtime.transitionLengthTicks = transitionLength;
             runtime.setAnimation(desiredAnimation.getName(), desiredAnimation.getLoopType());
         }
     }
 
-    private void applyTransitions(AnimationControllerState<D> currentControllerState) {
+    private double applyTransitions(AnimationControllerState<D> currentControllerState) {
+        double transitionLength = currentControllerState.transitionLength;
         for (ImmutablePair<String, Function<D, Boolean>> transitionEntry : currentControllerState.getStateTransitions()) {
             if (!transitionEntry.right.apply(this.processingData)) {
                 continue;
@@ -416,15 +431,15 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
 
             String nextStateName = transitionEntry.left;
             if (this.currentState.equals(nextStateName)) {
-                return;
+                return transitionLength;
             }
 
             this.applyEffects(currentControllerState.getExitEffects());
             this.currentState = this.getState(nextStateName).name;
             this.applyEffects(this.getCurrentControllerState().getEntryEffects());
-            this.activeAnimationRuntimes.clear();
-            return;
+            return transitionLength;
         }
+        return transitionLength;
     }
 
     private void applyEffects(Collection<AnimatableValue> effects) {
@@ -487,6 +502,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
         private final List<EventKeyFrame.ParticleEventKeyFrame> pendingParticleEvents = new ArrayList<>();
         private final List<EventKeyFrame.SoundEventKeyFrame> pendingSoundEvents = new ArrayList<>();
         private final List<EventKeyFrame.CustomInstructionKeyFrame> pendingCustomInstructionEvents = new ArrayList<>();
+        private final HashMap<String, BoneSnapshot> fadeOutSnapshots = new HashMap<>();
 
         private final String animationName;
         private LoopType loopType;
@@ -506,6 +522,9 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
         private EasingType easingType = EasingType.NONE;
         private Function<Double, Double> customEasingMethod;
         private boolean isJustStarting;
+        private boolean fadingOut;
+        private boolean fadeOutInitialized;
+        private boolean markedForRemoval;
 
         private SingleAnimationRuntime(String animationName, LoopType loopType, double transitionLengthTicks) {
             this.animationName = animationName;
@@ -527,6 +546,28 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
 
         private void markNeedsReload() {
             this.needsAnimationReload = true;
+        }
+
+        private boolean shouldRemove() {
+            return this.markedForRemoval;
+        }
+
+        private void beginFadeOut(double transitionLengthTicks) {
+            if (this.fadingOut || this.markedForRemoval) {
+                return;
+            }
+            this.fadingOut = true;
+            this.fadeOutInitialized = false;
+            this.transitionLengthTicks = transitionLengthTicks;
+            this.shouldResetTick = true;
+            this.animationState = AnimationState.Transitioning;
+        }
+
+        private void cancelFadeOut() {
+            this.fadingOut = false;
+            this.fadeOutInitialized = false;
+            this.fadeOutSnapshots.clear();
+            this.markedForRemoval = false;
         }
 
         private void setAnimation(String animationName, LoopType loopType) {
@@ -573,7 +614,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             this.needsAnimationReload = false;
         }
 
-        private void process(AbstractAnimationData<?> data, double tick, AnimationEvent event, List<IBone> modelRendererList,
+        private void process(AbstractAnimationData<?> data, double tick, List<IBone> modelRendererList,
                              HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection, MolangParser parser,
                              MolangScope scope, boolean crashWhenCantFindBone) {
             double deltaTime = this.lastFrameTick >= 0 ? tick - this.lastFrameTick : 0;
@@ -594,6 +635,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             }
 
             this.createInitialQueues(modelRendererList);
+            this.markedForRemoval = false;
 
             double actualTick = tick;
             tick = this.adjustTick(tick);
@@ -611,6 +653,12 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                 this.justStopped = true;
                 return;
             }
+
+            if (this.fadingOut) {
+                this.processFadeOut(tick, boneSnapshotCollection, modelRendererList, crashWhenCantFindBone);
+                return;
+            }
+
             if (this.justStartedTransition && (this.shouldResetTick || this.justStopped)) {
                 this.justStopped = false;
                 tick = this.adjustTick(actualTick);
@@ -634,7 +682,8 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                     this.saveSnapshotsForAnimation(this.currentAnimation, boneSnapshotCollection);
                 }
                 if (this.currentAnimation != null) {
-                    this.setAnimTime(data, 0);
+                    double transitionResolvedTick = this.resolveAnimTick(tick, parser, scope);
+                    this.setAnimTime(data, transitionResolvedTick);
                     for (BoneAnimation boneAnimation : this.currentAnimation.boneAnimations) {
                         BoneAnimationQueue boneAnimationQueue = this.boneAnimationQueues.get(boneAnimation.boneName);
                         BoneSnapshot boneSnapshot = this.boneSnapshots.get(boneAnimation.boneName);
@@ -654,9 +703,9 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                         VectorKeyFrameList scaleKeyFrames = boneAnimation.scaleKeyFrames;
 
                         if (!rotationKeyFrames.isEmpty()) {
-                            AnimationPoint xPoint = rotationKeyFrames.getAnimationPointAtTick(parser, scope, 0, Axis.X);
-                            AnimationPoint yPoint = rotationKeyFrames.getAnimationPointAtTick(parser, scope, 0, Axis.Y);
-                            AnimationPoint zPoint = rotationKeyFrames.getAnimationPointAtTick(parser, scope, 0, Axis.Z);
+                            AnimationPoint xPoint = rotationKeyFrames.getAnimationPointAtTick(parser, scope, transitionResolvedTick, Axis.X);
+                            AnimationPoint yPoint = rotationKeyFrames.getAnimationPointAtTick(parser, scope, transitionResolvedTick, Axis.Y);
+                            AnimationPoint zPoint = rotationKeyFrames.getAnimationPointAtTick(parser, scope, transitionResolvedTick, Axis.Z);
 
                             boneAnimationQueue.rotationXQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
                                     boneSnapshot.rotationValueX - initialSnapshot.rotationValueX,
@@ -670,9 +719,9 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                         }
 
                         if (!positionKeyFrames.isEmpty()) {
-                            AnimationPoint xPoint = positionKeyFrames.getAnimationPointAtTick(parser, scope, 0, Axis.X);
-                            AnimationPoint yPoint = positionKeyFrames.getAnimationPointAtTick(parser, scope, 0, Axis.Y);
-                            AnimationPoint zPoint = positionKeyFrames.getAnimationPointAtTick(parser, scope, 0, Axis.Z);
+                            AnimationPoint xPoint = positionKeyFrames.getAnimationPointAtTick(parser, scope, transitionResolvedTick, Axis.X);
+                            AnimationPoint yPoint = positionKeyFrames.getAnimationPointAtTick(parser, scope, transitionResolvedTick, Axis.Y);
+                            AnimationPoint zPoint = positionKeyFrames.getAnimationPointAtTick(parser, scope, transitionResolvedTick, Axis.Z);
 
                             boneAnimationQueue.positionXQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
                                     boneSnapshot.positionOffsetX, xPoint.animationStartValue));
@@ -683,9 +732,9 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                         }
 
                         if (!scaleKeyFrames.isEmpty()) {
-                            AnimationPoint xPoint = scaleKeyFrames.getAnimationPointAtTick(parser, scope, 0, Axis.X);
-                            AnimationPoint yPoint = scaleKeyFrames.getAnimationPointAtTick(parser, scope, 0, Axis.Y);
-                            AnimationPoint zPoint = scaleKeyFrames.getAnimationPointAtTick(parser, scope, 0, Axis.Z);
+                            AnimationPoint xPoint = scaleKeyFrames.getAnimationPointAtTick(parser, scope, transitionResolvedTick, Axis.X);
+                            AnimationPoint yPoint = scaleKeyFrames.getAnimationPointAtTick(parser, scope, transitionResolvedTick, Axis.Y);
+                            AnimationPoint zPoint = scaleKeyFrames.getAnimationPointAtTick(parser, scope, transitionResolvedTick, Axis.Z);
 
                             boneAnimationQueue.scaleXQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
                                     boneSnapshot.scaleValueX, xPoint.animationStartValue));
@@ -704,16 +753,79 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             this.isJustStarting = false;
         }
 
+        private void processFadeOut(double tick, HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection,
+                                    List<IBone> modelRendererList, boolean crashWhenCantFindBone) {
+            if (!this.fadeOutInitialized) {
+                this.fadeOutSnapshots.clear();
+                this.saveSnapshotsForAnimation(this.currentAnimation, boneSnapshotCollection, this.fadeOutSnapshots);
+                this.fadeOutInitialized = true;
+            }
+
+            double transitionTick = this.transitionLengthTicks <= 0 ? 0 : Math.min(tick, this.transitionLengthTicks);
+            if (this.currentAnimation != null) {
+                for (BoneAnimation boneAnimation : this.currentAnimation.boneAnimations) {
+                    BoneAnimationQueue boneAnimationQueue = this.boneAnimationQueues.get(boneAnimation.boneName);
+                    BoneSnapshot boneSnapshot = this.fadeOutSnapshots.get(boneAnimation.boneName);
+                    Optional<IBone> first = modelRendererList.stream()
+                            .filter(x -> x.getName().equals(boneAnimation.boneName)).findFirst();
+                    if (!first.isPresent()) {
+                        if (crashWhenCantFindBone) {
+                            throw new RuntimeException("Could not find bone: " + boneAnimation.boneName);
+                        }
+                        else continue;
+                    }
+                    if (boneSnapshot == null) {
+                        continue;
+                    }
+
+                    BoneSnapshot initialSnapshot = first.get().getInitialSnapshot();
+
+                    boneAnimationQueue.rotationXQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
+                            boneSnapshot.rotationValueX - initialSnapshot.rotationValueX, 0));
+                    boneAnimationQueue.rotationYQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
+                            boneSnapshot.rotationValueY - initialSnapshot.rotationValueY, 0));
+                    boneAnimationQueue.rotationZQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
+                            boneSnapshot.rotationValueZ - initialSnapshot.rotationValueZ, 0));
+
+                    boneAnimationQueue.positionXQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
+                            boneSnapshot.positionOffsetX, 0));
+                    boneAnimationQueue.positionYQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
+                            boneSnapshot.positionOffsetY, 0));
+                    boneAnimationQueue.positionZQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
+                            boneSnapshot.positionOffsetZ, 0));
+
+                    boneAnimationQueue.scaleXQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
+                            boneSnapshot.scaleValueX, 1));
+                    boneAnimationQueue.scaleYQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
+                            boneSnapshot.scaleValueY, 1));
+                    boneAnimationQueue.scaleZQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
+                            boneSnapshot.scaleValueZ, 1));
+                }
+            }
+
+            if (this.transitionLengthTicks <= 0 || transitionTick >= this.transitionLengthTicks) {
+                this.animationState = AnimationState.Stopped;
+                this.markedForRemoval = true;
+                this.fadingOut = false;
+            }
+        }
+
         private void setAnimTime(AbstractAnimationData<?> data, double tick) {
             data.animTime = tick / 20D;
         }
 
         private void saveSnapshotsForAnimation(Animation animation,
                                                HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection) {
+            this.saveSnapshotsForAnimation(animation, boneSnapshotCollection, this.boneSnapshots);
+        }
+
+        private void saveSnapshotsForAnimation(Animation animation,
+                                               HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection,
+                                               HashMap<String, BoneSnapshot> targetSnapshots) {
             for (Pair<IBone, BoneSnapshot> snapshot : boneSnapshotCollection.values()) {
                 if (animation != null && animation.boneAnimations != null) {
                     if (animation.boneAnimations.stream().anyMatch(x -> x.boneName.equals(snapshot.getLeft().getName()))) {
-                        this.boneSnapshots.put(snapshot.getLeft().getName(), new BoneSnapshot(snapshot.getRight()));
+                        targetSnapshots.put(snapshot.getLeft().getName(), new BoneSnapshot(snapshot.getRight()));
                     }
                 }
             }

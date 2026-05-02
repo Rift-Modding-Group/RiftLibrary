@@ -17,7 +17,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
-import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.util.Color;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
@@ -119,11 +118,7 @@ public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder<?>> exte
 		T animatable = this.getOrCreateHolder(itemStack, transformType);
 
 		GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(animatable));
-		AnimationEvent itemEvent = new AnimationEvent(
-				Minecraft.getMinecraft().getRenderPartialTicks(),
-				Collections.singletonList(itemStack)
-		);
-		this.modelProvider.setLivingAnimations(animatable, itemEvent);
+		this.modelProvider.setLivingAnimations(animatable);
 		if (transformType != ItemCameraTransforms.TransformType.GUI) this.modelProvider.createAndUpdateAnimatedLocators(animatable);
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(0, 0.01f, 0);

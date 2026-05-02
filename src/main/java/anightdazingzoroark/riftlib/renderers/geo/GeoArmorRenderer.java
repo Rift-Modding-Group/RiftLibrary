@@ -19,7 +19,6 @@ import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
-import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.processor.IBone;
 import anightdazingzoroark.riftlib.core.util.Color;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
@@ -84,11 +83,7 @@ public abstract class GeoArmorRenderer<T extends RiftLibArmor> extends ModelBipe
 		GlStateManager.translate(0.0D, 1.501F, 0.0D);
 		GlStateManager.scale(-1.0F, -1.0F, 1.0F);
 
-		AnimationEvent itemEvent = new AnimationEvent(
-               0,
-				Arrays.asList(this.itemStack, this.entityLiving, this.armorSlot)
-        );
-		this.modelProvider.setLivingAnimations(this.currentArmorItem, itemEvent);
+		this.modelProvider.setLivingAnimations(this.currentArmorItem);
         this.modelProvider.createAndUpdateAnimatedLocators(this.currentArmorItem);
 		this.fitToBiped();
 		GlStateManager.pushMatrix();

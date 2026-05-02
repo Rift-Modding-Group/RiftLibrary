@@ -11,12 +11,10 @@ import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
-import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.util.Color;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
-import anightdazingzoroark.riftlib.model.provider.data.EntityModelData;
 import anightdazingzoroark.riftlib.util.AnimationUtils;
 
 @SuppressWarnings("unchecked")
@@ -54,10 +52,7 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile<?>> extends Rende
 			);
 		}
 
-		EntityModelData entityModelData = new EntityModelData();
-		AnimationEvent predicate = new AnimationEvent(partialTicks, Collections.singletonList(entityModelData));
-
-        this.modelProvider.setLivingAnimations(entity, predicate);
+        this.modelProvider.setLivingAnimations(entity);
 		this.modelProvider.createAndUpdateAnimatedLocators(entity);
 
         GlStateManager.pushMatrix();

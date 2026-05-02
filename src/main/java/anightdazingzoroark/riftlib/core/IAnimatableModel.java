@@ -2,7 +2,6 @@ package anightdazingzoroark.riftlib.core;
 
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.core.builder.Animation;
-import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.processor.AnimationProcessor;
 import anightdazingzoroark.riftlib.core.processor.IBone;
 
@@ -11,11 +10,7 @@ public interface IAnimatableModel<E> {
 		return (System.nanoTime() / 1000000L / 50.0);
 	}
 
-	default void setLivingAnimations(E entity) {
-		this.setLivingAnimations(entity, null);
-	}
-
-	void setLivingAnimations(E entity, AnimationEvent customPredicate);
+	void setLivingAnimations(E entity);
 
 	AnimationProcessor getAnimationProcessor();
 

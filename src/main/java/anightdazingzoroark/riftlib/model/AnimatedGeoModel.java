@@ -26,7 +26,6 @@ import net.minecraftforge.common.MinecraftForge;
 import anightdazingzoroark.riftlib.animation.AnimationTicker;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
 import anightdazingzoroark.riftlib.core.builder.Animation;
-import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.processor.AnimationProcessor;
 import anightdazingzoroark.riftlib.core.processor.IBone;
 import anightdazingzoroark.riftlib.exceptions.GeoModelException;
@@ -56,7 +55,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 	}
 
 	@Override
-	public void setLivingAnimations(T entity, @Nullable AnimationEvent customPredicate) {
+	public void setLivingAnimations(T entity) {
 		// Each animation has it's own collection of animations (called the
 		// EntityAnimationManager), which allows for multiple independent animations
 		AbstractAnimationData<?> animData = entity.getAnimationData();
@@ -71,10 +70,6 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		}
         else this.seekTime = animData.tick;
 
-		AnimationEvent predicate = Objects.requireNonNullElseGet(
-				customPredicate, () -> new AnimationEvent((float) (animData.tick - this.lastGameTickTime), Collections.emptyList())
-		);
-		predicate.animationTick = this.seekTime;
 
 		//update molang related information while the entity is rendered
 		if (!Minecraft.getMinecraft().isGamePaused() || animData.shouldPlayWhilePaused) {
@@ -86,7 +81,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		if (!this.animationProcessor.getModelRendererList().isEmpty()) {
 			this.animationProcessor.tickAnimation(
 					entity, this.seekTime,
-					predicate, RiftLibCache.getInstance().parser,
+					RiftLibCache.getInstance().parser,
 					this.shouldCrashOnMissing
 			);
 		}

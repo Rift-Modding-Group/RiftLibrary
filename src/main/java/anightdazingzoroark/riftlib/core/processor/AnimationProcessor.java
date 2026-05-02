@@ -19,7 +19,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import anightdazingzoroark.riftlib.molang.MolangParser;
 
-import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
 import anightdazingzoroark.riftlib.core.snapshot.DirtyTracker;
 import anightdazingzoroark.riftlib.core.util.MathUtil;
@@ -28,7 +27,7 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 	public boolean reloadAnimations = false;
 	private final List<IBone> modelRendererList = new ArrayList<>();
 
-	public void tickAnimation(IAnimatable<?> entity, double seekTime, AnimationEvent event, MolangParser parser, boolean crashWhenCantFindBone) {
+	public void tickAnimation(IAnimatable<?> entity, double seekTime, MolangParser parser, boolean crashWhenCantFindBone) {
 		// Each animation has it's own collection of animations (called the
 		// EntityAnimationManager), which allows for multiple independent animations
 		AbstractAnimationData<?> animationData = entity.getAnimationData();
@@ -52,9 +51,8 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 			}
 
 			controller.isJustStarting = animationData.isFirstTick;
-			event.setController(controller);
 
-			controller.process(animationData, seekTime, event, this.modelRendererList, boneSnapshots, parser, animationData.dataScope, crashWhenCantFindBone);
+			controller.process(animationData, seekTime, this.modelRendererList, boneSnapshots, parser, animationData.dataScope, crashWhenCantFindBone);
 
 			for (BoneAnimationQueue boneAnimation : controller.getBoneAnimationQueues().values()) {
 				IBone bone = boneAnimation.bone;

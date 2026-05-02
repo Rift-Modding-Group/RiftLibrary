@@ -26,7 +26,7 @@ public class AvianRunnerEntity extends EntityCreature implements IAnimatable<Ani
     }
 
     protected void initEntityAI() {
-        this.tasks.addTask(1, new EntityAIWanderAvoidWater(this, 0.75D));
+        //this.tasks.addTask(1, new EntityAIWanderAvoidWater(this, 0.75D));
         this.tasks.addTask(2, new EntityAIWatchClosest(this, EntityPlayer.class, 8f));
         this.tasks.addTask(3, new EntityAILookIdle(this));
     }
@@ -104,7 +104,10 @@ public class AvianRunnerEntity extends EntityCreature implements IAnimatable<Ani
                 new AnimationController<AvianRunnerEntity, AnimationDataEntity>(
                         this, "movement", "default",
                         new AnimationControllerState<AnimationDataEntity>("default")
-                                .addAnimation("animation.avian_runner.run", AnimationDataEntity::isMoving)
+                                .addStateTransition("running", AnimationDataEntity::isMoving),
+                        new AnimationControllerState<AnimationDataEntity>("running", 1)
+                                .addAnimation("animation.avian_runner.run")
+                                .addStateTransition("default", data -> !data.isMoving())
                 )
         );
     }

@@ -25,7 +25,6 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
-import anightdazingzoroark.riftlib.core.event.AnimationEvent;
 import anightdazingzoroark.riftlib.core.util.Color;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
@@ -67,8 +66,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		float finalYaw = entity.isBeingRidden() ? riddenYaw : trueYaw;
 		this.applyRotations(entity, finalYaw, partialTicks);
 
-		AnimationEvent predicate = new AnimationEvent(partialTicks,  Collections.emptyList());
-        this.modelProvider.setLivingAnimations(entity, predicate);
+        this.modelProvider.setLivingAnimations(entity);
 		this.modelProvider.createAndUpdateAnimatedLocators(entity);
 
         GlStateManager.pushMatrix();

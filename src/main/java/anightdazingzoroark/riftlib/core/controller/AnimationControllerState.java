@@ -35,7 +35,7 @@ public class AnimationControllerState<D extends AbstractAnimationData<?>> {
      * */
     public AnimationControllerState(String name, double transitionLength) {
         this.name = name;
-        this.transitionLength = transitionLength;
+        this.transitionLength = transitionLength * 20D; //turn to ticks here cos idk lol
     }
 
     public AnimationControllerState<D> addAnimation(String animationName) {

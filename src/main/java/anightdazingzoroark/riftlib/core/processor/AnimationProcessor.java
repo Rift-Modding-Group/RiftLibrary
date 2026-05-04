@@ -1,9 +1,6 @@
 package anightdazingzoroark.riftlib.core.processor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
@@ -52,7 +49,7 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 
 			controller.isJustStarting = animationData.isFirstTick;
 
-			controller.process(animationData, seekTime, this.modelRendererList, boneSnapshots, parser, animationData.dataScope, crashWhenCantFindBone);
+			controller.process(animationData, seekTime, this.modelRendererList, boneSnapshots, parser, crashWhenCantFindBone);
 
 			for (BoneAnimationQueue boneAnimation : controller.getBoneAnimationQueues().values()) {
 				IBone bone = boneAnimation.bone;
@@ -194,8 +191,9 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 					saveSnapshot.isCurrentlyRunningRotationAnimation = false;
 				}
 
-				double percentageReset = Math
-						.min((seekTime - saveSnapshot.mostRecentResetRotationTick) / resetTickLength, 1);
+				double percentageReset = resetTickLength <= 0
+						? 1
+						: Math.min((seekTime - saveSnapshot.mostRecentResetRotationTick + 1D) / resetTickLength, 1);
 
 				dBoneAnimationValues.addRotations(
 						model.getName(),
@@ -206,12 +204,9 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 				model.setRotationX(dBoneAnimationValues.getRotations(model.getName())[0]);
 				model.setRotationY(dBoneAnimationValues.getRotations(model.getName())[1]);
 				model.setRotationZ(dBoneAnimationValues.getRotations(model.getName())[2]);
-
-				if (percentageReset >= 1) {
-					saveSnapshot.rotationValueX = model.getRotationX();
-					saveSnapshot.rotationValueY = model.getRotationY();
-					saveSnapshot.rotationValueZ = model.getRotationZ();
-				}
+				saveSnapshot.rotationValueX = model.getRotationX();
+				saveSnapshot.rotationValueY = model.getRotationY();
+				saveSnapshot.rotationValueZ = model.getRotationZ();
 			}
 			if (!tracker.getValue().hasPositionChanged) {
 				if (saveSnapshot.isCurrentlyRunningPositionAnimation) {
@@ -219,8 +214,9 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 					saveSnapshot.isCurrentlyRunningPositionAnimation = false;
 				}
 
-				double percentageReset = Math
-						.min((seekTime - saveSnapshot.mostRecentResetPositionTick) / resetTickLength, 1);
+				double percentageReset = resetTickLength <= 0
+						? 1
+						: Math.min((seekTime - saveSnapshot.mostRecentResetPositionTick + 1D) / resetTickLength, 1);
 
 				dBoneAnimationValues.addPositions(
 						model.getName(),
@@ -231,12 +227,9 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 				model.setPositionX(dBoneAnimationValues.getPositions(model.getName())[0]);
 				model.setPositionY(dBoneAnimationValues.getPositions(model.getName())[1]);
 				model.setPositionZ(dBoneAnimationValues.getPositions(model.getName())[2]);
-
-				if (percentageReset >= 1) {
-					saveSnapshot.positionOffsetX = model.getPositionX();
-					saveSnapshot.positionOffsetY = model.getPositionY();
-					saveSnapshot.positionOffsetZ = model.getPositionZ();
-				}
+				saveSnapshot.positionOffsetX = model.getPositionX();
+				saveSnapshot.positionOffsetY = model.getPositionY();
+				saveSnapshot.positionOffsetZ = model.getPositionZ();
 			}
 			if (!tracker.getValue().hasScaleChanged) {
 				if (saveSnapshot.isCurrentlyRunningScaleAnimation) {
@@ -244,8 +237,9 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 					saveSnapshot.isCurrentlyRunningScaleAnimation = false;
 				}
 
-				double percentageReset = Math.min((seekTime - saveSnapshot.mostRecentResetScaleTick) / resetTickLength,
-						1);
+				double percentageReset = resetTickLength <= 0
+						? 1
+						: Math.min((seekTime - saveSnapshot.mostRecentResetScaleTick + 1D) / resetTickLength, 1);
 
 				model.setScaleX(
 						MathUtil.lerpValues(percentageReset, saveSnapshot.scaleValueX, initialSnapshot.scaleValueX));
@@ -253,12 +247,9 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 						MathUtil.lerpValues(percentageReset, saveSnapshot.scaleValueY, initialSnapshot.scaleValueY));
 				model.setScaleZ(
 						MathUtil.lerpValues(percentageReset, saveSnapshot.scaleValueZ, initialSnapshot.scaleValueZ));
-
-				if (percentageReset >= 1) {
-					saveSnapshot.scaleValueX = model.getScaleX();
-					saveSnapshot.scaleValueY = model.getScaleY();
-					saveSnapshot.scaleValueZ = model.getScaleZ();
-				}
+				saveSnapshot.scaleValueX = model.getScaleX();
+				saveSnapshot.scaleValueY = model.getScaleY();
+				saveSnapshot.scaleValueZ = model.getScaleZ();
 			}
 		}
 		animationData.isFirstTick = false;

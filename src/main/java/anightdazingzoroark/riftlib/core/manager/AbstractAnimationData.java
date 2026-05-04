@@ -44,9 +44,8 @@ public abstract class AbstractAnimationData<T> {
     private double resetTickLength = 1;
     public Object ticker;
     public boolean shouldPlayWhilePaused = false;
-    private boolean initialized;
 
-    //values meant for molang queries
+    //time values meant for molang queries
     public double animTime;
     public double deltaTime;
     public double lifeTime;
@@ -217,6 +216,17 @@ public abstract class AbstractAnimationData<T> {
     }
 
     /**
+     * This is for specifically updating the time values to molang
+     * */
+    public void syncTimeQueries() {
+        this.parser.withScope(this.dataScope, () -> {
+            parser.setValue("query.anim_time", this.animTime);
+            parser.setValue("query.delta_time", this.deltaTime);
+            parser.setValue("query.life_time", this.lifeTime);
+        });
+    }
+
+    /**
      * This is for sending animation data to the server
      * */
     @NotNull
@@ -224,6 +234,7 @@ public abstract class AbstractAnimationData<T> {
 
     /**
      * Each AnimationData class is to have their own molang queries in addition to the ones here shared amongst all
+     * TODO: make molang queries true functions and not molang variables
      * */
     protected HashMap<String, BiFunction<AbstractAnimationData<T>, MolangParser, Double>> getMolangQueries() {
         HashMap<String, BiFunction<AbstractAnimationData<T>, MolangParser, Double>> toReturn = new HashMap<>();

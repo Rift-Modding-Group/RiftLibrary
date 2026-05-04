@@ -412,6 +412,7 @@
 			}
 		},
 		"animation.flying_pufferfish.go_up": {
+			"loop": true,
 			"animation_length": 1.0,
 			"bones": {
 				"body": {

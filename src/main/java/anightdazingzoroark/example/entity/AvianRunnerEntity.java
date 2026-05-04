@@ -105,7 +105,7 @@ public class AvianRunnerEntity extends EntityCreature implements IAnimatable<Ani
                         this, "movement", "default",
                         new AnimationControllerState<AnimationDataEntity>("default")
                                 .addStateTransition("running", AnimationDataEntity::isMoving),
-                        new AnimationControllerState<AnimationDataEntity>("running", 1)
+                        new AnimationControllerState<AnimationDataEntity>("running", 0.1)
                                 .addAnimation("animation.avian_runner.run")
                                 .addStateTransition("default", data -> !data.isMoving())
                 )

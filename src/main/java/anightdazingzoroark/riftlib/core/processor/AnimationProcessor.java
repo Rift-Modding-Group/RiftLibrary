@@ -7,7 +7,7 @@ import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibRunAnimationMessageEffect;
 import anightdazingzoroark.riftlib.core.keyframe.*;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
-import anightdazingzoroark.riftlib.model.AnimatedLocatorNew;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
@@ -96,7 +96,7 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 
             //animation effects
             for (EventKeyFrame.ParticleEventKeyFrame particleEvent : controller.drainParticleEvents()) {
-                AnimatedLocatorNew locator = animationData.getAnimatedLocator(particleEvent.locator);
+                AnimatedLocator locator = animationData.getAnimatedLocator(particleEvent.locator);
                 if (locator != null) {
                     ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(particleEvent.effect);
                     if (particleBuilder != null) locator.createParticleEmitter(particleBuilder);
@@ -105,7 +105,7 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 
             //sound effects
             for (EventKeyFrame.SoundEventKeyFrame soundEvent : controller.drainSoundEvents()) {
-                AnimatedLocatorNew locator = animationData.getAnimatedLocator(soundEvent.locator);
+                AnimatedLocator locator = animationData.getAnimatedLocator(soundEvent.locator);
                 if (locator != null) RiftLibSoundHelper.playSound(entity, locator, soundEvent.effect);
             }
 

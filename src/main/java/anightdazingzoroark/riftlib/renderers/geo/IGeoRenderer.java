@@ -4,7 +4,7 @@ import javax.vecmath.*;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.geo.render.*;
-import anightdazingzoroark.riftlib.model.AnimatedLocatorNew;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.util.MatrixUtils;
 import anightdazingzoroark.riftlib.util.ParticleUtils;
 import net.minecraft.client.renderer.RenderHelper;
@@ -126,8 +126,8 @@ public interface IGeoRenderer<T> {
     default void repositionAnimatedLocators(T animatable) {
         if (!(animatable instanceof IAnimatable<?> animatableObject)) return;
 
-        List<AnimatedLocatorNew> animatedLocators = animatableObject.getAnimationData().getAnimatedLocators();
-        for (AnimatedLocatorNew animatedLocator : animatedLocators) {
+        List<AnimatedLocator> animatedLocators = animatableObject.getAnimationData().getAnimatedLocators();
+        for (AnimatedLocator animatedLocator : animatedLocators) {
             //update location based on animatedLocator if there is
             BufferUtils.createFloatBuffer(16);
             Vector3d position = ParticleUtils.getCurrentRenderPos();

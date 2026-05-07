@@ -1,6 +1,6 @@
 package anightdazingzoroark.riftlib.ridePositionLogic;
 
-import anightdazingzoroark.riftlib.model.AnimatedLocatorNew;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.math.Vec3d;
@@ -82,7 +82,7 @@ public class DynamicRidePosList {
         return toReturn;
     }
 
-    public void addPosition(AnimatedLocatorNew locator) {
+    public void addPosition(AnimatedLocator locator) {
         if (locator == null) return;
         if (DynamicRidePosUtils.locatorCanBeControllerPos(locator.getName())) {
             Vec3d modelSpacePos = locator.getModelSpacePosition();

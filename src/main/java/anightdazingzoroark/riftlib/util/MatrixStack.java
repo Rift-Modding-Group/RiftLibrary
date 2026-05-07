@@ -6,7 +6,7 @@ import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;
 
-import anightdazingzoroark.riftlib.model.AnimatedLocatorNew;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import net.minecraft.util.math.Vec3d;
 import org.lwjglx.util.vector.Quaternion;
 
@@ -93,7 +93,7 @@ public class MatrixStack {
 		this.translate(-bone.getPositionX() / 16, bone.getPositionY() / 16, bone.getPositionZ() / 16);
 	}
 
-    public void translate(AnimatedLocatorNew locator) {
+    public void translate(AnimatedLocator locator) {
         Vec3d locatorPos = locator.getModelSpacePosition();
         this.translate((float) locatorPos.x / 16f, (float) locatorPos.y / 16f, (float) locatorPos.z / 16f);
     }
@@ -200,7 +200,7 @@ public class MatrixStack {
         this.normal.peek().mul(this.tempNormalMatrix);
     }
 
-    public void rotate(AnimatedLocatorNew locator) {
+    public void rotate(AnimatedLocator locator) {
         Quaternion locatorRotQuat = locator.getModelSpaceYXZQuaternion();
         Quaternion.normalise(locatorRotQuat, locatorRotQuat);
         Matrix3f matrixFromQuat = MatrixUtils.quaternionToMatrix(locatorRotQuat);

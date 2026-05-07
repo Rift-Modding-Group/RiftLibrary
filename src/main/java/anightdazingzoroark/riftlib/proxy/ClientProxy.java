@@ -45,6 +45,7 @@ public class ClientProxy extends ServerProxy {
         MinecraftForge.EVENT_BUS.register(new ParticleTicker());
         MinecraftForge.EVENT_BUS.register(new RiftLibSoundEffectRegistry());
         MinecraftForge.EVENT_BUS.register(new GeoItemRendererTicker());
+        MinecraftForge.EVENT_BUS.register(new HitboxTicker.Client());
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {

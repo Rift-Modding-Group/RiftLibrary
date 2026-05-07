@@ -2,8 +2,6 @@ package anightdazingzoroark.riftlib.model;
 
 import java.util.*;
 
-import javax.annotation.Nullable;
-
 import anightdazingzoroark.riftlib.RiftLibConfig;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
@@ -101,8 +99,8 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 
 	private void setDynamicHitboxes(T entity, AbstractAnimationData<?> animData) {
 		if (!(entity instanceof IMultiHitboxUser multiHitboxUser)) return;
-		List<AnimatedLocatorNew> animatedLocators = animData.getAnimatedLocators();
-		for (AnimatedLocatorNew animatedLocator : animatedLocators) {
+		List<AnimatedLocator> animatedLocators = animData.getAnimatedLocators();
+		for (AnimatedLocator animatedLocator : animatedLocators) {
 			if (!HitboxUtils.locatorCanBeHitbox(animatedLocator.getName())) continue;
 			String hitboxName = HitboxUtils.locatorHitboxToHitbox(animatedLocator.getName());
 
@@ -181,7 +179,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		DynamicRidePosList definitionList = new DynamicRidePosList();
 
 		//make a definition list of dynamic ride positions and put in it the new positions based on the new locators positions
-		for (AnimatedLocatorNew locator : animData.getAnimatedLocators()) {
+		for (AnimatedLocator locator : animData.getAnimatedLocators()) {
 			if (!DynamicRidePosUtils.locatorCanBeRidePos(locator.getName())) continue;
 			definitionList.addPosition(locator);
 		}

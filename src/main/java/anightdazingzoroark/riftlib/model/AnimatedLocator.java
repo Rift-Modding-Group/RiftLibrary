@@ -15,7 +15,7 @@ import org.lwjglx.util.vector.Quaternion;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AnimatedLocatorNew {
+public class AnimatedLocator {
     private final GeoLocator locator;
     private final AbstractAnimationData<?> animationData;
     private final List<RiftLibParticleEmitter> particleEmitterList = new ArrayList<>();
@@ -23,7 +23,7 @@ public class AnimatedLocatorNew {
     private Quaternion worldSpaceYXZQuaternion = new Quaternion();
     private boolean isUpdated = true;
 
-    public AnimatedLocatorNew(GeoLocator geoLocator, AbstractAnimationData<?> animationData) {
+    public AnimatedLocator(GeoLocator geoLocator, AbstractAnimationData<?> animationData) {
         this.locator = geoLocator;
         this.animationData = animationData;
     }

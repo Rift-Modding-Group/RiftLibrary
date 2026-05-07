@@ -267,8 +267,6 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             for (Map.Entry<String, SingleAnimationRuntime> runtimeEntry : this.activeAnimationRuntimes.entrySet()) {
                 SingleAnimationRuntime runtime = runtimeEntry.getValue();
                 runtime.isJustStarting = this.isJustStarting;
-                runtime.easingType = this.easingType;
-                runtime.customEasingMethod = this.customEasingMethod;
                 runtime.animationSpeed = this.animationSpeed;
                 runtime.process(processingData, tick, modelRendererList, boneSnapshotCollection, parser, crashWhenCantFindBone);
                 this.animationState = mergeAnimationStates(this.animationState, runtime.getAnimationState());
@@ -513,8 +511,6 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
         private double lastFrameTick = -1D;
         private double transitionLengthTicks;
         private double animationSpeed = 1D;
-        private EasingType easingType = EasingType.NONE;
-        private Function<Double, Double> customEasingMethod;
         private boolean isJustStarting;
         private boolean fadingOut;
         private boolean fadeOutInitialized;
@@ -823,14 +819,17 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             data.syncTimeQueries();
         }
 
-        private void saveSnapshotsForAnimation(Animation animation,
-                                               HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection) {
+        private void saveSnapshotsForAnimation(
+                Animation animation, HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection
+        ) {
             this.saveSnapshotsForAnimation(animation, boneSnapshotCollection, this.boneSnapshots);
         }
 
-        private void saveSnapshotsForAnimation(Animation animation,
-                                               HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection,
-                                               HashMap<String, BoneSnapshot> targetSnapshots) {
+        private void saveSnapshotsForAnimation(
+                Animation animation,
+                HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection,
+                HashMap<String, BoneSnapshot> targetSnapshots
+        ) {
             for (Pair<IBone, BoneSnapshot> snapshot : boneSnapshotCollection.values()) {
                 if (animation != null && animation.boneAnimations != null) {
                     if (animation.boneAnimations.stream().anyMatch(x -> x.boneName.equals(snapshot.getLeft().getName()))) {
@@ -840,7 +839,9 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             }
         }
 
-        private void processCurrentAnimation(AbstractAnimationData<?> data, double tick, double actualTick, MolangParser parser, boolean crashWhenCantFindBone) {
+        private void processCurrentAnimation(
+                AbstractAnimationData<?> data, double tick, double actualTick, MolangParser parser, boolean crashWhenCantFindBone
+        ) {
             assert this.currentAnimation != null;
             double resolvedTick = this.resolveAnimTick(tick, parser, data.dataScope);
 

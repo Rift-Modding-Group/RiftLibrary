@@ -8,7 +8,7 @@ import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
-import anightdazingzoroark.riftlib.model.AnimatedLocatorNew;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.resource.RiftLibCache;
@@ -34,7 +34,7 @@ public abstract class AbstractAnimationData<T> {
     private final IAnimatable<?> animatable;
     private HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection = new HashMap<>();
     private final HashMap<String, AnimationController<?, ?>> animationControllers = new HashMap<>();
-    private final List<AnimatedLocatorNew> animatedLocators = new ArrayList<>();
+    private final List<AnimatedLocator> animatedLocators = new ArrayList<>();
     private int animatedLocatorTicker;
     private final MolangParser parser = RiftLibCache.getInstance().parser;
     public final MolangScope dataScope = new MolangScope();
@@ -65,17 +65,6 @@ public abstract class AbstractAnimationData<T> {
     @NotNull
     public IAnimatable<?> getAnimatable() {
         return this.animatable;
-    }
-
-    /**
-     * This method is how you register animation controllers, without this, your
-     * AnimationPredicate method will never be called
-     *
-     * @param value The value
-     * @return the animation controller
-     */
-    public AnimationController<?, ?> addAnimationController(AnimationController<?, ?> value) {
-        return this.animationControllers.put(value.getName(), value);
     }
 
     public HashMap<String, Pair<IBone, BoneSnapshot>> getBoneSnapshotCollection() {
@@ -117,7 +106,7 @@ public abstract class AbstractAnimationData<T> {
             List<GeoLocator> locatorList = model.getAllLocators();
             for (GeoLocator locator : locatorList) {
                 if (locator == null) continue;
-                this.animatedLocators.add(new AnimatedLocatorNew(locator, this));
+                this.animatedLocators.add(new AnimatedLocator(locator, this));
             }
 
             this.currentModel = model;
@@ -126,7 +115,7 @@ public abstract class AbstractAnimationData<T> {
 
     public void updateAnimatedLocators() {
         this.animatedLocatorTicker = 0;
-        for (AnimatedLocatorNew locator : this.animatedLocators) locator.setUpdated(true);
+        for (AnimatedLocator locator : this.animatedLocators) locator.setUpdated(true);
     }
 
     public void tickAnimatedLocators() {
@@ -135,20 +124,20 @@ public abstract class AbstractAnimationData<T> {
             this.animatedLocatorTicker++;
         }
         else {
-            for (AnimatedLocatorNew locator : this.animatedLocators) locator.setUpdated(false);
+            for (AnimatedLocator locator : this.animatedLocators) locator.setUpdated(false);
             this.animatedLocatorTicker = 0;
         }
     }
 
-    public AnimatedLocatorNew getAnimatedLocator(String name) {
-        for (AnimatedLocatorNew animatedLocator : this.animatedLocators) {
+    public AnimatedLocator getAnimatedLocator(String name) {
+        for (AnimatedLocator animatedLocator : this.animatedLocators) {
             if (animatedLocator == null) continue;
             if (animatedLocator.getName() != null && animatedLocator.getName().equals(name)) return animatedLocator;
         }
         return null;
     }
 
-    public List<AnimatedLocatorNew> getAnimatedLocators() {
+    public List<AnimatedLocator> getAnimatedLocators() {
         return this.animatedLocators;
     }
 
@@ -157,7 +146,7 @@ public abstract class AbstractAnimationData<T> {
 
         List<? extends AnimationController<?, ?>> controllers = animatable.createAnimationControllers();
         for (AnimationController<?, ?> controller : controllers) {
-            this.addAnimationController(controller);
+            this.animationControllers.put(controller.getName(), controller);
         }
     }
 

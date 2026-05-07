@@ -2,7 +2,7 @@ package anightdazingzoroark.riftlib.particle;
 
 import anightdazingzoroark.riftlib.exceptions.ParticleException;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
-import anightdazingzoroark.riftlib.model.AnimatedLocatorNew;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class RiftLibParticleEmitter {
     private final List<RiftLibParticle> particles = new ArrayList<>();
     public final String particleIdentifier;
-    private AnimatedLocatorNew locator;
+    private AnimatedLocator locator;
     private double particleCount;
     private final World world;
     private final int emitterId; //this is mostly for debugging
@@ -67,7 +67,7 @@ public class RiftLibParticleEmitter {
     //for lifetime stuff
     public RiftLibEmitterLifetimeComponent emitterLifetime;
 
-    public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, AnimatedLocatorNew locator) {
+    public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, AnimatedLocator locator) {
         this(particleBuilder, world, 0, 0, 0);
         this.locator = locator;
     }
@@ -273,7 +273,7 @@ public class RiftLibParticleEmitter {
         return this.isDead && this.particles.isEmpty();
     }
 
-    public AnimatedLocatorNew getLocator() {
+    public AnimatedLocator getLocator() {
         return this.locator;
     }
 

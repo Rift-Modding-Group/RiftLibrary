@@ -2,7 +2,7 @@ package anightdazingzoroark.riftlib.sounds;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
-import anightdazingzoroark.riftlib.model.AnimatedLocatorNew;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibPlaySoundForPlayer;
 import net.minecraft.client.Minecraft;
@@ -16,7 +16,7 @@ public class RiftLibSoundHelper {
     /**
      * This function is used in AnimationProcessor to play a sound event registered in RiftLibSoundEffectRegistry.
      */
-    public static void playSound(IAnimatable<?> source, AnimatedLocatorNew locator, String soundName) {
+    public static void playSound(IAnimatable<?> source, AnimatedLocator locator, String soundName) {
         if (!RiftLibSoundEffectRegistry.soundEffectMap.containsKey(soundName)) return;
 
         SoundEvent soundEvent = RiftLibSoundEffectRegistry.soundEffectMap.get(soundName).right;

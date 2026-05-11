@@ -36,7 +36,7 @@ public class MolangParser extends MathBuilder {
     }
 
     public void withScope(MolangScope scope, Runnable r) {
-        pushScope(scope);
+        this.pushScope(scope);
         try {
             r.run();
         }
@@ -56,7 +56,7 @@ public class MolangParser extends MathBuilder {
 
         if (variable == null) {
             variable = new ScopedVariable(this, name, 0f);
-            this.register(variable);
+            this.registerVariable(variable);
         }
 
         return variable;
@@ -112,8 +112,9 @@ public class MolangParser extends MathBuilder {
 
             if (symbols.size() >= 3
                     && symbols.get(0) instanceof String
-                    && this.isVariable(symbols.get(0))
-                    && symbols.get(1).equals("=")) {
+                    && this.isValueReturner(symbols.get(0))
+                    && symbols.get(1).equals("=")
+            ) {
                 //-----variable stuff-----
                 String name = (String) symbols.getFirst();
 

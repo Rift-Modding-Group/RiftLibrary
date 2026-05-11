@@ -1,19 +1,9 @@
 package anightdazingzoroark.riftlib.molang.math;
 
-import anightdazingzoroark.riftlib.molang.functions.CosDegrees;
-import anightdazingzoroark.riftlib.molang.functions.SinDegrees;
-import anightdazingzoroark.riftlib.molang.math.functions.Function;
-import anightdazingzoroark.riftlib.molang.math.functions.classic.*;
-import anightdazingzoroark.riftlib.molang.math.functions.limit.*;
-import anightdazingzoroark.riftlib.molang.math.functions.rounding.Ceil;
-import anightdazingzoroark.riftlib.molang.math.functions.rounding.Floor;
-import anightdazingzoroark.riftlib.molang.math.functions.rounding.Round;
-import anightdazingzoroark.riftlib.molang.math.functions.rounding.Trunc;
-import anightdazingzoroark.riftlib.molang.math.functions.utility.*;
 import anightdazingzoroark.riftlib.molang.math.variable.AbstractVariable;
-import anightdazingzoroark.riftlib.molang.math.variable.StaticVariable;
+import anightdazingzoroark.riftlib.molang.utils.Interpolations;
+import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,41 +11,104 @@ import java.util.Map;
 
 public class MathBuilder {
     public final Map<String, AbstractVariable> variables = new HashMap<>();
-    public final Map<String, Class<? extends Function>> functions = new HashMap<>();
+    public final Map<String, Function> functions = new HashMap<>();
 
     public MathBuilder() {
-        this.register(new StaticVariable("math.pi", Math.PI));
-        this.register(new StaticVariable("math.e", Math.E));
-        this.functions.put("math.floor", Floor.class);
-        this.functions.put("math.round", Round.class);
-        this.functions.put("math.ceil", Ceil.class);
-        this.functions.put("math.trunc", Trunc.class);
-        this.functions.put("math.clamp", Clamp.class);
-        this.functions.put("math.max", Max.class);
-        this.functions.put("math.min", Min.class);
-        this.functions.put("math.abs", Abs.class);
-        this.functions.put("math.acos", ACos.class);
-        this.functions.put("math.asin", ASin.class);
-        this.functions.put("math.atan", ATan.class);
-        this.functions.put("math.atan2", ATan2.class);
-        this.functions.put("math.cos", CosDegrees.class);
-        this.functions.put("math.sin", SinDegrees.class);
-        this.functions.put("math.exp", Exp.class);
-        this.functions.put("math.ln", Ln.class);
-        this.functions.put("math.sqrt", Sqrt.class);
-        this.functions.put("math.mod", Mod.class);
-        this.functions.put("math.pow", Pow.class);
-        this.functions.put("math.lerp", Lerp.class);
-        this.functions.put("math.lerprotate", LerpRotate.class);
-        this.functions.put("math.hermite_blend", HermiteBlend.class);
-        this.functions.put("math.die_roll", DieRoll.class);
-        this.functions.put("math.die_roll_integer", DieRollInteger.class);
-        this.functions.put("math.random", Random.class);
-        this.functions.put("math.random_integer", RandomInteger.class);
+        this.registerFunction("math.pi", 0, values -> Math.PI);
+        this.registerFunction("math.e", 0, values -> Math.E);
+        this.registerFunction("math.floor", 1, values -> Math.floor(values[0].get()));
+        this.registerFunction("math.round", 1, values -> (double) Math.round(values[0].get()));
+        this.registerFunction("math.ceil", 1, values -> Math.ceil(values[0].get()));
+        this.registerFunction("math.trunc", 1, values -> {
+            double value = values[0].get();
+            return value < 0D ? Math.ceil(value) : Math.floor(value);
+        });
+        this.registerFunction("math.clamp", 3, values -> Math.clamp(values[0].get(), values[1].get(), values[2].get()));
+        this.registerFunction("math.max", 2, values -> Math.max(values[0].get(), values[1].get()));
+        this.registerFunction("math.min", 2, values -> Math.min(values[0].get(), values[1].get()));
+        this.registerFunction("math.abs", 1, values -> Math.abs(values[0].get()));
+        this.registerFunction("math.acos", 1, values -> Math.toDegrees(Math.acos(values[0].get())));
+        this.registerFunction("math.asin", 1, values -> Math.toDegrees(Math.asin(values[0].get())));
+        this.registerFunction("math.atan", 1, values -> Math.toDegrees(Math.atan(values[0].get())));
+        this.registerFunction("math.atan2", 2, values -> Math.toDegrees(Math.atan2(values[0].get(), values[1].get())));
+        this.registerFunction("math.cos", 1, values -> Math.cos(Math.toDegrees(values[0].get())));
+        this.registerFunction("math.sin", 1, values -> Math.sin(Math.toDegrees(values[0].get())));
+        this.registerFunction("math.tan", 1, values -> Math.tan(Math.toDegrees(values[0].get())));
+        this.registerFunction("math.exp", 1, values -> Math.exp(values[0].get()));
+        this.registerFunction("math.ln", 1, values -> Math.log(values[0].get()));
+        this.registerFunction("math.sqrt", 1, values -> Math.sqrt(values[0].get()));
+        this.registerFunction("math.mod", 2, values -> values[0].get() % values[1].get());
+        this.registerFunction("math.pow", 2, values -> Math.pow(values[0].get(), values[1].get()));
+        this.registerFunction("math.lerp", 3, values -> {
+            return Interpolations.lerp(values[0].get(), values[1].get(), values[2].get());
+        });
+        this.registerFunction("math.lerprotate", 3, values -> {
+            return Interpolations.lerpYaw(values[0].get(), values[1].get(), values[2].get());
+        });
+        this.registerFunction("math.hermite_blend", 1, values -> {
+            double min = Math.ceil(values[0].get());
+            return Math.floor(3D * Math.pow(min, 2D) - 2D * Math.pow(min, 3D));
+        });
+        this.registerFunction("math.die_roll", 3, values -> {
+            int amount = Math.max(0, (int) Math.floor(values[0].get()));
+            double lowerBound = Math.min(values[1].get(), values[2].get());
+            double upperBound = Math.max(values[1].get(), values[2].get());
+
+            double total = 0D;
+            for (int i = 0; i < amount; i++) {
+                total += Math.random() * (upperBound - lowerBound) + lowerBound;
+            }
+
+            return total;
+        });
+        this.registerFunction("math.die_roll_integer", 3, values -> {
+            int amount = Math.max(0, (int) Math.floor(values[0].get()));
+            int lowerBound = (int) Math.ceil(Math.min(values[1].get(), values[2].get()));
+            int upperBound = (int) Math.floor(Math.max(values[1].get(), values[2].get()));
+            if (lowerBound > upperBound) return 0D;
+
+            double total = 0D;
+            for (int i = 0; i < amount; i++) {
+                total += Math.floor(Math.random() * (upperBound - lowerBound + 1)) + lowerBound;
+            }
+
+            return total;
+        });
+        this.registerFunction("math.random", 2, values -> {
+            int lowerBound = (int) Math.ceil(Math.min(values[0].get(), values[1].get()));
+            int upperBound = (int) Math.floor(Math.max(values[0].get(), values[1].get()));
+            if (lowerBound > upperBound) return 0D;
+
+            java.util.Random random = new java.util.Random();
+            return random.nextDouble(lowerBound, upperBound);
+        });
+        this.registerFunction("math.random_integer", 2, values -> {
+            int lowerBound = (int) Math.ceil(Math.min(values[1].get(), values[2].get()));
+            int upperBound = (int) Math.floor(Math.max(values[1].get(), values[2].get()));
+            if (lowerBound > upperBound) return 0D;
+
+            java.util.Random random = new java.util.Random();
+            return (double) random.nextInt(lowerBound, upperBound);
+        });
     }
 
-    public void register(AbstractVariable variable) {
+    protected void registerVariable(AbstractVariable variable) {
         this.variables.put(variable.getName(), variable);
+    }
+
+    private void registerFunction(String name, int argCount, java.util.function.Function<IValue[], Double> operation) {
+        this.functions.put(name, new Function(name) {
+            @Override
+            public int requiredArgCount() {
+                return argCount;
+            }
+
+            @Override
+            @NotNull
+            public java.util.function.Function<IValue[], Double> operation() {
+                return operation;
+            }
+        });
     }
 
     public IValue parse(String expression) throws Exception {
@@ -72,7 +125,7 @@ public class MathBuilder {
             int left = 0;
             int right = 0;
 
-            for(String s : chars) {
+            for (String s : chars) {
                 if (s.equals("(")) ++left;
                 else if (s.equals(")")) ++right;
             }
@@ -152,9 +205,7 @@ public class MathBuilder {
 
     public IValue parseSymbols(List<Object> symbols) throws Exception {
         IValue ternary = this.tryTernary(symbols);
-        if (ternary != null) {
-            return ternary;
-        }
+        if (ternary != null) return ternary;
         else {
             int size = symbols.size();
             if (size == 1) return this.valueFromObject(symbols.getFirst());
@@ -162,8 +213,14 @@ public class MathBuilder {
                 if (size == 2) {
                     Object first = symbols.get(0);
                     Object second = symbols.get(1);
-                    if ((this.isVariable(first) || first.equals("-")) && second instanceof List) {
-                        return this.createFunction((String)first, (List) second);
+                    if ((this.isValueReturner(first) || first.equals("-")) && second instanceof List) {
+                        //if this is a function with no args we're dealing with, return an exception
+                        String funcName = (String) first;
+                        if (this.isFunctionNoArgs(funcName)) {
+                            throw new Exception("Function "+funcName+" does not accept any arguments, yet it is treated as if it does!");
+                        }
+                        //normal function creation
+                        return this.createFunction(funcName, (List) second);
                     }
                 }
 
@@ -285,7 +342,7 @@ public class MathBuilder {
             List<IValue> values = new ArrayList<>();
             List<Object> buffer = new ArrayList<>();
 
-            for(Object o : args) {
+            for (Object o : args) {
                 if (o.equals(",")) {
                     values.add(this.parseSymbols(buffer));
                     buffer.clear();
@@ -297,9 +354,22 @@ public class MathBuilder {
                 values.add(this.parseSymbols(buffer));
             }
 
-            Class<? extends Function> function = this.functions.get(first);
-            Constructor<? extends Function> ctor = function.getConstructor(IValue[].class, String.class);
-            return ctor.newInstance(values.toArray(new IValue[values.size()]), first);
+            Function function = this.functions.get(first);
+            IValue[] argsArr = values.toArray(new IValue[0]);
+            if (argsArr.length < function.requiredArgCount()) {
+                String message = String.format(
+                        "Function '%s' requires at least %s arguments. %s are given!",
+                        function.name, function.requiredArgCount(), argsArr.length
+                );
+                throw new Exception(message);
+            }
+
+            return new IValue() {
+                @Override
+                public double get() {
+                    return function.operation().apply(argsArr);
+                }
+            };
         }
     }
 
@@ -313,12 +383,17 @@ public class MathBuilder {
                 return new Constant(Double.parseDouble(symbol));
             }
 
-            if (this.isVariable(symbol)) {
+            if (this.isValueReturner(symbol)) {
+                //negating a value returner
                 if (symbol.startsWith("-")) {
                     symbol = symbol.substring(1);
-                    AbstractVariable value = this.getVariable(symbol);
-                    if (value != null) return new Negative(value);
+                    return new Negative(this.valueFromObject(symbol));
                 }
+                //this is for functions that have no args. functions w no args have no parenthesis at all
+                else if (this.isFunctionNoArgs(symbol)) {
+                    return this.createFunction(symbol, List.of());
+                }
+                //this is for good ol variables
                 else {
                     IValue value = this.getVariable(symbol);
                     if (value != null) return value;
@@ -344,7 +419,9 @@ public class MathBuilder {
         throw new Exception("There is no such operator '" + op + "'!");
     }
 
-    public boolean isVariable(Object o) {
+    //a "value returner" is basically a non-alphanumeric representation of some kind of value
+    //this includes variables and functions
+    public boolean isValueReturner(Object o) {
         return o instanceof String string && !this.isDecimal(string) && !this.isOperator(string);
     }
 
@@ -362,5 +439,12 @@ public class MathBuilder {
 
     protected boolean isDecimal(String s) {
         return s.matches("^-?\\d+(\\.\\d+)?$");
+    }
+
+    protected boolean isFunctionNoArgs(String s) {
+        for (Map.Entry<String, Function> functionEntry : this.functions.entrySet()) {
+            if (functionEntry.getKey().equals(s) && functionEntry.getValue().requiredArgCount() <= 0) return true;
+        }
+        return false;
     }
 }

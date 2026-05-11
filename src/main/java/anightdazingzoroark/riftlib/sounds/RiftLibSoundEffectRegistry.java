@@ -17,10 +17,10 @@ public class RiftLibSoundEffectRegistry {
      * Register a vanilla sound effect for use in animations.
      *
      * @param soundIdentifier The identifier of the sound as defined in sounds.json
-     * @param soundEffect The sound effect associated with the sound to register
+     * @param soundEffect The sound effect associated with the sound to registerVariable
      */
     public static void registerSoundEffect(String soundIdentifier, RiftLibSoundEffect soundEffect) {
-        //register to vanilla game
+        //registerVariable to vanilla game
         ResourceLocation soundID = new ResourceLocation("minecraft", soundIdentifier);
         SoundEvent soundEvent = SoundEvent.REGISTRY.getObject(soundID);
 
@@ -33,10 +33,10 @@ public class RiftLibSoundEffectRegistry {
      *
      * @param modID The id of your mod
      * @param soundIdentifier The identifier of your sound as defined in sounds.json
-     * @param soundEffect The sound effect associated with the sound to register
+     * @param soundEffect The sound effect associated with the sound to registerVariable
      */
     public static void registerSoundEffect(String modID, String soundIdentifier, RiftLibSoundEffect soundEffect) {
-        //register to vanilla game
+        //registerVariable to vanilla game
         ResourceLocation soundID = new ResourceLocation(modID, soundIdentifier);
         SoundEvent soundEvent = new SoundEvent(soundID).setRegistryName(soundID);
 

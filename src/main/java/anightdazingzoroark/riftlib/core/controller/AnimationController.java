@@ -469,7 +469,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             if (model != null) return model;
         }
         System.out.printf(
-                "Could not find suitable model for animatable of type %s. Did you register a Model Fetcher?%n",
+                "Could not find suitable model for animatable of type %s. Did you registerVariable a Model Fetcher?%n",
                 animatable.getClass());
         return null;
     }

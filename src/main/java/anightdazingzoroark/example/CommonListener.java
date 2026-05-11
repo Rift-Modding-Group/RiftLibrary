@@ -53,7 +53,7 @@ public class CommonListener {
 	public void onRegisterEntities(RegistryEvent.Register<EntityEntry> event) {
 		int id = 0;
 
-		//entity register
+		//entity registerVariable
 		event.getRegistry().register(EntityEntryBuilder.create()
 				.entity(DragonEntity.class)
 				.name("dragon")

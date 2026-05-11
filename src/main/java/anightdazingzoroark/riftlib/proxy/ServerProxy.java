@@ -22,10 +22,10 @@ public class ServerProxy {
     public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> INSTRUCTION_MESSAGE_WRAPPER;
 
     public void preInit(FMLPreInitializationEvent e) {
-        //register particle component registry
+        //registerVariable particle component registry
         RiftLibParticleComponentRegistry.initializeMap();
 
-        //register internal messages
+        //registerVariable internal messages
         MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID);
         MESSAGE_WRAPPER.registerMessage(RiftLibUpdateRiderPos.class, RiftLibMessageSide.BOTH);
         MESSAGE_WRAPPER.registerMessage(RiftLibCreateParticle.class, RiftLibMessageSide.CLIENT);

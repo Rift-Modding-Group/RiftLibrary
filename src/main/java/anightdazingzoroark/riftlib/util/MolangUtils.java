@@ -62,7 +62,7 @@ public class MolangUtils {
 				&& animatableValue.getExpressionValue().endsWith("'")
 		) {
 			String valueToSend = animatableValue.getExpressionValue().substring(1, animatableValue.getExpressionValue().length() - 1);
-			for (AnimatableRunValue runValue : animationData.getAnimatable().animationMessageEffects().values()) {
+			for (AnimatableRunValue runValue : animationData.getAnimationMessageEffects().values()) {
                 Side[] sideOrder = runValue.sideOrder();
 				if (sideOrder == null || sideOrder.length == 0) sideOrder = new Side[]{Side.SERVER};
 

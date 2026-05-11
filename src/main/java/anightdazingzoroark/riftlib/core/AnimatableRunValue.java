@@ -3,7 +3,7 @@ package anightdazingzoroark.riftlib.core;
 import net.minecraftforge.fml.relauncher.Side;
 
 /**
- * This class is basically for animationMessageEffects.
+ * This class is basically for createAnimationMessageEffects.
  *
  * @param runValue The runnable to execute upon receiving a message.
  * @param sideOrder The order in sides (server or client) in which it is to be executed on.

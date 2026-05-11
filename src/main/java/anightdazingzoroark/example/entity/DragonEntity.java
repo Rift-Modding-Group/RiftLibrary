@@ -220,7 +220,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     }
 
     @Override
-    public Map<String, AnimatableRunValue> animationMessageEffects() {
+    public Map<String, AnimatableRunValue> createAnimationMessageEffects() {
         return Map.of(
                 "performAttack", new AnimatableRunValue(() -> this.attackEntityAsMob(this.getAttackTarget()), Side.CLIENT, Side.SERVER),
                 "endAttack", new AnimatableRunValue(() -> this.setAttacking(false), Side.CLIENT, Side.SERVER)

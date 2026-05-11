@@ -19,7 +19,6 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 import java.lang.reflect.Constructor;
-import java.util.HashMap;
 import java.util.Map;
 
 public class RiftLibRunAnimationMessageEffect extends RiftLibMessage<RiftLibRunAnimationMessageEffect> {
@@ -52,7 +51,7 @@ public class RiftLibRunAnimationMessageEffect extends RiftLibMessage<RiftLibRunA
         IAnimatable<?> animatable = message.resolveTarget(player);
         if (animatable == null) return;
 
-        Map<String, AnimatableRunValue> effects = animatable.animationMessageEffects();
+        Map<String, AnimatableRunValue> effects = animatable.getAnimationData().getAnimationMessageEffects();
         Runnable effect = effects.get(message.effectName).runValue();
         if (effect != null) effect.run();
     }
@@ -64,7 +63,7 @@ public class RiftLibRunAnimationMessageEffect extends RiftLibMessage<RiftLibRunA
         IAnimatable<?> animatable = message.resolveTarget(player);
         if (animatable == null) return;
 
-        Map<String, AnimatableRunValue> effects = animatable.animationMessageEffects();
+        Map<String, AnimatableRunValue> effects = animatable.getAnimationData().getAnimationMessageEffects();
         Runnable effect = effects.get(message.effectName).runValue();
         if (effect != null) effect.run();
     }

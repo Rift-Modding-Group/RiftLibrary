@@ -1,11 +1,11 @@
 package anightdazingzoroark.riftlib.core.manager;
 
+import anightdazingzoroark.riftlib.core.AnimatableRunValue;
 import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.processor.IBone;
 import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
-import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
@@ -35,6 +35,7 @@ public abstract class AbstractAnimationData<T> {
     private final IAnimatable<?> animatable;
     private HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection = new HashMap<>();
     private final HashMap<String, AnimationController<?, ?>> animationControllers = new HashMap<>();
+    private final HashMap<String, AnimatableRunValue> animationMessageEffects = new HashMap<>();
     private final List<AnimatedLocator> animatedLocators = new ArrayList<>();
     private int animatedLocatorTicker;
     private final MolangParser parser = RiftLibCache.getInstance().parser;
@@ -56,16 +57,12 @@ public abstract class AbstractAnimationData<T> {
         this.animatable = animatable;
         this.initAnimationControllers();
         this.initAnimationVariables();
+        this.initAnimationMessageEffects();
     }
 
     @NotNull
     public T getHolder() {
         return this.holder;
-    }
-
-    @NotNull
-    public IAnimatable<?> getAnimatable() {
-        return this.animatable;
     }
 
     public HashMap<String, Pair<IBone, BoneSnapshot>> getBoneSnapshotCollection() {
@@ -97,6 +94,10 @@ public abstract class AbstractAnimationData<T> {
 
     public HashMap<String, AnimationController<?, ?>> getAnimationControllers() {
         return this.animationControllers;
+    }
+
+    public HashMap<String, AnimatableRunValue> getAnimationMessageEffects() {
+        return this.animationMessageEffects;
     }
 
     public void createAnimatedLocators(GeoModel model) {
@@ -151,7 +152,7 @@ public abstract class AbstractAnimationData<T> {
         return false;
     }
 
-    public void initAnimationControllers() {
+    protected void initAnimationControllers() {
         IAnimatable<? extends AbstractAnimationData<?>> animatable = (IAnimatable<? extends AbstractAnimationData<?>>) this.animatable;
 
         List<? extends AnimationController<?, ?>> controllers = animatable.createAnimationControllers();
@@ -160,7 +161,7 @@ public abstract class AbstractAnimationData<T> {
         }
     }
 
-    public void initAnimationVariables() {
+    protected void initAnimationVariables() {
         List<AnimatableValue> initAnimatableValues = this.animatable.createAnimationVariables();
         for (AnimatableValue animatableValue : initAnimatableValues) {
             MolangUtils.parseValue(this.parser, this.dataScope, animatableValue);
@@ -172,6 +173,12 @@ public abstract class AbstractAnimationData<T> {
         for (AnimatableValue animatableValue : updateAnimatableValues) {
             MolangUtils.parseValue(this.parser, this.dataScope, animatableValue);
         }
+    }
+
+    protected void initAnimationMessageEffects() {
+        IAnimatable<? extends AbstractAnimationData<?>> animatable = (IAnimatable<? extends AbstractAnimationData<?>>) this.animatable;
+        Map<String, AnimatableRunValue> messageEffects = animatable.createAnimationMessageEffects();
+        this.animationMessageEffects.putAll(messageEffects);
     }
 
     public void updateMolangQueries() {

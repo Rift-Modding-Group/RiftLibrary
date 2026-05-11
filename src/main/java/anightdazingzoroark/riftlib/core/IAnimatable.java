@@ -39,10 +39,10 @@ public interface IAnimatable<D extends AbstractAnimationData<?>> {
     }
 
     /**
-     * This allows for running custom code from animations on the server
+     * This allows for running custom code from animations on the server or client
      *
      */
-    default Map<String, AnimatableRunValue> animationMessageEffects() {
+    default Map<String, AnimatableRunValue> createAnimationMessageEffects() {
         return Map.of();
     }
 }

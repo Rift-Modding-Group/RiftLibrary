@@ -12,6 +12,7 @@ import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.resource.RiftLibCache;
+import anightdazingzoroark.riftlib.util.MolangUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
@@ -152,48 +153,16 @@ public abstract class AbstractAnimationData<T> {
 
     public void initAnimationVariables() {
         List<AnimatableValue> initAnimatableValues = this.animatable.createAnimationVariables();
-        this.parser.withScope(this.dataScope, () -> {
-            for (AnimatableValue animatableValue : initAnimatableValues) {
-                if (animatableValue.isExpression()) {
-                    try {
-                        this.parser.parseExpression(animatableValue.getExpressionValue()).get();
-                    }
-                    catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                else {
-                    String name = animatableValue.getConstantValue().left;
-                    if (this.parser.isQuery(name)) {
-                        throw new RuntimeException(new MolangException("Cannot assign value to query '"+name+"'!"));
-                    }
-                    this.parser.setValue(name, animatableValue.getConstantValue().right);
-                }
-            }
-        });
+        for (AnimatableValue animatableValue : initAnimatableValues) {
+            MolangUtils.parseValue(this.parser, this.dataScope, animatableValue);
+        }
     }
 
     public void updateAnimationVariables() {
         List<AnimatableValue> updateAnimatableValues = this.animatable.tickAnimationVariables();
-        this.parser.withScope(this.dataScope, () -> {
-            for (AnimatableValue animatableValue : updateAnimatableValues) {
-                if (animatableValue.isExpression()) {
-                    try {
-                        this.parser.parseExpression(animatableValue.getExpressionValue()).get();
-                    }
-                    catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                else {
-                    String name = animatableValue.getConstantValue().left;
-                    if (this.parser.isQuery(name)) {
-                        throw new RuntimeException(new MolangException("Cannot assign value to query '"+name+"'!"));
-                    }
-                    this.parser.setValue(name, animatableValue.getConstantValue().right);
-                }
-            }
-        });
+        for (AnimatableValue animatableValue : updateAnimatableValues) {
+            MolangUtils.parseValue(this.parser, this.dataScope, animatableValue);
+        }
     }
 
     public void updateMolangQueries() {

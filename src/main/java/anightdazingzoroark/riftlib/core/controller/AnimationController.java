@@ -22,6 +22,7 @@ import anightdazingzoroark.riftlib.core.util.MathUtil;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
+import anightdazingzoroark.riftlib.util.MolangUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -435,25 +436,9 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
     }
 
     private void applyEffects(D processingData, MolangParser parser, Collection<AnimatableValue> effects) {
-        parser.withScope(processingData.dataScope, () -> {
-            for (AnimatableValue effect : effects) {
-                if (effect.isExpression()) {
-                    try {
-                        parser.parseExpression(effect.getExpressionValue()).get();
-                    }
-                    catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                    continue;
-                }
-
-                ImmutablePair<String, Double> constantValue = effect.getConstantValue();
-                if (parser.isQuery(constantValue.left)) {
-                    throw new RuntimeException(new MolangException("Cannot assign value to query '" + constantValue.left + "'!"));
-                }
-                parser.setValue(constantValue.left, constantValue.right);
-            }
-        });
+        for (AnimatableValue effect : effects) {
+            MolangUtils.parseValue(parser, processingData.dataScope, effect);
+        }
     }
 
     private void createInitialQueues(List<IBone> modelRendererList) {

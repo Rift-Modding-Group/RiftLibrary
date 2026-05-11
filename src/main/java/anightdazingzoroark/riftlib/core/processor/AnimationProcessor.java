@@ -12,6 +12,7 @@ import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundHelper;
+import anightdazingzoroark.riftlib.util.MolangUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import anightdazingzoroark.riftlib.molang.MolangParser;
@@ -111,16 +112,7 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 
 			//custom instructions
 			for (EventKeyFrame.CustomInstructionKeyFrame customInstructionEvent : controller.drainCustomInstructionEvents()) {
-				//todo: modify molang parser so that expressions that contain only strings
-				//surrounded with ' are considered messages to send to server
-				HashMap<String, Runnable> messageEffects = animationData.getAnimatable().animationMessageEffects();
-				Runnable localMessageEffect = messageEffects.get(customInstructionEvent.instruction);
-				if (localMessageEffect != null) {
-					ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibRunAnimationMessageEffect(
-							customInstructionEvent.instruction,
-							animationData.asNBT()
-					));
-				}
+				MolangUtils.parseValue(parser, animationData, customInstructionEvent.instruction);
 			}
 		}
 

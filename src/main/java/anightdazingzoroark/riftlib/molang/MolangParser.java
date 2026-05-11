@@ -116,9 +116,9 @@ public class MolangParser extends MathBuilder {
                 //-----variable stuff-----
                 String name = (String) symbols.getFirst();
 
-                //block assignment to queries
-                if (this.isQuery(name)) {
-                    throw new MolangException("Cannot assign value to query '" + name + "' in '" + expression + "'!");
+                //block assignment to functions
+                if (this.isFunction(name)) {
+                    throw new MolangException("Cannot assign value to function '" + name + "' in '" + expression + "'!");
                 }
 
                 //continue with variable stuff

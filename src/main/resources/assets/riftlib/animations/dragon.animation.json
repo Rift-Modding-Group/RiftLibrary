@@ -143,8 +143,8 @@
 				}
 			},
 			"timeline": {
-				"0.375": "performAttack",
-				"0.75": "endAttack"
+				"0.375": "'performAttack'",
+				"0.75": "'endAttack'"
 			}
 		},
 		"animation.dragon.land_pose": {

@@ -430,8 +430,10 @@ public class MathBuilder {
         return Operation.OPERATORS.contains(s) || s.equals("?") || s.equals(":");
     }
 
-    public boolean isQuery(String s) {
-        return s.startsWith("query.");
+    //this is to block value assignments to functions, like the ones for
+    //math and the ones for molang queries.
+    public boolean isFunction(String s) {
+        return s.startsWith("query.") || s.startsWith("math.");
     }
 
     protected boolean isDecimal(String s) {

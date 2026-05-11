@@ -30,9 +30,9 @@ public class MathBuilder {
         this.registerFunction("math.asin", 1, values -> Math.toDegrees(Math.asin(values[0].get())));
         this.registerFunction("math.atan", 1, values -> Math.toDegrees(Math.atan(values[0].get())));
         this.registerFunction("math.atan2", 2, values -> Math.toDegrees(Math.atan2(values[0].get(), values[1].get())));
-        this.registerFunction("math.cos", 1, values -> Math.cos(Math.toDegrees(values[0].get())));
-        this.registerFunction("math.sin", 1, values -> Math.sin(Math.toDegrees(values[0].get())));
-        this.registerFunction("math.tan", 1, values -> Math.tan(Math.toDegrees(values[0].get())));
+        this.registerFunction("math.cos", 1, values -> Math.cos(Math.toRadians(values[0].get())));
+        this.registerFunction("math.sin", 1, values -> Math.sin(Math.toRadians(values[0].get())));
+        this.registerFunction("math.tan", 1, values -> Math.tan(Math.toRadians(values[0].get())));
         this.registerFunction("math.exp", 1, values -> Math.exp(values[0].get()));
         this.registerFunction("math.ln", 1, values -> Math.log(values[0].get()));
         this.registerFunction("math.sqrt", 1, values -> Math.sqrt(values[0].get()));
@@ -195,9 +195,7 @@ public class MathBuilder {
             }
         }
 
-        if (!buffer.isEmpty()) {
-            symbols.add(buffer);
-        }
+        if (!buffer.isEmpty()) symbols.add(buffer);
 
         return symbols;
     }

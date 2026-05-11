@@ -4,8 +4,8 @@ import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This interface must be applied to any object that wants to be animated
@@ -40,8 +40,9 @@ public interface IAnimatable<D extends AbstractAnimationData<?>> {
 
     /**
      * This allows for running custom code from animations on the server
-     * */
-    default HashMap<String, Runnable> animationMessageEffects() {
-        return new HashMap<>();
+     *
+     */
+    default Map<String, AnimatableRunValue> animationMessageEffects() {
+        return Map.of();
     }
 }

@@ -36,7 +36,7 @@ public class ServerProxy {
         HITBOX_MESSAGE_WRAPPER.registerMessage(RiftLibUpdateHitboxSize.class, RiftLibMessageSide.BOTH);
 
         INSTRUCTION_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_instruction");
-        MESSAGE_WRAPPER.registerMessage(RiftLibRunAnimationMessageEffect.class, RiftLibMessageSide.SERVER);
+        MESSAGE_WRAPPER.registerMessage(RiftLibRunAnimationMessageEffect.class, RiftLibMessageSide.BOTH);
 
         MinecraftForge.EVENT_BUS.register(new HitboxTicker.Server());
 

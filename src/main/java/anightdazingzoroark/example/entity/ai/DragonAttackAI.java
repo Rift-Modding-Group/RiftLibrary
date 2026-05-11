@@ -60,7 +60,7 @@ public class DragonAttackAI extends EntityAIBase {
         }
 
         this.dragon.getNavigator().clearPath();
-        this.attackCooldown = 20;
+        this.attackCooldown = 0;
     }
 
     public void updateTask() {
@@ -95,6 +95,7 @@ public class DragonAttackAI extends EntityAIBase {
 
         if (--this.attackCooldown <= 0 && distToEnemySqr <= d0) {
             this.dragon.setAttacking(true);
+            this.attackCooldown = 20;
         }
     }
 

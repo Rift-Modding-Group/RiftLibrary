@@ -1,6 +1,7 @@
 package anightdazingzoroark.example.entity;
 
 import anightdazingzoroark.example.entity.ai.DragonAttackAI;
+import anightdazingzoroark.riftlib.core.AnimatableRunValue;
 import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
@@ -19,10 +20,12 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IMultiHitboxUser, IDynamicRideUser {
     private static final DataParameter<Boolean> ATTACKING = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
@@ -173,7 +176,6 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     }
 
     public void setAttacking(boolean value) {
-        System.out.println("set attacking: "+value);
         this.dataManager.set(ATTACKING, value);
     }
 
@@ -218,16 +220,10 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     }
 
     @Override
-    public HashMap<String, Runnable> animationMessageEffects() {
-        HashMap<String, Runnable> toReturn = new HashMap<>();
-        toReturn.put("performAttack", () -> {
-            this.attackEntityAsMob(this.getAttackTarget());
-            System.out.println("attack mob!");
-        });
-        toReturn.put("endAttack", () -> {
-            System.out.println("end attack!");
-            this.setAttacking(false);
-        });
-        return toReturn;
+    public Map<String, AnimatableRunValue> animationMessageEffects() {
+        return Map.of(
+                "performAttack", new AnimatableRunValue(() -> this.attackEntityAsMob(this.getAttackTarget()), Side.CLIENT, Side.SERVER),
+                "endAttack", new AnimatableRunValue(() -> this.setAttacking(false), Side.CLIENT, Side.SERVER)
+        );
     }
 }

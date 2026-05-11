@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.internalMessage;
 
+import anightdazingzoroark.riftlib.core.AnimatableRunValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.item.AnimatedItemStackHolder;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
@@ -19,6 +20,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
+import java.util.Map;
 
 public class RiftLibRunAnimationMessageEffect extends RiftLibMessage<RiftLibRunAnimationMessageEffect> {
     private String effectName;
@@ -50,14 +52,24 @@ public class RiftLibRunAnimationMessageEffect extends RiftLibMessage<RiftLibRunA
         IAnimatable<?> animatable = message.resolveTarget(player);
         if (animatable == null) return;
 
-        HashMap<String, Runnable> effects = animatable.animationMessageEffects();
-        Runnable effect = effects.get(message.effectName);
+        Map<String, AnimatableRunValue> effects = animatable.animationMessageEffects();
+        Runnable effect = effects.get(message.effectName).runValue();
         if (effect != null) effect.run();
     }
 
     @Override
-    public void executeOnClient(Minecraft client, RiftLibRunAnimationMessageEffect message, EntityPlayer player, MessageContext messageContext) {}
+    public void executeOnClient(Minecraft client, RiftLibRunAnimationMessageEffect message, EntityPlayer player, MessageContext messageContext) {
+        if (message.effectName == null || message.targetData == null) return;
 
+        IAnimatable<?> animatable = message.resolveTarget(player);
+        if (animatable == null) return;
+
+        Map<String, AnimatableRunValue> effects = animatable.animationMessageEffects();
+        Runnable effect = effects.get(message.effectName).runValue();
+        if (effect != null) effect.run();
+    }
+
+    //-----note: everything here feels like they could be done in some better way...-----
     private IAnimatable<?> resolveTarget(EntityPlayer sender) {
         String targetType = this.targetData.getString("AnimationTargetType");
 

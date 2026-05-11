@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.util;
 
+import anightdazingzoroark.riftlib.core.AnimatableRunValue;
 import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
@@ -7,6 +8,7 @@ import anightdazingzoroark.riftlib.internalMessage.RiftLibRunAnimationMessageEff
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class MolangUtils {
 	public static float normalizeTime(long timestamp) {
@@ -60,9 +62,23 @@ public class MolangUtils {
 				&& animatableValue.getExpressionValue().endsWith("'")
 		) {
 			String valueToSend = animatableValue.getExpressionValue().substring(1, animatableValue.getExpressionValue().length() - 1);
-			ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibRunAnimationMessageEffect(
-					valueToSend, animationData.asNBT()
-			));
+			for (AnimatableRunValue runValue : animationData.getAnimatable().animationMessageEffects().values()) {
+                Side[] sideOrder = runValue.sideOrder();
+				if (sideOrder == null || sideOrder.length == 0) sideOrder = new Side[]{Side.SERVER};
+
+				for (Side side : sideOrder) {
+					if (side == Side.SERVER) {
+						ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibRunAnimationMessageEffect(
+								valueToSend, animationData.asNBT()
+						));
+					}
+					else if (side == Side.CLIENT) {
+						ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibRunAnimationMessageEffect(
+								valueToSend, animationData.asNBT()
+						));
+					}
+				}
+			}
 			return;
 		}
 

@@ -437,7 +437,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
 
     private void applyEffects(D processingData, MolangParser parser, Collection<AnimatableValue> effects) {
         for (AnimatableValue effect : effects) {
-            MolangUtils.parseValue(parser, processingData.dataScope, effect);
+            MolangUtils.parseValue(parser, processingData, effect);
         }
     }
 

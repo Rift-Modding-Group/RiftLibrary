@@ -142,6 +142,15 @@ public abstract class AbstractAnimationData<T> {
         return this.animatedLocators;
     }
 
+    //check if all animations in the current state in the given controller have reached the end of their play cycle
+    public boolean allAnimationsFinished(String controllerName) {
+        for (Map.Entry<String, AnimationController<?, ?>> animationControllerEntry : this.animationControllers.entrySet()) {
+            if (!(animationControllerEntry.getKey().equals(controllerName))) continue;
+            return animationControllerEntry.getValue().allAnimationsFinished();
+        }
+        return false;
+    }
+
     public void initAnimationControllers() {
         IAnimatable<? extends AbstractAnimationData<?>> animatable = (IAnimatable<? extends AbstractAnimationData<?>>) this.animatable;
 

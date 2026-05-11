@@ -1,6 +1,7 @@
 package anightdazingzoroark.example.entity;
 
 import anightdazingzoroark.example.entity.ai.DragonAttackAI;
+import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
@@ -172,6 +173,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     }
 
     public void setAttacking(boolean value) {
+        System.out.println("set attacking: "+value);
         this.dataManager.set(ATTACKING, value);
     }
 
@@ -209,10 +211,8 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
                                 .addStateTransition("attack", data -> this.isAttacking()),
                         new AnimationControllerState<AnimationDataEntity>("attack")
                                 .addAnimation("animation.dragon.attack_while_flying")
-                                .addStateTransition("default", data -> !this.isAttacking()) //todo: add allanimationsfinished
-                                //todo: modify molang parser so that expressions that contain only strings
-                                //surrounded with ' are considered messages to send to server
-                                //.addExitEffect(new AnimatableValue("'testExit'"))
+                                .addStateTransition("default", data -> data.allAnimationsFinished("attack"))
+                                .addExitEffect(new AnimatableValue("'endAttack'"))
                 )
         );
     }

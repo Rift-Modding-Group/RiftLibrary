@@ -45,26 +45,43 @@ public class MolangUtils {
 		});
 	}
 
+	public static void parseValue(MolangParser parser, AbstractAnimationData<?> animationData, String value) {
+		parseValue(parser, animationData, new AnimatableValue(value));
+	}
+
 	/**
 	 * For use in animation controllers, its for either assigning variables from a string or
 	 * sending messages to the server. Meant for use on client only.
 	 * */
-	public static void parseValue(MolangParser parser, AbstractAnimationData<?> animationData, String value) {
-		if (value.startsWith("'") && value.endsWith("'")) {
-			String valueToSend = value.substring(1, value.length() - 1);
+	public static void parseValue(MolangParser parser, AbstractAnimationData<?> animationData, AnimatableValue animatableValue) {
+		//as this is animatable value we're dealing with, first we check if its a message
+		if (animatableValue.isExpression()
+				&& animatableValue.getExpressionValue().startsWith("'")
+				&& animatableValue.getExpressionValue().endsWith("'")
+		) {
+			String valueToSend = animatableValue.getExpressionValue().substring(1, animatableValue.getExpressionValue().length() - 1);
 			ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibRunAnimationMessageEffect(
 					valueToSend, animationData.asNBT()
 			));
+			return;
 		}
-		else {
-			parser.withScope(animationData.dataScope, () -> {
+
+		parser.withScope(animationData.dataScope, () -> {
+			if (animatableValue.isExpression()) {
 				try {
-					parser.parseExpression(value).get();
+					parser.parseExpression(animatableValue.getExpressionValue()).get();
 				}
 				catch (Exception e) {
 					throw new RuntimeException(e);
 				}
-			});
-		}
+			}
+			else {
+				String name = animatableValue.getConstantValue().left;
+				if (parser.isFunction(name)) {
+					throw new RuntimeException(new MolangException("Cannot assign value to function '"+name+"'!"));
+				}
+				parser.setValue(name, animatableValue.getConstantValue().right);
+			}
+		});
 	}
 }

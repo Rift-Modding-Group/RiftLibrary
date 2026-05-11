@@ -8,7 +8,6 @@ import net.minecraft.pathfinding.Path;
 
 public class DragonAttackAI extends EntityAIBase {
     protected DragonEntity dragon;
-    protected int animTime;
     double speedTowardsTarget;
     protected Path path;
     protected int delayCounter;
@@ -50,8 +49,6 @@ public class DragonAttackAI extends EntityAIBase {
     public void startExecuting() {
         this.dragon.getNavigator().setPath(this.path, this.speedTowardsTarget);
         this.delayCounter = 0;
-        this.animTime = 0;
-        this.attackCooldown = 0;
     }
 
     @Override
@@ -63,7 +60,7 @@ public class DragonAttackAI extends EntityAIBase {
         }
 
         this.dragon.getNavigator().clearPath();
-        this.animTime = 0;
+        this.attackCooldown = 20;
     }
 
     public void updateTask() {

@@ -1,6 +1,5 @@
 package anightdazingzoroark.riftlib.molang.math;
 
-import anightdazingzoroark.riftlib.molang.math.variable.AbstractVariable;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import org.jetbrains.annotations.NotNull;
 
@@ -10,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MathBuilder {
-    public final Map<String, AbstractVariable> variables = new HashMap<>();
+    public final Map<String, Variable> variables = new HashMap<>();
     public final Map<String, Function> functions = new HashMap<>();
 
     public MathBuilder() {
@@ -92,7 +91,7 @@ public class MathBuilder {
         });
     }
 
-    protected void registerVariable(AbstractVariable variable) {
+    protected void registerVariable(Variable variable) {
         this.variables.put(variable.getName(), variable);
     }
 
@@ -407,7 +406,7 @@ public class MathBuilder {
         throw new Exception("Given object couldn't be converted to value! " + object);
     }
 
-    protected AbstractVariable getVariable(String name) {
+    protected Variable getVariable(String name) {
         return this.variables.get(name);
     }
 

@@ -6,9 +6,7 @@ import anightdazingzoroark.riftlib.molang.expressions.MolangAssignment;
 import anightdazingzoroark.riftlib.molang.expressions.MolangExpression;
 import anightdazingzoroark.riftlib.molang.expressions.MolangMultiStatement;
 import anightdazingzoroark.riftlib.molang.expressions.MolangValue;
-import anightdazingzoroark.riftlib.molang.math.variable.AbstractVariable;
-import anightdazingzoroark.riftlib.molang.math.variable.ScopedVariable;
-import anightdazingzoroark.riftlib.molang.math.variable.StaticVariable;
+import anightdazingzoroark.riftlib.molang.math.Variable;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -46,16 +44,16 @@ public class MolangParser extends MathBuilder {
     }
 
     public void setValue(String name, double value) {
-        AbstractVariable variable = this.getVariable(name);
+        Variable variable = this.getVariable(name);
         if (variable != null) variable.set(value);
     }
 
-    public AbstractVariable getVariable(String name) {
-        AbstractVariable variable = this.currentStatement == null ? null : this.currentStatement.locals.get(name);
+    public Variable getVariable(String name) {
+        Variable variable = this.currentStatement == null ? null : this.currentStatement.locals.get(name);
         if (variable == null) variable = super.getVariable(name);
 
         if (variable == null) {
-            variable = new ScopedVariable(this, name, 0f);
+            variable = new Variable(this, name);
             this.registerVariable(variable);
         }
 
@@ -124,19 +122,14 @@ public class MolangParser extends MathBuilder {
                 }
 
                 //continue with variable stuff
-                AbstractVariable variable = this.getVariable(name);
-
-                //block assignment to static variables
-                if (variable instanceof StaticVariable) {
-                    throw new RuntimeException("Cannot assign value to static variable '"+name+"'!");
-                }
+                Variable variable = this.getVariable(name);
 
                 //create a statement-local variable if it doesn't exist anywhere yet
                 if (this.currentStatement != null
                         && !this.variables.containsKey(name)
                         && !this.currentStatement.locals.containsKey(name)) {
 
-                    variable = new ScopedVariable(this, name, 0f);
+                    variable = new Variable(this, name);
                     this.currentStatement.locals.put(name, variable);
                 }
 

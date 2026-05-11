@@ -1,13 +1,13 @@
 package anightdazingzoroark.riftlib.molang.expressions;
 
-import anightdazingzoroark.riftlib.molang.math.variable.AbstractVariable;
 import anightdazingzoroark.riftlib.molang.MolangParser;
+import anightdazingzoroark.riftlib.molang.math.Variable;
 
 import java.util.*;
 
 public class MolangMultiStatement extends MolangExpression {
     public List<MolangExpression> expressions = new ArrayList<>();
-    public Map<String, AbstractVariable> locals = new HashMap<>();
+    public Map<String, Variable> locals = new HashMap<>();
 
     public MolangMultiStatement(MolangParser context) {
         super(context);

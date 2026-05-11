@@ -7,7 +7,6 @@ import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.molang.expressions.MolangExpression;
-import anightdazingzoroark.riftlib.molang.math.variable.AbstractVariable;
 import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape.*;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
@@ -57,7 +56,6 @@ public class RiftLibParticleEmitter {
     public final List<Map.Entry<String, RawParticleComponent>> rawParticleComponents;
 
     //additional molang operations and variables
-    private final List<AbstractVariable> additionalVariables = new ArrayList<>();
     public List<MolangExpression> initialOperations = new ArrayList<>();
     public List<MolangExpression> repeatingOperations = new ArrayList<>();
 

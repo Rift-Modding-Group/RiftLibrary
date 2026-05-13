@@ -72,7 +72,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		//update molang related information while the entity is rendered
 		if (!Minecraft.getMinecraft().isGamePaused() || animData.shouldPlayWhilePaused) {
 			animData.updateAnimationVariables();
-			animData.updateMolangQueries();
+			animData.updateOnDataTick();
 		}
 
 		//update based on animations

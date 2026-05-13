@@ -605,7 +605,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
 
             data.lifeTime = tick / 20D;
             data.deltaTime = deltaTime / 20D;
-            data.syncTimeQueries();
+            //data.syncTimeQueries();
             if (this.currentAnimation != null) {
                 IAnimatableModel<A> model = getModel(animatable);
                 if (model != null) {
@@ -670,7 +670,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                     this.saveSnapshotsForAnimation(this.currentAnimation, boneSnapshotCollection);
                 }
                 if (this.currentAnimation != null) {
-                    double transitionResolvedTick = this.resolveAnimTick(tick, parser, data.dataScope);
+                    double transitionResolvedTick = this.resolveAnimTick(tick, parser, data);
                     this.setAnimTime(data, transitionResolvedTick);
                     for (BoneAnimation boneAnimation : this.currentAnimation.boneAnimations) {
                         BoneAnimationQueue boneAnimationQueue = this.boneAnimationQueues.get(boneAnimation.boneName);
@@ -691,9 +691,9 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                         VectorKeyFrameList scaleKeyFrames = boneAnimation.scaleKeyFrames;
 
                         if (!rotationKeyFrames.isEmpty()) {
-                            AnimationPoint xPoint = rotationKeyFrames.getAnimationPointAtTick(parser, data.dataScope, transitionResolvedTick, Axis.X);
-                            AnimationPoint yPoint = rotationKeyFrames.getAnimationPointAtTick(parser, data.dataScope, transitionResolvedTick, Axis.Y);
-                            AnimationPoint zPoint = rotationKeyFrames.getAnimationPointAtTick(parser, data.dataScope, transitionResolvedTick, Axis.Z);
+                            AnimationPoint xPoint = rotationKeyFrames.getAnimationPointAtTick(parser, data, transitionResolvedTick, Axis.X);
+                            AnimationPoint yPoint = rotationKeyFrames.getAnimationPointAtTick(parser, data, transitionResolvedTick, Axis.Y);
+                            AnimationPoint zPoint = rotationKeyFrames.getAnimationPointAtTick(parser, data, transitionResolvedTick, Axis.Z);
 
                             boneAnimationQueue.rotationXQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
                                     boneSnapshot.rotationValueX - initialSnapshot.rotationValueX,
@@ -707,9 +707,9 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                         }
 
                         if (!positionKeyFrames.isEmpty()) {
-                            AnimationPoint xPoint = positionKeyFrames.getAnimationPointAtTick(parser, data.dataScope, transitionResolvedTick, Axis.X);
-                            AnimationPoint yPoint = positionKeyFrames.getAnimationPointAtTick(parser, data.dataScope, transitionResolvedTick, Axis.Y);
-                            AnimationPoint zPoint = positionKeyFrames.getAnimationPointAtTick(parser, data.dataScope, transitionResolvedTick, Axis.Z);
+                            AnimationPoint xPoint = positionKeyFrames.getAnimationPointAtTick(parser, data, transitionResolvedTick, Axis.X);
+                            AnimationPoint yPoint = positionKeyFrames.getAnimationPointAtTick(parser, data, transitionResolvedTick, Axis.Y);
+                            AnimationPoint zPoint = positionKeyFrames.getAnimationPointAtTick(parser, data, transitionResolvedTick, Axis.Z);
 
                             boneAnimationQueue.positionXQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
                                     boneSnapshot.positionOffsetX, xPoint.animationStartValue));
@@ -720,9 +720,9 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                         }
 
                         if (!scaleKeyFrames.isEmpty()) {
-                            AnimationPoint xPoint = scaleKeyFrames.getAnimationPointAtTick(parser, data.dataScope, transitionResolvedTick, Axis.X);
-                            AnimationPoint yPoint = scaleKeyFrames.getAnimationPointAtTick(parser, data.dataScope, transitionResolvedTick, Axis.Y);
-                            AnimationPoint zPoint = scaleKeyFrames.getAnimationPointAtTick(parser, data.dataScope, transitionResolvedTick, Axis.Z);
+                            AnimationPoint xPoint = scaleKeyFrames.getAnimationPointAtTick(parser, data, transitionResolvedTick, Axis.X);
+                            AnimationPoint yPoint = scaleKeyFrames.getAnimationPointAtTick(parser, data, transitionResolvedTick, Axis.Y);
+                            AnimationPoint zPoint = scaleKeyFrames.getAnimationPointAtTick(parser, data, transitionResolvedTick, Axis.Z);
 
                             boneAnimationQueue.scaleXQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
                                     boneSnapshot.scaleValueX, xPoint.animationStartValue));
@@ -801,7 +801,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
 
         private void setAnimTime(AbstractAnimationData<?> data, double tick) {
             data.animTime = tick / 20D;
-            data.syncTimeQueries();
+            //data.syncTimeQueries();
         }
 
         private void saveSnapshotsForAnimation(
@@ -828,7 +828,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                 AbstractAnimationData<?> data, double tick, double actualTick, MolangParser parser, boolean crashWhenCantFindBone
         ) {
             assert this.currentAnimation != null;
-            double resolvedTick = this.resolveAnimTick(tick, parser, data.dataScope);
+            double resolvedTick = this.resolveAnimTick(tick, parser, data);
 
             if (resolvedTick < this.lastResolvedAnimTick) {
                 this.resetEventKeyFrames();
@@ -888,21 +888,21 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                 VectorKeyFrameList scaleKeyFrames = boneAnimation.scaleKeyFrames;
 
                 if (!rotationKeyFrames.isEmpty()) {
-                    boneAnimationQueue.rotationXQueue.add(rotationKeyFrames.getAnimationPointAtTick(parser, data.dataScope, resolvedTick, Axis.X));
-                    boneAnimationQueue.rotationYQueue.add(rotationKeyFrames.getAnimationPointAtTick(parser, data.dataScope, resolvedTick, Axis.Y));
-                    boneAnimationQueue.rotationZQueue.add(rotationKeyFrames.getAnimationPointAtTick(parser, data.dataScope, resolvedTick, Axis.Z));
+                    boneAnimationQueue.rotationXQueue.add(rotationKeyFrames.getAnimationPointAtTick(parser, data, resolvedTick, Axis.X));
+                    boneAnimationQueue.rotationYQueue.add(rotationKeyFrames.getAnimationPointAtTick(parser, data, resolvedTick, Axis.Y));
+                    boneAnimationQueue.rotationZQueue.add(rotationKeyFrames.getAnimationPointAtTick(parser, data, resolvedTick, Axis.Z));
                 }
 
                 if (!positionKeyFrames.isEmpty()) {
-                    boneAnimationQueue.positionXQueue.add(positionKeyFrames.getAnimationPointAtTick(parser, data.dataScope, resolvedTick, Axis.X));
-                    boneAnimationQueue.positionYQueue.add(positionKeyFrames.getAnimationPointAtTick(parser, data.dataScope, resolvedTick, Axis.Y));
-                    boneAnimationQueue.positionZQueue.add(positionKeyFrames.getAnimationPointAtTick(parser, data.dataScope, resolvedTick, Axis.Z));
+                    boneAnimationQueue.positionXQueue.add(positionKeyFrames.getAnimationPointAtTick(parser, data, resolvedTick, Axis.X));
+                    boneAnimationQueue.positionYQueue.add(positionKeyFrames.getAnimationPointAtTick(parser, data, resolvedTick, Axis.Y));
+                    boneAnimationQueue.positionZQueue.add(positionKeyFrames.getAnimationPointAtTick(parser, data, resolvedTick, Axis.Z));
                 }
 
                 if (!scaleKeyFrames.isEmpty()) {
-                    boneAnimationQueue.scaleXQueue.add(scaleKeyFrames.getAnimationPointAtTick(parser, data.dataScope, resolvedTick, Axis.X));
-                    boneAnimationQueue.scaleYQueue.add(scaleKeyFrames.getAnimationPointAtTick(parser, data.dataScope, resolvedTick, Axis.Y));
-                    boneAnimationQueue.scaleZQueue.add(scaleKeyFrames.getAnimationPointAtTick(parser, data.dataScope, resolvedTick, Axis.Z));
+                    boneAnimationQueue.scaleXQueue.add(scaleKeyFrames.getAnimationPointAtTick(parser, data, resolvedTick, Axis.X));
+                    boneAnimationQueue.scaleYQueue.add(scaleKeyFrames.getAnimationPointAtTick(parser, data, resolvedTick, Axis.Y));
+                    boneAnimationQueue.scaleZQueue.add(scaleKeyFrames.getAnimationPointAtTick(parser, data, resolvedTick, Axis.Z));
                 }
             }
 
@@ -970,23 +970,13 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             else return this.animationSpeed * Math.max(tick - this.tickOffset, 0.0D);
         }
 
-        private double resolveAnimTick(double fallbackTick, MolangParser parser, MolangScope scope) {
+        private double resolveAnimTick(double fallbackTick, MolangParser parser, AbstractAnimationData<?> data) {
             if (this.currentAnimation == null) return 0D;
 
             double resolved = fallbackTick;
 
             if (this.hasAnimTimeExpression()) {
-                AtomicReference<Double> atomicResolved = new AtomicReference<>(0D);
-                parser.withScope(scope, () -> {
-                    try {
-                        double value = parser.parseExpression(this.currentAnimation.animTimeUpdateExpression).get();
-                        atomicResolved.set(value);
-                    }
-                    catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-                resolved = atomicResolved.get() * this.animationSpeed * 20D;
+                resolved = MolangUtils.parseValueAndGet(parser, data, this.currentAnimation.animTimeUpdateExpression) * this.animationSpeed * 20D;
             }
 
             if (this.currentAnimation.loop == LoopType.LOOP) {

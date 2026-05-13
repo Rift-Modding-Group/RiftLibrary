@@ -12,6 +12,9 @@ public class AnimationDataTileEntity extends AbstractAnimationData<TileEntity> {
     }
 
     @Override
+    public void updateOnDataTick() {}
+
+    @Override
     public @NotNull NBTTagCompound asNBT() {
         NBTTagCompound toReturn = new NBTTagCompound();
         BlockPos tileEntityPos = this.getHolder().getPos();

@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.molang;
 
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.math.*;
 import anightdazingzoroark.riftlib.molang.expressions.MolangAssignment;
@@ -7,7 +8,9 @@ import anightdazingzoroark.riftlib.molang.expressions.MolangExpression;
 import anightdazingzoroark.riftlib.molang.expressions.MolangMultiStatement;
 import anightdazingzoroark.riftlib.molang.expressions.MolangValue;
 import anightdazingzoroark.riftlib.molang.math.Variable;
+import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -60,7 +63,11 @@ public class MolangParser extends MathBuilder {
         return variable;
     }
 
-    public MolangExpression parseExpression(String expression) throws MolangException {
+    public MolangExpression parseExpression(@NotNull String expression) throws MolangException {
+        return this.parseExpression(expression, null);
+    }
+
+    public MolangExpression parseExpression(@NotNull String expression, @Nullable AbstractAnimationData<?> animationData) throws MolangException {
         List<String> lines = new ArrayList<>();
 
         for (String split : expression.toLowerCase().trim().split(";")) {
@@ -76,7 +83,7 @@ public class MolangParser extends MathBuilder {
 
             try {
                 for (String line : lines) {
-                    result.expressions.add(this.parseOneLine(line));
+                    result.expressions.add(this.parseOneLine(line, animationData));
                 }
             }
             catch (Exception e) {
@@ -89,7 +96,7 @@ public class MolangParser extends MathBuilder {
         }
     }
 
-    protected MolangExpression parseOneLine(String expression) throws MolangException {
+    protected MolangExpression parseOneLine(String expression, @Nullable AbstractAnimationData<?> animationData) throws MolangException {
         expression = expression.trim();
         if (expression.startsWith("return ")) {
             try {
@@ -136,15 +143,15 @@ public class MolangParser extends MathBuilder {
                 //-----other symbols-----
                 symbols = symbols.subList(2, symbols.size());
 
-                return new MolangAssignment(this, variable, this.parseSymbolsMolang(symbols));
+                return new MolangAssignment(this, variable, this.parseSymbolsMolang(symbols, animationData));
             }
-            else return new MolangValue(this, this.parseSymbolsMolang(symbols));
+            else return new MolangValue(this, this.parseSymbolsMolang(symbols, animationData));
         }
     }
 
-    private IValue parseSymbolsMolang(List<Object> symbols) throws MolangException {
+    private IValue parseSymbolsMolang(List<Object> symbols, @Nullable AbstractAnimationData<?> animationData) throws MolangException {
         try {
-            return this.parseSymbols(symbols);
+            return this.parseSymbols(symbols, animationData);
         }
         catch (Exception e) {
             e.printStackTrace();

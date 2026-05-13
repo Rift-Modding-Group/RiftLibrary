@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * This class is to hold information pertaining to animation data for an animated object
@@ -36,6 +38,7 @@ public abstract class AbstractAnimationData<T> {
     private HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection = new HashMap<>();
     private final HashMap<String, AnimationController<?, ?>> animationControllers = new HashMap<>();
     private final HashMap<String, AnimatableRunValue> animationMessageEffects = new HashMap<>();
+    protected final Map<String, Supplier<Double>> molangQueries = new HashMap<>();
     private final List<AnimatedLocator> animatedLocators = new ArrayList<>();
     private int animatedLocatorTicker;
     private final MolangParser parser = RiftLibCache.getInstance().parser;
@@ -55,6 +58,7 @@ public abstract class AbstractAnimationData<T> {
     public AbstractAnimationData(@NotNull T holder, @NotNull IAnimatable<?> animatable) {
         this.holder = holder;
         this.animatable = animatable;
+        this.createMolangQueries();
         this.initAnimationControllers();
         this.initAnimationVariables();
         this.initAnimationMessageEffects();
@@ -152,7 +156,7 @@ public abstract class AbstractAnimationData<T> {
         return false;
     }
 
-    protected void initAnimationControllers() {
+    private void initAnimationControllers() {
         IAnimatable<? extends AbstractAnimationData<?>> animatable = (IAnimatable<? extends AbstractAnimationData<?>>) this.animatable;
 
         List<? extends AnimationController<?, ?>> controllers = animatable.createAnimationControllers();
@@ -161,7 +165,7 @@ public abstract class AbstractAnimationData<T> {
         }
     }
 
-    protected void initAnimationVariables() {
+    private void initAnimationVariables() {
         List<AnimatableValue> initAnimatableValues = this.animatable.createAnimationVariables();
         for (AnimatableValue animatableValue : initAnimatableValues) {
             MolangUtils.parseValue(this.parser, this.dataScope, animatableValue);
@@ -175,30 +179,16 @@ public abstract class AbstractAnimationData<T> {
         }
     }
 
-    protected void initAnimationMessageEffects() {
+    private void initAnimationMessageEffects() {
         IAnimatable<? extends AbstractAnimationData<?>> animatable = (IAnimatable<? extends AbstractAnimationData<?>>) this.animatable;
         Map<String, AnimatableRunValue> messageEffects = animatable.createAnimationMessageEffects();
         this.animationMessageEffects.putAll(messageEffects);
     }
 
-    public void updateMolangQueries() {
-        this.parser.withScope(this.dataScope, () -> {
-            for (Map.Entry<String, BiFunction<AbstractAnimationData<T>, MolangParser, Double>> entry : this.getMolangQueries().entrySet()) {
-                this.parser.setValue(entry.getKey(), entry.getValue().apply(this, this.parser));
-            }
-        });
-    }
-
     /**
-     * This is for specifically updating the time values to molang
+     * This is for updating animation data while its animating
      * */
-    public void syncTimeQueries() {
-        this.parser.withScope(this.dataScope, () -> {
-            parser.setValue("query.anim_time", this.animTime);
-            parser.setValue("query.delta_time", this.deltaTime);
-            parser.setValue("query.life_time", this.lifeTime);
-        });
-    }
+    public abstract void updateOnDataTick();
 
     /**
      * This is for sending animation data to the server
@@ -208,36 +198,31 @@ public abstract class AbstractAnimationData<T> {
 
     /**
      * Each AnimationData class is to have their own molang queries in addition to the ones here shared amongst all
-     * TODO: make molang queries true functions and not molang variables
      * */
-    protected HashMap<String, BiFunction<AbstractAnimationData<T>, MolangParser, Double>> getMolangQueries() {
-        HashMap<String, BiFunction<AbstractAnimationData<T>, MolangParser, Double>> toReturn = new HashMap<>();
+    protected void createMolangQueries() {
         //-----for data specifically-----
-        toReturn.put("query.anim_time", (animData, parser) -> {
-            return animData.animTime;
-        });
-        toReturn.put("query.delta_time", (animData, parser) -> {
-            return animData.deltaTime;
-        });
-        toReturn.put("query.life_time", (animData, parser) -> {
-            return animData.lifeTime;
-        });
-        //for world for some reason
-        toReturn.put("query.actor_count", (animData, parser) -> {
+        this.molangQueries.put("query.anim_time", () -> this.animTime);
+        this.molangQueries.put("query.delta_time", () -> this.deltaTime);
+        this.molangQueries.put("query.life_time", () -> this.lifeTime);
+        //-----for world-----
+        this.molangQueries.put("query.actor_count", () -> {
             World world = Minecraft.getMinecraft().world;
             if (world == null) return 0D;
             return (double) world.getLoadedEntityList().size();
         });
-        toReturn.put("query.time_of_day", (animData, parser) -> {
+        this.molangQueries.put("query.time_of_day", () -> {
             World world = Minecraft.getMinecraft().world;
             if (world == null) return 0D;
             return world.getTotalWorldTime() / 24000D;
         });
-        toReturn.put("query.moon_phase", (animData, parser) -> {
+        this.molangQueries.put("query.moon_phase", () -> {
             World world = Minecraft.getMinecraft().world;
             if (world == null) return 0D;
             return (double) world.getMoonPhase();
         });
-        return toReturn;
+    }
+
+    public Map<String, Supplier<Double>> getMolangQueries() {
+        return Map.copyOf(this.molangQueries);
     }
 }

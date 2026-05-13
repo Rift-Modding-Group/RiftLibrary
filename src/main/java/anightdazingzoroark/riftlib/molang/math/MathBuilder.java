@@ -1,8 +1,10 @@
 package anightdazingzoroark.riftlib.molang.math;
 
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -201,11 +203,15 @@ public class MathBuilder {
     }
 
     public IValue parseSymbols(List<Object> symbols) throws Exception {
+        return this.parseSymbols(symbols, null);
+    }
+
+    public IValue parseSymbols(List<Object> symbols, @Nullable AbstractAnimationData<?> animationData) throws Exception {
         IValue ternary = this.tryTernary(symbols);
         if (ternary != null) return ternary;
         else {
             int size = symbols.size();
-            if (size == 1) return this.valueFromObject(symbols.getFirst());
+            if (size == 1) return this.valueFromObject(symbols.getFirst(), animationData);
             else {
                 if (size == 2) {
                     Object first = symbols.get(0);
@@ -217,7 +223,7 @@ public class MathBuilder {
                             throw new Exception("Function "+funcName+" does not accept any arguments, yet it is treated as if it does!");
                         }
                         //normal function creation
-                        return this.createFunction(funcName, (List) second);
+                        return this.createFunction(funcName, (List) second, animationData);
                     }
                 }
 
@@ -230,28 +236,28 @@ public class MathBuilder {
                         Operation left = this.operationForOperator((String)symbols.get(leftOp));
                         Operation right = this.operationForOperator((String)symbols.get(op));
                         if (right.value > left.value) {
-                            IValue leftValue = this.parseSymbols(symbols.subList(0, leftOp));
-                            IValue rightValue = this.parseSymbols(symbols.subList(leftOp + 1, size));
+                            IValue leftValue = this.parseSymbols(symbols.subList(0, leftOp), animationData);
+                            IValue rightValue = this.parseSymbols(symbols.subList(leftOp + 1, size), animationData);
                             return new Operator(left, leftValue, rightValue);
                         }
 
                         if (left.value > right.value) {
                             Operation initial = this.operationForOperator((String)symbols.get(lastOp));
                             if (initial.value < left.value) {
-                                IValue leftValue = this.parseSymbols(symbols.subList(0, lastOp));
-                                IValue rightValue = this.parseSymbols(symbols.subList(lastOp + 1, size));
+                                IValue leftValue = this.parseSymbols(symbols.subList(0, lastOp), animationData);
+                                IValue rightValue = this.parseSymbols(symbols.subList(lastOp + 1, size), animationData);
                                 return new Operator(initial, leftValue, rightValue);
                             }
 
-                            IValue leftValue = this.parseSymbols(symbols.subList(0, op));
-                            IValue rightValue = this.parseSymbols(symbols.subList(op + 1, size));
+                            IValue leftValue = this.parseSymbols(symbols.subList(0, op), animationData);
+                            IValue rightValue = this.parseSymbols(symbols.subList(op + 1, size), animationData);
                             return new Operator(right, leftValue, rightValue);
                         }
                     }
                 }
 
                 Operation operation = this.operationForOperator((String)symbols.get(lastOp));
-                return new Operator(operation, this.parseSymbols(symbols.subList(0, lastOp)), this.parseSymbols(symbols.subList(lastOp + 1, size)));
+                return new Operator(operation, this.parseSymbols(symbols.subList(0, lastOp), animationData), this.parseSymbols(symbols.subList(lastOp + 1, size), animationData));
             }
         }
     }
@@ -319,36 +325,33 @@ public class MathBuilder {
         else return null;
     }
 
-    protected IValue createFunction(String first, List<Object> args) throws Exception {
+    protected IValue createFunction(String first, List<Object> args, @Nullable AbstractAnimationData<?> animationData) throws Exception {
         if (first.equals("!")) {
-            return new Negate(this.parseSymbols(args));
+            return new Negate(this.parseSymbols(args, animationData));
         }
         else if (first.startsWith("!") && first.length() > 1) {
-            return new Negate(this.createFunction(first.substring(1), args));
+            return new Negate(this.createFunction(first.substring(1), args, animationData));
         }
         else if (first.equals("-")) {
-            return new Negative(new Group(this.parseSymbols(args)));
+            return new Negative(new Group(this.parseSymbols(args, animationData)));
         }
         else if (first.startsWith("-") && first.length() > 1) {
-            return new Negative(this.createFunction(first.substring(1), args));
+            return new Negative(this.createFunction(first.substring(1), args, animationData));
         }
-        else if (!this.functions.containsKey(first)) {
-            throw new Exception("Function '" + first + "' couldn't be found!");
-        }
-        else {
+        else if (this.functions.containsKey(first)) {
             List<IValue> values = new ArrayList<>();
             List<Object> buffer = new ArrayList<>();
 
             for (Object o : args) {
                 if (o.equals(",")) {
-                    values.add(this.parseSymbols(buffer));
+                    values.add(this.parseSymbols(buffer, animationData));
                     buffer.clear();
                 }
                 else buffer.add(o);
             }
 
             if (!buffer.isEmpty()) {
-                values.add(this.parseSymbols(buffer));
+                values.add(this.parseSymbols(buffer, animationData));
             }
 
             Function function = this.functions.get(first);
@@ -368,12 +371,22 @@ public class MathBuilder {
                 }
             };
         }
+        else if (animationData != null && animationData.getMolangQueries().containsKey(first)) {
+            return new IValue() {
+                @Override
+                public double get() {
+                    return animationData.getMolangQueries().get(first).get();
+                }
+            };
+        }
+
+        throw new Exception("Function '" + first + "' couldn't be found!");
     }
 
-    public IValue valueFromObject(Object object) throws Exception {
+    public IValue valueFromObject(Object object, @Nullable AbstractAnimationData<?> animationData) throws Exception {
         if (object instanceof String symbol) {
             if (symbol.startsWith("!")) {
-                return new Negate(this.valueFromObject(symbol.substring(1)));
+                return new Negate(this.valueFromObject(symbol.substring(1), animationData));
             }
 
             if (this.isDecimal(symbol)) {
@@ -384,11 +397,11 @@ public class MathBuilder {
                 //negating a value returner
                 if (symbol.startsWith("-")) {
                     symbol = symbol.substring(1);
-                    return new Negative(this.valueFromObject(symbol));
+                    return new Negative(this.valueFromObject(symbol, animationData));
                 }
                 //this is for functions that have no args. functions w no args have no parenthesis at all
                 else if (this.isFunctionNoArgs(symbol)) {
-                    return this.createFunction(symbol, List.of());
+                    return this.createFunction(symbol, List.of(), animationData);
                 }
                 //this is for good ol variables
                 else {
@@ -398,7 +411,7 @@ public class MathBuilder {
             }
         }
         else if (object instanceof List) {
-            return new Group(this.parseSymbols((List) object));
+            return new Group(this.parseSymbols((List) object, animationData));
         }
 
         throw new Exception("Given object couldn't be converted to value! " + object);
@@ -441,6 +454,7 @@ public class MathBuilder {
     }
 
     protected boolean isFunctionNoArgs(String s) {
+        if (s.startsWith("query.")) return true;
         for (Map.Entry<String, Function> functionEntry : this.functions.entrySet()) {
             if (functionEntry.getKey().equals(s) && functionEntry.getValue().requiredArgCount() <= 0) return true;
         }

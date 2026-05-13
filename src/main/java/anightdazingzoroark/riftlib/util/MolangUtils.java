@@ -10,6 +10,8 @@ import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraftforge.fml.relauncher.Side;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 public class MolangUtils {
 	public static float normalizeTime(long timestamp) {
 		return ((float) timestamp / 24000);
@@ -85,7 +87,7 @@ public class MolangUtils {
 		parser.withScope(animationData.dataScope, () -> {
 			if (animatableValue.isExpression()) {
 				try {
-					parser.parseExpression(animatableValue.getExpressionValue()).get();
+					parser.parseExpression(animatableValue.getExpressionValue(), animationData).get();
 				}
 				catch (Exception e) {
 					throw new RuntimeException(e);
@@ -99,5 +101,24 @@ public class MolangUtils {
 				parser.setValue(name, animatableValue.getConstantValue().right);
 			}
 		});
+	}
+
+	/**
+	 * Parse a molang expression and get its return value
+	 * */
+	public static double parseValueAndGet(MolangParser parser, AbstractAnimationData<?> animationData, String expression) {
+		AtomicReference<Double> toReturn = new AtomicReference<>(0D);
+
+		parser.withScope(animationData.dataScope, () -> {
+			try {
+				double parsedValue = parser.parseExpression(expression, animationData).get();
+				toReturn.set(parsedValue);
+			}
+			catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		});
+
+		return toReturn.get();
 	}
 }

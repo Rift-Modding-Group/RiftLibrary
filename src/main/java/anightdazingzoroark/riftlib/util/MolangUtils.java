@@ -121,4 +121,12 @@ public class MolangUtils {
 
 		return toReturn.get();
 	}
+
+	public static double getVariable(MolangParser parser, MolangScope dataScope, String name) {
+		AtomicReference<Double> toReturn = new AtomicReference<>(0D);
+		parser.withScope(dataScope, () -> {
+			toReturn.set(parser.getVariable(name).get());
+		});
+		return toReturn.get();
+	}
 }

@@ -185,6 +185,10 @@ public abstract class AbstractAnimationData<T> {
         this.animationMessageEffects.putAll(messageEffects);
     }
 
+    public double getVariable(String name) {
+        return MolangUtils.getVariable(this.parser, this.dataScope, name);
+    }
+
     /**
      * This is for updating animation data while its animating
      * */

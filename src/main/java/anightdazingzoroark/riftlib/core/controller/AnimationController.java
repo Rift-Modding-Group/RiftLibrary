@@ -242,8 +242,8 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
 
             LinkedHashMap<String, AnimationControllerState.StateAnimation<D>> desiredAnimations = new LinkedHashMap<>();
             for (AnimationControllerState.StateAnimation<D> animationEntry : currentControllerState.getAnimations().values()) {
-                if (animationEntry.getPredicate().apply(processingData)) {
-                    desiredAnimations.put(animationEntry.getName(), animationEntry);
+                if (animationEntry.predicate().apply(processingData)) {
+                    desiredAnimations.put(animationEntry.name(), animationEntry);
                 }
             }
 
@@ -406,26 +406,23 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
 
         for (AnimationControllerState.StateAnimation<D> desiredAnimation : desiredAnimations.values()) {
             SingleAnimationRuntime runtime = this.activeAnimationRuntimes.computeIfAbsent(
-                    desiredAnimation.getName(),
-                    key -> new SingleAnimationRuntime(desiredAnimation.getName(), desiredAnimation.getLoopType(), transitionLength)
+                    desiredAnimation.name(),
+                    key -> new SingleAnimationRuntime(desiredAnimation.name(), transitionLength)
             );
             runtime.cancelFadeOut();
-            runtime.transitionLengthTicks = transitionLength;
-            runtime.setAnimation(desiredAnimation.getName(), desiredAnimation.getLoopType());
+            runtime.setAnimation();
         }
     }
 
     private double applyTransitions(D processingData, MolangParser parser, AnimationControllerState<D> currentControllerState) {
         double transitionLength = currentControllerState.transitionLength;
-        for (ImmutablePair<String, Function<D, Boolean>> transitionEntry : currentControllerState.getStateTransitions()) {
-            if (!transitionEntry.right.apply(processingData)) {
+        for (Map.Entry<String, Function<D, Boolean>> transitionEntry : currentControllerState.getStateTransitions().entrySet()) {
+            if (!transitionEntry.getValue().apply(processingData)) {
                 continue;
             }
 
-            String nextStateName = transitionEntry.left;
-            if (this.currentState.equals(nextStateName)) {
-                return transitionLength;
-            }
+            String nextStateName = transitionEntry.getKey();
+            if (this.currentState.equals(nextStateName)) return transitionLength;
 
             this.applyEffects(processingData, parser, currentControllerState.getExitEffects());
             this.currentState = this.getState(nextStateName).name;
@@ -482,7 +479,6 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
         private final HashMap<String, BoneSnapshot> fadeOutSnapshots = new HashMap<>();
 
         private final String animationName;
-        private LoopType loopType;
         private AnimationState animationState = AnimationState.Stopped;
         private Queue<Animation> animationQueue = new LinkedList<>();
         private Animation currentAnimation;
@@ -502,9 +498,8 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
         private boolean markedForRemoval;
         private boolean needsAnimationRestart;
 
-        private SingleAnimationRuntime(String animationName, LoopType loopType, double transitionLengthTicks) {
+        private SingleAnimationRuntime(String animationName, double transitionLengthTicks) {
             this.animationName = animationName;
-            this.loopType = loopType;
             this.transitionLengthTicks = transitionLengthTicks;
         }
 
@@ -545,15 +540,12 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             this.markedForRemoval = false;
         }
 
-        private void setAnimation(String animationName, LoopType loopType) {
+        private void setAnimation() {
             IAnimatableModel<A> model = getModel(animatable);
             if (model == null) return;
 
             AnimationBuilder builder = new AnimationBuilder();
-            if (loopType != null) {
-                builder.addAnimation(animationName, loopType);
-            }
-            else builder.addAnimation(animationName);
+            builder.addAnimation(this.animationName);
 
             if (builder.getRawAnimationList().isEmpty()) {
                 this.animationState = AnimationState.Stopped;
@@ -572,9 +564,6 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                     System.out.printf("Could not load animation: %s. Is it missing?", rawAnimation.animationName);
                     encounteredError.set(true);
                 }
-                if (animation != null && rawAnimation.loopType != null) {
-                    animation.loop = rawAnimation.loopType;
-                }
                 return animation;
             }).collect(Collectors.toCollection(LinkedList::new));
 
@@ -582,7 +571,6 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
 
             this.animationQueue = animations;
             this.currentAnimationBuilder = builder;
-            this.loopType = loopType;
             this.currentAnimation = null;
             this.lastResolvedAnimTick = 0D;
             this.lastFrameTick = -1D;
@@ -605,7 +593,6 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
 
             data.lifeTime = tick / 20D;
             data.deltaTime = deltaTime / 20D;
-            //data.syncTimeQueries();
             if (this.currentAnimation != null) {
                 IAnimatableModel<A> model = getModel(animatable);
                 if (model != null) {
@@ -801,7 +788,6 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
 
         private void setAnimTime(AbstractAnimationData<?> data, double tick) {
             data.animTime = tick / 20D;
-            //data.syncTimeQueries();
         }
 
         private void saveSnapshotsForAnimation(

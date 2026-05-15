@@ -3,6 +3,8 @@ package anightdazingzoroark.riftlib.core.controller;
 import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
+import anightdazingzoroark.riftlib.resource.RiftLibCache;
+import anightdazingzoroark.riftlib.util.MolangUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.ArrayList;
@@ -20,8 +22,10 @@ import java.util.function.Function;
 public class AnimationControllerState<D extends AbstractAnimationData<?>> {
     public final String name;
     public final double transitionLength;
+    //we want to preserve order in which anims r added, hence this
     private final LinkedHashMap<String, StateAnimation<D>> animations = new LinkedHashMap<>();
-    private final List<ImmutablePair<String, Function<D, Boolean>>> stateTransitions = new ArrayList<>();
+    //same here but for states
+    private final LinkedHashMap<String, Function<D, Boolean>> stateTransitions = new LinkedHashMap<>();
     private final List<AnimatableValue> onEntryAnimatableValues = new ArrayList<>();
     private final List<AnimatableValue> onExitAnimatableValues = new ArrayList<>();
 
@@ -38,12 +42,12 @@ public class AnimationControllerState<D extends AbstractAnimationData<?>> {
         this.transitionLength = transitionLength * 20D; //turn to ticks here cos idk lol
     }
 
+    /**
+     * @param animationName The name of the animation
+     * */
     public AnimationControllerState<D> addAnimation(String animationName) {
-        return this.addAnimation(animationName, null, (data) -> true);
-    }
-
-    public AnimationControllerState<D> addAnimation(String animationName, LoopType loopType) {
-        return this.addAnimation(animationName, loopType, (data) -> true);
+        this.animations.put(animationName, new StateAnimation<>(animationName, (data) -> true));
+        return this;
     }
 
     /**
@@ -51,11 +55,7 @@ public class AnimationControllerState<D extends AbstractAnimationData<?>> {
      * @param animationPredicate The predicate that ensures that the animation should play when in this state
      * */
     public AnimationControllerState<D> addAnimation(String animationName, Function<D, Boolean> animationPredicate) {
-        return this.addAnimation(animationName, null, animationPredicate);
-    }
-
-    public AnimationControllerState<D> addAnimation(String animationName, LoopType loopType, Function<D, Boolean> animationPredicate) {
-        this.animations.put(animationName, new StateAnimation<>(animationName, loopType, animationPredicate));
+        this.animations.put(animationName, new StateAnimation<>(animationName, animationPredicate));
         return this;
     }
 
@@ -68,11 +68,11 @@ public class AnimationControllerState<D extends AbstractAnimationData<?>> {
      * @param transition The condition in which to transition to that state
      * */
     public AnimationControllerState<D> addStateTransition(String stateName, Function<D, Boolean> transition) {
-        this.stateTransitions.add(new ImmutablePair<>(stateName, transition));
+        this.stateTransitions.put(stateName, transition);
         return this;
     }
 
-    public List<ImmutablePair<String, Function<D, Boolean>>> getStateTransitions() {
+    public LinkedHashMap<String, Function<D, Boolean>> getStateTransitions() {
         return this.stateTransitions;
     }
 
@@ -101,27 +101,5 @@ public class AnimationControllerState<D extends AbstractAnimationData<?>> {
         return this.onExitAnimatableValues;
     }
 
-    public static final class StateAnimation<D extends AbstractAnimationData<?>> {
-        private final String name;
-        private final LoopType loopType;
-        private final Function<D, Boolean> predicate;
-
-        private StateAnimation(String name, LoopType loopType, Function<D, Boolean> predicate) {
-            this.name = name;
-            this.loopType = loopType;
-            this.predicate = predicate;
-        }
-
-        public String getName() {
-            return this.name;
-        }
-
-        public LoopType getLoopType() {
-            return this.loopType;
-        }
-
-        public Function<D, Boolean> getPredicate() {
-            return this.predicate;
-        }
-    }
+    public record StateAnimation<D extends AbstractAnimationData<?>> (String name, Function<D, Boolean> predicate) {}
 }

@@ -7,8 +7,11 @@ import org.lwjglx.util.vector.Quaternion;
 
 import java.util.ArrayList;
 
-//todo: add back animatedlocator it seems because 2 declarations of
-//geolocator appears to fuck over simultaneous particle rendering
+/**
+ * GeoLocator is collected from raw model info and is to be used for simultaneous
+ * client and server use only. It is meant to be used for anything that requires
+ * a locator to serve as the basis of location on an IAnimatable.
+ * */
 public class GeoLocator {
     public final GeoBone parent;
     public final String name;

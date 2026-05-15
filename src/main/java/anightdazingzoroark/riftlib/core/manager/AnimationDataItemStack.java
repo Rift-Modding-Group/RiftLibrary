@@ -18,6 +18,11 @@ public class AnimationDataItemStack extends AbstractAnimationData<AnimatedItemSt
     public void updateOnDataTick() {}
 
     @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    @Override
     public @NotNull NBTTagCompound asNBT() {
         NBTTagCompound toReturn = new NBTTagCompound();
         ItemStack stack = this.getHolder().getStack();

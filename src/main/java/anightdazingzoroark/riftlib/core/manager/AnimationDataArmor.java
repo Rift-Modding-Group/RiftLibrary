@@ -21,6 +21,11 @@ public class AnimationDataArmor extends AbstractAnimationData<RiftLibArmor> {
     @Override
     public void updateOnDataTick() {}
 
+    @Override
+    public boolean isValid() {
+        return this.isEquipped();
+    }
+
     public void setRenderContext(EntityLivingBase wearer, ItemStack stack, EntityEquipmentSlot slot) {
         this.wearer = wearer;
         this.stack = stack;

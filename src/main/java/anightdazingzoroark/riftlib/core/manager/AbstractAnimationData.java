@@ -194,6 +194,8 @@ public abstract class AbstractAnimationData<T> {
      * */
     public abstract void updateOnDataTick();
 
+    public abstract boolean isValid();
+
     /**
      * This is for sending animation data to the server
      * */

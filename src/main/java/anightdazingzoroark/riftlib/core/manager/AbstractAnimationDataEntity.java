@@ -30,6 +30,11 @@ public abstract class AbstractAnimationDataEntity<T extends Entity> extends Abst
         else this.modifiedDistanceMoved = 0;
     }
 
+    @Override
+    public boolean isValid() {
+        return this.getHolder().isEntityAlive();
+    }
+
     public boolean isMoving() {
         return this.getHorizontalSpeed() > 0;
     }

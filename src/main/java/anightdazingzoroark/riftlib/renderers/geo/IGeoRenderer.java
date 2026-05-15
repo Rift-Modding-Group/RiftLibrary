@@ -177,9 +177,6 @@ public interface IGeoRenderer<T> {
             animatedLocator.setWorldSpacePosition(newPosX, newPosY, newPosZ);
 
             MATRIX_STACK.pop();
-            //the finalized repositioned locator is ticked in ParticleTicker.onRenderWorldLast
-            //this is commented out
-            //emitter.render(partialTicks);
             RenderHelper.enableStandardItemLighting();
             GL11.glPopMatrix();
         }

@@ -15,10 +15,15 @@ import org.lwjglx.util.vector.Quaternion;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * AnimatedLocator is for client use only and is built to be for transforming
+ * GeoLocators from model space to world space. Its only for holding particles
+ * because attempting to use GeoLocator only to do so has resulted unfeasible.
+ * (dont ask how i found that out the hard way)
+ * */
 public class AnimatedLocator {
     private final GeoLocator locator;
     private final AbstractAnimationData<?> animationData;
-    private final List<RiftLibParticleEmitter> particleEmitterList = new ArrayList<>();
     private Vec3d worldSpacePos = new Vec3d(0, 0, 0);
     private Quaternion worldSpaceYXZQuaternion = new Quaternion();
     private boolean isUpdated = true;
@@ -37,13 +42,7 @@ public class AnimatedLocator {
     }
 
     public boolean isValid() {
-        if (this.animationData instanceof AnimationDataEntity entityData) {
-            return entityData.getHolder().isEntityAlive();
-        }
-        else if (this.animationData instanceof AnimationDataTileEntity tileEntityData) {
-            return !tileEntityData.getHolder().isInvalid();
-        }
-        return true;
+        return this.animationData.isValid();
     }
 
     public String getName() {
@@ -80,15 +79,6 @@ public class AnimatedLocator {
 
     public void createParticleEmitter(ParticleBuilder builder) {
         RiftLibParticleEmitter emitterToAdd = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, this);
-        this.particleEmitterList.add(emitterToAdd);
         ParticleTicker.EMITTER_LIST.add(emitterToAdd);
-    }
-
-    public void removeParticleEmitter(RiftLibParticleEmitter emitter) {
-        this.particleEmitterList.remove(emitter);
-    }
-
-    public List<RiftLibParticleEmitter> getParticleEmitterList() {
-        return this.particleEmitterList;
     }
 }

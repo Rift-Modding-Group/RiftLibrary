@@ -7,6 +7,8 @@ import org.lwjglx.util.vector.Quaternion;
 public class RiftLibRay {
     @NotNull
     private final AbstractAnimationData<?> animData;
+    @NotNull
+    private final RayShape rayShape;
     private final double maxRayLength;
     private final double rayWidth;
     private final double rayCreationTime;
@@ -23,8 +25,9 @@ public class RiftLibRay {
     //how much time has passed since the change in creation phase in ticks
     private int tick;
 
-    public RiftLibRay(@NotNull AbstractAnimationData<?> animData, double maxRayLength, double rayWidth, double rayCreationTime, double rayFadeOutTime) {
+    public RiftLibRay(@NotNull AbstractAnimationData<?> animData, @NotNull RayShape rayShape, double maxRayLength, double rayWidth, double rayCreationTime, double rayFadeOutTime) {
         this.animData = animData;
+        this.rayShape = rayShape;
         this.maxRayLength = maxRayLength;
         this.rayWidth = rayWidth;
         this.rayCreationTime = rayCreationTime * 20D;

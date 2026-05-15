@@ -20,6 +20,10 @@ import java.util.List;
  * GeoLocators from model space to world space. Its only for holding particles
  * because attempting to use GeoLocator only to do so has resulted unfeasible.
  * (dont ask how i found that out the hard way)
+ * <br /><br />
+ * Todo: maybe deprecate this once more once I figure out how to finally
+ * calculate precisely locator positions on items and armor in-world
+ * in a server-friendly way.
  * */
 public class AnimatedLocator {
     private final GeoLocator locator;

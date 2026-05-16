@@ -46,7 +46,10 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
         this.initializeHitboxes(this);
         this.enablePersistence();
         this.rayMap = Map.of(
-                "breatheFire", new RiftLibRay.Builder(this, "fireLocator", 8D, 2D, 0.25D, 0.25D)
+                "breatheFire", new RiftLibRay.Builder(this, "fireLocator")
+                        .setSize(8D, 2D)
+                        .setCreationAndFadeoutTimes(0.25D, 0.25D)
+                        //.setSpreadOnHitBlock()
         );
     }
 

@@ -16,13 +16,14 @@ public class RiftLibRayHelper {
         if (rayCreator.getRayCreator().world.isRemote) {
             RiftLibRay.Builder rayBuilder = rayCreator.getRays().get(rayName);
             RiftLibRay ray = new RiftLibRay(
-                    rayBuilder.rayCreator(),
+                    rayBuilder.rayCreator,
                     rayName,
-                    rayBuilder.parentLocatorName(),
-                    rayBuilder.maxRayLength(),
-                    rayBuilder.rayWidth(),
-                    rayBuilder.rayCreationTime(),
-                    rayBuilder.rayFadeOutTime()
+                    rayBuilder.parentLocatorName,
+                    rayBuilder.getMaxLength(),
+                    rayBuilder.getWidth(),
+                    rayBuilder.getCreationTime(),
+                    rayBuilder.getFadeOutTime(),
+                    rayBuilder.getSpreadOnHitBlock()
             );
             RayTicker.RAY_PAIR_LIST.add(new ImmutablePair<>(rayCreator, ray));
         }

@@ -30,6 +30,7 @@ public class RiftLibRay {
     private final double rayWidth;
     private final double rayCreationTime;
     private final double rayFadeOutTime;
+    private final boolean spreadOnHitBlock;
 
     //this represents the phase the ray is currently in
     @NotNull
@@ -49,7 +50,10 @@ public class RiftLibRay {
 
     private boolean isDead;
 
-    public RiftLibRay(@NotNull IRayCreator<?> rayCreator, @NotNull String rayName, @NotNull String parentLocatorName, double maxRayLength, double rayWidth, double rayCreationTime, double rayFadeOutTime) {
+    public RiftLibRay(
+            @NotNull IRayCreator<?> rayCreator, @NotNull String rayName, @NotNull String parentLocatorName,
+            double maxRayLength, double rayWidth, double rayCreationTime, double rayFadeOutTime, boolean spreadOnHitBlock
+    ) {
         this.rayCreator = rayCreator;
         this.rayName = rayName;
         this.parentLocatorName = parentLocatorName;
@@ -57,6 +61,7 @@ public class RiftLibRay {
         this.rayWidth = rayWidth;
         this.rayCreationTime = rayCreationTime * 20D;
         this.rayFadeOutTime = rayFadeOutTime * 20D;
+        this.spreadOnHitBlock = spreadOnHitBlock;
 
         this.creationPhase = CreationPhase.CREATE;
     }
@@ -198,8 +203,60 @@ public class RiftLibRay {
     /**
      * A ray builder is like a template but for the rays to create.
      * */
-    public record Builder (
-            @NotNull IRayCreator<?> rayCreator, @NotNull String parentLocatorName,
-            double maxRayLength, double rayWidth, double rayCreationTime, double rayFadeOutTime
-    ) {}
+    public static class Builder {
+        @NotNull
+        public final IRayCreator<?> rayCreator;
+        @NotNull
+        public final String parentLocatorName;
+
+        private double maxLength = 1;
+        private double width = 1;
+
+        private double creationTime;
+        private double fadeOutTime;
+
+        private boolean spreadOnHitBlock;
+
+        public Builder(@NotNull IRayCreator<?> rayCreator, @NotNull String parentLocatorName) {
+            this.rayCreator = rayCreator;
+            this.parentLocatorName = parentLocatorName;
+        }
+
+        public Builder setSize(double maxLength, double width) {
+            this.maxLength = maxLength;
+            this.width = width;
+            return this;
+        }
+
+        public double getMaxLength() {
+            return this.maxLength;
+        }
+
+        public double getWidth() {
+            return this.width;
+        }
+
+        public Builder setCreationAndFadeoutTimes(double creationTime, double fadeOutTime) {
+            this.creationTime = creationTime;
+            this.fadeOutTime = fadeOutTime;
+            return this;
+        }
+
+        public double getCreationTime() {
+            return this.creationTime;
+        }
+
+        public double getFadeOutTime() {
+            return this.fadeOutTime;
+        }
+
+        public Builder setSpreadOnHitBlock() {
+            this.spreadOnHitBlock = true;
+            return this;
+        }
+
+        public boolean getSpreadOnHitBlock() {
+            return this.spreadOnHitBlock;
+        }
+    }
 }

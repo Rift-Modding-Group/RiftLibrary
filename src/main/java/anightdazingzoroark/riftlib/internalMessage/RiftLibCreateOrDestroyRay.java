@@ -51,13 +51,14 @@ public class RiftLibCreateOrDestroyRay extends RiftLibMessage<RiftLibCreateOrDes
         if (message.create) {
             RiftLibRay.Builder rayBuilder = rayCreator.getRays().get(message.rayName);
             RiftLibRay ray = new RiftLibRay(
-                    rayBuilder.rayCreator(),
+                    rayBuilder.rayCreator,
                     message.rayName,
-                    rayBuilder.parentLocatorName(),
-                    rayBuilder.maxRayLength(),
-                    rayBuilder.rayWidth(),
-                    rayBuilder.rayCreationTime(),
-                    rayBuilder.rayFadeOutTime()
+                    rayBuilder.parentLocatorName,
+                    rayBuilder.getMaxLength(),
+                    rayBuilder.getWidth(),
+                    rayBuilder.getCreationTime(),
+                    rayBuilder.getFadeOutTime(),
+                    rayBuilder.getSpreadOnHitBlock()
             );
             RayTicker.RAY_PAIR_LIST.add(new ImmutablePair<>(rayCreator, ray));
         }

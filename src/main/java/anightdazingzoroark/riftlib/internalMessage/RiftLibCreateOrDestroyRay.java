@@ -49,15 +49,22 @@ public class RiftLibCreateOrDestroyRay extends RiftLibMessage<RiftLibCreateOrDes
         if (!(entity instanceof IRayCreator<?> rayCreator)) return;
 
         if (message.create) {
-            RiftLibRay ray = rayCreator.getRays().get(rayName);
+            RiftLibRay.Builder rayBuilder = rayCreator.getRays().get(message.rayName);
+            RiftLibRay ray = new RiftLibRay(
+                    rayBuilder.rayCreator(),
+                    message.rayName,
+                    rayBuilder.parentLocatorName(),
+                    rayBuilder.maxRayLength(),
+                    rayBuilder.rayWidth(),
+                    rayBuilder.rayCreationTime(),
+                    rayBuilder.rayFadeOutTime()
+            );
             RayTicker.RAY_PAIR_LIST.add(new ImmutablePair<>(rayCreator, ray));
         }
         else {
             for (ImmutablePair<IRayCreator<?>, RiftLibRay> rayPair : RayTicker.RAY_PAIR_LIST) {
-                RiftLibRay ray = rayCreator.getRays().get(rayName);
-                if (rayCreator == rayPair.getLeft() && ray == rayPair.getRight()) {
-                    ray.endRay();
-                    break;
+                if (rayCreator == rayPair.getLeft() && message.rayName.equals(rayPair.getRight().rayName)) {
+                    rayPair.getRight().endRay();
                 }
             }
         }

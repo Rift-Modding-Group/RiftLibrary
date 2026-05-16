@@ -16,15 +16,15 @@ public interface IRayCreator<T extends EntityLivingBase & IAnimatable<AnimationD
     T getRayCreator();
 
     /**
-     * Rays are to be set here.
+     * Ray builders are to be set here.
      * */
-    Map<String, RiftLibRay> getRays();
+    Map<String, RiftLibRay.Builder> getRays();
 
     /**
      * When a ray is being applied, its information is sent to the server using this method.
      *
      * @param rayName The name of the ray.
-     * @param beamCollisionBoxes A list of AxisAlignedBB instances that represent which areas did the beam hit.
+     * @param rayCollisionBoxes A list of AxisAlignedBB instances that represent which areas did the ray hit.
      * */
-    void applyRayVectorResult(String rayName, List<AxisAlignedBB> beamCollisionBoxes);
+    void applyRayVectorResult(String rayName, List<AxisAlignedBB> rayCollisionBoxes);
 }

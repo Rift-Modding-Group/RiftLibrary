@@ -93,8 +93,8 @@ public class DragonAttackAI extends EntityAIBase {
     protected void checkAndPerformAttack(EntityLivingBase enemy, double distToEnemySqr) {
         double d0 = this.getAttackReachSqr(enemy);
 
-        if (--this.attackCooldown <= 0 && distToEnemySqr <= d0) {
-            this.dragon.setAttacking(true);
+        if (--this.attackCooldown <= 0 && distToEnemySqr <= d0 && distToEnemySqr >= enemy.width * enemy.width) {
+            this.dragon.setBreathingFire(true);
             this.attackCooldown = 20;
         }
     }

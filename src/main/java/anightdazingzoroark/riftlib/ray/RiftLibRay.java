@@ -5,7 +5,6 @@ import anightdazingzoroark.riftlib.util.MathUtils;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 import org.lwjglx.util.vector.Quaternion;
@@ -17,10 +16,14 @@ import java.util.List;
  * Meant to be created on the client. This is more or less a helper class that allows for
  * "rays", which are essentially vectors that affect any blocks or entities that cross
  * them.
+ * <br /><br />
+ * TODO: edit this so that when a ray hits a block, the ray spreads out on the surface of the block, and this spread is dependent on length and dist from origin.
  * */
 public class RiftLibRay {
     @NotNull
     private final IRayCreator<?> rayCreator;
+    @NotNull
+    public final String rayName;
     @NotNull
     private final String parentLocatorName;
     private final double maxRayLength;
@@ -37,17 +40,18 @@ public class RiftLibRay {
     //the origin of the ray
     @NotNull
     private Vec3d originPos = new Vec3d(0, 0, 0);
-    //meant for use while fading out, is the last origin pos it was in before disappearing
     @NotNull
-    private Vec3d lastOriginPos = new Vec3d(0, 0, 0);
+    private Vec3d fadeEndPos = new Vec3d(0, 0, 0);
     @NotNull
-    private Vec3d directionVector = new Vec3d(0, 0, -1);
+    private Vec3d directionVector = new Vec3d(0, 0, 1);
     private double currentLength;
+    private double fadeStartLength;
 
     private boolean isDead;
 
-    public RiftLibRay(@NotNull IRayCreator<?> rayCreator, @NotNull String parentLocatorName, double maxRayLength, double rayWidth, double rayCreationTime, double rayFadeOutTime) {
+    public RiftLibRay(@NotNull IRayCreator<?> rayCreator, @NotNull String rayName, @NotNull String parentLocatorName, double maxRayLength, double rayWidth, double rayCreationTime, double rayFadeOutTime) {
         this.rayCreator = rayCreator;
+        this.rayName = rayName;
         this.parentLocatorName = parentLocatorName;
         this.maxRayLength = maxRayLength;
         this.rayWidth = rayWidth;
@@ -72,13 +76,12 @@ public class RiftLibRay {
             double normalYawRadians = -Math.toRadians(this.rayCreator.getRayCreator().rotationYawHead);
             double riddenYawRadians = -Math.toRadians(this.rayCreator.getRayCreator().rotationYaw);
             double finalYawRadians = this.rayCreator.getRayCreator().isBeingRidden() ? riddenYawRadians : normalYawRadians;
-            Quaternion entityYawQuat = QuaternionUtils.createXYZQuaternion(0, finalYawRadians, 0);
 
             //define locator quaternion
             Quaternion animatedLocatorQuat = animatedLocator.getModelSpaceYXZQuaternion();
 
             //---for origin---
-            //set initial entity offset from center
+            //set initial entity offset from center, in model space ofc
             Vec3d modelSpacePos = animatedLocator.getModelSpacePosition();
             Vec3d posVec = new Vec3d(
                     modelSpacePos.x / 16f * this.rayCreator.rayCreatorScale(),
@@ -86,18 +89,25 @@ public class RiftLibRay {
                     -modelSpacePos.z / 16f * this.rayCreator.rayCreatorScale()
             );
 
-            //rotate
-            posVec = VectorUtils.rotateVectorWithQuaternion(posVec, entityYawQuat);
-            posVec = VectorUtils.rotateVectorWithQuaternion(posVec, animatedLocatorQuat);
+            //rotate the locator position only by the entity yaw; the locator's own rotation affects direction, not origin
+            posVec = VectorUtils.rotateVectorWithQuaternion(posVec, QuaternionUtils.createXYZQuaternion(0, finalYawRadians, 0));
+
+            //position to entity pos
+            posVec = new Vec3d(
+                    posVec.x + this.rayCreator.getRayCreator().posX,
+                    posVec.y + this.rayCreator.getRayCreator().posY,
+                    posVec.z + this.rayCreator.getRayCreator().posZ
+            );
 
             //set final pos vec
             this.originPos = posVec;
-            this.lastOriginPos = posVec;
 
             //---for direction vector---
-            Vec3d forwardVec = new Vec3d(0, 0, -1);
-            this.directionVector = VectorUtils.rotateVectorWithQuaternion(forwardVec, entityYawQuat).normalize();
-            this.directionVector = VectorUtils.rotateVectorWithQuaternion(this.directionVector, animatedLocatorQuat).normalize();
+            Vec3d forwardVec = new Vec3d(0, 0, 1);
+            forwardVec = VectorUtils.rotateVectorWithQuaternion(forwardVec, animatedLocatorQuat).normalize();
+            forwardVec = VectorUtils.rotateVectorWithQuaternion(forwardVec, QuaternionUtils.createYXZQuaternion(0, finalYawRadians, 0)).normalize();
+            forwardVec = new Vec3d(forwardVec.x, -forwardVec.y, forwardVec.z);
+            this.directionVector = forwardVec;
         }
 
         //-----define the current length of the ray, lengthens on creation and shortens on fade out-----
@@ -107,15 +117,14 @@ public class RiftLibRay {
             if (this.tick >= this.rayCreationTime) this.changeCreationPhase(CreationPhase.RUN);
         }
         else if (this.creationPhase == CreationPhase.FADE_OUT) {
-            this.currentLength = MathUtils.slopeResult(this.tick, true, 0, this.rayFadeOutTime, this.maxRayLength, 0);
+            this.currentLength = MathUtils.slopeResult(this.tick, true, 0, this.rayFadeOutTime, this.fadeStartLength, 0);
 
-            if (this.tick >= this.rayCreationTime) this.isDead = true;
+            if (this.tick >= this.rayFadeOutTime) this.isDead = true;
         }
 
         //-----define the ray origin pos when fading out-----
         if (this.creationPhase == CreationPhase.FADE_OUT) {
-            Vec3d scaledDirVec = this.directionVector.scale(this.currentLength);
-            this.originPos = this.lastOriginPos.subtract(scaledDirVec);
+            this.originPos = this.fadeEndPos.subtract(this.directionVector.scale(this.currentLength));
         }
 
         //-----ticking is required on creating or fading out the ray but useless outside of that-----
@@ -126,6 +135,8 @@ public class RiftLibRay {
      * Use this to end this ray to make it fade out.
      * */
     public void endRay() {
+        this.fadeStartLength = this.currentLength;
+        this.fadeEndPos = this.originPos.add(this.directionVector.scale(this.fadeStartLength));
         this.changeCreationPhase(CreationPhase.FADE_OUT);
     }
 
@@ -162,17 +173,16 @@ public class RiftLibRay {
         for (int step = 0; step < maxLength; step += stepDist) {
             //create aabb and add
             AxisAlignedBB toAdd = new AxisAlignedBB(
-                    currentCenterPos.x - width,
-                    currentCenterPos.y - width,
-                    currentCenterPos.z - width,
-                    currentCenterPos.x + width,
-                    currentCenterPos.y + width,
-                    currentCenterPos.z + width
+                    currentCenterPos.x - width / 2D,
+                    currentCenterPos.y - width / 2D,
+                    currentCenterPos.z - width / 2D,
+                    currentCenterPos.x + width / 2D,
+                    currentCenterPos.y + width / 2D,
+                    currentCenterPos.z + width / 2D
             );
             toReturn.add(toAdd);
 
             //modify currentCenterPos to go to next position
-            currentCenterPos = currentCenterPos.add(0.5D, 0.5D, 0.5D);
             currentCenterPos = currentCenterPos.add(stepVec);
         }
 
@@ -184,4 +194,12 @@ public class RiftLibRay {
         RUN,
         FADE_OUT;
     }
+
+    /**
+     * A ray builder is like a template but for the rays to create.
+     * */
+    public record Builder (
+            @NotNull IRayCreator<?> rayCreator, @NotNull String parentLocatorName,
+            double maxRayLength, double rayWidth, double rayCreationTime, double rayFadeOutTime
+    ) {}
 }

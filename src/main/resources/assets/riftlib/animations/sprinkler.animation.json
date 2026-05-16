@@ -14,7 +14,7 @@
 			}
 		},
 		"animation.sprinkler.hose_water_zero": {
-            "animation_length": 1,
+			"animation_length": 1,
 			"particle_effects": {
 				"0.0": {
 					"effect": "riftlib:sprinkler_water",
@@ -31,6 +31,7 @@
 			}
 		},
 		"animation.sprinkler.hose_water_two": {
+			"loop": true,
 			"particle_effects": {
 				"0.0": {
 					"effect": "riftlib:sprinkler_water",

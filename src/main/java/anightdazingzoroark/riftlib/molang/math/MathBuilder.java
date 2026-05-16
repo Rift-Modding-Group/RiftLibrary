@@ -76,16 +76,16 @@ public class MathBuilder {
             return total;
         });
         this.registerFunction("math.random", 2, values -> {
-            int lowerBound = (int) Math.ceil(Math.min(values[0].get(), values[1].get()));
-            int upperBound = (int) Math.floor(Math.max(values[0].get(), values[1].get()));
+            double lowerBound = values[0].get();
+            double upperBound = values[1].get();
             if (lowerBound > upperBound) return 0D;
 
             java.util.Random random = new java.util.Random();
             return random.nextDouble(lowerBound, upperBound);
         });
         this.registerFunction("math.random_integer", 2, values -> {
-            int lowerBound = (int) Math.ceil(Math.min(values[1].get(), values[2].get()));
-            int upperBound = (int) Math.floor(Math.max(values[1].get(), values[2].get()));
+            int lowerBound = (int) values[0].get();
+            int upperBound = (int) values[1].get();
             if (lowerBound > upperBound) return 0D;
 
             java.util.Random random = new java.util.Random();

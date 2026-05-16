@@ -1,8 +1,6 @@
 package anightdazingzoroark.riftlib.model;
 
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
-import anightdazingzoroark.riftlib.core.manager.AnimationDataTileEntity;
 import anightdazingzoroark.riftlib.geo.render.GeoBone;
 import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
@@ -70,13 +68,31 @@ public class AnimatedLocator {
      * per client, making it apt for things such as hitboxes and rider positions.
      * */
     public Vec3d getModelSpacePosition() {
-        Vec3d boneDispOffset = this.getPositionOffsetFromBoneDisplacements();
-        Vec3d boneRotOffset = this.getPositionOffsetFromBoneRotations();
+        Vec3d boneDispOffset = this.getPositionOffsetFromBoneDisplacements(false);
+        Vec3d boneRotOffset = this.getPositionOffsetFromBoneRotations(false);
+        Vec3d locatorPos = this.getLocatorPosition(false);
 
         return new Vec3d(
-                this.locator.getPositionX() + boneDispOffset.x + boneRotOffset.x,
-                this.locator.getPositionY() + boneDispOffset.y + boneRotOffset.y,
-                this.locator.getPositionZ() + boneDispOffset.z + boneRotOffset.z
+                locatorPos.x + boneDispOffset.x + boneRotOffset.x,
+                locatorPos.y + boneDispOffset.y + boneRotOffset.y,
+                locatorPos.z + boneDispOffset.z + boneRotOffset.z
+        );
+    }
+
+    /**
+     * This is the locator position in the renderer's coordinate conventions. It is
+     * intentionally separate from model space because hitboxes/rays and rendering
+     * use opposite handedness for some axes.
+     * */
+    public Vec3d getRenderSpacePosition() {
+        Vec3d boneDispOffset = this.getPositionOffsetFromBoneDisplacements(true);
+        Vec3d boneRotOffset = this.getPositionOffsetFromBoneRotations(true);
+        Vec3d locatorPos = this.getLocatorPosition(true);
+
+        return new Vec3d(
+                locatorPos.x + boneDispOffset.x + boneRotOffset.x,
+                locatorPos.y + boneDispOffset.y + boneRotOffset.y,
+                locatorPos.z + boneDispOffset.z + boneRotOffset.z
         );
     }
 
@@ -139,32 +155,81 @@ public class AnimatedLocator {
         return toReturn;
     }
 
-    private Vec3d getPositionOffsetFromBoneDisplacements() {
+    /**
+     * This is the locator rotation in the renderer's coordinate conventions.
+     * It mirrors MatrixStack.rotate(GeoBone), which applies Z, then Y, then X.
+     * */
+    public Quaternion getRenderSpaceQuaternion() {
+        Quaternion toReturn = new Quaternion(0, 0, 0, 1);
+
+        ArrayList<GeoBone> chain = new ArrayList<>();
+        for (GeoBone boneToTest = this.locator.parent; boneToTest != null; boneToTest = boneToTest.parent) chain.add(boneToTest);
+
+        for (int i = chain.size() - 1; i >= 0; i--) {
+            GeoBone boneToTest = chain.get(i);
+            Quaternion quatBone = QuaternionUtils.createZYXQuaternion(
+                    boneToTest.getRotationX(),
+                    boneToTest.getRotationY(),
+                    boneToTest.getRotationZ()
+            );
+            Quaternion.normalise(quatBone, quatBone);
+
+            Quaternion tmp = new Quaternion();
+            Quaternion.mul(toReturn, quatBone, tmp);
+            toReturn.set(tmp);
+        }
+
+        Quaternion quatLocator = QuaternionUtils.createZYXQuaternion(
+                this.locator.getRotationX(),
+                this.locator.getRotationY(),
+                this.locator.getRotationZ()
+        );
+        Quaternion.normalise(quatLocator, quatLocator);
+
+        Quaternion tmp = new Quaternion();
+        Quaternion.mul(toReturn, quatLocator, tmp);
+        toReturn.set(tmp);
+
+        Quaternion.normalise(toReturn, toReturn);
+
+        return toReturn;
+    }
+
+    private Vec3d getPositionOffsetFromBoneDisplacements(boolean renderSpace) {
         Vec3d toReturn = Vec3d.ZERO;
         GeoBone boneToTest = this.locator.parent;
 
         while (boneToTest != null) {
-            toReturn = toReturn.add(boneToTest.getPositionX(), boneToTest.getPositionY(), boneToTest.getPositionZ());
+            double positionX = renderSpace ? -boneToTest.getPositionX() : boneToTest.getPositionX();
+            toReturn = toReturn.add(positionX, boneToTest.getPositionY(), boneToTest.getPositionZ());
             boneToTest = boneToTest.parent;
         }
         return toReturn;
     }
 
-    private Vec3d getPositionOffsetFromBoneRotations() {
-        Vec3d vecPos = new Vec3d(this.locator.getPositionX(), this.locator.getPositionY(), this.locator.getPositionZ());
-        GeoBone boneToTest = this.locator.parent;
+    private Vec3d getPositionOffsetFromBoneRotations(boolean renderSpace) {
+        Vec3d locatorPos = this.getLocatorPosition(renderSpace);
+        Vec3d vecPos = locatorPos;
 
-        //evaluate
-        while (boneToTest != null) {
+        List<GeoBone> chain = new ArrayList<>();
+        for (GeoBone boneToTest = this.locator.parent; boneToTest != null; boneToTest = boneToTest.parent) chain.add(boneToTest);
+
+        //evaluate from child to parent. MatrixStack multiplies parent transforms before
+        //child transforms, so the locator point is affected by child transforms first.
+        for (GeoBone boneToTest : chain) {
             //get vector for direction from pivot to pos
-            Vec3d vecPivot = new Vec3d(boneToTest.getPivotX(), boneToTest.getPivotY(), boneToTest.getPivotZ());
+            Vec3d vecPivot = new Vec3d(
+                    renderSpace ? boneToTest.getPivotX() : -boneToTest.getPivotX(),
+                    boneToTest.getPivotY(),
+                    boneToTest.getPivotZ()
+            );
             Vec3d vecDirection = vecPos.subtract(vecPivot);
 
             //create quaternion from current rotations, conjugate it too
             Quaternion quatBoneRot = QuaternionUtils.createXYZQuaternion(
                     boneToTest.getRotationX(),
-                    boneToTest.getRotationY(),
-                    -boneToTest.getRotationZ()
+                    renderSpace ? boneToTest.getRotationY() : -boneToTest.getRotationY(),
+                    boneToTest.getRotationZ()
             );
             Quaternion.normalise(quatBoneRot, quatBoneRot);
 
@@ -181,10 +246,17 @@ public class AnimatedLocator {
 
             //update vecPos
             vecPos = rotatedVecDirection.add(vecPivot);
-            boneToTest = boneToTest.parent;
         }
 
-        return vecPos.subtract(this.locator.getPositionX(), this.locator.getPositionY(), this.locator.getPositionZ());
+        return vecPos.subtract(locatorPos);
+    }
+
+    private Vec3d getLocatorPosition(boolean renderSpace) {
+        return new Vec3d(
+                renderSpace ? -this.locator.getPositionX() : this.locator.getPositionX(),
+                this.locator.getPositionY(),
+                this.locator.getPositionZ()
+        );
     }
 
     public void createParticleEmitter(ParticleBuilder builder) {

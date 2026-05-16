@@ -68,13 +68,9 @@ public class GeoConstructor {
                 toAdd.setPositionY((float) rawLocator.offset[1]);
                 toAdd.setPositionZ((float) rawLocator.offset[2]);
 
-                toAdd.setRotationX((float) Math.toRadians(rawLocator.rotation[0]));
-                toAdd.setRotationY((float) Math.toRadians(rawLocator.rotation[1]));
+                toAdd.setRotationX((float) Math.toRadians(-rawLocator.rotation[0]));
+                toAdd.setRotationY((float) Math.toRadians(-rawLocator.rotation[1]));
                 toAdd.setRotationZ((float) Math.toRadians(rawLocator.rotation[2]));
-
-                toAdd.setPivotX((float) rawLocator.offset[0]);
-                toAdd.setPivotY((float) rawLocator.offset[1]);
-                toAdd.setPivotZ((float) rawLocator.offset[2]);
 
 				geoBone.childLocators.add(toAdd);
 			}

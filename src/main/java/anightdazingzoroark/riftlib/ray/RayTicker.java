@@ -1,6 +1,5 @@
 package anightdazingzoroark.riftlib.ray;
 
-import anightdazingzoroark.riftlib.internalMessage.RiftLibCreateOrDestroyRay;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibCreateRayInServer;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraft.client.Minecraft;
@@ -17,7 +16,6 @@ import org.lwjgl.opengl.GL11;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 public class RayTicker {
     public static final List<ImmutablePair<IRayCreator<?>, RiftLibRay>> RAY_PAIR_LIST = new ArrayList<>();
@@ -41,16 +39,7 @@ public class RayTicker {
             List<AxisAlignedBB> rayAABB = rayPair.getRight().createAABBListFromRay();
 
             //send aabb list to server
-            String rayName = null;
-            for (Map.Entry<String, RiftLibRay> rayNameEntry : rayPair.getLeft().getRays().entrySet()) {
-                if (rayNameEntry.getValue() == rayPair.getRight()) {
-                    rayName = rayNameEntry.getKey();
-                    break;
-                }
-            }
-            if (rayName != null) {
-                ServerProxy.RAY_MESSAGE_WRAPPER.sendToServer(new RiftLibCreateRayInServer(rayPair.getLeft(), rayName, rayAABB));
-            }
+            ServerProxy.RAY_MESSAGE_WRAPPER.sendToServer(new RiftLibCreateRayInServer(rayPair.getLeft(), rayPair.getRight().rayName, rayAABB));
 
             //remove from list of rays if dead
             if (rayPair.getRight().isDead()) it.remove();

@@ -94,7 +94,7 @@ public class MatrixStack {
 	}
 
     public void translate(AnimatedLocator locator) {
-        Vec3d locatorPos = locator.getModelSpacePosition();
+        Vec3d locatorPos = locator.getRenderSpacePosition();
         this.translate((float) locatorPos.x / 16f, (float) locatorPos.y / 16f, (float) locatorPos.z / 16f);
     }
 
@@ -201,7 +201,7 @@ public class MatrixStack {
     }
 
     public void rotate(AnimatedLocator locator) {
-        Quaternion locatorRotQuat = locator.getModelSpaceYXZQuaternion();
+        Quaternion locatorRotQuat = locator.getRenderSpaceQuaternion();
         Quaternion.normalise(locatorRotQuat, locatorRotQuat);
         Matrix3f matrixFromQuat = MatrixUtils.quaternionToMatrix(locatorRotQuat);
 

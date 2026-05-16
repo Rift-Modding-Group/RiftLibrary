@@ -76,30 +76,6 @@ public class GeoLocator {
         this.rotationZ = value;
     }
 
-    public float getPivotX() {
-        return this.pivotX;
-    }
-
-    public float getPivotY() {
-        return this.pivotY;
-    }
-
-    public float getPivotZ() {
-        return this.pivotZ;
-    }
-
-    public void setPivotX(float value) {
-        this.pivotX = value;
-    }
-
-    public void setPivotY(float value) {
-        this.pivotY = value;
-    }
-
-    public void setPivotZ(float value) {
-        this.pivotZ = value;
-    }
-
     public String toString() {
         return "[name="+this.name+", offset=("+this.positionX+", "+this.positionY+", "+this.positionZ+")]";
     }

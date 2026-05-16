@@ -10,6 +10,7 @@ import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.ray.IRayCreator;
 import anightdazingzoroark.riftlib.ray.RiftLibRay;
+import anightdazingzoroark.riftlib.ray.RiftLibRayHelper;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosList;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
 import net.minecraft.entity.*;
@@ -33,9 +34,9 @@ import java.util.List;
 import java.util.Map;
 
 public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IRayCreator<DragonEntity>, IMultiHitboxUser, IDynamicRideUser {
-    private static final DataParameter<Boolean> ATTACKING = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Boolean> BREATHING_FIRE = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
-    private final Map<String, RiftLibRay> rayMap;
+    private final Map<String, RiftLibRay.Builder> rayMap;
     private Entity[] hitboxes = {};
     private DynamicRidePosList ridePositions;
 
@@ -45,14 +46,14 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
         this.initializeHitboxes(this);
         this.enablePersistence();
         this.rayMap = Map.of(
-                "breatheFire", new RiftLibRay(this, "fireLocator", 16D, 1D, 0.2D, 0.2D)
+                "breatheFire", new RiftLibRay.Builder(this, "fireLocator", 8D, 2D, 0.25D, 0.25D)
         );
     }
 
     @Override
     protected void entityInit() {
         super.entityInit();
-        this.dataManager.register(ATTACKING, false);
+        this.dataManager.register(BREATHING_FIRE, false);
     }
 
     @Override
@@ -194,37 +195,38 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     }
 
     @Override
-    public Map<String, RiftLibRay> getRays() {
+    public Map<String, RiftLibRay.Builder> getRays() {
         return this.rayMap;
     }
 
     @Override
-    public void applyRayVectorResult(String rayName, List<AxisAlignedBB> beamCollisionBoxes) {
-
+    public void applyRayVectorResult(String rayName, List<AxisAlignedBB> rayCollisionBoxes) {
+        if (rayName.equals("breatheFire")) {
+            for (AxisAlignedBB rayAABB : rayCollisionBoxes) {
+                List<EntityLivingBase> hitEntities = this.world.getEntitiesWithinAABB(EntityLivingBase.class, rayAABB);
+                for (EntityLivingBase hitEntity : hitEntities) {
+                    if (hitEntity == this) continue;
+                    hitEntity.setFire(5);
+                    DamageSource dragonFireDamageSrc = DamageSource.causeMobDamage(this);
+                    dragonFireDamageSrc.setFireDamage();
+                    hitEntity.attackEntityFrom(dragonFireDamageSrc, (float)((int)this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getAttributeValue()));
+                    this.setLastAttackedEntity(hitEntity);
+                }
+            }
+        }
     }
     //ray management stuff ends here
 
-    public boolean isAttacking() {
-        return this.dataManager.get(ATTACKING);
+    public boolean isBreathingFire() {
+        return this.dataManager.get(BREATHING_FIRE);
     }
 
-    public void setAttacking(boolean value) {
-        this.dataManager.set(ATTACKING, value);
+    public void setBreathingFire(boolean value) {
+        this.dataManager.set(BREATHING_FIRE, value);
     }
 
     public float attackWidth() {
-        return 5f;
-    }
-
-    @Override
-    public boolean attackEntityAsMob(Entity entityIn) {
-        if (entityIn == null) return false;
-        boolean flag = entityIn.attackEntityFrom(DamageSource.causeMobDamage(this), (float)((int)this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getAttributeValue()));
-        if (flag) {
-            this.applyEnchantments(this, entityIn);
-        }
-        this.setLastAttackedEntity(entityIn);
-        return flag;
+        return 8f;
     }
 
     @Override
@@ -243,11 +245,11 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
                 new AnimationController<DragonEntity, AnimationDataEntity>(
                         this, "attack", "default",
                         new AnimationControllerState<AnimationDataEntity>("default")
-                                .addStateTransition("attack", data -> this.isAttacking()),
-                        new AnimationControllerState<AnimationDataEntity>("attack")
-                                .addAnimation("animation.dragon.attack_while_flying")
+                                .addStateTransition("fireBreathAttack", data -> this.isBreathingFire()),
+                        new AnimationControllerState<AnimationDataEntity>("fireBreathAttack")
+                                .addAnimation("animation.dragon.breathe_fire_while_flying")
                                 .addStateTransition("default", data -> data.allAnimationsFinished("attack"))
-                                .addExitEffect(new AnimatableValue("'endAttack'"))
+                                .addExitEffect(new AnimatableValue("'endBreathUse'"))
                 )
         );
     }
@@ -255,8 +257,13 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     @Override
     public Map<String, AnimatableRunValue> createAnimationMessageEffects() {
         return Map.of(
-                "performAttack", new AnimatableRunValue(() -> this.attackEntityAsMob(this.getAttackTarget()), Side.SERVER),
-                "endAttack", new AnimatableRunValue(() -> this.setAttacking(false), Side.CLIENT, Side.SERVER)
+                "startFireBreath", new AnimatableRunValue(() -> {
+                    RiftLibRayHelper.createRay(this, "breatheFire");
+                }, Side.CLIENT),
+                "endFireBreath", new AnimatableRunValue(() -> {
+                    RiftLibRayHelper.killRay(this, "breatheFire");
+                }, Side.CLIENT),
+                "endBreathUse", new AnimatableRunValue(() -> this.setBreathingFire(false), Side.CLIENT, Side.SERVER)
         );
     }
 }

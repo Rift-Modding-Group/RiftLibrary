@@ -10,6 +10,8 @@ import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraftforge.fml.relauncher.Side;
 
+import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class MolangUtils {
@@ -64,18 +66,20 @@ public class MolangUtils {
 				&& animatableValue.getExpressionValue().endsWith("'")
 		) {
 			String valueToSend = animatableValue.getExpressionValue().substring(1, animatableValue.getExpressionValue().length() - 1);
-			for (AnimatableRunValue runValue : animationData.getAnimationMessageEffects().values()) {
-                Side[] sideOrder = runValue.sideOrder();
+			for (Map.Entry<String, AnimatableRunValue> effectMapEntry : animationData.getAnimationMessageEffects().entrySet()) {
+				if (!valueToSend.equals(effectMapEntry.getKey())) continue;
+
+                Side[] sideOrder = effectMapEntry.getValue().sideOrder();
 				if (sideOrder == null || sideOrder.length == 0) sideOrder = new Side[]{Side.SERVER};
 
 				for (Side side : sideOrder) {
 					if (side == Side.SERVER) {
-						ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibRunAnimationMessageEffect(
+						ServerProxy.INSTRUCTION_MESSAGE_WRAPPER.sendToServer(new RiftLibRunAnimationMessageEffect(
 								valueToSend, animationData.asNBT()
 						));
 					}
 					else if (side == Side.CLIENT) {
-						ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibRunAnimationMessageEffect(
+						ServerProxy.INSTRUCTION_MESSAGE_WRAPPER.sendToAll(new RiftLibRunAnimationMessageEffect(
 								valueToSend, animationData.asNBT()
 						));
 					}

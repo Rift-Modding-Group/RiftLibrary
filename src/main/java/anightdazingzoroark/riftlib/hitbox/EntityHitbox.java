@@ -23,10 +23,6 @@ public class EntityHitbox extends MultiPartEntityPart {
     //these are the anim dependent scales
     private float widthScaleDisplacement = 1f;
     private float heightScaleDisplacement = 1f;
-    //these are the final definitive displacements of the hitbox from the center of the entity
-    private final float xOffset;
-    private final float yOffset;
-    private final float zOffset;
     //these are anim dependent displacements due to animations
     private float xDisplacement;
     private float yDisplacement;
@@ -36,14 +32,11 @@ public class EntityHitbox extends MultiPartEntityPart {
     private boolean isDisabled;
     public final List<EntityHitboxDamageDefinition> damageDefinitions = new ArrayList<>();
 
-    public EntityHitbox(IMultiHitboxUser parent, String partName, float damageMultiplier, float width, float height, float xOffset, float yOffset, float zOffset, boolean affectedByAnim) {
+    public EntityHitbox(IMultiHitboxUser parent, String partName, float damageMultiplier, float width, float height, boolean affectedByAnim) {
         super(parent, partName, width, height);
         this.damageMultiplier = damageMultiplier;
         this.fixedWidth = width;
         this.fixedHeight = height;
-        this.xOffset = xOffset;
-        this.yOffset = yOffset;
-        this.zOffset = zOffset;
         this.affectedByAnim = affectedByAnim;
         this.onAddedToWorld();
     }
@@ -60,9 +53,9 @@ public class EntityHitbox extends MultiPartEntityPart {
 
         //set initial entity offset from center
         Vec3d posVec = new Vec3d(
-                (this.xOffset + this.xDisplacement) * parent.multiHitboxUserScale(),
-                (this.yOffset + this.yDisplacement) * parent.multiHitboxUserScale(),
-                (this.zOffset + this.zDisplacement) * parent.multiHitboxUserScale()
+                this.xDisplacement * parent.multiHitboxUserScale(),
+                this.yDisplacement * parent.multiHitboxUserScale(),
+                this.zDisplacement * parent.multiHitboxUserScale()
         );
 
         //determine yaw

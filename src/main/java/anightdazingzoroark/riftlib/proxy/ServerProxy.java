@@ -20,6 +20,7 @@ public class ServerProxy {
     public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> MESSAGE_WRAPPER;
     public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> HITBOX_MESSAGE_WRAPPER;
     public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> INSTRUCTION_MESSAGE_WRAPPER;
+    public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> RAY_MESSAGE_WRAPPER;
 
     public void preInit(FMLPreInitializationEvent e) {
         //registerVariable particle component registry
@@ -36,7 +37,11 @@ public class ServerProxy {
         HITBOX_MESSAGE_WRAPPER.registerMessage(RiftLibUpdateHitboxSize.class, RiftLibMessageSide.BOTH);
 
         INSTRUCTION_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_instruction");
-        MESSAGE_WRAPPER.registerMessage(RiftLibRunAnimationMessageEffect.class, RiftLibMessageSide.BOTH);
+        INSTRUCTION_MESSAGE_WRAPPER.registerMessage(RiftLibRunAnimationMessageEffect.class, RiftLibMessageSide.BOTH);
+
+        RAY_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_ray");
+        RAY_MESSAGE_WRAPPER.registerMessage(RiftLibCreateOrDestroyRay.class, RiftLibMessageSide.CLIENT);
+        RAY_MESSAGE_WRAPPER.registerMessage(RiftLibCreateRayInServer.class, RiftLibMessageSide.SERVER);
 
         MinecraftForge.EVENT_BUS.register(new HitboxTicker.Server());
 

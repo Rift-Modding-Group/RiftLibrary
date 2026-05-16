@@ -28,21 +28,18 @@ public interface IMultiHitboxUser extends IEntityMultiPart {
             //create the hitbox
             EntityHitbox hitbox = new EntityHitbox(
                     entity,
-                    hitboxDefinition.locator,
-                    hitboxDefinition.damageMultiplier,
-                    hitboxDefinition.width,
-                    hitboxDefinition.height,
-                    (float) hitboxDefinition.position.x,
-                    (float) hitboxDefinition.position.y,
-                    (float) hitboxDefinition.position.z,
-                    hitboxDefinition.affectedByAnim
+                    hitboxDefinition.locator(),
+                    hitboxDefinition.damageMultiplier(),
+                    hitboxDefinition.width(),
+                    hitboxDefinition.height(),
+                    hitboxDefinition.affectedByAnim()
             );
             //add the damage definitions
-            for (HitboxDefinitionList.HitboxDamageDefinition damageDefinition : hitboxDefinition.damageDefinitionList) {
+            for (HitboxDefinitionList.HitboxDamageDefinition damageDefinition : hitboxDefinition.damageDefinitionList()) {
                 hitbox.damageDefinitions.add(new EntityHitbox.EntityHitboxDamageDefinition(
-                        damageDefinition.damageSource,
-                        damageDefinition.damageType,
-                        damageDefinition.damageMultiplier
+                        damageDefinition.damageSource(),
+                        damageDefinition.damageType(),
+                        damageDefinition.damageMultiplier()
                 ));
             }
 

@@ -8,6 +8,8 @@ import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
+import anightdazingzoroark.riftlib.ray.IRayCreator;
+import anightdazingzoroark.riftlib.ray.RiftLibRay;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosList;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
 import net.minecraft.entity.*;
@@ -19,6 +21,9 @@ import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 
@@ -27,9 +32,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IMultiHitboxUser, IDynamicRideUser {
+public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IRayCreator<DragonEntity>, IMultiHitboxUser, IDynamicRideUser {
     private static final DataParameter<Boolean> ATTACKING = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
+    private final Map<String, RiftLibRay> rayMap;
     private Entity[] hitboxes = {};
     private DynamicRidePosList ridePositions;
 
@@ -38,6 +44,9 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
         this.setSize(4f, 4f);
         this.initializeHitboxes(this);
         this.enablePersistence();
+        this.rayMap = Map.of(
+                "breatheFire", new RiftLibRay(this, "fireLocator", 16D, 1D, 0.2D, 0.2D)
+        );
     }
 
     @Override
@@ -170,6 +179,30 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
         }
     }
     //ride management stuff ends here
+
+    //ray management stuff starts here
+
+
+    @Override
+    public float rayCreatorScale() {
+        return 3f;
+    }
+
+    @Override
+    public DragonEntity getRayCreator() {
+        return this;
+    }
+
+    @Override
+    public Map<String, RiftLibRay> getRays() {
+        return this.rayMap;
+    }
+
+    @Override
+    public void applyRayVectorResult(String rayName, List<AxisAlignedBB> beamCollisionBoxes) {
+
+    }
+    //ray management stuff ends here
 
     public boolean isAttacking() {
         return this.dataManager.get(ATTACKING);

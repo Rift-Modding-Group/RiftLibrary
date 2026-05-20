@@ -64,7 +64,7 @@ public class GeoConstructor {
 			for (RawModelLocatorList.RawModelLocator rawLocator : rawBone.locators.list) {
                 GeoLocator toAdd = new GeoLocator(geoBone, rawLocator.name);
 
-                toAdd.setPositionX((float) rawLocator.offset[0]);
+                toAdd.setPositionX((float) -rawLocator.offset[0]);
                 toAdd.setPositionY((float) rawLocator.offset[1]);
                 toAdd.setPositionZ((float) rawLocator.offset[2]);
 

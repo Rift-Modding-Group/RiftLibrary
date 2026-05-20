@@ -5,6 +5,7 @@ import java.util.*;
 import anightdazingzoroark.riftlib.RiftLibConfig;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateRayPos;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import anightdazingzoroark.riftlib.hitbox.EntityHitbox;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
@@ -12,6 +13,9 @@ import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateRiderPos;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateHitboxPos;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateHitboxSize;
 
+import anightdazingzoroark.riftlib.ray.IRayCreator;
+import anightdazingzoroark.riftlib.ray.RayTicker;
+import anightdazingzoroark.riftlib.ray.RiftLibRay;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosList;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosUtils;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
@@ -33,6 +37,8 @@ import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 import anightdazingzoroark.riftlib.model.provider.IAnimatableModelProvider;
 import anightdazingzoroark.riftlib.resource.RiftLibCache;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.lwjglx.util.vector.Quaternion;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoModelProvider<T>
@@ -89,6 +95,9 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 
 		//update dynamic hitbox positions
 		this.setDynamicRidePositions(entity, animData);
+
+		//update ray displacements
+		this.setRayDisplacements(entity, animData);
 	}
 
 	public void createAndUpdateAnimatedLocators(T entity) {
@@ -129,7 +138,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 			//is too miniscule
 			//get positions
 			Vec3d modelSpacePos = animatedLocator.getModelSpacePosition();
-			float newHitboxX = (float) modelSpacePos.x / 16f;
+			float newHitboxX = -(float) modelSpacePos.x / 16f;
 			float newHitboxY = (float) modelSpacePos.y / 16f - (hitbox.fixedHeight / 2f) - (parentBone.getScaleY() - 1) / 3;
 			float newHitboxZ = -(float) modelSpacePos.z / 16f;
 
@@ -192,6 +201,26 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibUpdateRiderPos(
 				(Entity) entity, definitionList
 		));
+	}
+
+	private void setRayDisplacements(T entity, AbstractAnimationData<?> animData) {
+		if (!(entity instanceof IRayCreator<?> rayCreator)) return;
+
+		for (AnimatedLocator locator : animData.getAnimatedLocators()) {
+			for (ImmutablePair<IRayCreator<?>, RiftLibRay> rayPair : RayTicker.Client.RAY_PAIR_LIST) {
+				if (rayCreator != rayPair.getLeft() || !locator.getName().equals(rayPair.getRight().parentLocatorName)) continue;
+				Vec3d modelSpacePos = locator.getModelSpacePosition();
+				Quaternion modelSpaceQuat = locator.getModelSpaceYXZQuaternion();
+
+				rayPair.getRight().displaceByAnim(modelSpacePos);
+				rayPair.getRight().displaceQuatByAnim(modelSpaceQuat);
+
+				ServerProxy.RAY_MESSAGE_WRAPPER.sendToServer(new RiftLibUpdateRayPos(
+						rayCreator, rayPair.getRight().rayName,
+						modelSpacePos, modelSpaceQuat
+				));
+			}
+		}
 	}
 
 	@Override

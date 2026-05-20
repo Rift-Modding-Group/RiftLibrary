@@ -9,6 +9,7 @@ import anightdazingzoroark.riftlib.message.RiftLibMessage;
 import anightdazingzoroark.riftlib.message.RiftLibMessageSide;
 import anightdazingzoroark.riftlib.message.RiftLibMessageWrapper;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleComponentRegistry;
+import anightdazingzoroark.riftlib.ray.RayTicker;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -40,10 +41,11 @@ public class ServerProxy {
         INSTRUCTION_MESSAGE_WRAPPER.registerMessage(RiftLibRunAnimationMessageEffect.class, RiftLibMessageSide.BOTH);
 
         RAY_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_ray");
-        RAY_MESSAGE_WRAPPER.registerMessage(RiftLibCreateOrDestroyRay.class, RiftLibMessageSide.CLIENT);
-        RAY_MESSAGE_WRAPPER.registerMessage(RiftLibCreateRayInServer.class, RiftLibMessageSide.SERVER);
+        RAY_MESSAGE_WRAPPER.registerMessage(RiftLibUpdateRayPos.class, RiftLibMessageSide.SERVER);
+        RAY_MESSAGE_WRAPPER.registerMessage(RiftLibCreateOrDestroyRay.class, RiftLibMessageSide.BOTH);
 
         MinecraftForge.EVENT_BUS.register(new HitboxTicker.Server());
+        MinecraftForge.EVENT_BUS.register(new RayTicker.Server());
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {

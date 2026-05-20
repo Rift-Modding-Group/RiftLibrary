@@ -95,7 +95,7 @@ public class AnimatedLocator {
     /**
      * This is the quaternion for rotations of this locator in model space.
      * It is the same per client, making it apt for things such as hitboxes
-     * and rider positions.
+     * and rider positions. Because of this, it can be called from the server.
      * */
     public Quaternion getModelSpaceYXZQuaternion() {
         Quaternion toReturn = new Quaternion(0, 0, 0, 1);

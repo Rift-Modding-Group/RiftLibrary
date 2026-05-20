@@ -11,6 +11,7 @@ import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.ray.IRayCreator;
 import anightdazingzoroark.riftlib.ray.RiftLibRay;
 import anightdazingzoroark.riftlib.ray.RiftLibRayHelper;
+import anightdazingzoroark.riftlib.ray.RiftLibRaySegment;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosList;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
 import net.minecraft.entity.*;
@@ -24,12 +25,10 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,9 +46,9 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
         this.enablePersistence();
         this.rayMap = Map.of(
                 "breatheFire", new RiftLibRay.Builder(this, "fireLocator")
-                        .setSize(8D, 2D)
-                        .setCreationAndFadeoutTimes(0.25D, 0.25D)
-                        //.setSpreadOnHitBlock()
+                        .setRaySpeed(0.5D)
+                        .setShapeSpray(8D, 1D)
+                        .setSpreadOnHitBlock()
         );
     }
 
@@ -185,8 +184,6 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     //ride management stuff ends here
 
     //ray management stuff starts here
-
-
     @Override
     public float rayCreatorScale() {
         return 3f;
@@ -198,23 +195,21 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     }
 
     @Override
-    public Map<String, RiftLibRay.Builder> getRays() {
+    public Map<String, RiftLibRay.Builder> getRayBuilders() {
         return this.rayMap;
     }
 
     @Override
-    public void applyRayVectorResult(String rayName, List<AxisAlignedBB> rayCollisionBoxes) {
+    public void applyRaySegments(String rayName, BlockPos originPos, RiftLibRay.RayHitResult rayHitResult) {
         if (rayName.equals("breatheFire")) {
-            for (AxisAlignedBB rayAABB : rayCollisionBoxes) {
-                List<EntityLivingBase> hitEntities = this.world.getEntitiesWithinAABB(EntityLivingBase.class, rayAABB);
-                for (EntityLivingBase hitEntity : hitEntities) {
-                    if (hitEntity == this) continue;
-                    hitEntity.setFire(5);
-                    DamageSource dragonFireDamageSrc = DamageSource.causeMobDamage(this);
-                    dragonFireDamageSrc.setFireDamage();
-                    hitEntity.attackEntityFrom(dragonFireDamageSrc, (float)((int)this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getAttributeValue()));
-                    this.setLastAttackedEntity(hitEntity);
-                }
+            for (Entity hitEntity : rayHitResult.hitEntities()) {
+                if (hitEntity == this || !(hitEntity instanceof EntityLivingBase)) continue;
+
+                hitEntity.setFire(5);
+                DamageSource dragonFireDamageSrc = DamageSource.causeMobDamage(this);
+                dragonFireDamageSrc.setFireDamage();
+                hitEntity.attackEntityFrom(dragonFireDamageSrc, (float)((int)this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getAttributeValue()));
+                this.setLastAttackedEntity(hitEntity);
             }
         }
     }
@@ -240,6 +235,13 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     @Override
     public List<AnimationController<?, AnimationDataEntity>> createAnimationControllers() {
         return List.of(
+                /*
+                new AnimationController<DragonEntity, AnimationDataEntity>(
+                        this, "test", "default",
+                        new AnimationControllerState<AnimationDataEntity>("default")
+                                .addAnimation("animation.dragon.test")
+                )
+                 */
                 new AnimationController<DragonEntity, AnimationDataEntity>(
                         this, "movement", "default",
                         new AnimationControllerState<AnimationDataEntity>("default")
@@ -262,10 +264,10 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
         return Map.of(
                 "startFireBreath", new AnimatableRunValue(() -> {
                     RiftLibRayHelper.createRay(this, "breatheFire");
-                }, Side.CLIENT),
+                }, Side.SERVER),
                 "endFireBreath", new AnimatableRunValue(() -> {
                     RiftLibRayHelper.killRay(this, "breatheFire");
-                }, Side.CLIENT),
+                }, Side.SERVER),
                 "endBreathUse", new AnimatableRunValue(() -> this.setBreathingFire(false), Side.CLIENT, Side.SERVER)
         );
     }

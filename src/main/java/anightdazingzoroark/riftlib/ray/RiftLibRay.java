@@ -1,23 +1,26 @@
 package anightdazingzoroark.riftlib.ray;
 
-import anightdazingzoroark.riftlib.model.AnimatedLocator;
-import anightdazingzoroark.riftlib.util.MathUtils;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.lwjglx.util.vector.Quaternion;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 /**
- * Meant to be created on the client. This is more or less a helper class that allows for
- * "rays", which are essentially vectors that affect any blocks or entities that cross
+ * Meant to be simultaneously created on the server and the client. This defines "rays",
+ * which are essentially vectors that affect any blocks or entities that cross
  * them.
- * <br /><br />
- * TODO: edit this so that when a ray hits a block, the ray spreads out on the surface of the block, and this spread is dependent on length and dist from origin.
  * */
 public class RiftLibRay {
     @NotNull
@@ -25,73 +28,85 @@ public class RiftLibRay {
     @NotNull
     public final String rayName;
     @NotNull
-    private final String parentLocatorName;
+    public final String parentLocatorName;
+    @NotNull
+    private final RayType rayType;
     private final double maxRayLength;
-    private final double rayWidth;
-    private final double rayCreationTime;
-    private final double rayFadeOutTime;
+    private final double @NotNull [] rayWidthRange;
+    //in blocks per tick, defines the speed in which the segments travel
+    private final double raySpeed;
+    //if true, the ray will spread upon hitting a block
     private final boolean spreadOnHitBlock;
+    //define if the ray can break this block
+    @NotNull
+    private final Function<BlockPos, Boolean> breakBlockCondition;
 
-    //this represents the phase the ray is currently in
+    //the pos of the locator. is nullable so that upon initialization there
+    //will not be a giant puddle below the user
+    @Nullable
+    private Vec3d animatedLocatorPos = new Vec3d(0, 0, 0);
     @NotNull
-    private CreationPhase creationPhase;
-    //how much time has passed since the change in creation phase in ticks
-    private int tick;
+    private Quaternion animatedLocatorQuat = new Quaternion();
 
-    //the origin of the ray
+    //the origin of the ray. is nullable so that upon initialization there
+    //will not be a giant puddle below the user
+    @Nullable
+    private Vec3d originPos;
+    //the direction the ray must travel in
     @NotNull
-    private Vec3d originPos = new Vec3d(0, 0, 0);
-    @NotNull
-    private Vec3d fadeEndPos = new Vec3d(0, 0, 0);
-    @NotNull
-    private Vec3d directionVector = new Vec3d(0, 0, 1);
-    private double currentLength;
-    private double fadeStartLength;
+    private Vec3d directionVector = new Vec3d(0, 0, -1);
 
+    //all the segments in a ray
+    private final List<RiftLibRaySegment> raySegmentList = new ArrayList<>();
+
+    //flag to signal the start of the end of the ray
+    private boolean isEnded;
+    //flag to signal removal of the ray
     private boolean isDead;
 
     public RiftLibRay(
-            @NotNull IRayCreator<?> rayCreator, @NotNull String rayName, @NotNull String parentLocatorName,
-            double maxRayLength, double rayWidth, double rayCreationTime, double rayFadeOutTime, boolean spreadOnHitBlock
+            @NotNull IRayCreator<?> rayCreator, @NotNull String rayName, @NotNull String parentLocatorName, @NotNull RayType rayType,
+            double maxRayLength, double @NotNull [] rayWidthRange, double raySpeed, boolean spreadOnHitBlock,
+            @NotNull Function<BlockPos, Boolean> breakBlockCondition
     ) {
         this.rayCreator = rayCreator;
         this.rayName = rayName;
         this.parentLocatorName = parentLocatorName;
+        this.rayType = rayType;
         this.maxRayLength = maxRayLength;
-        this.rayWidth = rayWidth;
-        this.rayCreationTime = rayCreationTime * 20D;
-        this.rayFadeOutTime = rayFadeOutTime * 20D;
+        this.rayWidthRange = rayWidthRange;
+        this.raySpeed = raySpeed;
         this.spreadOnHitBlock = spreadOnHitBlock;
-
-        this.creationPhase = CreationPhase.CREATE;
+        this.breakBlockCondition = breakBlockCondition;
     }
 
+    /**
+     * This updates the ray and is meant to be called on both sides.
+     * */
     public void onUpdate() {
-        //-----kill the ray if the ray creator suddenly died for some reason-----
-        if (!this.rayCreator.getRayCreator().isEntityAlive()) this.killRay();
+        //-----kill the ray and its segments if the ray creator died for some reason-----
+        if (!this.rayCreator.getRayCreator().isEntityAlive()) {
+            for (RiftLibRaySegment raySegment : this.raySegmentList) raySegment.killSegment();
+            this.killRay();
+        }
 
+        //-----do not update if ray is dead-----
         if (this.isDead) return;
 
-        AnimatedLocator animatedLocator = this.rayCreator.getRayCreator().getAnimationData().getAnimatedLocator(this.parentLocatorName);
-
         //-----define the ray origin pos and direction vector when not fading out-----
-        if (this.creationPhase != CreationPhase.FADE_OUT) {
+        if (!this.isEnded && this.animatedLocatorPos != null) {
             //---common stuff---
             //determine entity yaw and turn into quaternion
             double normalYawRadians = -Math.toRadians(this.rayCreator.getRayCreator().rotationYawHead);
             double riddenYawRadians = -Math.toRadians(this.rayCreator.getRayCreator().rotationYaw);
             double finalYawRadians = this.rayCreator.getRayCreator().isBeingRidden() ? riddenYawRadians : normalYawRadians;
 
-            //define locator quaternion
-            Quaternion animatedLocatorQuat = animatedLocator.getModelSpaceYXZQuaternion();
-
             //---for origin---
             //set initial entity offset from center, in model space ofc
-            Vec3d modelSpacePos = animatedLocator.getModelSpacePosition();
             Vec3d posVec = new Vec3d(
-                    modelSpacePos.x / 16f * this.rayCreator.rayCreatorScale(),
-                    modelSpacePos.y / 16f * this.rayCreator.rayCreatorScale(),
-                    -modelSpacePos.z / 16f * this.rayCreator.rayCreatorScale()
+                    -this.animatedLocatorPos.x / 16f * this.rayCreator.rayCreatorScale(),
+                    this.animatedLocatorPos.y / 16f * this.rayCreator.rayCreatorScale(),
+                    -this.animatedLocatorPos.z / 16f * this.rayCreator.rayCreatorScale()
             );
 
             //rotate the locator position only by the entity yaw; the locator's own rotation affects direction, not origin
@@ -108,41 +123,77 @@ public class RiftLibRay {
             this.originPos = posVec;
 
             //---for direction vector---
-            Vec3d forwardVec = new Vec3d(0, 0, 1);
-            forwardVec = VectorUtils.rotateVectorWithQuaternion(forwardVec, animatedLocatorQuat).normalize();
+            //correct quaternion for animated locator to work in world space
+            Quaternion correction = QuaternionUtils.createYXZQuaternion(Math.PI / 2D, Math.PI, 0);
+            Quaternion correctedLocatorQuat = new Quaternion();
+            Quaternion.mul(this.animatedLocatorQuat, correction, correctedLocatorQuat);
+            Quaternion.normalise(correctedLocatorQuat, correctedLocatorQuat);
+
+            //proceed
+            Vec3d forwardVec = new Vec3d(0, 0, -1); //good ol point northward vector
+            forwardVec = VectorUtils.rotateVectorWithQuaternion(forwardVec, correctedLocatorQuat).normalize();
             forwardVec = VectorUtils.rotateVectorWithQuaternion(forwardVec, QuaternionUtils.createYXZQuaternion(0, finalYawRadians, 0)).normalize();
-            forwardVec = new Vec3d(forwardVec.x, -forwardVec.y, forwardVec.z);
             this.directionVector = forwardVec;
         }
 
-        //-----define the current length of the ray, lengthens on creation and shortens on fade out-----
-        if (this.creationPhase == CreationPhase.CREATE) {
-            this.currentLength = MathUtils.slopeResult(this.tick, true, 0, this.rayCreationTime, 0, this.maxRayLength);
+        //-----update segment list-----
+        Iterator<RiftLibRaySegment> it = this.raySegmentList.iterator();
+        while (it.hasNext()) {
+            RiftLibRaySegment raySegment = it.next();
 
-            if (this.tick >= this.rayCreationTime) this.changeCreationPhase(CreationPhase.RUN);
-        }
-        else if (this.creationPhase == CreationPhase.FADE_OUT) {
-            this.currentLength = MathUtils.slopeResult(this.tick, true, 0, this.rayFadeOutTime, this.fadeStartLength, 0);
-
-            if (this.tick >= this.rayFadeOutTime) this.isDead = true;
+            //update
+            raySegment.onUpdate();
+            if (this.rayType == RayType.BEAM) raySegment.updateDirectionVector(this.directionVector);
         }
 
-        //-----define the ray origin pos when fading out-----
-        if (this.creationPhase == CreationPhase.FADE_OUT) {
-            this.originPos = this.fadeEndPos.subtract(this.directionVector.scale(this.currentLength));
+        //-----create a new segment, rate is dependent on ray speed-----
+        if (!this.isEnded && this.originPos != null) {
+            this.raySegmentList.add(new RiftLibRaySegment(
+                    this.rayCreator, this.originPos, this.directionVector,
+                    this.maxRayLength, this.rayWidthRange, this.raySpeed, this.spreadOnHitBlock,
+                    this.breakBlockCondition
+            ));
         }
 
-        //-----ticking is required on creating or fading out the ray but useless outside of that-----
-        if (this.creationPhase != CreationPhase.RUN && !this.isDead) this.tick++;
+        //-----send ray information to the ray creator-----
+        if (!this.rayCreator.getRayCreator().world.isRemote && this.originPos != null) {
+            this.rayCreator.applyRaySegments(
+                    this.rayName, new BlockPos(this.originPos),
+                    new RayHitResult(this.getEntitiesInRaySegments(), this.getBlockPositionsInRaySegments())
+            );
+        }
+
+        //-----remove from list of segments if dead after callers had a tick to consume their final state-----
+        it = this.raySegmentList.iterator();
+        while (it.hasNext()) {
+            RiftLibRaySegment raySegment = it.next();
+            if (raySegment.isDead()) it.remove();
+        }
+
+        if (this.isEnded && this.raySegmentList.isEmpty()) this.killRay();
+    }
+
+    /**
+     * To be called from AnimatedGeoModel every tick for both sides, is meant for displacing the ray origin
+     * based on the position of the AnimatedLocator it's attached to.
+     * */
+    public void displaceByAnim(Vec3d animatedLocatorPos) {
+        this.animatedLocatorPos = animatedLocatorPos;
+    }
+
+    /**
+     * To be called from AnimatedGeoModel every tick for both sides, is meant for displacing the orientation
+     * based on the orientation of the AnimatedLocator it's attached to as a YXZ quaternion.
+     * */
+    public void displaceQuatByAnim(Quaternion animatedLocatorQuat) {
+        this.animatedLocatorQuat = animatedLocatorQuat;
     }
 
     /**
      * Use this to end this ray to make it fade out.
      * */
     public void endRay() {
-        this.fadeStartLength = this.currentLength;
-        this.fadeEndPos = this.originPos.add(this.directionVector.scale(this.fadeStartLength));
-        this.changeCreationPhase(CreationPhase.FADE_OUT);
+        this.isEnded = true;
     }
 
     /**
@@ -152,52 +203,74 @@ public class RiftLibRay {
         this.isDead = true;
     }
 
-    //better way to change the creation phase
-    private void changeCreationPhase(@NotNull CreationPhase phase) {
-        this.creationPhase = phase;
-        this.tick = 0;
-    }
-
     public boolean isDead() {
         return this.isDead;
     }
 
-    /**
-     * Is for converting RiftLibRay information into a list of AxisAlignedBB instances
-     * that will be sent to the server.
-     * */
-    public List<AxisAlignedBB> createAABBListFromRay() {
+    public List<AxisAlignedBB> getSegmentAABBList() {
         List<AxisAlignedBB> toReturn = new ArrayList<>();
+        for (RiftLibRaySegment raySegment : this.raySegmentList) {
+            toReturn.addAll(raySegment.getSegmentAABBList());
+        }
+        return toReturn;
+    }
 
-        Vec3d currentCenterPos = this.originPos;
-        int maxLength = (int) Math.ceil(this.currentLength);
-        double width = this.rayWidth;
-        int stepDist = 1; //how many steps between the center of each aabb to create
-        Vec3d stepVec = this.directionVector.scale(stepDist);
+    private List<Entity> getEntitiesInRaySegments() {
+        List<AxisAlignedBB> aabbList = this.getSegmentAABBList();
+        List<Entity> toReturn = new ArrayList<>();
+        World world = this.rayCreator.getRayCreator().world;
 
-        for (int step = 0; step < maxLength; step += stepDist) {
-            //create aabb and add
-            AxisAlignedBB toAdd = new AxisAlignedBB(
-                    currentCenterPos.x - width / 2D,
-                    currentCenterPos.y - width / 2D,
-                    currentCenterPos.z - width / 2D,
-                    currentCenterPos.x + width / 2D,
-                    currentCenterPos.y + width / 2D,
-                    currentCenterPos.z + width / 2D
-            );
-            toReturn.add(toAdd);
-
-            //modify currentCenterPos to go to next position
-            currentCenterPos = currentCenterPos.add(stepVec);
+        for (AxisAlignedBB aabb : aabbList) {
+            List<Entity> entityList = world.getEntitiesWithinAABB(Entity.class, aabb);
+            for (Entity entity : entityList) {
+                if (toReturn.contains(entity)) continue;
+                toReturn.add(entity);
+            }
         }
 
         return toReturn;
     }
 
-    private enum CreationPhase {
-        CREATE,
-        RUN,
-        FADE_OUT;
+    private List<BlockPos> getBlockPositionsInRaySegments() {
+        List<AxisAlignedBB> aabbList = this.getSegmentAABBList();
+        List<BlockPos> toReturn = new ArrayList<>();
+
+        for (AxisAlignedBB aabb : aabbList) {
+            int minX = MathHelper.floor(aabb.minX);
+            int minY = MathHelper.floor(aabb.minY);
+            int minZ = MathHelper.floor(aabb.minZ);
+            int maxX = MathHelper.floor(aabb.maxX);
+            int maxY = MathHelper.floor(aabb.maxY);
+            int maxZ = MathHelper.floor(aabb.maxZ);
+
+            for (int x = minX; x <= maxX; x++) {
+                for (int y = minY; y <= maxY; y++) {
+                    for (int z = minZ; z <= maxZ; z++) {
+                        BlockPos testPos = new BlockPos(x, y, z);
+                        if (!aabb.intersects(x, y, z, x + 1D, y + 1D, z + 1D)) continue;
+                        if (!toReturn.contains(testPos)) toReturn.add(testPos);
+                    }
+                }
+            }
+        }
+
+        return toReturn;
+    }
+
+    /**
+     * This is for the shape of the ray.
+     * */
+    public enum RayType {
+        /**
+         * A spray is made of AABBs traveling along a straight line, and will not
+         * instantly rotate alongside the user's rotations.
+         * */
+        SPRAY,
+        /**
+         * A fixed beam is made of AABBs forming a fixed straight line, and will
+         * instantly rotate alongside the user's rotations.
+         * */
+        BEAM;
     }
 
     /**
@@ -209,45 +282,73 @@ public class RiftLibRay {
         @NotNull
         public final String parentLocatorName;
 
+        private RayType rayType = RayType.SPRAY;
         private double maxLength = 1;
-        private double width = 1;
+        private double minWidth = 1;
+        private double maxWidth = 1;
 
-        private double creationTime;
-        private double fadeOutTime;
+        private double raySpeed = 1D;
 
         private boolean spreadOnHitBlock;
+
+        private Function<BlockPos, Boolean> breakBlockCondition = pos -> false;
 
         public Builder(@NotNull IRayCreator<?> rayCreator, @NotNull String parentLocatorName) {
             this.rayCreator = rayCreator;
             this.parentLocatorName = parentLocatorName;
         }
 
-        public Builder setSize(double maxLength, double width) {
+        public Builder setShapeSpray(double maxLength, double width) {
+            this.rayType = RayType.SPRAY;
             this.maxLength = maxLength;
-            this.width = width;
+            this.minWidth = width;
+            this.maxWidth = width;
             return this;
         }
 
-        public double getMaxLength() {
+        public Builder setShapeSpray(double maxLength, double minWidth, double maxWidth) {
+            this.rayType = RayType.SPRAY;
+            this.maxLength = maxLength;
+            this.minWidth = minWidth;
+            this.maxWidth = maxWidth;
+            return this;
+        }
+
+        public Builder setShapeBeam(double maxLength, double width) {
+            this.rayType = RayType.BEAM;
+            this.maxLength = maxLength;
+            this.minWidth = width;
+            this.maxWidth = width;
+            return this;
+        }
+
+        public Builder setShapeBeam(double maxLength, double minWidth, double maxWidth) {
+            this.rayType = RayType.BEAM;
+            this.maxLength = maxLength;
+            this.minWidth = minWidth;
+            this.maxWidth = maxWidth;
+            return this;
+        }
+
+        public RayType getRayType() {
+            return this.rayType;
+        }
+
+        public double[] getRayWidthRange() {
+            return new double[]{this.minWidth, this.maxWidth};
+        }
+
+        public double getRayMaxLength() {
             return this.maxLength;
         }
 
-        public double getWidth() {
-            return this.width;
-        }
-
-        public Builder setCreationAndFadeoutTimes(double creationTime, double fadeOutTime) {
-            this.creationTime = creationTime;
-            this.fadeOutTime = fadeOutTime;
+        public Builder setRaySpeed(double value) {
+            this.raySpeed = value;
             return this;
         }
 
-        public double getCreationTime() {
-            return this.creationTime;
-        }
-
-        public double getFadeOutTime() {
-            return this.fadeOutTime;
+        public double getRaySpeed() {
+            return this.raySpeed;
         }
 
         public Builder setSpreadOnHitBlock() {
@@ -258,5 +359,19 @@ public class RiftLibRay {
         public boolean getSpreadOnHitBlock() {
             return this.spreadOnHitBlock;
         }
+
+        public Builder setBreakBlockCondition(Function<BlockPos, Boolean> value) {
+            this.breakBlockCondition = value;
+            return this;
+        }
+
+        public Function<BlockPos, Boolean> getBreakBlockCondition() {
+            return this.breakBlockCondition;
+        }
     }
+
+    /**
+     * This ray result is to be immutable and to be sent to the server.
+     * */
+    public record RayHitResult(List<Entity> hitEntities, List<BlockPos> hitBlockPositions) {}
 }

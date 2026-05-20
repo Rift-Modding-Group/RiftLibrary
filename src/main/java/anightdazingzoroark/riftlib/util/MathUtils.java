@@ -12,10 +12,14 @@ public class MathUtils {
     }
 
     public static double slopeResult(int x, boolean clamped, double xMin, double xMax, double yMin, double yMax) {
-        double slope = (yMax - yMin)/(xMax - xMin);
+        return slopeResult((double) x, clamped, xMin, xMax, yMin, yMax);
+    }
+
+    public static double slopeResult(double x, boolean clamped, double xMin, double xMax, double yMin, double yMax) {
+        double slope = (yMax - yMin) / (xMax - xMin);
         if (clamped) {
-            if (yMin <= yMax) return clamp(slope * (x - xMin) + yMin, yMin, yMax);
-            else return clamp(slope * (x - xMin) + yMin, yMax, yMin);
+            if (yMin <= yMax) return Math.clamp(slope * (x - xMin) + yMin, yMin, yMax);
+            else return Math.clamp(slope * (x - xMin) + yMin, yMax, yMin);
         }
         return slope * (x - xMin) + yMin;
     }
@@ -23,17 +27,9 @@ public class MathUtils {
     public static float slopeResult(int x, boolean clamped, float xMin, float xMax, float yMin, float yMax) {
         float slope = (yMax - yMin)/(xMax - xMin);
         if (clamped) {
-            if (yMin <= yMax) return clamp(slope * (x - xMin) + yMin, yMin, yMax);
-            else return clamp(slope * (x - xMin) + yMin, yMax, yMin);
+            if (yMin <= yMax) return Math.clamp(slope * (x - xMin) + yMin, yMin, yMax);
+            else return Math.clamp(slope * (x - xMin) + yMin, yMax, yMin);
         }
         return slope * (x - xMin) + yMin;
-    }
-
-    public static double clamp(double value, double min, double max) {
-        return Math.max(min, Math.min(max, value));
-    }
-
-    public static float clamp(float value, float min, float max) {
-        return Math.max(min, Math.min(max, value));
     }
 }

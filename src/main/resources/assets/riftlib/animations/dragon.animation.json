@@ -50,25 +50,6 @@
 						"1.0": [0, 0, 0]
 					}
 				}
-			},
-			"particle_effects": {
-				"0.0": {
-					"effect": "riftlib:fire_emission",
-					"locator": "fireLocator"
-				}
-			},
-			"timeline": {
-				"0.75": "'rawr'"
-			}
-		},
-		"animation.dragon.flame_particles": {
-			"loop": true,
-			"animation_length": 1,
-			"particle_effects": {
-				"0.0": {
-					"effect": "riftlib:fire_emission",
-					"locator": "fireLocator"
-				}
 			}
 		},
 		"animation.dragon.attack_while_flying": {
@@ -278,12 +259,6 @@
 				},
 				"main": {
 					"position": [0, 0, 0]
-				}
-			},
-			"particle_effects": {
-				"0.0": {
-					"effect": "riftlib:fire_emission",
-					"locator": "fireLocator"
 				}
 			}
 		},

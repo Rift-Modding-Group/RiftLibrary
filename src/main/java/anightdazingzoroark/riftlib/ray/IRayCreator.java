@@ -4,6 +4,7 @@ import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.List;
 import java.util.Map;
@@ -16,15 +17,16 @@ public interface IRayCreator<T extends EntityLivingBase & IAnimatable<AnimationD
     T getRayCreator();
 
     /**
-     * Ray builders are to be set here.
+     * Ray builders are to be defined here.
      * */
-    Map<String, RiftLibRay.Builder> getRays();
+    Map<String, RiftLibRay.Builder> getRayBuilders();
 
     /**
      * When a ray is being applied, its information is sent to the server using this method.
      *
      * @param rayName The name of the ray.
-     * @param rayCollisionBoxes A list of AxisAlignedBB instances that represent which areas did the ray hit.
+     * @param originPos The BlockPos representation of the origin.
+     * @param rayHitResult Holds the entities and block positions hit by the ray
      * */
-    void applyRayVectorResult(String rayName, List<AxisAlignedBB> rayCollisionBoxes);
+    void applyRaySegments(String rayName, BlockPos originPos, RiftLibRay.RayHitResult rayHitResult);
 }

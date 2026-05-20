@@ -40,8 +40,7 @@ public class RiftLibUpdateRiderPos extends RiftLibMessage<RiftLibUpdateRiderPos>
         Entity entity = player.world.getEntityByID(message.entityId);
         DynamicRidePosList dynamicRidePosList = new DynamicRidePosList(message.dynamicRidePosListNBT);
 
-        if (entity instanceof IDynamicRideUser) {
-            IDynamicRideUser dynamicRideUser = (IDynamicRideUser) entity;
+        if (entity instanceof IDynamicRideUser dynamicRideUser) {
             dynamicRideUser.setRidePosition(dynamicRidePosList);
         }
     }
@@ -51,8 +50,7 @@ public class RiftLibUpdateRiderPos extends RiftLibMessage<RiftLibUpdateRiderPos>
         Entity entity = player.world.getEntityByID(message.entityId);
         DynamicRidePosList dynamicRidePosList = new DynamicRidePosList(message.dynamicRidePosListNBT);
 
-        if (entity instanceof IDynamicRideUser) {
-            IDynamicRideUser dynamicRideUser = (IDynamicRideUser) entity;
+        if (entity instanceof IDynamicRideUser dynamicRideUser) {
             dynamicRideUser.setRidePosition(dynamicRidePosList);
         }
     }

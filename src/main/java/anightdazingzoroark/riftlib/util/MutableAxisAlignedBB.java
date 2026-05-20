@@ -1,6 +1,8 @@
 package anightdazingzoroark.riftlib.util;
 
-//helper class thats a mutable variant of aabb
+/**
+ * Helper class thats a mutable variant of aabb
+ * */
 public class MutableAxisAlignedBB {
     private double minX, minY, minZ, maxX, maxY, maxZ;
 

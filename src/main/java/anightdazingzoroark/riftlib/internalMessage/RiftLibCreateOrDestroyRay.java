@@ -4,6 +4,7 @@ import anightdazingzoroark.riftlib.message.RiftLibMessage;
 import anightdazingzoroark.riftlib.ray.IRayCreator;
 import anightdazingzoroark.riftlib.ray.RayTicker;
 import anightdazingzoroark.riftlib.ray.RiftLibRay;
+import anightdazingzoroark.riftlib.ray.RiftLibRayHelper;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
@@ -41,33 +42,20 @@ public class RiftLibCreateOrDestroyRay extends RiftLibMessage<RiftLibCreateOrDes
     }
 
     @Override
-    public void executeOnServer(MinecraftServer server, RiftLibCreateOrDestroyRay message, EntityPlayer player, MessageContext messageContext) {}
+    public void executeOnServer(MinecraftServer server, RiftLibCreateOrDestroyRay message, EntityPlayer player, MessageContext messageContext) {
+        Entity entity = server.getEntityWorld().getEntityByID(message.entityId);
+        if (!(entity instanceof IRayCreator<?> rayCreator)) return;
+
+        if (message.create) RiftLibRayHelper.createRayOnSide(rayCreator, message.rayName);
+        else RiftLibRayHelper.killRayOnSide(rayCreator, message.rayName);
+    }
 
     @Override
     public void executeOnClient(Minecraft client, RiftLibCreateOrDestroyRay message, EntityPlayer player, MessageContext messageContext) {
         Entity entity = client.world.getEntityByID(message.entityId);
         if (!(entity instanceof IRayCreator<?> rayCreator)) return;
 
-        if (message.create) {
-            RiftLibRay.Builder rayBuilder = rayCreator.getRays().get(message.rayName);
-            RiftLibRay ray = new RiftLibRay(
-                    rayBuilder.rayCreator,
-                    message.rayName,
-                    rayBuilder.parentLocatorName,
-                    rayBuilder.getMaxLength(),
-                    rayBuilder.getWidth(),
-                    rayBuilder.getCreationTime(),
-                    rayBuilder.getFadeOutTime(),
-                    rayBuilder.getSpreadOnHitBlock()
-            );
-            RayTicker.RAY_PAIR_LIST.add(new ImmutablePair<>(rayCreator, ray));
-        }
-        else {
-            for (ImmutablePair<IRayCreator<?>, RiftLibRay> rayPair : RayTicker.RAY_PAIR_LIST) {
-                if (rayCreator == rayPair.getLeft() && message.rayName.equals(rayPair.getRight().rayName)) {
-                    rayPair.getRight().endRay();
-                }
-            }
-        }
+        if (message.create) RiftLibRayHelper.createRayOnSide(rayCreator, message.rayName);
+        else RiftLibRayHelper.killRayOnSide(rayCreator, message.rayName);
     }
 }

@@ -62,7 +62,7 @@ public class RayTicker {
         }
 
         /**
-         * Show the ray collisions when F3+B is enabled
+         * Show the ray boundaries when F3+B is enabled
          * */
         @SubscribeEvent
         @SideOnly(Side.CLIENT)

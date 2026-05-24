@@ -14,10 +14,14 @@ import anightdazingzoroark.riftlib.ray.RiftLibRayHelper;
 import anightdazingzoroark.riftlib.ray.RiftLibRaySegment;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosList;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.*;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.passive.EntityCow;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
@@ -34,6 +38,7 @@ import java.util.Map;
 
 public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IRayCreator<DragonEntity>, IMultiHitboxUser, IDynamicRideUser {
     private static final DataParameter<Boolean> BREATHING_FIRE = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
+
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
     private final Map<String, RiftLibRay.Builder> rayMap;
     private Entity[] hitboxes = {};
@@ -50,6 +55,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
                         .setShapeSpray(8D, 1D)
                         .setSpreadOnHitBlock()
         );
+        this.isImmuneToFire = true;
     }
 
     @Override
@@ -203,13 +209,36 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     public void applyRaySegments(String rayName, BlockPos originPos, RiftLibRay.RayHitResult rayHitResult) {
         if (rayName.equals("breatheFire")) {
             for (Entity hitEntity : rayHitResult.hitEntities()) {
-                if (hitEntity == this || !(hitEntity instanceof EntityLivingBase)) continue;
+                if (hitEntity instanceof EntityLivingBase) {
+                    hitEntity.setFire(5);
+                    DamageSource dragonFireDamageSrc = DamageSource.causeMobDamage(this);
+                    dragonFireDamageSrc.setFireDamage();
+                    hitEntity.attackEntityFrom(dragonFireDamageSrc, (float) ((int) this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getAttributeValue()));
+                    this.setLastAttackedEntity(hitEntity);
+                }
+            }
 
-                hitEntity.setFire(5);
-                DamageSource dragonFireDamageSrc = DamageSource.causeMobDamage(this);
-                dragonFireDamageSrc.setFireDamage();
-                hitEntity.attackEntityFrom(dragonFireDamageSrc, (float)((int)this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getAttributeValue()));
-                this.setLastAttackedEntity(hitEntity);
+            int fireChecks = 0;
+            int fireBlocksPlaced = 0;
+            for (BlockPos pos : rayHitResult.hitBlockPositions()) {
+                //make sure that only 4 fire blocks are placed every tick
+                //and for the amount of fire checks done to be up to 48 times
+                if (fireChecks >= 48 || fireBlocksPlaced >= 4) break;
+                fireChecks++;
+
+                //1 in 8 chance to burn block
+                if (this.world.rand.nextInt(8) != 0) continue;
+
+                //skip if theres already fire at the pos
+                IBlockState iBlockState = this.world.getBlockState(pos);
+                if (iBlockState.getBlock() == Blocks.FIRE) continue;
+
+                //create fire when blockpos is air and fire can exist there
+                Material blockMaterial = iBlockState.getMaterial();
+                if (blockMaterial == Material.AIR && Blocks.FIRE.canPlaceBlockAt(this.world, pos)) {
+                    this.world.setBlockState(pos, Blocks.FIRE.getDefaultState());
+                    fireBlocksPlaced++;
+                }
             }
         }
     }

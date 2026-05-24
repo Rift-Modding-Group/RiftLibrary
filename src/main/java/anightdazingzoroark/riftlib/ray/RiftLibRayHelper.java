@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.ray;
 
+import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibCreateOrDestroyRay;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -30,6 +31,12 @@ public class RiftLibRayHelper {
      * */
     public static void createRayOnSide(IRayCreator<?> rayCreator, String rayName) {
         RiftLibRay.Builder rayBuilder = rayCreator.getRayBuilders().get(rayName);
+
+        if (rayBuilder.getRayType() == null) {
+            RiftLib.LOGGER.warn("This ray has no ray type, and thus will not form.");
+            return;
+        }
+
         RiftLibRay ray = new RiftLibRay(
                 rayBuilder.rayCreator,
                 rayName,

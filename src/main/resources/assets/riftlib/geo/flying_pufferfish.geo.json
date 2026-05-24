@@ -18,7 +18,8 @@
 						{"origin": [-8, 0, -8], "size": [16, 16, 16], "uv": [0, 0]}
 					],
 					"locators": {
-						"hitbox_body": [0, 8, 0]
+						"hitbox_body": [0, 8, 0],
+						"rayCenter": [0, 8, 0]
 					}
 				},
 				{

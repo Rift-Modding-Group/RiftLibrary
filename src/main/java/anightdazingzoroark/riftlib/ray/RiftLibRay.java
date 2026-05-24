@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.ray;
 
+import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.entity.Entity;
@@ -12,9 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjglx.util.vector.Quaternion;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -44,7 +43,7 @@ public class RiftLibRay {
     //the pos of the locator. is nullable so that upon initialization there
     //will not be a giant puddle below the user
     @Nullable
-    private Vec3d animatedLocatorPos = new Vec3d(0, 0, 0);
+    private Vec3d animatedLocatorPos;
     @NotNull
     private Quaternion animatedLocatorQuat = new Quaternion();
 
@@ -149,10 +148,13 @@ public class RiftLibRay {
         //-----create a new segment, rate is dependent on ray speed-----
         if (!this.isEnded && this.originPos != null) {
             this.raySegmentList.add(new RiftLibRaySegment(
-                    this.rayCreator, this.originPos, this.directionVector,
+                    this.rayCreator, this.originPos, this.directionVector, this.rayType,
                     this.maxRayLength, this.rayWidthRange, this.raySpeed, this.spreadOnHitBlock,
                     this.breakBlockCondition
             ));
+
+            //only one segment in impact type rays, after which, this ray dies
+            if (this.rayType == RayType.IMPACT) this.endRay();
         }
 
         //-----send ray information to the ray creator-----
@@ -215,14 +217,15 @@ public class RiftLibRay {
         return toReturn;
     }
 
-    private List<Entity> getEntitiesInRaySegments() {
+    private Set<Entity> getEntitiesInRaySegments() {
         List<AxisAlignedBB> aabbList = this.getSegmentAABBList();
-        List<Entity> toReturn = new ArrayList<>();
+        Set<Entity> toReturn = new HashSet<>();
         World world = this.rayCreator.getRayCreator().world;
 
         for (AxisAlignedBB aabb : aabbList) {
             List<Entity> entityList = world.getEntitiesWithinAABB(Entity.class, aabb);
             for (Entity entity : entityList) {
+                if (entity.equals(this.rayCreator.getRayCreator())) continue;
                 if (toReturn.contains(entity)) continue;
                 toReturn.add(entity);
             }
@@ -231,9 +234,9 @@ public class RiftLibRay {
         return toReturn;
     }
 
-    private List<BlockPos> getBlockPositionsInRaySegments() {
+    private Set<BlockPos> getBlockPositionsInRaySegments() {
         List<AxisAlignedBB> aabbList = this.getSegmentAABBList();
-        List<BlockPos> toReturn = new ArrayList<>();
+        Set<BlockPos> toReturn = new HashSet<>();
 
         for (AxisAlignedBB aabb : aabbList) {
             int minX = MathHelper.floor(aabb.minX);
@@ -248,7 +251,7 @@ public class RiftLibRay {
                     for (int z = minZ; z <= maxZ; z++) {
                         BlockPos testPos = new BlockPos(x, y, z);
                         if (!aabb.intersects(x, y, z, x + 1D, y + 1D, z + 1D)) continue;
-                        if (!toReturn.contains(testPos)) toReturn.add(testPos);
+                        toReturn.add(testPos);
                     }
                 }
             }
@@ -270,7 +273,11 @@ public class RiftLibRay {
          * A fixed beam is made of AABBs forming a fixed straight line, and will
          * instantly rotate alongside the user's rotations.
          * */
-        BEAM;
+        BEAM,
+        /**
+         * Impact only, does not move, and only creates one impact.
+         */
+        IMPACT;
     }
 
     /**
@@ -282,7 +289,8 @@ public class RiftLibRay {
         @NotNull
         public final String parentLocatorName;
 
-        private RayType rayType = RayType.SPRAY;
+        @Nullable
+        private RayType rayType;
         private double maxLength = 1;
         private double minWidth = 1;
         private double maxWidth = 1;
@@ -291,6 +299,7 @@ public class RiftLibRay {
 
         private boolean spreadOnHitBlock;
 
+        @NotNull
         private Function<BlockPos, Boolean> breakBlockCondition = pos -> false;
 
         public Builder(@NotNull IRayCreator<?> rayCreator, @NotNull String parentLocatorName) {
@@ -299,6 +308,10 @@ public class RiftLibRay {
         }
 
         public Builder setShapeSpray(double maxLength, double width) {
+            if (this.rayType != null) {
+                RiftLib.LOGGER.warn("This ray already has its shape defined as {}. Skipping...", this.rayType);
+                return this;
+            }
             this.rayType = RayType.SPRAY;
             this.maxLength = maxLength;
             this.minWidth = width;
@@ -307,6 +320,14 @@ public class RiftLibRay {
         }
 
         public Builder setShapeSpray(double maxLength, double minWidth, double maxWidth) {
+            if (this.rayType != null) {
+                RiftLib.LOGGER.warn("This ray already has its shape defined as {}. Skipping...", this.rayType);
+                return this;
+            }
+            if (maxWidth < minWidth) {
+                RiftLib.LOGGER.error("Ray max width {} is smaller than min width {}. Skipping...", maxWidth, minWidth);
+                return this;
+            }
             this.rayType = RayType.SPRAY;
             this.maxLength = maxLength;
             this.minWidth = minWidth;
@@ -315,6 +336,14 @@ public class RiftLibRay {
         }
 
         public Builder setShapeBeam(double maxLength, double width) {
+            if (this.rayType != null) {
+                RiftLib.LOGGER.warn("This ray already has its shape defined as {}. Skipping...", this.rayType);
+                return this;
+            }
+            if (maxWidth < minWidth) {
+                RiftLib.LOGGER.error("Ray max width {} is smaller than min width {}. Skipping...", maxWidth, minWidth);
+                return this;
+            }
             this.rayType = RayType.BEAM;
             this.maxLength = maxLength;
             this.minWidth = width;
@@ -323,6 +352,14 @@ public class RiftLibRay {
         }
 
         public Builder setShapeBeam(double maxLength, double minWidth, double maxWidth) {
+            if (this.rayType != null) {
+                RiftLib.LOGGER.warn("This ray already has its shape defined as {}. Skipping...", this.rayType);
+                return this;
+            }
+            if (maxWidth < minWidth) {
+                RiftLib.LOGGER.error("Ray max width {} is smaller than min width {}. Skipping...", maxWidth, minWidth);
+                return this;
+            }
             this.rayType = RayType.BEAM;
             this.maxLength = maxLength;
             this.minWidth = minWidth;
@@ -330,6 +367,22 @@ public class RiftLibRay {
             return this;
         }
 
+        public Builder setShapeImpact(double startWidth, double endWidth) {
+            if (this.rayType != null) {
+                RiftLib.LOGGER.warn("This ray already has its shape defined as {}. Skipping...", this.rayType);
+                return this;
+            }
+            if (endWidth < startWidth) {
+                RiftLib.LOGGER.error("Impact ray end width {} is smaller than start width {}. Skipping...", endWidth, startWidth);
+                return this;
+            }
+            this.rayType = RayType.IMPACT;
+            this.minWidth = startWidth;
+            this.maxWidth = Math.max(startWidth, endWidth);
+            return this;
+        }
+
+        @Nullable
         public RayType getRayType() {
             return this.rayType;
         }
@@ -352,6 +405,10 @@ public class RiftLibRay {
         }
 
         public Builder setSpreadOnHitBlock() {
+            if (this.rayType == RayType.IMPACT) {
+                RiftLib.LOGGER.warn("Impact type rays do not travel, so using setSpreadOnHitBlock() is unnecessary.");
+                return this;
+            }
             this.spreadOnHitBlock = true;
             return this;
         }
@@ -360,11 +417,12 @@ public class RiftLibRay {
             return this.spreadOnHitBlock;
         }
 
-        public Builder setBreakBlockCondition(Function<BlockPos, Boolean> value) {
+        public Builder setBreakBlockCondition(@NotNull Function<BlockPos, Boolean> value) {
             this.breakBlockCondition = value;
             return this;
         }
 
+        @NotNull
         public Function<BlockPos, Boolean> getBreakBlockCondition() {
             return this.breakBlockCondition;
         }
@@ -373,5 +431,5 @@ public class RiftLibRay {
     /**
      * This ray result is to be immutable and to be sent to the server.
      * */
-    public record RayHitResult(List<Entity> hitEntities, List<BlockPos> hitBlockPositions) {}
+    public record RayHitResult(Set<Entity> hitEntities, Set<BlockPos> hitBlockPositions) {}
 }

@@ -36,6 +36,8 @@ public class RiftLibRay {
     private final double raySpeed;
     //if true, the ray will spread upon hitting a block
     private final boolean spreadOnHitBlock;
+    //create only one segment
+    private final boolean onlyOneSegment;
     //define if the ray can break this block
     @NotNull
     private final Function<BlockPos, Boolean> breakBlockCondition;
@@ -65,7 +67,7 @@ public class RiftLibRay {
 
     public RiftLibRay(
             @NotNull IRayCreator<?> rayCreator, @NotNull String rayName, @NotNull String parentLocatorName, @NotNull RayType rayType,
-            double maxRayLength, double @NotNull [] rayWidthRange, double raySpeed, boolean spreadOnHitBlock,
+            double maxRayLength, double @NotNull [] rayWidthRange, double raySpeed, boolean spreadOnHitBlock, boolean onlyOneSegment,
             @NotNull Function<BlockPos, Boolean> breakBlockCondition
     ) {
         this.rayCreator = rayCreator;
@@ -76,6 +78,7 @@ public class RiftLibRay {
         this.rayWidthRange = rayWidthRange;
         this.raySpeed = raySpeed;
         this.spreadOnHitBlock = spreadOnHitBlock;
+        this.onlyOneSegment = onlyOneSegment;
         this.breakBlockCondition = breakBlockCondition;
     }
 
@@ -153,8 +156,7 @@ public class RiftLibRay {
                     this.breakBlockCondition
             ));
 
-            //only one segment in impact type rays, after which, this ray dies
-            if (this.rayType == RayType.IMPACT) this.endRay();
+            if (this.onlyOneSegment) this.endRay();
         }
 
         //-----send ray information to the ray creator-----
@@ -275,7 +277,7 @@ public class RiftLibRay {
          * */
         BEAM,
         /**
-         * Impact only, does not move, and only creates one impact.
+         * Impact only, does not move.
          */
         IMPACT;
     }
@@ -298,6 +300,8 @@ public class RiftLibRay {
         private double raySpeed = 1D;
 
         private boolean spreadOnHitBlock;
+
+        private boolean onlyOneSegment;
 
         @NotNull
         private Function<BlockPos, Boolean> breakBlockCondition = pos -> false;
@@ -425,6 +429,15 @@ public class RiftLibRay {
         @NotNull
         public Function<BlockPos, Boolean> getBreakBlockCondition() {
             return this.breakBlockCondition;
+        }
+
+        public Builder setOnlyOneSegment() {
+            this.onlyOneSegment = true;
+            return this;
+        }
+
+        public boolean getOnlyOneSegment() {
+            return this.onlyOneSegment;
         }
     }
 

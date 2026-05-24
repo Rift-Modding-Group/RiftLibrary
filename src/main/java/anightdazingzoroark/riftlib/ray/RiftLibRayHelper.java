@@ -46,6 +46,7 @@ public class RiftLibRayHelper {
                 rayBuilder.getRayWidthRange(),
                 rayBuilder.getRaySpeed(),
                 rayBuilder.getSpreadOnHitBlock(),
+                rayBuilder.getOnlyOneSegment(),
                 rayBuilder.getBreakBlockCondition()
         );
 

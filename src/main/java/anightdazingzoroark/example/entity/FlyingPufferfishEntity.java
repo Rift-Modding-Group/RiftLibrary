@@ -27,11 +27,9 @@ import java.util.List;
 import java.util.Map;
 
 public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<AnimationDataEntity>, IMultiHitboxUser, IRayCreator<FlyingPufferfishEntity> {
-    private static final DataParameter<Boolean> RESET = EntityDataManager.createKey(FlyingPufferfishEntity.class, DataSerializers.BOOLEAN);
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
     private final Map<String, RiftLibRay.Builder> rayMap;
     private Entity[] hitboxes = {};
-    private int resetTick;
 
     public FlyingPufferfishEntity(World worldIn) {
         super(worldIn);
@@ -46,43 +44,8 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
                             float hardness = blockState.getBlockHardness(this.world, blockPos);
                             return hardness <= 1f && hardness >= 0f;
                         })
+                        .setOnlyOneSegment()
         );
-    }
-
-    @Override
-    protected void entityInit() {
-        super.entityInit();
-        this.dataManager.register(RESET, false);
-    }
-
-    @Override
-    public void onLivingUpdate() {
-        super.onLivingUpdate();
-
-        if (!this.world.isRemote) {
-            if (this.canReset()) {
-                this.resetTick++;
-                if (this.resetTick >= 5) {
-                    this.setReset(false);
-                    this.resetTick = 0;
-                }
-            }
-            else {
-                this.resetTick++;
-                if (this.resetTick >= 40) {
-                    this.setReset(true);
-                    this.resetTick = 0;
-                }
-            }
-        }
-    }
-
-    public boolean canReset() {
-        return this.dataManager.get(RESET);
-    }
-
-    public void setReset(boolean value) {
-        this.dataManager.set(RESET, value);
     }
 
     //hitbox stuff starts here

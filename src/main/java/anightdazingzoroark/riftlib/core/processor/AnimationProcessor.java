@@ -26,6 +26,10 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 	private final List<IBone> modelRendererList = new ArrayList<>();
 
 	public void tickAnimation(IAnimatable<?> entity, double seekTime, MolangParser parser, boolean crashWhenCantFindBone) {
+		this.tickAnimation(entity, seekTime, parser, crashWhenCantFindBone, true);
+	}
+
+	public void tickAnimation(IAnimatable<?> entity, double seekTime, MolangParser parser, boolean crashWhenCantFindBone, boolean runClientEffects) {
 		// Each animation has it's own collection of animations (called the
 		// EntityAnimationManager), which allows for multiple independent animations
 		AbstractAnimationData<?> animationData = entity.getAnimationData();
@@ -95,24 +99,31 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 				}
 			}
 
-            //animation effects
-            for (EventKeyFrame.ParticleEventKeyFrame particleEvent : controller.drainParticleEvents()) {
-                AnimatedLocator locator = animationData.getAnimatedLocator(particleEvent.locator);
-                if (locator != null) {
-                    ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(particleEvent.effect);
-                    if (particleBuilder != null) locator.createParticleEmitter(particleBuilder);
-                }
-            }
+			if (runClientEffects) {
+				//animation effects
+				for (EventKeyFrame.ParticleEventKeyFrame particleEvent : controller.drainParticleEvents()) {
+					AnimatedLocator locator = animationData.getAnimatedLocator(particleEvent.locator);
+					if (locator != null) {
+						ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(particleEvent.effect);
+						if (particleBuilder != null) locator.createParticleEmitter(particleBuilder);
+					}
+				}
 
-            //sound effects
-            for (EventKeyFrame.SoundEventKeyFrame soundEvent : controller.drainSoundEvents()) {
-                AnimatedLocator locator = animationData.getAnimatedLocator(soundEvent.locator);
-                if (locator != null) RiftLibSoundHelper.playSound(entity, locator, soundEvent.effect);
-            }
+				//sound effects
+				for (EventKeyFrame.SoundEventKeyFrame soundEvent : controller.drainSoundEvents()) {
+					AnimatedLocator locator = animationData.getAnimatedLocator(soundEvent.locator);
+					if (locator != null) RiftLibSoundHelper.playSound(entity, locator, soundEvent.effect);
+				}
 
-			//custom instructions
-			for (EventKeyFrame.CustomInstructionKeyFrame customInstructionEvent : controller.drainCustomInstructionEvents()) {
-				MolangUtils.parseValue(parser, animationData, customInstructionEvent.instruction);
+				//custom instructions
+				for (EventKeyFrame.CustomInstructionKeyFrame customInstructionEvent : controller.drainCustomInstructionEvents()) {
+					MolangUtils.parseValue(parser, animationData, customInstructionEvent.instruction);
+				}
+			}
+			else {
+				controller.drainParticleEvents();
+				controller.drainSoundEvents();
+				controller.drainCustomInstructionEvents();
 			}
 		}
 

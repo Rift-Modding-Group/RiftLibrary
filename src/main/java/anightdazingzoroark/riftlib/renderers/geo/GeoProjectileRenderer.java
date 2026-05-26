@@ -1,7 +1,5 @@
 package anightdazingzoroark.riftlib.renderers.geo;
 
-import java.util.Collections;
-
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.projectile.RiftLibProjectile;
@@ -37,7 +35,7 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile<?>> extends Rende
 
 	@Override
 	public void doRender(T entity, double x, double y, double z, float entityYaw, float partialTicks) {
-        GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(entity));
+        GeoModel model = this.modelProvider.getClientModel(this.modelProvider.getModelLocation(entity));
 
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(x, y, z);
@@ -52,7 +50,7 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile<?>> extends Rende
 			);
 		}
 
-        this.modelProvider.setLivingAnimations(entity);
+        this.modelProvider.setClientAnimations(entity);
 		this.modelProvider.createAndUpdateAnimatedLocators(entity);
 
         GlStateManager.pushMatrix();

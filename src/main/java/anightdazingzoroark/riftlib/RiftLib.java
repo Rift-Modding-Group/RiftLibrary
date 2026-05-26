@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import anightdazingzoroark.riftlib.resource.ResourceListener;
+import anightdazingzoroark.riftlib.resource.client.ResourceListener;
 
 public class RiftLib {
 	public static final Logger LOGGER = LogManager.getLogger();

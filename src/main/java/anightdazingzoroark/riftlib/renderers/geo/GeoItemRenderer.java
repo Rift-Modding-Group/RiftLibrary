@@ -1,6 +1,5 @@
 package anightdazingzoroark.riftlib.renderers.geo;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -117,8 +116,8 @@ public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder<?>> exte
 	public void render(ItemStack itemStack, ItemCameraTransforms.TransformType transformType) {
 		T animatable = this.getOrCreateHolder(itemStack, transformType);
 
-		GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(animatable));
-		this.modelProvider.setLivingAnimations(animatable);
+		GeoModel model = this.modelProvider.getClientModel(this.modelProvider.getModelLocation(animatable));
+		this.modelProvider.setClientAnimations(animatable);
 		if (transformType != ItemCameraTransforms.TransformType.GUI) this.modelProvider.createAndUpdateAnimatedLocators(animatable);
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(0, 0.01f, 0);

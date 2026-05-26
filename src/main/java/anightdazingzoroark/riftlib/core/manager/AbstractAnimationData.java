@@ -11,10 +11,10 @@ import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
-import anightdazingzoroark.riftlib.resource.RiftLibCache;
 import anightdazingzoroark.riftlib.util.MolangUtils;
-import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -41,7 +39,7 @@ public abstract class AbstractAnimationData<T> {
     protected final Map<String, Supplier<Double>> molangQueries = new HashMap<>();
     private final List<AnimatedLocator> animatedLocators = new ArrayList<>();
     private int animatedLocatorTicker;
-    private final MolangParser parser = RiftLibCache.getInstance().parser;
+    private final MolangParser parser = new MolangParser();
     public final MolangScope dataScope = new MolangScope();
     private GeoModel currentModel;
     public double tick;
@@ -189,6 +187,10 @@ public abstract class AbstractAnimationData<T> {
         return MolangUtils.getVariable(this.parser, this.dataScope, name);
     }
 
+    public MolangParser getParser() {
+        return this.parser;
+    }
+
     /**
      * This is for updating animation data while its animating
      * */
@@ -212,20 +214,26 @@ public abstract class AbstractAnimationData<T> {
         this.molangQueries.put("query.life_time", () -> this.lifeTime);
         //-----for world-----
         this.molangQueries.put("query.actor_count", () -> {
-            World world = Minecraft.getMinecraft().world;
+            World world = this.getWorld();
             if (world == null) return 0D;
             return (double) world.getLoadedEntityList().size();
         });
         this.molangQueries.put("query.time_of_day", () -> {
-            World world = Minecraft.getMinecraft().world;
+            World world = this.getWorld();
             if (world == null) return 0D;
             return world.getTotalWorldTime() / 24000D;
         });
         this.molangQueries.put("query.moon_phase", () -> {
-            World world = Minecraft.getMinecraft().world;
+            World world = this.getWorld();
             if (world == null) return 0D;
             return (double) world.getMoonPhase();
         });
+    }
+
+    private World getWorld() {
+        if (this.holder instanceof Entity entity) return entity.world;
+        if (this.holder instanceof TileEntity tileEntity) return tileEntity.getWorld();
+        return null;
     }
 
     public Map<String, Supplier<Double>> getMolangQueries() {

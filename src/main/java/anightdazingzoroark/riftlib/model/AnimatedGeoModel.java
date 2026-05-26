@@ -2,16 +2,12 @@ package anightdazingzoroark.riftlib.model;
 
 import java.util.*;
 
-import anightdazingzoroark.riftlib.RiftLibConfig;
+import anightdazingzoroark.riftlib.animation.AnimationFile;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateRayPos;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
-import anightdazingzoroark.riftlib.hitbox.EntityHitbox;
-import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateRiderPos;
-import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateHitboxPos;
-import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateHitboxSize;
 
 import anightdazingzoroark.riftlib.ray.IRayCreator;
 import anightdazingzoroark.riftlib.ray.RayTicker;
@@ -19,7 +15,6 @@ import anightdazingzoroark.riftlib.ray.RiftLibRay;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosList;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosUtils;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
-import anightdazingzoroark.riftlib.util.HitboxUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
@@ -35,14 +30,15 @@ import anightdazingzoroark.riftlib.geo.render.GeoBone;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 import anightdazingzoroark.riftlib.model.provider.IAnimatableModelProvider;
-import anightdazingzoroark.riftlib.resource.RiftLibCache;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
+import anightdazingzoroark.riftlib.resource.client.RiftLibCacheClient;
+import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.lwjglx.util.vector.Quaternion;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoModelProvider<T>
-		implements IAnimatableModel<T>, IAnimatableModelProvider<T> {
+public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoModelProvider<T> implements IAnimatableModel<T>, IAnimatableModelProvider<T> {
 	private final AnimationProcessor animationProcessor;
 	protected GeoModel currentModel;
 
@@ -58,8 +54,10 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		}
 	}
 
+	//-----client only stuff starts here-----
+	@SideOnly(Side.CLIENT)
 	@Override
-	public void setLivingAnimations(T entity) {
+	public void setClientAnimations(T entity) {
 		// Each animation has it's own collection of animations (called the
 		// EntityAnimationManager), which allows for multiple independent animations
 		AbstractAnimationData<?> animData = entity.getAnimationData();
@@ -85,20 +83,74 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		if (!this.animationProcessor.getModelRendererList().isEmpty()) {
 			this.animationProcessor.tickAnimation(
 					entity, this.seekTime,
-					RiftLibCache.getInstance().parser,
+					RiftLibCacheClient.getInstance().parser,
 					this.shouldCrashOnMissing
 			);
 		}
-
-		//update hitboxes
-		this.setDynamicHitboxes(entity, animData);
-
-		//update dynamic hitbox positions
-		this.setDynamicRidePositions(entity, animData);
-
-		//update ray displacements
-		this.setRayDisplacements(entity, animData);
 	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public Animation getClientAnimations(String name, IAnimatable<?> animatable) {
+		Map<ResourceLocation, AnimationFile> animations = RiftLibCacheClient.getInstance().getAnimations();
+		return animations.get(this.getAnimationFileLocation((T) animatable)).getAnimation(name);
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public GeoModel getClientModel(ResourceLocation location) {
+		GeoModel model = super.getClientModel(location);
+		if (model == null) throw new GeoModelException(location, "Could not find model.");
+
+		//change current model
+		if (model != this.currentModel) this.setCurrentModel(model);
+
+		return model;
+	}
+	//-----client only stuff ends here-----
+
+	//-----server only stuff starts here-----
+	public void setServerAnimations(T entity) {
+		AbstractAnimationData<?> animData = entity.getAnimationData();
+
+		//model is set here
+		GeoModel model = this.getServerModel(this.getModelLocation(entity));
+		if (model != this.currentModel) this.setCurrentModel(model);
+
+		//create and update locators on the model
+		this.createAndUpdateAnimatedLocators(entity);
+
+		animData.tick++;
+		animData.tickAnimatedLocators();
+		animData.updateAnimationVariables();
+		animData.updateOnDataTick();
+
+		if (!this.animationProcessor.getModelRendererList().isEmpty()) {
+			this.animationProcessor.tickAnimation(
+					entity, animData.tick,
+					animData.getParser(),
+					this.shouldCrashOnMissing,
+					false
+			);
+		}
+	}
+
+	@Override
+	public Animation getServerAnimations(String name, IAnimatable<?> animatable) {
+		Map<ResourceLocation, AnimationFile> animations = RiftLibCacheServer.getInstance().getAnimations();
+		return animations.get(this.getAnimationFileLocation((T) animatable)).getAnimation(name);
+	}
+
+	@Override
+	public GeoModel getServerModel(ResourceLocation location) {
+		GeoModel model = super.getServerModel(location);
+		if (model == null) throw new GeoModelException(location, "Could not find model.");
+
+		//change current model
+		if (model != this.currentModel) this.setCurrentModel(model);
+		return model;
+	}
+	//-----server only stuff ends here-----
 
 	public void createAndUpdateAnimatedLocators(T entity) {
 		AbstractAnimationData<?> animData = entity.getAnimationData();
@@ -106,81 +158,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		animData.updateAnimatedLocators();
 	}
 
-	private void setDynamicHitboxes(T entity, AbstractAnimationData<?> animData) {
-		if (!(entity instanceof IMultiHitboxUser multiHitboxUser)) return;
-		List<AnimatedLocator> animatedLocators = animData.getAnimatedLocators();
-		for (AnimatedLocator animatedLocator : animatedLocators) {
-			if (!HitboxUtils.locatorCanBeHitbox(animatedLocator.getName())) continue;
-			String hitboxName = HitboxUtils.locatorHitboxToHitbox(animatedLocator.getName());
-
-			//get parent bone
-			GeoBone parentBone = animatedLocator.getParentBone();
-
-			//get hitbox associated with the locator
-			EntityHitbox hitbox = multiHitboxUser.getHitboxByName(hitboxName);
-
-			//skip if there's no hitbox
-			if (hitbox == null) continue;
-
-			//skip when hitbox is set to not be affected by animation
-			if (!hitbox.affectedByAnim) continue;
-
-			//set point in which the packets are to be sent from
-			NetworkRegistry.TargetPoint targetPoint = new NetworkRegistry.TargetPoint(
-					multiHitboxUser.getMultiHitboxUser().dimension,
-					multiHitboxUser.getMultiHitboxUser().posX,
-					multiHitboxUser.getMultiHitboxUser().posY,
-					multiHitboxUser.getMultiHitboxUser().posZ,
-					RiftLibConfig.HITBOX_UPDATE_RANGE
-			);
-
-			//packets for hitbox updates will not be sent if their total change
-			//is too miniscule
-			//get positions
-			Vec3d modelSpacePos = animatedLocator.getModelSpacePosition();
-			float newHitboxX = -(float) modelSpacePos.x / 16f;
-			float newHitboxY = (float) modelSpacePos.y / 16f - (hitbox.fixedHeight / 2f) - (parentBone.getScaleY() - 1) / 3;
-			float newHitboxZ = -(float) modelSpacePos.z / 16f;
-
-			//get magnitude of displacement
-			double dPosTotal = Math.sqrt(Math.pow(newHitboxX - hitbox.getDisplacementVec().x, 2) + Math.pow(newHitboxY - hitbox.getDisplacementVec().y, 2) + Math.pow(newHitboxZ - hitbox.getDisplacementVec().z, 2));
-
-			//update positions
-			if (dPosTotal > RiftLibConfig.HITBOX_DISPLACEMENT_TOLERANCE) {
-				RiftLibUpdateHitboxPos updateHitboxPos = new RiftLibUpdateHitboxPos(
-						(Entity) entity,
-						hitboxName,
-						newHitboxX,
-						newHitboxY,
-						newHitboxZ
-				);
-
-				ServerProxy.HITBOX_MESSAGE_WRAPPER.sendToAllTracking(updateHitboxPos, targetPoint);
-				ServerProxy.HITBOX_MESSAGE_WRAPPER.sendToServer(updateHitboxPos);
-			}
-
-			//get sizes
-			float newHitboxWidthScale = Math.max(parentBone.getScaleX(), parentBone.getScaleZ());
-			float newHitboxHeightScale = parentBone.getScaleY();
-
-			//get magnitude of resizing
-			double dSizeTotal = Math.sqrt(Math.pow(newHitboxWidthScale - hitbox.getWidthScaleDisplacement(), 2) + Math.pow(newHitboxHeightScale - hitbox.getHeightScaleDisplacement(), 2));
-
-			//update sizes
-			if (dSizeTotal > RiftLibConfig.HITBOX_RESIZING_TOLERANCE) {
-				RiftLibUpdateHitboxSize updateHitboxSize = new RiftLibUpdateHitboxSize(
-						(Entity) entity,
-						hitboxName,
-						Math.max(parentBone.getScaleX(), parentBone.getScaleZ()),
-						parentBone.getScaleY()
-				);
-
-				ServerProxy.HITBOX_MESSAGE_WRAPPER.sendToAllTracking(updateHitboxSize, targetPoint);
-				ServerProxy.HITBOX_MESSAGE_WRAPPER.sendToServer(updateHitboxSize);
-			}
-		}
-	}
-
+	@Deprecated
 	private void setDynamicRidePositions(T entity, AbstractAnimationData<?> animData) {
 		if (!(entity instanceof IDynamicRideUser)) return;
 
@@ -203,6 +181,25 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		));
 	}
 
+	@Deprecated
+	private void setServerDynamicRidePositions(T entity, AbstractAnimationData<?> animData) {
+		if (!(entity instanceof Entity entityObject)) return;
+		if (!(entity instanceof IDynamicRideUser dynamicRideUser)) return;
+
+		DynamicRidePosList definitionList = new DynamicRidePosList();
+
+		for (AnimatedLocator locator : animData.getAnimatedLocators()) {
+			if (!DynamicRidePosUtils.locatorCanBeRidePos(locator.getName())) continue;
+			definitionList.addPosition(locator);
+		}
+
+		if (definitionList.isEmpty()) return;
+
+		dynamicRideUser.setRidePosition(definitionList);
+		ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibUpdateRiderPos(entityObject, definitionList));
+	}
+
+	@Deprecated
 	private void setRayDisplacements(T entity, AbstractAnimationData<?> animData) {
 		if (!(entity instanceof IRayCreator<?> rayCreator)) return;
 
@@ -223,41 +220,38 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		}
 	}
 
+	@Deprecated
+	private void setServerRayDisplacements(T entity, AbstractAnimationData<?> animData) {
+		if (!(entity instanceof IRayCreator<?> rayCreator)) return;
+
+		for (AnimatedLocator locator : animData.getAnimatedLocators()) {
+			for (ImmutablePair<IRayCreator<?>, RiftLibRay> rayPair : RayTicker.Server.RAY_PAIR_LIST) {
+				if (rayCreator != rayPair.getLeft() || !locator.getName().equals(rayPair.getRight().parentLocatorName)) continue;
+
+				rayPair.getRight().displaceByAnim(locator.getModelSpacePosition());
+				rayPair.getRight().displaceQuatByAnim(locator.getModelSpaceYXZQuaternion());
+			}
+		}
+	}
+
 	@Override
 	public AnimationProcessor getAnimationProcessor() {
 		return this.animationProcessor;
 	}
 
-	public void registerModelRenderer(IBone modelRenderer) {
+	private void registerModelRenderer(IBone modelRenderer) {
         this.animationProcessor.registerModelRenderer(modelRenderer);
 	}
 
-	@Override
-	public Animation getAnimation(String name, IAnimatable<?> animatable) {
-		return RiftLibCache.getInstance().getAnimations()
-                .get(this.getAnimationFileLocation((T) animatable))
-				.getAnimation(name);
+	private void setCurrentModel(GeoModel model) {
+		this.animationProcessor.clearModelRendererList();
+		for (GeoBone bone : model.topLevelBones) {
+			this.registerBone(bone);
+		}
+		this.currentModel = model;
 	}
 
-	//this is where the model is attached to the entity
-    @Override
-	public GeoModel getModel(ResourceLocation location) {
-		GeoModel model = super.getModel(location);
-		if (model == null) {
-			throw new GeoModelException(location, "Could not find model.");
-		}
-		if (model != this.currentModel) {
-            //change current model
-			this.animationProcessor.clearModelRendererList();
-			for (GeoBone bone : model.topLevelBones) {
-                this.registerBone(bone);
-			}
-			this.currentModel = model;
-		}
-		return model;
-	}
-
-	@Override
+	@Override //no use, might delete?
 	public double getCurrentTick() {
 		return (Minecraft.getSystemTime() / 50d);
 	}

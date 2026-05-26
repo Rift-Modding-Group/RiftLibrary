@@ -1,15 +1,25 @@
 package anightdazingzoroark.riftlib.proxy;
 
 import anightdazingzoroark.example.CommonListener;
+import anightdazingzoroark.example.client.model.entity.DragonModel;
+import anightdazingzoroark.example.client.model.entity.FlyingPufferfishModel;
+import anightdazingzoroark.example.entity.DragonEntity;
+import anightdazingzoroark.example.entity.FlyingPufferfishEntity;
+import anightdazingzoroark.example.entity.hitboxLinker.DragonHitboxLinker;
+import anightdazingzoroark.example.entity.hitboxLinker.FlyingPufferfishHitboxLinker;
 import anightdazingzoroark.riftlib.RiftLib;
+import anightdazingzoroark.riftlib.RiftLibLinkerRegistry;
 import anightdazingzoroark.riftlib.RiftLibMod;
 import anightdazingzoroark.riftlib.hitbox.HitboxTicker;
 import anightdazingzoroark.riftlib.internalMessage.*;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
 import anightdazingzoroark.riftlib.message.RiftLibMessageSide;
 import anightdazingzoroark.riftlib.message.RiftLibMessageWrapper;
+import anightdazingzoroark.riftlib.model.ServerModelRegistry;
+import anightdazingzoroark.riftlib.model.ServerModelTicker;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleComponentRegistry;
 import anightdazingzoroark.riftlib.ray.RayTicker;
+import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -34,8 +44,7 @@ public class ServerProxy {
         MESSAGE_WRAPPER.registerMessage(RiftLibPlaySoundForPlayer.class, RiftLibMessageSide.CLIENT);
 
         HITBOX_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_hitbox");
-        HITBOX_MESSAGE_WRAPPER.registerMessage(RiftLibUpdateHitboxPos.class, RiftLibMessageSide.BOTH);
-        HITBOX_MESSAGE_WRAPPER.registerMessage(RiftLibUpdateHitboxSize.class, RiftLibMessageSide.BOTH);
+        HITBOX_MESSAGE_WRAPPER.registerMessage(RiftLibSyncHitboxEntityId.class, RiftLibMessageSide.CLIENT);
 
         INSTRUCTION_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_instruction");
         INSTRUCTION_MESSAGE_WRAPPER.registerMessage(RiftLibRunAnimationMessageEffect.class, RiftLibMessageSide.BOTH);
@@ -46,14 +55,21 @@ public class ServerProxy {
 
         MinecraftForge.EVENT_BUS.register(new HitboxTicker.Server());
         MinecraftForge.EVENT_BUS.register(new RayTicker.Server());
+        MinecraftForge.EVENT_BUS.register(new ServerModelTicker());
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {
             MinecraftForge.EVENT_BUS.register(new CommonListener());
+            RiftLibLinkerRegistry.registerEntityHitboxLinker(DragonEntity.class, new DragonHitboxLinker());
+            RiftLibLinkerRegistry.registerEntityHitboxLinker(FlyingPufferfishEntity.class, new FlyingPufferfishHitboxLinker());
+            ServerModelRegistry.registerServerModel(DragonEntity.class, DragonModel::new);
+            ServerModelRegistry.registerServerModel(FlyingPufferfishEntity.class, FlyingPufferfishModel::new);
         }
     }
 
-    public void init(FMLInitializationEvent event) {}
+    public void init(FMLInitializationEvent event) {
+        RiftLibCacheServer.getInstance().load();
+    }
 
     public <T extends RiftLibMessage<T>> void handleMessage(final T message, final MessageContext messageContext) {
         WorldServer world = (WorldServer) messageContext.getServerHandler().player.world;

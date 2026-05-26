@@ -1,6 +1,5 @@
 package anightdazingzoroark.riftlib.renderers.geo;
 
-import java.util.Collections;
 import java.util.List;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
@@ -53,7 +52,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 	@Override
 	public void doRender(T entity, double x, double y, double z, float entityYaw, float partialTicks) {
         //get model
-        GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(entity));
+        GeoModel model = this.modelProvider.getClientModel(this.modelProvider.getModelLocation(entity));
 
 		//rest is good ol rendering code
 		GlStateManager.pushMatrix();
@@ -66,7 +65,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		float finalYaw = entity.isBeingRidden() ? riddenYaw : trueYaw;
 		this.applyRotations(entity, finalYaw, partialTicks);
 
-        this.modelProvider.setLivingAnimations(entity);
+        this.modelProvider.setClientAnimations(entity);
 		this.modelProvider.createAndUpdateAnimatedLocators(entity);
 
         GlStateManager.pushMatrix();

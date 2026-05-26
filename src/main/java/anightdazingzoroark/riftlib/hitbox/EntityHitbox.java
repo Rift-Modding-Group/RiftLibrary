@@ -1,5 +1,9 @@
 package anightdazingzoroark.riftlib.hitbox;
 
+import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
+import anightdazingzoroark.riftlib.util.HitboxUtils;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.entity.EntityLiving;
@@ -15,25 +19,21 @@ import org.lwjglx.util.vector.Quaternion;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EntityHitbox extends MultiPartEntityPart {
+public class EntityHitbox<T extends IMultiHitboxUser<?>> extends MultiPartEntityPart {
     private final float damageMultiplier;
     //these are the final definitive scales of the hitbox and will be used for such
     public final float fixedWidth;
     public final float fixedHeight;
-    //these are the anim dependent scales
-    private float widthScaleDisplacement = 1f;
-    private float heightScaleDisplacement = 1f;
-    //these are anim dependent displacements due to animations
-    private float xDisplacement;
-    private float yDisplacement;
-    private float zDisplacement;
+    //the animated locator this hitbox is to be pegged to
+    private final AnimatedLocator hitboxLocator;
     //others
     public final boolean affectedByAnim;
     private boolean isDisabled;
     public final List<EntityHitboxDamageDefinition> damageDefinitions = new ArrayList<>();
 
-    public EntityHitbox(IMultiHitboxUser parent, String partName, float damageMultiplier, float width, float height, boolean affectedByAnim) {
-        super(parent, partName, width, height);
+    public EntityHitbox(T parent, AnimatedLocator hitboxLocator, float damageMultiplier, float width, float height, boolean affectedByAnim) {
+        super(parent, HitboxUtils.locatorHitboxToHitbox(hitboxLocator.getName()), width, height);
+        this.hitboxLocator = hitboxLocator;
         this.damageMultiplier = damageMultiplier;
         this.fixedWidth = width;
         this.fixedHeight = height;
@@ -41,21 +41,52 @@ public class EntityHitbox extends MultiPartEntityPart {
         this.onAddedToWorld();
     }
 
+    /**
+     * In order to forcibly sync the entityIds from server to client, this has to be done.
+     * I fucking hate how hitboxes are dealt with in this version anyway.
+     * */
+    public void syncEntityIdFromServer(int entityId) {
+        if (this.getEntityId() == entityId) return;
+
+        if (this.world.getEntityByID(this.getEntityId()) == this) {
+            this.world.entitiesById.removeObject(this.getEntityId());
+        }
+
+        EntityHitbox<?> entityAlreadyUsingID = this.world.getEntityByID(entityId) instanceof EntityHitbox<?> entityHitbox ? entityHitbox : null;
+        if (entityAlreadyUsingID != null && entityAlreadyUsingID.getParent() == this.getParent()) {
+            this.world.entitiesById.removeObject(entityId);
+        }
+
+        this.setEntityId(entityId);
+        this.world.entitiesById.addKey(entityId, this);
+    }
+
     @Override
     public void onUpdate() {
-        IMultiHitboxUser parent = (IMultiHitboxUser) this.parent;
-        EntityLivingBase parentEntityLiving = this.getParentAsEntityLiving();
+        EntityLivingBase parentEntityLiving = this.getParent().getMultiHitboxUser();
 
-        //set scale
-        float finalWidth = this.fixedWidth * parent.multiHitboxUserScale() * this.widthScaleDisplacement;
-        float finalHeight = this.fixedHeight * parent.multiHitboxUserScale() * this.heightScaleDisplacement;
+        //-----set scale-----
+        float locatorWidthDelta = Math.max(
+                this.hitboxLocator.getParentBone().getScaleX(),
+                this.hitboxLocator.getParentBone().getScaleZ()
+        );
+        float locatorHeightDelta = this.hitboxLocator.getParentBone().getScaleY();
+        float finalWidth = this.fixedWidth * this.getParent().multiHitboxUserScale() * locatorWidthDelta;
+        float finalHeight = this.fixedHeight * this.getParent().multiHitboxUserScale() * locatorHeightDelta;
         this.setSize(finalWidth, finalHeight);
+
+        //-----set position-----
+        //correct the model space positions first
+        Vec3d modelSpacePos = this.hitboxLocator.getModelSpacePosition();
+        float newHitboxX = -(float) modelSpacePos.x / 16f;
+        float newHitboxY = (float) modelSpacePos.y / 16f - (this.fixedHeight / 2f) - (this.hitboxLocator.getParentBone().getScaleY() - 1) / 3;
+        float newHitboxZ = -(float) modelSpacePos.z / 16f;
 
         //set initial entity offset from center
         Vec3d posVec = new Vec3d(
-                this.xDisplacement * parent.multiHitboxUserScale(),
-                this.yDisplacement * parent.multiHitboxUserScale(),
-                this.zDisplacement * parent.multiHitboxUserScale()
+                newHitboxX * this.getParent().multiHitboxUserScale(),
+                newHitboxY * this.getParent().multiHitboxUserScale(),
+                newHitboxZ * this.getParent().multiHitboxUserScale()
         );
 
         //determine yaw
@@ -74,7 +105,7 @@ public class EntityHitbox extends MultiPartEntityPart {
                 this.getParentAsEntityLiving().posZ + posVec.z
         );
 
-        //remove if entity is dead or no longer exists
+        //-----remove if entity is dead or no longer exists-----
         if (this.getParentAsEntityLiving() == null || !this.getParentAsEntityLiving().isEntityAlive()) {
             this.world.removeEntityDangerously(this);
         }
@@ -107,32 +138,15 @@ public class EntityHitbox extends MultiPartEntityPart {
         return false;
     }
 
-    public void resizeByAnim(float widthScaleDisplacement, float heightScaleDisplacement) {
-        this.widthScaleDisplacement = widthScaleDisplacement;
-        this.heightScaleDisplacement = heightScaleDisplacement;
-    }
 
-    public void displaceByAnim(float xDisplacement, float yDisplacement, float zDisplacement) {
-        this.xDisplacement = xDisplacement;
-        this.yDisplacement = yDisplacement;
-        this.zDisplacement = zDisplacement;
-    }
-
-    public float getWidthScaleDisplacement() {
-        return this.widthScaleDisplacement;
-    }
-
-    public float getHeightScaleDisplacement() {
-        return this.heightScaleDisplacement;
-    }
-
+    @Deprecated
     public Vec3d getDisplacementVec() {
-        return new Vec3d(this.xDisplacement, this.yDisplacement, this.zDisplacement);
+        return new Vec3d(0, 0, 0);
     }
 
     //recommended instead of using the parent variable
-    public IMultiHitboxUser getParent() {
-        return (IMultiHitboxUser) this.parent;
+    public T getParent() {
+        return (T) this.parent;
     }
 
     public EntityLiving getParentAsEntityLiving() {

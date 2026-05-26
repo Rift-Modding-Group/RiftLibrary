@@ -3,37 +3,60 @@ package anightdazingzoroark.riftlib.hitbox;
 import anightdazingzoroark.riftlib.RiftLibLinkerRegistry;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
+import anightdazingzoroark.riftlib.util.HitboxUtils;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityMultiPart;
 import net.minecraft.entity.MultiPartEntityPart;
 import net.minecraft.util.DamageSource;
 
-public interface IMultiHitboxUser extends IEntityMultiPart {
+import java.util.ArrayList;
+import java.util.List;
+
+public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<AnimationDataEntity>> extends IEntityMultiPart {
     //get the parent
     //must always return the entity its being implemented in
     //so its return statement in the entity implementing this should be "return this;"
-    Entity getMultiHitboxUser();
+    T getMultiHitboxUser();
 
     default float multiHitboxUserScale() {
         return 1f;
     }
 
-    //this must be placed in the constructor of the entity
-    //and must be the entity itself being entered
-    default <T extends Entity & IAnimatable<AnimationDataEntity> & IMultiHitboxUser> void initializeHitboxes(T entity) {
+    default void setHitboxes() {
+        T entity = this.getMultiHitboxUser();
+        if (entity == null) return;
+
+        //set linker
         EntityHitboxLinker hitboxLinker = RiftLibLinkerRegistry.INSTANCE.hitboxLinkerMap.get(entity.getClass());
         if (hitboxLinker == null) return;
 
-        for (HitboxDefinitionList.HitboxDefinition hitboxDefinition : hitboxLinker.getHitboxDefinitionList(entity).list) {
+        //search definition list
+        HitboxDefinitionList definitionList = entity.world.isRemote ? hitboxLinker.getClientHitboxDefinitionList(entity) : hitboxLinker.getServerHitboxDefinitionList(entity);
+        if (definitionList == null || definitionList == this.getHitboxDefinitionList()) return;
+
+        AnimationDataEntity animData = entity.getAnimationData();
+        if (animData.getAnimatedLocators().isEmpty()) return;
+
+        List<EntityHitbox<?>> hitboxesToAdd = new ArrayList<>();
+        for (HitboxDefinitionList.HitboxDefinition hitboxDefinition : definitionList.list) {
+            //find the locator to peg to first
+            String locatorName = "hitbox_"+hitboxDefinition.locator();
+
+            AnimatedLocator locatorToSet = animData.getAnimatedLocator(locatorName);
+            if (locatorToSet == null || !HitboxUtils.locatorCanBeHitbox(locatorToSet)) return;
+
             //create the hitbox
-            EntityHitbox hitbox = new EntityHitbox(
-                    entity,
-                    hitboxDefinition.locator(),
+            EntityHitbox<?> hitbox = new EntityHitbox<>(
+                    this,
+                    locatorToSet,
                     hitboxDefinition.damageMultiplier(),
                     hitboxDefinition.width(),
                     hitboxDefinition.height(),
                     hitboxDefinition.affectedByAnim()
             );
+
             //add the damage definitions
             for (HitboxDefinitionList.HitboxDamageDefinition damageDefinition : hitboxDefinition.damageDefinitionList()) {
                 hitbox.damageDefinitions.add(new EntityHitbox.EntityHitboxDamageDefinition(
@@ -43,12 +66,26 @@ public interface IMultiHitboxUser extends IEntityMultiPart {
                 ));
             }
 
-            this.addPart(hitbox);
+            hitboxesToAdd.add(hitbox);
         }
+
+        for (EntityHitbox<?> hitbox : hitboxesToAdd) this.addPart(hitbox);
+        this.setHitboxDefinitionList(definitionList);
     }
 
+    /**
+     * This is only here because while entities do have a getter for hitboxes, they dont have
+     * a setter for them too. Strangest part of all is how for some reason is that it isnt
+     * an array for hitboxes strictly its just an array for any entity lol.
+     * */
     void setParts(Entity[] hitboxes);
 
+    //-----required to ensure no duplicate definition lists are given when settig hitboxes-----
+    HitboxDefinitionList getHitboxDefinitionList();
+
+    void setHitboxDefinitionList(HitboxDefinitionList hitboxDefinitionList);
+
+    //-----helper functions for hitboxes from here on out-----
     default void addPart(EntityHitbox hitbox) {
         if (this.getMultiHitboxUser() == null) return;
         if (this.getMultiHitboxUser().getParts() == null) return;
@@ -58,6 +95,7 @@ public interface IMultiHitboxUser extends IEntityMultiPart {
             else newHitboxArray[x] = hitbox;
         }
         this.setParts(newHitboxArray);
+        this.getMultiHitboxUser().world.entitiesById.addKey(hitbox.getEntityId(), hitbox);
     }
 
     default EntityHitbox getHitboxByName(String name) {
@@ -83,26 +121,6 @@ public interface IMultiHitboxUser extends IEntityMultiPart {
             if (damage > 0f) return this.getMultiHitboxUser().attackEntityFrom(source, damage);
         }
         return false;
-    }
-
-    default void displaceHitboxByAnim(String hitboxName, float x, float y, float z) {
-        for (int i = 0; i < this.getMultiHitboxUser().getParts().length; i++) {
-            if (!(this.getMultiHitboxUser().getParts()[i] instanceof EntityHitbox hitbox)) continue;
-
-            if (hitbox.partName.equals(hitboxName)) {
-                hitbox.displaceByAnim(x, y, z);
-            }
-        }
-    }
-
-    default void resizeHitboxByAnim(String hitboxName, float width, float height) {
-        for (int i = 0; i < this.getMultiHitboxUser().getParts().length; i++) {
-            if (!(this.getMultiHitboxUser().getParts()[i] instanceof EntityHitbox hitbox)) continue;
-
-            if (hitbox.partName.equals(hitboxName)) {
-                hitbox.resizeByAnim(width, height);
-            }
-        }
     }
 
     //this makes it so that when HWYLA is installed

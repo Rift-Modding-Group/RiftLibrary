@@ -2,13 +2,13 @@ package anightdazingzoroark.riftlib.particle;
 
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibCreateParticle;
-import anightdazingzoroark.riftlib.resource.RiftLibCache;
+import anightdazingzoroark.riftlib.resource.client.RiftLibCacheClient;
 
 import java.util.Collection;
 
 public class RiftLibParticleHelper {
     public static boolean isRiftLibParticle(String name) {
-        Collection<ParticleBuilder> particleBuilders = RiftLibCache.getInstance().getParticleBuilders().values();
+        Collection<ParticleBuilder> particleBuilders = RiftLibCacheClient.getInstance().getParticleBuilders().values();
         for (ParticleBuilder particleBuilder : particleBuilders) {
             if (particleBuilder.identifier != null && particleBuilder.identifier.equals(name)) return true;
         }
@@ -24,7 +24,7 @@ public class RiftLibParticleHelper {
     }
 
     public static ParticleBuilder getParticleBuilder(String name) {
-        Collection<ParticleBuilder> particleBuilders = RiftLibCache.getInstance().getParticleBuilders().values();
+        Collection<ParticleBuilder> particleBuilders = RiftLibCacheClient.getInstance().getParticleBuilders().values();
 
         for (ParticleBuilder particleBuilder : particleBuilders) {
             if (particleBuilder.identifier != null && particleBuilder.identifier.equals(name)) return particleBuilder;

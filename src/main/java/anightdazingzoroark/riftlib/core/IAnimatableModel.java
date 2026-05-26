@@ -10,11 +10,13 @@ public interface IAnimatableModel<E> {
 		return (System.nanoTime() / 1000000L / 50.0);
 	}
 
-	void setLivingAnimations(E entity);
+	void setClientAnimations(E entity);
 
 	AnimationProcessor getAnimationProcessor();
 
-	Animation getAnimation(String name, IAnimatable<?> animatable);
+	Animation getClientAnimations(String name, IAnimatable<?> animatable);
+
+	Animation getServerAnimations(String name, IAnimatable<?> animatable);
 
 	/**
 	 * Gets a bone by name.

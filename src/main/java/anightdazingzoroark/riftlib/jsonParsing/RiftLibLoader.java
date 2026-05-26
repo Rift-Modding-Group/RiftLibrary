@@ -17,7 +17,6 @@ import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.jsonParsing.constructor.GeoConstructor;
@@ -37,11 +36,11 @@ public class RiftLibLoader {
             .registerTypeAdapter(RawModelLocatorList.class, new RawModelLocatorList.Deserialize())
             .create();
 
-	public GeoModel loadGeoModel(IResourceManager resourceManager, ResourceLocation location) {
+	public GeoModel loadGeoModel(RiftLibResourceReader resourceReader, ResourceLocation location) {
 		try {
 			// Deserialize from json into basic json objects, bones are still stored as a
 			// flat list
-			RawGeoModel rawModel = this.gson.fromJson(getResourceAsString(location, resourceManager), RawGeoModel.class);;
+			RawGeoModel rawModel = this.gson.fromJson(getResourceAsString(location, resourceReader), RawGeoModel.class);;
 
             if (FormatVersion.forValue(rawModel.format_version) != FormatVersion.VERSION_1_12_0) {
 				throw new GeoModelException(location, "Wrong geometry json version, expected 1.12.0");
@@ -60,11 +59,11 @@ public class RiftLibLoader {
 		}
 	}
 
-    public AnimationFile loadAnimationFile(MolangParser parser, IResourceManager manager, ResourceLocation location) {
+    public AnimationFile loadAnimationFile(RiftLibResourceReader resourceReader, ResourceLocation location) {
         try {
             AnimationFile animationFile = new AnimationFile();
 
-            RawAnimationFile rawAnimationFile = this.gson.fromJson(getResourceAsString(location, manager), RawAnimationFile.class);
+            RawAnimationFile rawAnimationFile = this.gson.fromJson(getResourceAsString(location, resourceReader), RawAnimationFile.class);
             Map<String, RawAnimationFile.RawAnimation> rawAnimationMap = rawAnimationFile.rawAnimations;
             for (Map.Entry<String, RawAnimationFile.RawAnimation> rawAnimation : rawAnimationMap.entrySet()) {
                 Animation animation = AnimationConstructor.getAnimationFromRawAnimationEntry(rawAnimation);
@@ -79,9 +78,9 @@ public class RiftLibLoader {
         }
     }
 
-    public HitboxDefinitionList loadHitboxDefinitionList(IResourceManager resourceManager, ResourceLocation location) {
+    public HitboxDefinitionList loadHitboxDefinitionList(RiftLibResourceReader resourceReader, ResourceLocation location) {
         try {
-            RawHitboxDefinition rawHitboxDefinition = this.gson.fromJson(getResourceAsString(location, resourceManager), RawHitboxDefinition.class);
+            RawHitboxDefinition rawHitboxDefinition = this.gson.fromJson(getResourceAsString(location, resourceReader), RawHitboxDefinition.class);
             return HitboxConstructor.createHitboxDefinitionList(rawHitboxDefinition);
         }
         catch (Exception e) {
@@ -90,9 +89,9 @@ public class RiftLibLoader {
         }
     }
 
-    public ParticleBuilder loadParticle(MolangParser parser, IResourceManager resourceManager, ResourceLocation location) {
+    public ParticleBuilder loadParticle(MolangParser parser, RiftLibResourceReader resourceReader, ResourceLocation location) {
         try {
-            RawParticle rawParticle = this.gson.fromJson(getResourceAsString(location, resourceManager), RawParticle.class);
+            RawParticle rawParticle = this.gson.fromJson(getResourceAsString(location, resourceReader), RawParticle.class);
             return ParticleConstructor.createParticleBuilder(location.getNamespace(), rawParticle, parser);
         }
         catch (Exception e) {
@@ -101,8 +100,8 @@ public class RiftLibLoader {
         }
     }
 
-    private String getResourceAsString(ResourceLocation location, IResourceManager manager) {
-        try (InputStream inputStream = manager.getResource(location).getInputStream()) {
+    private String getResourceAsString(ResourceLocation location, RiftLibResourceReader resourceReader) {
+        try (InputStream inputStream = resourceReader.open(location)) {
             return IOUtils.toString(inputStream, Charset.defaultCharset());
         }
         catch (Exception e) {

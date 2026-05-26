@@ -19,11 +19,8 @@ import anightdazingzoroark.riftlib.core.processor.IBone;
 import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
 import anightdazingzoroark.riftlib.core.util.Axis;
 import anightdazingzoroark.riftlib.core.util.MathUtil;
-import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
-import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.util.MolangUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
@@ -42,7 +39,6 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -559,7 +555,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
 
             AtomicBoolean encounteredError = new AtomicBoolean(false);
             LinkedList<Animation> animations = builder.getRawAnimationList().stream().map((rawAnimation) -> {
-                Animation animation = model.getAnimation(rawAnimation.animationName, animatable);
+                Animation animation = model.getClientAnimations(rawAnimation.animationName, animatable);
                 if (animation == null) {
                     System.out.printf("Could not load animation: %s. Is it missing?", rawAnimation.animationName);
                     encounteredError.set(true);
@@ -596,7 +592,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             if (this.currentAnimation != null) {
                 IAnimatableModel<A> model = getModel(animatable);
                 if (model != null) {
-                    Animation animation = model.getAnimation(this.currentAnimation.animationName, animatable);
+                    Animation animation = model.getClientAnimations(this.currentAnimation.animationName, animatable);
                     if (animation != null) {
                         LoopType loop = this.currentAnimation.loop;
                         this.currentAnimation = animation;

@@ -7,6 +7,7 @@ import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.ray.IRayCreator;
 import anightdazingzoroark.riftlib.ray.RiftLibRay;
@@ -36,17 +37,17 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
-public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IRayCreator<DragonEntity>, IMultiHitboxUser, IDynamicRideUser {
+public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IRayCreator<DragonEntity>, IMultiHitboxUser<DragonEntity>, IDynamicRideUser {
     private static final DataParameter<Boolean> BREATHING_FIRE = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
     private final Map<String, RiftLibRay.Builder> rayMap;
+    private HitboxDefinitionList hitboxDefinitionList;
     private Entity[] hitboxes = {};
     private DynamicRidePosList ridePositions;
 
     public DragonEntity(World worldIn) {
         super(worldIn);
         this.setSize(4f, 4f);
-        this.initializeHitboxes(this);
         this.enablePersistence();
         this.rayMap = Map.of(
                 "breatheFire", new RiftLibRay.Builder(this, "fireLocator")
@@ -93,7 +94,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
 
     //hitbox stuff starts here
     @Override
-    public Entity getMultiHitboxUser() {
+    public DragonEntity getMultiHitboxUser() {
         return this;
     }
 
@@ -110,6 +111,16 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     @Override
     public void setParts(Entity[] hitboxes) {
         this.hitboxes = hitboxes;
+    }
+
+    @Override
+    public HitboxDefinitionList getHitboxDefinitionList() {
+        return this.hitboxDefinitionList;
+    }
+
+    @Override
+    public void setHitboxDefinitionList(HitboxDefinitionList hitboxDefinitionList) {
+        this.hitboxDefinitionList = hitboxDefinitionList;
     }
 
     @Override

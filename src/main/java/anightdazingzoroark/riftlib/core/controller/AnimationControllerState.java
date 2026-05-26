@@ -1,11 +1,7 @@
 package anightdazingzoroark.riftlib.core.controller;
 
 import anightdazingzoroark.riftlib.core.AnimatableValue;
-import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
-import anightdazingzoroark.riftlib.resource.RiftLibCache;
-import anightdazingzoroark.riftlib.util.MolangUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

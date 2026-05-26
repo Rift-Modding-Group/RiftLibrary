@@ -5,6 +5,7 @@ import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.ray.IRayCreator;
 import anightdazingzoroark.riftlib.ray.RiftLibRay;
@@ -26,15 +27,15 @@ import net.minecraftforge.fml.relauncher.Side;
 import java.util.List;
 import java.util.Map;
 
-public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<AnimationDataEntity>, IMultiHitboxUser, IRayCreator<FlyingPufferfishEntity> {
+public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<AnimationDataEntity>, IMultiHitboxUser<FlyingPufferfishEntity>, IRayCreator<FlyingPufferfishEntity> {
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
     private final Map<String, RiftLibRay.Builder> rayMap;
+    private HitboxDefinitionList hitboxDefinitionList;
     private Entity[] hitboxes = {};
 
     public FlyingPufferfishEntity(World worldIn) {
         super(worldIn);
         this.setSize(1f, 1f);
-        this.initializeHitboxes(this);
         this.rayMap = Map.of(
                 "puffUp", new RiftLibRay.Builder(this, "rayCenter")
                         .setShapeImpact(0, 8)
@@ -50,7 +51,7 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
 
     //hitbox stuff starts here
     @Override
-    public Entity getMultiHitboxUser() {
+    public FlyingPufferfishEntity getMultiHitboxUser() {
         return this;
     }
 
@@ -67,6 +68,16 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
     @Override
     public void setParts(Entity[] hitboxes) {
         this.hitboxes = hitboxes;
+    }
+
+    @Override
+    public HitboxDefinitionList getHitboxDefinitionList() {
+        return this.hitboxDefinitionList;
+    }
+
+    @Override
+    public void setHitboxDefinitionList(HitboxDefinitionList hitboxDefinitionList) {
+        this.hitboxDefinitionList = hitboxDefinitionList;
     }
 
     @Override

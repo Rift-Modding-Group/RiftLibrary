@@ -117,6 +117,7 @@ public class RiftLibMod {
 	@Mod.EventHandler
 	public void init(FMLInitializationEvent event) {
         if (DEOBF_ENVIRONMENT && !DISABLE_IN_DEV) RiftLib.initialize();
+        PROXY.init(event);
     }
 
 

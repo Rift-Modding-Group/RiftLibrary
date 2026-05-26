@@ -1,6 +1,5 @@
 package anightdazingzoroark.riftlib.renderers.geo;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -78,12 +77,12 @@ public abstract class GeoArmorRenderer<T extends RiftLibArmor> extends ModelBipe
 	}
 
 	public void render(float partialTicks) {
-        GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(this.currentArmorItem));
+        GeoModel model = this.modelProvider.getClientModel(this.modelProvider.getModelLocation(this.currentArmorItem));
 
 		GlStateManager.translate(0.0D, 1.501F, 0.0D);
 		GlStateManager.scale(-1.0F, -1.0F, 1.0F);
 
-		this.modelProvider.setLivingAnimations(this.currentArmorItem);
+		this.modelProvider.setClientAnimations(this.currentArmorItem);
         this.modelProvider.createAndUpdateAnimatedLocators(this.currentArmorItem);
 		this.fitToBiped();
 		GlStateManager.pushMatrix();
@@ -208,7 +207,7 @@ public abstract class GeoArmorRenderer<T extends RiftLibArmor> extends ModelBipe
 
 	@SuppressWarnings("incomplete-switch")
 	public GeoArmorRenderer applySlot(EntityEquipmentSlot slot) {
-		this.modelProvider.getModel(this.modelProvider.getModelLocation(this.currentArmorItem));
+		this.modelProvider.getClientModel(this.modelProvider.getModelLocation(this.currentArmorItem));
 
         this.tryHideBone(this.headBone, true);
         this.tryHideBone(this.bodyBone, true);

@@ -7,16 +7,12 @@ import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateRayPos;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
-import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateRiderPos;
 
 import anightdazingzoroark.riftlib.ray.IRayCreator;
 import anightdazingzoroark.riftlib.ray.RayTicker;
 import anightdazingzoroark.riftlib.ray.RiftLibRay;
-import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosList;
-import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosUtils;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.common.MinecraftForge;
@@ -156,47 +152,6 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		AbstractAnimationData<?> animData = entity.getAnimationData();
 		animData.createAnimatedLocators(this.currentModel);
 		animData.updateAnimatedLocators();
-	}
-
-	@Deprecated
-	private void setDynamicRidePositions(T entity, AbstractAnimationData<?> animData) {
-		if (!(entity instanceof IDynamicRideUser)) return;
-
-		//make a rideposdef list for changine ride positions
-		DynamicRidePosList definitionList = new DynamicRidePosList();
-
-		//make a definition list of dynamic ride positions and put in it the new positions based on the new locators positions
-		for (AnimatedLocator locator : animData.getAnimatedLocators()) {
-			if (!DynamicRidePosUtils.locatorCanBeRidePos(locator.getName())) continue;
-			definitionList.addPosition(locator);
-		}
-
-		//apply changes to ride positions
-		if (definitionList.isEmpty()) return;
-		ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibUpdateRiderPos(
-				(Entity) entity, definitionList
-		));
-		ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibUpdateRiderPos(
-				(Entity) entity, definitionList
-		));
-	}
-
-	@Deprecated
-	private void setServerDynamicRidePositions(T entity, AbstractAnimationData<?> animData) {
-		if (!(entity instanceof Entity entityObject)) return;
-		if (!(entity instanceof IDynamicRideUser dynamicRideUser)) return;
-
-		DynamicRidePosList definitionList = new DynamicRidePosList();
-
-		for (AnimatedLocator locator : animData.getAnimatedLocators()) {
-			if (!DynamicRidePosUtils.locatorCanBeRidePos(locator.getName())) continue;
-			definitionList.addPosition(locator);
-		}
-
-		if (definitionList.isEmpty()) return;
-
-		dynamicRideUser.setRidePosition(definitionList);
-		ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibUpdateRiderPos(entityObject, definitionList));
 	}
 
 	@Deprecated

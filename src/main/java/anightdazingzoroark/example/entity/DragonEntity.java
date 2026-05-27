@@ -40,15 +40,16 @@ import java.util.Map;
 public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IRayCreator<DragonEntity>, IMultiHitboxUser<DragonEntity>, IDynamicRideUser {
     private static final DataParameter<Boolean> BREATHING_FIRE = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
+    private final DynamicRidePosList ridePositions;
     private final Map<String, RiftLibRay.Builder> rayMap;
     private HitboxDefinitionList hitboxDefinitionList;
     private Entity[] hitboxes = {};
-    private DynamicRidePosList ridePositions;
 
     public DragonEntity(World worldIn) {
         super(worldIn);
         this.setSize(4f, 4f);
         this.enablePersistence();
+        this.ridePositions = new DynamicRidePosList(this.animationData);
         this.rayMap = Map.of(
                 "breatheFire", new RiftLibRay.Builder(this, "fireLocator")
                         .setRaySpeed(0.5D)
@@ -80,6 +81,13 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
         this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(40D);
         this.getAttributeMap().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
         this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(4.0D);
+    }
+
+    @Override
+    public void onUpdate() {
+        super.onUpdate();
+
+        this.ridePositions.onUpdate();
     }
 
     @Override
@@ -141,18 +149,13 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     }
 
     @Override
-    public void setRidePosition(DynamicRidePosList dynamicRidePosList) {
-        this.ridePositions = dynamicRidePosList;
-    }
-
-    @Override
     public void updatePassenger(Entity passenger) {
         IDynamicRideUser.super.updatePassenger(passenger);
     }
     //ride pos stuff ends here
 
     //ride management stuff starts here
-    public EntityLiving getDynamicRideUser() {
+    public DragonEntity getDynamicRideUser() {
         return this;
     }
 

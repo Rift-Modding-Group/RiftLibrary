@@ -1,12 +1,14 @@
 package anightdazingzoroark.riftlib.ridePositionLogic;
 
 public class DynamicRidePosUtils {
+    public static final String controllerLocatorName = "rider_pos_main";
+
     public static boolean locatorCanBeRidePos(String locatorName) {
         return locatorName != null && locatorName.startsWith("rider_pos_");
     }
 
     public static boolean locatorCanBeControllerPos(String locatorName) {
-        return locatorName != null && locatorName.equals("rider_pos_main");
+        return locatorName != null && locatorName.equals(controllerLocatorName);
     }
 
     public static int locatorRideIndex(String locatorName) {

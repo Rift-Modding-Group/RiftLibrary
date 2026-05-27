@@ -39,7 +39,6 @@ public class ServerProxy {
 
         //registerVariable internal messages
         MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID);
-        MESSAGE_WRAPPER.registerMessage(RiftLibUpdateRiderPos.class, RiftLibMessageSide.BOTH);
         MESSAGE_WRAPPER.registerMessage(RiftLibCreateParticle.class, RiftLibMessageSide.CLIENT);
         MESSAGE_WRAPPER.registerMessage(RiftLibPlaySoundForPlayer.class, RiftLibMessageSide.CLIENT);
 

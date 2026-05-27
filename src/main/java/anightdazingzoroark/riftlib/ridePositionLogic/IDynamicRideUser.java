@@ -2,16 +2,11 @@ package anightdazingzoroark.riftlib.ridePositionLogic;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
-import anightdazingzoroark.riftlib.util.QuaternionUtils;
-import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.Vec3d;
-import org.lwjglx.util.vector.Quaternion;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public interface IDynamicRideUser<T extends EntityLivingBase & IAnimatable<AnimationDataEntity>> {
@@ -20,22 +15,38 @@ public interface IDynamicRideUser<T extends EntityLivingBase & IAnimatable<Anima
      * */
     T getDynamicRideUser();
 
+    /**
+     * Get the model scale of the user.
+     * */
     default float dynamicRiderUserScale() {
         return 1f;
     }
 
+    /**
+     * The ride position list is very important, it uses the AnimatedLocators of an IAnimatable
+     * to define where a rider will go to upon riding.
+     * */
     DynamicRidePosList ridePosList();
 
+    /**
+     * Put this in the Entity.updatePassenger() method in the entity you're implementing this in.
+     * */
     default void updatePassenger(Entity passenger) {
-        //block from non-passengers
+        //---make sure to only update for true passengers---
         if (!this.getDynamicRideUser().isPassenger(passenger)) return;
 
-        //do not update if there's no valid positions
+        //---dismount passenger if ded---
+        if (!this.getDynamicRideUser().isEntityAlive()) {
+            passenger.dismountRidingEntity();
+            return;
+        }
+
+        //---do not update if there's no valid positions---
         if (this.ridePosList().isEmpty()) return;
 
         //---start with the controller seat first---
         Entity controller = this.getDynamicRideUser().getControllingPassenger();
-        Vec3d controllerPos = this.ridePosList().getControllerPos();
+        Vec3d controllerPos = this.ridePosList().getControllerWorldPos();
 
         if (controllerPos != null && controller != null && controller.equals(passenger)) {
             if (this.canRotateMounted()) {
@@ -46,22 +57,38 @@ public interface IDynamicRideUser<T extends EntityLivingBase & IAnimatable<Anima
                 this.getDynamicRideUser().renderYawOffset = this.getDynamicRideUser().rotationYaw;
             }
 
-            passenger.setPosition(controllerPos.x, controllerPos.y + this.passengerOffset(passenger), controllerPos.z);
+            this.applyRidePosition(passenger, controllerPos);
 
-            ((EntityLivingBase) passenger).renderYawOffset = this.getDynamicRideUser().renderYawOffset;
-        }
-
-        //---now deal with other positions---
-        List<Vec3d> otherPositions = this.ridePosList().getPassengerPositions();
-
-        if (!otherPositions.isEmpty() && !passenger.equals(controller)) {
-            for (Vec3d otherPos : otherPositions) {
-                passenger.setPosition(otherPos.x, otherPos.y + this.passengerOffset(passenger), otherPos.z);
+            if (passenger instanceof EntityLivingBase) {
+                ((EntityLivingBase) passenger).renderYawOffset = this.getDynamicRideUser().renderYawOffset;
             }
         }
+        //---now deal with other positions for other passengers---
+        else {
+            List<Vec3d> otherPositions = this.ridePosList().getPassengerWorldPositions();
+            int passengerPosIndex = this.getPassengerPositionIndex(passenger);
 
-        //---dismount passenger if ded---
-        if (!this.getDynamicRideUser().isEntityAlive()) passenger.dismountRidingEntity();
+            if (passengerPosIndex >= 0 && passengerPosIndex < otherPositions.size()) {
+                this.applyRidePosition(passenger, otherPositions.get(passengerPosIndex));
+            }
+        }
+    }
+
+    default int getPassengerPositionIndex(Entity passenger) {
+        Entity controller = this.getDynamicRideUser().getControllingPassenger();
+        int passengerPosIndex = 0;
+
+        for (Entity currentPassenger : this.getDynamicRideUser().getPassengers()) {
+            if (currentPassenger.equals(controller)) continue;
+            if (currentPassenger.equals(passenger)) return passengerPosIndex;
+            passengerPosIndex++;
+        }
+
+        return -1;
+    }
+
+    default void applyRidePosition(Entity passenger, Vec3d ridePos) {
+        passenger.setPosition(ridePos.x, ridePos.y + this.passengerOffset(passenger), ridePos.z);
     }
 
     default float passengerOffset(Entity entity) {

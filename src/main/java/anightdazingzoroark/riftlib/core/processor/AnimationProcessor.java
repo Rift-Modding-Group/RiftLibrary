@@ -22,7 +22,6 @@ import anightdazingzoroark.riftlib.core.snapshot.DirtyTracker;
 import anightdazingzoroark.riftlib.core.util.MathUtil;
 
 public class AnimationProcessor<T extends IAnimatable<?>> {
-	public boolean reloadAnimations = false;
 	private final List<IBone> modelRendererList = new ArrayList<>();
 
 	public void tickAnimation(IAnimatable<?> entity, double seekTime, MolangParser parser, boolean crashWhenCantFindBone) {
@@ -35,7 +34,7 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 		AbstractAnimationData<?> animationData = entity.getAnimationData();
 		// Keeps track of which bones have had animations applied to them, and
 		// eventually sets the ones that don't have an animation to their default values
-		HashMap<String, DirtyTracker> modelTracker = createNewDirtyTracker();
+		HashMap<String, DirtyTracker> modelTracker = this.createNewDirtyTracker();
 
 		// Store the current value of each bone rotation/position/scale
 		this.updateBoneSnapshots(animationData.getBoneSnapshotCollection());
@@ -47,13 +46,7 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 
 		//get changes from all anim controllers
 		for (AnimationController<?, ?> controller : animationData.getAnimationControllers().values()) {
-			if (this.reloadAnimations) {
-				controller.markNeedsReload();
-				controller.getBoneAnimationQueues().clear();
-			}
-
 			controller.isJustStarting = animationData.isFirstTick;
-
 			controller.process(animationData, seekTime, this.modelRendererList, boneSnapshots, parser, crashWhenCantFindBone);
 
 			for (BoneAnimationQueue boneAnimation : controller.getBoneAnimationQueues().values()) {
@@ -127,7 +120,7 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 			}
 		}
 
-		//apply changes from anims to bones, hitboxes, and rideposdeflist
+		//apply changes from anims to bones and locators
 		for (IBone bone : this.modelRendererList) {
 			BoneSnapshot initialSnapshot = bone.getInitialSnapshot();
 			BoneSnapshot snapshot = boneSnapshots.get(bone.getName()).getRight();
@@ -169,8 +162,6 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 			dirtyTracker.hasPositionChanged = true;
 			dirtyTracker.hasScaleChanged = true;
 		}
-
-		this.reloadAnimations = false;
 
 		double resetTickLength = animationData.getResetSpeed();
 		BoneAnimationValuesList dBoneAnimationValues = new BoneAnimationValuesList();

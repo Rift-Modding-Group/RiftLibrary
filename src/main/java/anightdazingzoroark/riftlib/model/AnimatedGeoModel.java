@@ -23,6 +23,7 @@ import anightdazingzoroark.riftlib.core.processor.AnimationProcessor;
 import anightdazingzoroark.riftlib.core.processor.IBone;
 import anightdazingzoroark.riftlib.exceptions.GeoModelException;
 import anightdazingzoroark.riftlib.geo.render.GeoBone;
+import anightdazingzoroark.riftlib.geo.render.GeoLocator;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 import anightdazingzoroark.riftlib.model.provider.IAnimatableModelProvider;
@@ -44,6 +45,10 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 
 	public void registerBone(GeoBone bone) {
         this.registerModelRenderer(bone);
+
+		for (GeoLocator childLocator : bone.childLocators) {
+			this.registerModelRenderer(childLocator);
+		}
 
 		for (GeoBone childBone : bone.childBones) {
 			this.registerBone(childBone);

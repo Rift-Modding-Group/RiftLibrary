@@ -75,9 +75,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 
 		//---define passenger render positions and render origin vector if entity is a dynamicrideuser---
 		Map<Integer, Vec3d> passengerRenderPositions = null;
-		double renderOriginX = 0;
-		double renderOriginY = 0;
-		double renderOriginZ = 0;
+		Vec3d renderOriginVec = new Vec3d(0, 0, 0);
 
 		//---cache post-locator passenger render positions for this frame---
 		if (entity instanceof IDynamicRideUser<?> dynamicRideUser && entity.isBeingRidden()) {
@@ -94,9 +92,11 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 			entity.posZ = Interpolations.lerp(entity.lastTickPosZ, entity.posZ, partialTicks);
 			entity.rotationYaw = finalYaw;
 			entity.renderYawOffset = finalYaw;
-			renderOriginX = entity.posX - x;
-			renderOriginY = entity.posY - y;
-			renderOriginZ = entity.posZ - z;
+			renderOriginVec = new Vec3d(
+					entity.posX - x,
+					entity.posY - y,
+					entity.posZ - z
+			);
 
 			dynamicRideUser.ridePosList().updatePositions();
 			Map<Integer, Vec3d> renderPositions = dynamicRideUser.ridePosList().passengerRenderPositions;
@@ -183,12 +183,13 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 
 				DynamicRidePosTicker.Client.RENDERING_PASSENGERS.add(passenger.getEntityId());
 				try {
-					float passengerYaw = passenger.prevRotationYaw + (passenger.rotationYaw - passenger.prevRotationYaw) * partialTicks;
+					//float passengerYaw = passenger.prevRotationYaw + (passenger.rotationYaw - passenger.prevRotationYaw) * partialTicks;
+					float passengerYaw = Interpolations.lerpYaw(passenger.prevRotationYaw, passenger.rotationYaw, partialTicks);
 					this.renderManager.renderEntity(
 							passenger,
-							ridePos.x - renderOriginX,
-							ridePos.y - renderOriginY,
-							ridePos.z - renderOriginZ,
+							ridePos.x - renderOriginVec.x,
+							ridePos.y - renderOriginVec.y,
+							ridePos.z - renderOriginVec.z,
 							passengerYaw,
 							partialTicks,
 							false

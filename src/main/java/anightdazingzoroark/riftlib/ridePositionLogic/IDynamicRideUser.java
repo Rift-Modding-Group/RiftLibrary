@@ -51,7 +51,6 @@ public interface IDynamicRideUser<T extends EntityLivingBase & IAnimatable<Anima
         if (controllerPos != null && controller != null && controller.equals(passenger)) {
             if (this.canRotateMounted()) {
                 this.getDynamicRideUser().rotationYaw = passenger.rotationYaw;
-                this.getDynamicRideUser().prevRotationYaw = this.getDynamicRideUser().rotationYaw;
                 this.getDynamicRideUser().rotationPitch = passenger.rotationPitch * 0.5f;
                 this.getDynamicRideUser().setRotation(this.getDynamicRideUser().rotationYaw, this.getDynamicRideUser().rotationPitch);
                 this.getDynamicRideUser().renderYawOffset = this.getDynamicRideUser().rotationYaw;

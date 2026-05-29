@@ -41,13 +41,13 @@ public interface IDynamicRideUser<T extends EntityLivingBase & IAnimatable<Anima
             return;
         }
 
-        //---do not update if there's no valid positions---
+        //---update positions, plus do not update if there's no valid positions---
+        this.ridePosList().updatePositions();
         if (this.ridePosList().isEmpty()) return;
 
         //---start with the controller seat first---
         Entity controller = this.getDynamicRideUser().getControllingPassenger();
         Vec3d controllerPos = this.ridePosList().getControllerWorldPos();
-
         if (controllerPos != null && controller != null && controller.equals(passenger)) {
             if (this.canRotateMounted()) {
                 this.getDynamicRideUser().rotationYaw = passenger.rotationYaw;

@@ -37,7 +37,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
-public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IRayCreator<DragonEntity>, IMultiHitboxUser<DragonEntity>, IDynamicRideUser {
+public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IRayCreator<DragonEntity>, IMultiHitboxUser<DragonEntity>, IDynamicRideUser<DragonEntity> {
     private static final DataParameter<Boolean> BREATHING_FIRE = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
     private final DynamicRidePosList ridePositions;
@@ -49,7 +49,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
         super(worldIn);
         this.setSize(4f, 4f);
         this.enablePersistence();
-        this.ridePositions = new DynamicRidePosList(this.animationData);
+        this.ridePositions = new DynamicRidePosList(this, this.animationData);
         this.rayMap = Map.of(
                 "breatheFire", new RiftLibRay.Builder(this, "fireLocator")
                         .setRaySpeed(0.5D)
@@ -67,10 +67,23 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
 
     @Override
     protected void initEntityAI() {
-        this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<>(this, EntityCow.class, true));
+        //this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<>(this, EntityCow.class, true));
 
-        this.tasks.addTask(1, new DragonAttackAI(this, 1.0D));
-        this.tasks.addTask(2, new EntityAIWanderAvoidWater(this, 1.0D));
+        //this.tasks.addTask(1, new DragonAttackAI(this, 1.0D));
+        this.tasks.addTask(2, new EntityAIWanderAvoidWater(this, 1D) {
+            //-----no moving around when ridden cause fuck you xd-----
+            @Override
+            public boolean shouldExecute() {
+                if (this.entity.isBeingRidden()) return false;
+                return super.shouldExecute();
+            }
+
+            @Override
+            public boolean shouldContinueExecuting() {
+                if (this.entity.isBeingRidden()) return false;
+                return super.shouldExecute();
+            }
+        });
         this.tasks.addTask(3, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
         this.tasks.addTask(4, new EntityAILookIdle(this));
     }
@@ -84,17 +97,12 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     }
 
     @Override
-    public void onUpdate() {
-        super.onUpdate();
-
-        this.ridePositions.onUpdate();
-    }
-
-    @Override
     public boolean processInteract(EntityPlayer player, EnumHand hand) {
         if (!player.isRiding()) {
-            this.getNavigator().clearPath();
-            //this.setAttackTarget(null);
+            if (!this.world.isRemote) {
+                this.getNavigator().clearPath();
+                this.setAttackTarget(null);
+            }
             player.startRiding(this, true);
         }
         return super.processInteract(player, hand);

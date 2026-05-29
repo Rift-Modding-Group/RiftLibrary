@@ -1,10 +1,13 @@
 package anightdazingzoroark.riftlib.renderers.geo;
 
 import java.util.List;
+import java.util.Map;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
+import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosTicker;
+import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
 import com.google.common.collect.Lists;
 
 import net.minecraft.client.Minecraft;
@@ -21,6 +24,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextFormatting;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
@@ -51,7 +55,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 
 	@Override
 	public void doRender(T entity, double x, double y, double z, float entityYaw, float partialTicks) {
-        //get model
+        //---get model---
         GeoModel model = this.modelProvider.getClientModel(this.modelProvider.getModelLocation(entity));
 
 		//rest is good ol rendering code
@@ -65,8 +69,73 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		float finalYaw = entity.isBeingRidden() ? riddenYaw : trueYaw;
 		this.applyRotations(entity, finalYaw, partialTicks);
 
+		//---set up client animations and update animated locators---
         this.modelProvider.setClientAnimations(entity);
 		this.modelProvider.createAndUpdateAnimatedLocators(entity);
+
+		//---define passenger render positions and render origin vector if entity is a dynamicrideuser---
+		Map<Integer, Vec3d> passengerRenderPositions = null;
+		double renderOriginX = 0;
+		double renderOriginY = 0;
+		double renderOriginZ = 0;
+
+		//---cache post-locator passenger render positions for this frame---
+		if (entity instanceof IDynamicRideUser<?> dynamicRideUser && entity.isBeingRidden()) {
+			Entity controller = entity.getControllingPassenger();
+			List<Vec3d> otherPositions;
+			double posX = entity.posX;
+			double posY = entity.posY;
+			double posZ = entity.posZ;
+			float rotationYaw = entity.rotationYaw;
+			float renderYawOffset = entity.renderYawOffset;
+
+			entity.posX = Interpolations.lerp(entity.lastTickPosX, entity.posX, partialTicks);
+			entity.posY = Interpolations.lerp(entity.lastTickPosY, entity.posY, partialTicks);
+			entity.posZ = Interpolations.lerp(entity.lastTickPosZ, entity.posZ, partialTicks);
+			entity.rotationYaw = finalYaw;
+			entity.renderYawOffset = finalYaw;
+			renderOriginX = entity.posX - x;
+			renderOriginY = entity.posY - y;
+			renderOriginZ = entity.posZ - z;
+
+			dynamicRideUser.ridePosList().updatePositions();
+			Map<Integer, Vec3d> renderPositions = dynamicRideUser.ridePosList().passengerRenderPositions;
+			renderPositions.clear();
+			passengerRenderPositions = renderPositions;
+			if (!dynamicRideUser.ridePosList().isEmpty()) {
+				otherPositions = dynamicRideUser.ridePosList().getPassengerWorldPositions();
+
+				for (Entity passenger : entity.getPassengers()) {
+					if (controller != null && controller.equals(passenger)) {
+						Vec3d controllerPos = dynamicRideUser.ridePosList().getControllerWorldPos();
+						if (controllerPos != null) {
+							renderPositions.put(passenger.getEntityId(), new Vec3d(
+									controllerPos.x,
+									controllerPos.y + dynamicRideUser.passengerOffset(passenger),
+									controllerPos.z
+							));
+						}
+					}
+					else {
+						int passengerPosIndex = dynamicRideUser.getPassengerPositionIndex(passenger);
+						if (passengerPosIndex >= 0 && passengerPosIndex < otherPositions.size()) {
+							Vec3d ridePos = otherPositions.get(passengerPosIndex);
+							renderPositions.put(passenger.getEntityId(), new Vec3d(
+									ridePos.x,
+									ridePos.y + dynamicRideUser.passengerOffset(passenger),
+									ridePos.z
+							));
+						}
+					}
+				}
+			}
+
+			entity.posX = posX;
+			entity.posY = posY;
+			entity.posZ = posZ;
+			entity.rotationYaw = rotationYaw;
+			entity.renderYawOffset = renderYawOffset;
+		}
 
         GlStateManager.pushMatrix();
 		float scaleValue = this.entityScale(entity);
@@ -102,6 +171,34 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 
 		GlStateManager.popMatrix();
 		GlStateManager.popMatrix();
+
+		//---render passengers at the cached dynamic ride positions if user is dynamicrideuser---
+		if (passengerRenderPositions != null) {
+			for (Entity passenger : entity.getPassengers()) {
+				Vec3d ridePos = passengerRenderPositions.get(passenger.getEntityId());
+				if (ridePos == null) continue;
+				//1st pos on player passengers must be skipped or else weird things involving the camera will happen
+				//speaking of that, it should already be dealt with in DynamicRidePosTicker
+				if (passenger == Minecraft.getMinecraft().player && Minecraft.getMinecraft().gameSettings.thirdPersonView == 0) continue;
+
+				DynamicRidePosTicker.Client.RENDERING_PASSENGERS.add(passenger.getEntityId());
+				try {
+					float passengerYaw = passenger.prevRotationYaw + (passenger.rotationYaw - passenger.prevRotationYaw) * partialTicks;
+					this.renderManager.renderEntity(
+							passenger,
+							ridePos.x - renderOriginX,
+							ridePos.y - renderOriginY,
+							ridePos.z - renderOriginZ,
+							passengerYaw,
+							partialTicks,
+							false
+					);
+				}
+				finally {
+					DynamicRidePosTicker.Client.RENDERING_PASSENGERS.remove(passenger.getEntityId());
+				}
+			}
+		}
 	}
 
 	@Override

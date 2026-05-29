@@ -11,7 +11,6 @@ import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import anightdazingzoroark.riftlib.ray.IRayCreator;
 import anightdazingzoroark.riftlib.ray.RayTicker;
 import anightdazingzoroark.riftlib.ray.RiftLibRay;
-import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
@@ -159,6 +158,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		animData.updateAnimatedLocators();
 	}
 
+	/*
 	@Deprecated
 	private void setRayDisplacements(T entity, AbstractAnimationData<?> animData) {
 		if (!(entity instanceof IRayCreator<?> rayCreator)) return;
@@ -167,7 +167,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 			for (ImmutablePair<IRayCreator<?>, RiftLibRay> rayPair : RayTicker.Client.RAY_PAIR_LIST) {
 				if (rayCreator != rayPair.getLeft() || !locator.getName().equals(rayPair.getRight().parentLocatorName)) continue;
 				Vec3d modelSpacePos = locator.getModelSpacePosition();
-				Quaternion modelSpaceQuat = locator.getModelSpaceYXZQuaternion();
+				Quaternion modelSpaceQuat = locator.computeModelSpaceYXZQuaternion();
 
 				rayPair.getRight().displaceByAnim(modelSpacePos);
 				rayPair.getRight().displaceQuatByAnim(modelSpaceQuat);
@@ -189,10 +189,11 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 				if (rayCreator != rayPair.getLeft() || !locator.getName().equals(rayPair.getRight().parentLocatorName)) continue;
 
 				rayPair.getRight().displaceByAnim(locator.getModelSpacePosition());
-				rayPair.getRight().displaceQuatByAnim(locator.getModelSpaceYXZQuaternion());
+				rayPair.getRight().displaceQuatByAnim(locator.computeModelSpaceYXZQuaternion());
 			}
 		}
 	}
+	 */
 
 	@Override
 	public AnimationProcessor getAnimationProcessor() {

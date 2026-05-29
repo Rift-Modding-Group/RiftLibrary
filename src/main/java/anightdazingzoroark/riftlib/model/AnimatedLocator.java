@@ -10,6 +10,9 @@ import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 import org.lwjglx.util.vector.Quaternion;
 
 import java.util.ArrayList;
@@ -22,7 +25,10 @@ import java.util.List;
 public class AnimatedLocator {
     private final GeoLocator locator;
     private final AbstractAnimationData<?> animationData;
+    //---world space stuff---
+    @NotNull
     private Vec3d worldSpacePos = new Vec3d(0, 0, 0);
+    @NotNull
     private Quaternion worldSpaceYXZQuaternion = new Quaternion();
     private boolean isUpdated = true;
 
@@ -51,22 +57,8 @@ public class AnimatedLocator {
         return this.locator.parent;
     }
 
-    public void setWorldSpacePosition(double x, double y, double z) {
-        this.worldSpacePos = new Vec3d(x, y, z);
-    }
-
-    /**
-     * This is the position of this locator in world space. It is completely
-     * different per client, and thus is only meant for used for particles.
-     * */
-    public Vec3d getWorldSpacePosition() {
-        return this.worldSpacePos;
-    }
-
-    /**
-     * This is the position of this locator in model space. It is the same
-     * per client, making it apt for things such as hitboxes and rider positions.
-     * */
+    //-----model space stuff starts here-----
+    @NotNull
     public Vec3d getModelSpacePosition() {
         Vec3d boneDispOffset = this.getPositionOffsetFromBoneDisplacements();
         Vec3d boneRotOffset = this.getPositionOffsetFromBoneRotations();
@@ -79,24 +71,7 @@ public class AnimatedLocator {
         );
     }
 
-    public void setWorldSpaceYXZQuaternion(Quaternion quaternion) {
-        this.worldSpaceYXZQuaternion = quaternion;
-    }
-
-    /**
-     * This is the quaternion for rotations of this locator in world space.
-     * It is completely different per client, and thus is only meant for
-     * used for particles.
-     * */
-    public Quaternion getWorldSpaceYXZQuaternion() {
-        return this.worldSpaceYXZQuaternion;
-    }
-
-    /**
-     * This is the quaternion for rotations of this locator in model space.
-     * It is the same per client, making it apt for things such as hitboxes
-     * and rider positions. Because of this, it can be called from the server.
-     * */
+    @NotNull
     public Quaternion getModelSpaceYXZQuaternion() {
         Quaternion toReturn = new Quaternion(0, 0, 0, 1);
 
@@ -138,6 +113,39 @@ public class AnimatedLocator {
 
         return toReturn;
     }
+    //-----model space stuff ends here-----
+
+    //-----world space stuff starts here-----
+    @SideOnly(Side.CLIENT)
+    public void setWorldSpacePosition(double x, double y, double z) {
+        this.worldSpacePos = new Vec3d(x, y, z);
+    }
+
+    /**
+     * This is the position of this locator in world space. It is completely
+     * different per client, and thus is only meant for used for particles.
+     * */
+    @SideOnly(Side.CLIENT)
+    public Vec3d getWorldSpacePosition() {
+        return this.worldSpacePos;
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void setWorldSpaceYXZQuaternion(@NotNull Quaternion quaternion) {
+        this.worldSpaceYXZQuaternion = quaternion;
+    }
+
+    /**
+     * This is the quaternion for rotations of this locator in world space.
+     * It is completely different per client, and thus is only meant for
+     * used for particles.
+     * */
+    @SideOnly(Side.CLIENT)
+    @NotNull
+    public Quaternion getWorldSpaceYXZQuaternion() {
+        return this.worldSpaceYXZQuaternion;
+    }
+    //-----world space stuff ends here-----
 
     private Vec3d getPositionOffsetFromBoneDisplacements() {
         Vec3d toReturn = Vec3d.ZERO;

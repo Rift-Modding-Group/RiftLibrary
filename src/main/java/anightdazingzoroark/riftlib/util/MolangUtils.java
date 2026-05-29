@@ -51,15 +51,15 @@ public class MolangUtils {
 		});
 	}
 
-	public static void parseValue(MolangParser parser, AbstractAnimationData<?> animationData, String value) {
-		parseValue(parser, animationData, new AnimatableValue(value));
+	public static void parseValue(AbstractAnimationData<?> animationData, String value) {
+		parseValue(animationData, new AnimatableValue(value));
 	}
 
 	/**
 	 * For use in animation controllers, its for either assigning variables from a string or
 	 * sending messages to the server. Meant for use on client only.
 	 * */
-	public static void parseValue(MolangParser parser, AbstractAnimationData<?> animationData, AnimatableValue animatableValue) {
+	public static void parseValue(AbstractAnimationData<?> animationData, AnimatableValue animatableValue) {
 		//as this is animatable value we're dealing with, first we check if its a message
 		if (animatableValue.isExpression()
 				&& animatableValue.getExpressionValue().startsWith("'")
@@ -85,35 +85,37 @@ public class MolangUtils {
 					}
 				}
 			}
-			return;
 		}
-
-		parser.withScope(animationData.dataScope, () -> {
-			if (animatableValue.isExpression()) {
-				try {
-					parser.parseExpression(animatableValue.getExpressionValue(), animationData).get();
+		else {
+			MolangParser parser = animationData.getParser();
+			parser.withScope(animationData.getDataScope(), () -> {
+				if (animatableValue.isExpression()) {
+					try {
+						parser.parseExpression(animatableValue.getExpressionValue(), animationData).get();
+					}
+					catch (Exception e) {
+						throw new RuntimeException(e);
+					}
 				}
-				catch (Exception e) {
-					throw new RuntimeException(e);
+				else {
+					String name = animatableValue.getConstantValue().left;
+					if (parser.isFunction(name)) {
+						throw new RuntimeException(new MolangException("Cannot assign value to function '"+name+"'!"));
+					}
+					parser.setValue(name, animatableValue.getConstantValue().right);
 				}
-			}
-			else {
-				String name = animatableValue.getConstantValue().left;
-				if (parser.isFunction(name)) {
-					throw new RuntimeException(new MolangException("Cannot assign value to function '"+name+"'!"));
-				}
-				parser.setValue(name, animatableValue.getConstantValue().right);
-			}
-		});
+			});
+		}
 	}
 
 	/**
 	 * Parse a molang expression and get its return value
 	 * */
-	public static double parseValueAndGet(MolangParser parser, AbstractAnimationData<?> animationData, String expression) {
+	public static double parseValueAndGet(AbstractAnimationData<?> animationData, String expression) {
 		AtomicReference<Double> toReturn = new AtomicReference<>(0D);
+		MolangParser parser = animationData.getParser();
 
-		parser.withScope(animationData.dataScope, () -> {
+		parser.withScope(animationData.getDataScope(), () -> {
 			try {
 				double parsedValue = parser.parseExpression(expression, animationData).get();
 				toReturn.set(parsedValue);

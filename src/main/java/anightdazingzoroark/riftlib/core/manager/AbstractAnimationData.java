@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 /**
@@ -36,20 +37,19 @@ public abstract class AbstractAnimationData<T> {
     private final T holder;
     @NotNull
     private final IAnimatable<?> animatable;
-    private HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection = new HashMap<>();
-    private final HashMap<String, AnimationController<?, ?>> animationControllers = new HashMap<>();
-    private final HashMap<String, AnimatableRunValue> animationMessageEffects = new HashMap<>();
+    private final Map<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection = new HashMap<>();
+    private final Map<String, AnimationController<?, ?>> animationControllers = new HashMap<>();
+    private final Map<String, AnimatableRunValue> animationMessageEffects = new HashMap<>();
     protected final Map<String, Supplier<Double>> molangQueries = new HashMap<>();
     private final List<AnimatedLocator> animatedLocators = new ArrayList<>();
     private int animatedLocatorTicker;
     @NotNull
     private final MolangParser parser;
     @NotNull
-    public final MolangScope dataScope = new MolangScope();
+    private final MolangScope dataScope = new MolangScope();
     private GeoModel currentModel;
     public double tick;
     public boolean isFirstTick = true;
-    private double resetTickLength = 1;
     public Object ticker;
     public boolean shouldPlayWhilePaused = false;
 
@@ -74,38 +74,15 @@ public abstract class AbstractAnimationData<T> {
         return this.holder;
     }
 
-    public HashMap<String, Pair<IBone, BoneSnapshot>> getBoneSnapshotCollection() {
+    public Map<String, Pair<IBone, BoneSnapshot>> getBoneSnapshotCollection() {
         return this.boneSnapshotCollection;
     }
 
-    public void setBoneSnapshotCollection(HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection) {
-        this.boneSnapshotCollection = boneSnapshotCollection;
-    }
-
-    public void clearSnapshotCache() {
-        this.boneSnapshotCollection = new HashMap<>();
-    }
-
-    public double getResetSpeed() {
-        return this.resetTickLength;
-    }
-
-    /**
-     * This is how long it takes for any bones that don't have an animation to
-     * revert back to their original position
-     *
-     * @param resetTickLength The amount of ticks it takes to reset. Cannot be
-     *                        negative.
-     */
-    public void setResetSpeedInTicks(double resetTickLength) {
-        this.resetTickLength = resetTickLength < 0 ? 0 : resetTickLength;
-    }
-
-    public HashMap<String, AnimationController<?, ?>> getAnimationControllers() {
+    public Map<String, AnimationController<?, ?>> getAnimationControllers() {
         return this.animationControllers;
     }
 
-    public HashMap<String, AnimatableRunValue> getAnimationMessageEffects() {
+    public Map<String, AnimatableRunValue> getAnimationMessageEffects() {
         return this.animationMessageEffects;
     }
 
@@ -194,8 +171,14 @@ public abstract class AbstractAnimationData<T> {
         return MolangUtils.getVariable(this.parser, this.dataScope, name);
     }
 
+    @NotNull
     public MolangParser getParser() {
         return this.parser;
+    }
+
+    @NotNull
+    public MolangScope getDataScope() {
+        return this.dataScope;
     }
 
     /**

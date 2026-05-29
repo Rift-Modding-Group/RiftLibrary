@@ -4,18 +4,15 @@ import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.resource.client.RiftLibCacheClient;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 public abstract class GeoModelProvider<T> {
 	public double seekTime;
-	public double lastGameTickTime;
 	public boolean shouldCrashOnMissing = false;
 
-	public GeoModel getClientModel(ResourceLocation location) {
-		return RiftLibCacheClient.getInstance().getGeoModels().get(location);
-	}
-
-	public GeoModel getServerModel(ResourceLocation location) {
-		return RiftLibCacheServer.getInstance().getGeoModels().get(location);
+	public GeoModel getModel(ResourceLocation location) {
+		return FMLCommonHandler.instance().getSide().isClient() ?
+				RiftLibCacheClient.getInstance().getGeoModels().get(location) : RiftLibCacheServer.getInstance().getGeoModels().get(location);
 	}
 
 	public abstract ResourceLocation getModelLocation(T object);

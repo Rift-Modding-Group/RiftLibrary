@@ -43,7 +43,7 @@ public class VectorKeyFrameList {
     }
 
     // Helper method to transform a KeyFrameLocation to an AnimationPoint
-    public AnimationPoint getAnimationPointAtTick(MolangParser parser, AbstractAnimationData<?> animData, double tick, Axis axis) {
+    public AnimationPoint getAnimationPointAtTick(AbstractAnimationData<?> animData, double tick, Axis axis) {
         KeyFrameLocation location = this.getCurrentKeyFrameLocation(tick);
         KeyFrame currentFrame = location.currentFrame;
 
@@ -51,9 +51,9 @@ public class VectorKeyFrameList {
         KeyFrame.KeyFrameAxisValue endValueUnparsed = currentFrame.getEndValue().getValueFromAxis(axis);
 
         double startValue = startValueUnparsed.isExpression() ?
-                MolangUtils.parseValueAndGet(parser, animData, startValueUnparsed.getExpressionValue()) : startValueUnparsed.getConstValue();
+                MolangUtils.parseValueAndGet(animData, startValueUnparsed.getExpressionValue()) : startValueUnparsed.getConstValue();
         double endValue = endValueUnparsed.isExpression() ?
-                MolangUtils.parseValueAndGet(parser, animData, endValueUnparsed.getExpressionValue()) : endValueUnparsed.getConstValue();
+                MolangUtils.parseValueAndGet(animData, endValueUnparsed.getExpressionValue()) : endValueUnparsed.getConstValue();
 
         if (this.isRotation) {
             if (currentFrame.getStartValue().getValueFromAxis(axis).isExpression()) {

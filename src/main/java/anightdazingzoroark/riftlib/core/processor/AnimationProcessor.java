@@ -21,25 +21,21 @@ import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
 import anightdazingzoroark.riftlib.core.snapshot.DirtyTracker;
 import anightdazingzoroark.riftlib.core.util.MathUtil;
 
-public class AnimationProcessor<T extends IAnimatable<?>> {
+public class AnimationProcessor {
 	private final List<IBone> modelRendererList = new ArrayList<>();
 
-	public void tickAnimation(IAnimatable<?> entity, double seekTime, MolangParser parser, boolean crashWhenCantFindBone) {
-		this.tickAnimation(entity, seekTime, parser, crashWhenCantFindBone, true);
-	}
-
-	public void tickAnimation(IAnimatable<?> entity, double seekTime, MolangParser parser, boolean crashWhenCantFindBone, boolean runClientEffects) {
+	public void tickAnimation(IAnimatable<?> entity, double seekTime, boolean crashWhenCantFindBone, boolean runClientEffects) {
 		// Each animation has it's own collection of animations (called the
 		// EntityAnimationManager), which allows for multiple independent animations
 		AbstractAnimationData<?> animationData = entity.getAnimationData();
 		// Keeps track of which bones have had animations applied to them, and
 		// eventually sets the ones that don't have an animation to their default values
-		HashMap<String, DirtyTracker> modelTracker = this.createNewDirtyTracker();
+		Map<String, DirtyTracker> modelTracker = this.createNewDirtyTracker();
 
 		// Store the current value of each bone rotation/position/scale
 		this.updateBoneSnapshots(animationData.getBoneSnapshotCollection());
 
-		HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshots = animationData.getBoneSnapshotCollection();
+		Map<String, Pair<IBone, BoneSnapshot>> boneSnapshots = animationData.getBoneSnapshotCollection();
 
 		//create anim values list to store the changes in
 		BoneAnimationValuesList boneAnimationValues = new BoneAnimationValuesList();
@@ -47,7 +43,7 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 		//get changes from all anim controllers
 		for (AnimationController<?, ?> controller : animationData.getAnimationControllers().values()) {
 			controller.isJustStarting = animationData.isFirstTick;
-			controller.process(animationData, seekTime, this.modelRendererList, boneSnapshots, parser, crashWhenCantFindBone);
+			controller.process(seekTime, this.modelRendererList, boneSnapshots, crashWhenCantFindBone);
 
 			for (BoneAnimationQueue boneAnimation : controller.getBoneAnimationQueues().values()) {
 				IBone bone = boneAnimation.bone;
@@ -110,7 +106,7 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 
 				//custom instructions
 				for (EventKeyFrame.CustomInstructionKeyFrame customInstructionEvent : controller.drainCustomInstructionEvents()) {
-					MolangUtils.parseValue(parser, animationData, customInstructionEvent.instruction);
+					MolangUtils.parseValue(animationData, customInstructionEvent.instruction);
 				}
 			}
 			else {
@@ -163,7 +159,6 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 			dirtyTracker.hasScaleChanged = true;
 		}
 
-		double resetTickLength = animationData.getResetSpeed();
 		BoneAnimationValuesList dBoneAnimationValues = new BoneAnimationValuesList();
 		for (Map.Entry<String, DirtyTracker> tracker : modelTracker.entrySet()) {
 			IBone model = tracker.getValue().model;
@@ -174,9 +169,8 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 					throw new RuntimeException(
 							"Could not find save snapshot for bone: " + tracker.getValue().model.getName()
 									+ ". Please don't add bones that are used in an animation at runtime.");
-				} else {
-					continue;
 				}
+				else continue;
 			}
 
 			if (!tracker.getValue().hasRotationChanged) {
@@ -185,9 +179,7 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 					saveSnapshot.isCurrentlyRunningRotationAnimation = false;
 				}
 
-				double percentageReset = resetTickLength <= 0
-						? 1
-						: Math.min((seekTime - saveSnapshot.mostRecentResetRotationTick + 1D) / resetTickLength, 1);
+				double percentageReset = Math.min((seekTime - saveSnapshot.mostRecentResetRotationTick + 1D), 1);
 
 				dBoneAnimationValues.addRotations(
 						model.getName(),
@@ -208,9 +200,7 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 					saveSnapshot.isCurrentlyRunningPositionAnimation = false;
 				}
 
-				double percentageReset = resetTickLength <= 0
-						? 1
-						: Math.min((seekTime - saveSnapshot.mostRecentResetPositionTick + 1D) / resetTickLength, 1);
+				double percentageReset = Math.min((seekTime - saveSnapshot.mostRecentResetPositionTick + 1D), 1);
 
 				dBoneAnimationValues.addPositions(
 						model.getName(),
@@ -231,16 +221,11 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 					saveSnapshot.isCurrentlyRunningScaleAnimation = false;
 				}
 
-				double percentageReset = resetTickLength <= 0
-						? 1
-						: Math.min((seekTime - saveSnapshot.mostRecentResetScaleTick + 1D) / resetTickLength, 1);
+				double percentageReset = Math.min((seekTime - saveSnapshot.mostRecentResetScaleTick + 1D), 1);
 
-				model.setScaleX(
-						MathUtil.lerpValues(percentageReset, saveSnapshot.scaleValueX, initialSnapshot.scaleValueX));
-				model.setScaleY(
-						MathUtil.lerpValues(percentageReset, saveSnapshot.scaleValueY, initialSnapshot.scaleValueY));
-				model.setScaleZ(
-						MathUtil.lerpValues(percentageReset, saveSnapshot.scaleValueZ, initialSnapshot.scaleValueZ));
+				model.setScaleX(MathUtil.lerpValues(percentageReset, saveSnapshot.scaleValueX, initialSnapshot.scaleValueX));
+				model.setScaleY(MathUtil.lerpValues(percentageReset, saveSnapshot.scaleValueY, initialSnapshot.scaleValueY));
+				model.setScaleZ(MathUtil.lerpValues(percentageReset, saveSnapshot.scaleValueZ, initialSnapshot.scaleValueZ));
 				saveSnapshot.scaleValueX = model.getScaleX();
 				saveSnapshot.scaleValueY = model.getScaleY();
 				saveSnapshot.scaleValueZ = model.getScaleZ();
@@ -249,15 +234,15 @@ public class AnimationProcessor<T extends IAnimatable<?>> {
 		animationData.isFirstTick = false;
 	}
 
-	private HashMap<String, DirtyTracker> createNewDirtyTracker() {
-		HashMap<String, DirtyTracker> tracker = new HashMap<>();
+	private Map<String, DirtyTracker> createNewDirtyTracker() {
+		Map<String, DirtyTracker> tracker = new HashMap<>();
 		for (IBone bone : modelRendererList) {
 			tracker.put(bone.getName(), new DirtyTracker(false, false, false, bone));
 		}
 		return tracker;
 	}
 
-	private void updateBoneSnapshots(HashMap<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection) {
+	private void updateBoneSnapshots(Map<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection) {
 		for (IBone bone : modelRendererList) {
 			if (!boneSnapshotCollection.containsKey(bone.getName())) {
 				boneSnapshotCollection.put(bone.getName(), Pair.of(bone, new BoneSnapshot(bone.getInitialSnapshot())));

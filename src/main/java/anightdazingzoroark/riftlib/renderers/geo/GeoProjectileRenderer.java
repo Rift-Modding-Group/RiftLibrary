@@ -35,7 +35,7 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile<?>> extends Rende
 
 	@Override
 	public void doRender(T entity, double x, double y, double z, float entityYaw, float partialTicks) {
-        GeoModel model = this.modelProvider.getClientModel(this.modelProvider.getModelLocation(entity));
+        GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(entity));
 
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(x, y, z);

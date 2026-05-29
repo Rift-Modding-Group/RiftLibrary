@@ -74,7 +74,7 @@ public class BoneAnimationValuesList {
         return new float[]{1f, 1f, 1f};
     }
 
-    private class BoneAnimationValues {
+    private static class BoneAnimationValues {
         protected float[] rotation = {0f, 0f, 0f};
         protected float[] position = {0f, 0f, 0f};
         protected float[] scale = {1f, 1f, 1f};

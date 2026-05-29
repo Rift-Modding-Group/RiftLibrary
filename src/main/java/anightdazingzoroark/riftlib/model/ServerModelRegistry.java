@@ -31,11 +31,9 @@ public class ServerModelRegistry {
     @SuppressWarnings("unchecked")
     public static <T extends IAnimatable<?>> AnimatedGeoModel<T> getServerModel(T animatable) {
         AnimatedGeoModel<?> cachedModel = SERVER_MODELS.get(animatable);
-
         if (cachedModel != null) return (AnimatedGeoModel<T>) cachedModel;
 
         Supplier<? extends AnimatedGeoModel<?>> factory = findFactory(animatable.getClass());
-
         if (factory == null) return null;
 
         AnimatedGeoModel<?> model = factory.get();

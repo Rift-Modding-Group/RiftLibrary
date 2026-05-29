@@ -5,15 +5,9 @@ import java.util.*;
 import anightdazingzoroark.riftlib.animation.AnimationFile;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
-import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateRayPos;
-import anightdazingzoroark.riftlib.proxy.ServerProxy;
 
-import anightdazingzoroark.riftlib.ray.IRayCreator;
-import anightdazingzoroark.riftlib.ray.RayTicker;
-import anightdazingzoroark.riftlib.ray.RiftLibRay;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.common.MinecraftForge;
 import anightdazingzoroark.riftlib.animation.AnimationTicker;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
@@ -28,10 +22,9 @@ import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 import anightdazingzoroark.riftlib.model.provider.IAnimatableModelProvider;
 import anightdazingzoroark.riftlib.resource.client.RiftLibCacheClient;
 import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.lwjglx.util.vector.Quaternion;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoModelProvider<T> implements IAnimatableModel<T>, IAnimatableModelProvider<T> {
@@ -83,29 +76,10 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		if (!this.animationProcessor.getModelRendererList().isEmpty()) {
 			this.animationProcessor.tickAnimation(
 					entity, this.seekTime,
-					RiftLibCacheClient.getInstance().parser,
-					this.shouldCrashOnMissing
+					this.shouldCrashOnMissing,
+					true
 			);
 		}
-	}
-
-	@SideOnly(Side.CLIENT)
-	@Override
-	public Animation getClientAnimations(String name, IAnimatable<?> animatable) {
-		Map<ResourceLocation, AnimationFile> animations = RiftLibCacheClient.getInstance().getAnimations();
-		return animations.get(this.getAnimationFileLocation((T) animatable)).getAnimation(name);
-	}
-
-	@SideOnly(Side.CLIENT)
-	@Override
-	public GeoModel getClientModel(ResourceLocation location) {
-		GeoModel model = super.getClientModel(location);
-		if (model == null) throw new GeoModelException(location, "Could not find model.");
-
-		//change current model
-		if (model != this.currentModel) this.setCurrentModel(model);
-
-		return model;
 	}
 	//-----client only stuff ends here-----
 
@@ -114,7 +88,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		AbstractAnimationData<?> animData = entity.getAnimationData();
 
 		//model is set here
-		GeoModel model = this.getServerModel(this.getModelLocation(entity));
+		GeoModel model = this.getModel(this.getModelLocation(entity));
 		if (model != this.currentModel) this.setCurrentModel(model);
 
 		//create and update locators on the model
@@ -128,27 +102,10 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		if (!this.animationProcessor.getModelRendererList().isEmpty()) {
 			this.animationProcessor.tickAnimation(
 					entity, animData.tick,
-					animData.getParser(),
 					this.shouldCrashOnMissing,
 					false
 			);
 		}
-	}
-
-	@Override
-	public Animation getServerAnimations(String name, IAnimatable<?> animatable) {
-		Map<ResourceLocation, AnimationFile> animations = RiftLibCacheServer.getInstance().getAnimations();
-		return animations.get(this.getAnimationFileLocation((T) animatable)).getAnimation(name);
-	}
-
-	@Override
-	public GeoModel getServerModel(ResourceLocation location) {
-		GeoModel model = super.getServerModel(location);
-		if (model == null) throw new GeoModelException(location, "Could not find model.");
-
-		//change current model
-		if (model != this.currentModel) this.setCurrentModel(model);
-		return model;
 	}
 	//-----server only stuff ends here-----
 
@@ -156,6 +113,24 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		AbstractAnimationData<?> animData = entity.getAnimationData();
 		animData.createAnimatedLocators(this.currentModel);
 		animData.updateAnimatedLocators();
+	}
+
+	@Override
+	public GeoModel getModel(ResourceLocation location) {
+		GeoModel model = super.getModel(location);
+		if (model == null) throw new GeoModelException(location, "Could not find model.");
+
+		//change current model
+		if (model != this.currentModel) this.setCurrentModel(model);
+
+		return model;
+	}
+
+	@Override
+	public Animation getAnimations(String name, IAnimatable<?> animatable) {
+		Map<ResourceLocation, AnimationFile> animations = FMLCommonHandler.instance().getSide().isClient() ?
+				RiftLibCacheClient.getInstance().getAnimations() : RiftLibCacheServer.getInstance().getAnimations();
+		return animations.get(this.getAnimationFileLocation((T) animatable)).getAnimation(name);
 	}
 
 	/*
@@ -210,10 +185,5 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 			this.registerBone(bone);
 		}
 		this.currentModel = model;
-	}
-
-	@Override //no use, might delete?
-	public double getCurrentTick() {
-		return (Minecraft.getSystemTime() / 50d);
 	}
 }

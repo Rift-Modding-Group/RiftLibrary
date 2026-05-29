@@ -6,17 +6,11 @@ import anightdazingzoroark.riftlib.core.processor.AnimationProcessor;
 import anightdazingzoroark.riftlib.core.processor.IBone;
 
 public interface IAnimatableModel<E> {
-	default double getCurrentTick() {
-		return (System.nanoTime() / 1000000L / 50.0);
-	}
-
 	void setClientAnimations(E entity);
 
 	AnimationProcessor getAnimationProcessor();
 
-	Animation getClientAnimations(String name, IAnimatable<?> animatable);
-
-	Animation getServerAnimations(String name, IAnimatable<?> animatable);
+	Animation getAnimations(String name, IAnimatable<?> animatable);
 
 	/**
 	 * Gets a bone by name.

@@ -1,7 +1,9 @@
 package anightdazingzoroark.riftlib.ridePositionLogic;
 
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
+import anightdazingzoroark.riftlib.model.ServerModelRegistry;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.entity.EntityLivingBase;
@@ -41,6 +43,11 @@ public class DynamicRidePosList {
      * ride positions.
      * */
     public void updateUsableLocators() {
+        EntityLivingBase dynamicRideEntity = this.dynamicRideUser.getDynamicRideUser();
+        if (!dynamicRideEntity.world.isRemote) {
+            ServerModelRegistry.requireServerModel((IAnimatable<?>) dynamicRideEntity, "server ride positions");
+        }
+
         //---define set for existing position names---
         Set<String> existingPosNames = new HashSet<>();
 

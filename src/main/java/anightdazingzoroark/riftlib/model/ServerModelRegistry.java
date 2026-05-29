@@ -19,13 +19,22 @@ public class ServerModelRegistry {
         SERVER_MODEL_FACTORIES.put(animatableClass, modelFactory);
     }
 
-    public static <T extends IAnimatable<?>> void registerServerModel(Class<T> animatableClass, AnimatedGeoModel<T> model) {
-        ensureModelFetcherRegistered();
-        SERVER_MODEL_FACTORIES.put(animatableClass, () -> model);
-    }
-
     public static void clearServerModels() {
         SERVER_MODELS.clear();
+    }
+
+    private static boolean hasServerModel(IAnimatable<?> animatable) {
+        return findFactory(animatable.getClass()) != null;
+    }
+
+    public static void requireServerModel(IAnimatable<?> animatable, String featureName) {
+        if (hasServerModel(animatable)) return;
+
+        Class<?> animatableClass = animatable.getClass();
+        throw new IllegalStateException(
+                "Cannot create " + featureName + " for " + animatableClass.getName() +
+                        " because no AnimatedGeoModel has been registered on the server!"
+        );
     }
 
     @SuppressWarnings("unchecked")

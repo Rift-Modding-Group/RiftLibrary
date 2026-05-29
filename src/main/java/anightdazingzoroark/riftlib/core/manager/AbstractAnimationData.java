@@ -86,6 +86,7 @@ public abstract class AbstractAnimationData<T> {
         return this.animationMessageEffects;
     }
 
+    //-----animated locator stuff starts here-----
     public void createAnimatedLocators(GeoModel model) {
         //update animated locators based on the model
         if (this.currentModel != model) {
@@ -128,6 +129,7 @@ public abstract class AbstractAnimationData<T> {
     public List<AnimatedLocator> getAnimatedLocators() {
         return this.animatedLocators;
     }
+    //-----animated locator stuff ends here-----
 
     //check if all animations in the current state in the given controller have reached the end of their play cycle
     public boolean allAnimationsFinished(String controllerName) {

@@ -1,9 +1,11 @@
 package anightdazingzoroark.riftlib.hitbox;
 
+import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.RiftLibLinkerRegistry;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
+import anightdazingzoroark.riftlib.model.ServerModelRegistry;
 import anightdazingzoroark.riftlib.util.HitboxUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -35,6 +37,7 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
         //search definition list
         HitboxDefinitionList definitionList = entity.world.isRemote ? hitboxLinker.getClientHitboxDefinitionList(entity) : hitboxLinker.getServerHitboxDefinitionList(entity);
         if (definitionList == null || definitionList == this.getHitboxDefinitionList()) return;
+        if (!entity.world.isRemote) ServerModelRegistry.requireServerModel(entity, "server hitboxes");
 
         AnimationDataEntity animData = entity.getAnimationData();
         if (animData.getAnimatedLocators().isEmpty()) return;

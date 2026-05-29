@@ -28,11 +28,12 @@ public class DynamicRidePosList {
     @NotNull
     private List<Vec3d> passengerWorldPositions = new ArrayList<>();
     @NotNull
-    public final Map<Integer, Vec3d> passengerRenderPositions = new HashMap<>();
+    public final DynamicRidePosSnapshot snapshot;
 
     public DynamicRidePosList(@NotNull IDynamicRideUser<?> dynamicRideUser, @NotNull AnimationDataEntity animData) {
         this.dynamicRideUser = dynamicRideUser;
         this.animData = animData;
+        this.snapshot = new DynamicRidePosSnapshot(dynamicRideUser);
     }
 
     /**

@@ -1,12 +1,11 @@
 package anightdazingzoroark.riftlib.renderers.geo;
 
 import java.util.List;
-import java.util.Map;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
-import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosTicker;
+import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosSnapshot;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
 import com.google.common.collect.Lists;
 
@@ -73,68 +72,20 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
         this.modelProvider.setClientAnimations(entity);
 		this.modelProvider.createAndUpdateAnimatedLocators(entity);
 
-		//---define passenger render positions and render origin vector if entity is a dynamicrideuser---
-		Map<Integer, Vec3d> passengerRenderPositions = null;
-		Vec3d renderOriginVec = new Vec3d(0, 0, 0);
+		//---define dynamic ride snapshot if entity is a dynamicrideuser---
+		DynamicRidePosSnapshot ridePosSnapshot = null;
 
 		//---cache post-locator passenger render positions for this frame---
 		if (entity instanceof IDynamicRideUser<?> dynamicRideUser && entity.isBeingRidden()) {
-			Entity controller = entity.getControllingPassenger();
-			List<Vec3d> otherPositions;
-			double posX = entity.posX;
-			double posY = entity.posY;
-			double posZ = entity.posZ;
-			float rotationYaw = entity.rotationYaw;
-			float renderYawOffset = entity.renderYawOffset;
-
-			entity.posX = Interpolations.lerp(entity.lastTickPosX, entity.posX, partialTicks);
-			entity.posY = Interpolations.lerp(entity.lastTickPosY, entity.posY, partialTicks);
-			entity.posZ = Interpolations.lerp(entity.lastTickPosZ, entity.posZ, partialTicks);
-			entity.rotationYaw = finalYaw;
-			entity.renderYawOffset = finalYaw;
-			renderOriginVec = new Vec3d(
+			ridePosSnapshot = dynamicRideUser.ridePosList().snapshot;
+			ridePosSnapshot.storeSnapshot(partialTicks, finalYaw);
+			ridePosSnapshot.renderOriginVec = new Vec3d(
 					entity.posX - x,
 					entity.posY - y,
 					entity.posZ - z
 			);
-
-			dynamicRideUser.ridePosList().updatePositions();
-			Map<Integer, Vec3d> renderPositions = dynamicRideUser.ridePosList().passengerRenderPositions;
-			renderPositions.clear();
-			passengerRenderPositions = renderPositions;
-			if (!dynamicRideUser.ridePosList().isEmpty()) {
-				otherPositions = dynamicRideUser.ridePosList().getPassengerWorldPositions();
-
-				for (Entity passenger : entity.getPassengers()) {
-					if (controller != null && controller.equals(passenger)) {
-						Vec3d controllerPos = dynamicRideUser.ridePosList().getControllerWorldPos();
-						if (controllerPos != null) {
-							renderPositions.put(passenger.getEntityId(), new Vec3d(
-									controllerPos.x,
-									controllerPos.y + dynamicRideUser.passengerOffset(passenger),
-									controllerPos.z
-							));
-						}
-					}
-					else {
-						int passengerPosIndex = dynamicRideUser.getPassengerPositionIndex(passenger);
-						if (passengerPosIndex >= 0 && passengerPosIndex < otherPositions.size()) {
-							Vec3d ridePos = otherPositions.get(passengerPosIndex);
-							renderPositions.put(passenger.getEntityId(), new Vec3d(
-									ridePos.x,
-									ridePos.y + dynamicRideUser.passengerOffset(passenger),
-									ridePos.z
-							));
-						}
-					}
-				}
-			}
-
-			entity.posX = posX;
-			entity.posY = posY;
-			entity.posZ = posZ;
-			entity.rotationYaw = rotationYaw;
-			entity.renderYawOffset = renderYawOffset;
+			ridePosSnapshot.cachePassengerRidePositions();
+			ridePosSnapshot.restoreSnapshot();
 		}
 
         GlStateManager.pushMatrix();
@@ -173,30 +124,30 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		GlStateManager.popMatrix();
 
 		//---render passengers at the cached dynamic ride positions if user is dynamicrideuser---
-		if (passengerRenderPositions != null) {
+		if (ridePosSnapshot != null) {
 			for (Entity passenger : entity.getPassengers()) {
-				Vec3d ridePos = passengerRenderPositions.get(passenger.getEntityId());
+				Vec3d ridePos = ridePosSnapshot.getRidePosition(passenger);
 				if (ridePos == null) continue;
 				//1st pos on player passengers must be skipped or else weird things involving the camera will happen
 				//speaking of that, it should already be dealt with in DynamicRidePosTicker
 				if (passenger == Minecraft.getMinecraft().player && Minecraft.getMinecraft().gameSettings.thirdPersonView == 0) continue;
 
-				DynamicRidePosTicker.Client.RENDERING_PASSENGERS.add(passenger.getEntityId());
+				ridePosSnapshot.renderingPassengers.add(passenger.getEntityId());
 				try {
 					//float passengerYaw = passenger.prevRotationYaw + (passenger.rotationYaw - passenger.prevRotationYaw) * partialTicks;
 					float passengerYaw = Interpolations.lerpYaw(passenger.prevRotationYaw, passenger.rotationYaw, partialTicks);
 					this.renderManager.renderEntity(
 							passenger,
-							ridePos.x - renderOriginVec.x,
-							ridePos.y - renderOriginVec.y,
-							ridePos.z - renderOriginVec.z,
+							ridePos.x - ridePosSnapshot.renderOriginVec.x,
+							ridePos.y - ridePosSnapshot.renderOriginVec.y,
+							ridePos.z - ridePosSnapshot.renderOriginVec.z,
 							passengerYaw,
 							partialTicks,
 							false
 					);
 				}
 				finally {
-					DynamicRidePosTicker.Client.RENDERING_PASSENGERS.remove(passenger.getEntityId());
+					ridePosSnapshot.renderingPassengers.remove(passenger.getEntityId());
 				}
 			}
 		}

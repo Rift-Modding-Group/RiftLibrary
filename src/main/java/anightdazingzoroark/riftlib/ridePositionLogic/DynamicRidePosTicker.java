@@ -15,9 +15,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class DynamicRidePosTicker {
     public static class Server {
         //update usable locators on both client and server. much better to
@@ -32,7 +29,6 @@ public class DynamicRidePosTicker {
 
     @SideOnly(Side.CLIENT)
     public static class Client {
-        public static final Set<Integer> RENDERING_PASSENGERS = new HashSet<>();
         private Entity cameraRestoreEntity;
         private double cameraRestorePosX;
         private double cameraRestorePosY;
@@ -49,7 +45,7 @@ public class DynamicRidePosTicker {
         public void onPlayerRenderPre(RenderPlayerEvent.Pre event) {
             EntityPlayer player = event.getEntityPlayer();
             Entity ridingEntity = player.getRidingEntity();
-            if (ridingEntity instanceof IDynamicRideUser<?> && !RENDERING_PASSENGERS.contains(player.getEntityId())) {
+            if (ridingEntity instanceof IDynamicRideUser<?> dynamicRideUser && !dynamicRideUser.ridePosList().snapshot.isRenderingPassenger(player)) {
                 event.setCanceled(true);
             }
         }
@@ -61,7 +57,7 @@ public class DynamicRidePosTicker {
             if (passenger instanceof EntityPlayer) return;
 
             Entity ridingEntity = passenger.getRidingEntity();
-            if (ridingEntity instanceof IDynamicRideUser<?> && !RENDERING_PASSENGERS.contains(passenger.getEntityId())) {
+            if (ridingEntity instanceof IDynamicRideUser<?> dynamicRideUser && !dynamicRideUser.ridePosList().snapshot.isRenderingPassenger(passenger)) {
                 event.setCanceled(true);
             }
         }
@@ -74,47 +70,16 @@ public class DynamicRidePosTicker {
             if (!(passenger.getRidingEntity() instanceof IDynamicRideUser<?> dynamicRideUser)) return;
 
             EntityLivingBase dynamicRideEntity = dynamicRideUser.getDynamicRideUser();
-            Vec3d ridePos = dynamicRideUser.ridePosList().passengerRenderPositions.get(passenger.getEntityId());
-            double posX = dynamicRideEntity.posX;
-            double posY = dynamicRideEntity.posY;
-            double posZ = dynamicRideEntity.posZ;
-            float rotationYaw = dynamicRideEntity.rotationYaw;
-            float renderYawOffset = dynamicRideEntity.renderYawOffset;
-
-            float partialTicks = (float) event.getRenderPartialTicks();
-            dynamicRideEntity.posX = Interpolations.lerp(dynamicRideEntity.lastTickPosX, dynamicRideEntity.posX, partialTicks);
-            dynamicRideEntity.posY = Interpolations.lerp(dynamicRideEntity.lastTickPosY, dynamicRideEntity.posY, partialTicks);
-            dynamicRideEntity.posZ = Interpolations.lerp(dynamicRideEntity.lastTickPosZ, dynamicRideEntity.posZ, partialTicks);
-            dynamicRideEntity.rotationYaw = Interpolations.lerpYaw(dynamicRideEntity.prevRotationYaw, dynamicRideEntity.rotationYaw, partialTicks);
-            dynamicRideEntity.renderYawOffset = dynamicRideEntity.rotationYaw;
-
+            DynamicRidePosSnapshot ridePosSnapshot = dynamicRideUser.ridePosList().snapshot;
+            Vec3d ridePos = ridePosSnapshot.getRidePosition(passenger);
             if (ridePos == null) {
-                dynamicRideUser.ridePosList().updatePositions();
-                Entity controller = dynamicRideEntity.getControllingPassenger();
-                if (controller != null && controller.equals(passenger)) {
-                    ridePos = dynamicRideUser.ridePosList().getControllerWorldPos();
-                }
-                else {
-                    int passengerPosIndex = dynamicRideUser.getPassengerPositionIndex(passenger);
-                    if (passengerPosIndex >= 0 && passengerPosIndex < dynamicRideUser.ridePosList().getPassengerWorldPositions().size()) {
-                        ridePos = dynamicRideUser.ridePosList().getPassengerWorldPositions().get(passengerPosIndex);
-                    }
-                }
-
-                if (ridePos != null) {
-                    ridePos = new Vec3d(
-                            ridePos.x,
-                            ridePos.y + dynamicRideUser.passengerOffset(passenger),
-                            ridePos.z
-                    );
-                }
+                float partialTicks = (float) event.getRenderPartialTicks();
+                float finalYaw = Interpolations.lerpYaw(dynamicRideEntity.prevRotationYaw, dynamicRideEntity.rotationYaw, partialTicks);
+                ridePosSnapshot.storeSnapshot(partialTicks, finalYaw);
+                ridePosSnapshot.cachePassengerRidePositions();
+                ridePosSnapshot.restoreSnapshot();
+                ridePos = ridePosSnapshot.getRidePosition(passenger);
             }
-
-            dynamicRideEntity.posX = posX;
-            dynamicRideEntity.posY = posY;
-            dynamicRideEntity.posZ = posZ;
-            dynamicRideEntity.rotationYaw = rotationYaw;
-            dynamicRideEntity.renderYawOffset = renderYawOffset;
             if (ridePos == null) return;
 
             if (this.cameraRestoreEntity == null) {

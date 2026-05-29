@@ -2,6 +2,7 @@ package anightdazingzoroark.riftlib.core;
 
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
+import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;

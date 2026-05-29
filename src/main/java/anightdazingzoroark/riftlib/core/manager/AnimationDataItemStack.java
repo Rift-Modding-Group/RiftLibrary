@@ -93,4 +93,9 @@ public class AnimationDataItemStack extends AbstractAnimationData<AnimatedItemSt
         if (this.isSameStack(player.getHeldItemOffhand(), stack)) return EnumHand.OFF_HAND;
         return null;
     }
+
+    @Override
+    public World getWorld() {
+        return Minecraft.getMinecraft().world; //temporary as AnimatedItemStackHolder instances are client only... for now
+    }
 }

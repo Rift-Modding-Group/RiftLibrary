@@ -5,6 +5,7 @@ import anightdazingzoroark.riftlib.animation.AnimationFile;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.jsonParsing.RiftLibResourceReader;
+import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.resource.RiftLibResourceHolder;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;
@@ -29,7 +30,6 @@ import java.util.zip.ZipFile;
 
 public class RiftLibCacheServer extends RiftLibResourceHolder {
     private static RiftLibCacheServer INSTANCE;
-
     @NotNull
     private Map<ResourceLocation, AnimationFile> animations = new HashMap<>();
     @NotNull

@@ -1,9 +1,14 @@
 package anightdazingzoroark.riftlib.core.manager;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import anightdazingzoroark.riftlib.util.MiscUtils;
 import anightdazingzoroark.riftlib.util.MolangUtils;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
@@ -49,8 +54,24 @@ public abstract class AbstractAnimationDataEntity<T extends Entity> extends Abst
 
         this.molangQueries.put("query.modified_distance_moved", () -> this.modifiedDistanceMoved);
         this.molangQueries.put("query.distance_from_camera", () -> {
-            if (!this.getHolder().world.isRemote) return 0D;
-            return ClientAnimationDataQueries.distanceFromCamera(this.getHolder());
+            if (!this.getWorld().isRemote) return 0D;
+
+            Entity camera = Minecraft.getMinecraft().getRenderViewEntity();
+            float partialTick = Minecraft.getMinecraft().getRenderPartialTicks();
+
+            if (camera == null) return 0D;
+
+            Vec3d entityCamera = new Vec3d(
+                    Interpolations.lerp(camera.prevPosX, camera.posX, partialTick),
+                    Interpolations.lerp(camera.prevPosY, camera.posY, partialTick),
+                    Interpolations.lerp(camera.prevPosZ, camera.posZ, partialTick)
+            );
+            Vec3d entityPosition = new Vec3d(
+                    Interpolations.lerp(this.getHolder().prevPosX, this.getHolder().posX, partialTick),
+                    Interpolations.lerp(this.getHolder().prevPosY, this.getHolder().posY, partialTick),
+                    Interpolations.lerp(this.getHolder().prevPosZ, this.getHolder().posZ, partialTick)
+            );
+            return entityCamera.add(ActiveRenderInfo.getCameraPosition()).distanceTo(entityPosition);
         });
         this.molangQueries.put("query.is_on_ground", () -> {
             return MolangUtils.booleanToDouble(this.getHolder().onGround);
@@ -67,13 +88,21 @@ public abstract class AbstractAnimationDataEntity<T extends Entity> extends Abst
         this.molangQueries.put("query.ground_speed", this::getHorizontalSpeed);
         this.molangQueries.put("query.vertical_speed", this::getVerticalSpeed);
         this.molangQueries.put("query.yaw_speed", () -> {
-            if (!this.getHolder().world.isRemote) {
+            if (!this.getWorld().isRemote) {
                 return (double) (this.getHolder().rotationYaw - this.getHolder().prevRotationYaw);
             }
-            return ClientAnimationDataQueries.yawSpeed(this.getHolder());
+            float partialTick = Minecraft.getMinecraft().getRenderPartialTicks();
+            float currentEntityYaw = Interpolations.lerpYaw(this.getHolder().prevRotationYaw, this.getHolder().rotationYaw, partialTick);
+            float prevEntityYaw = Interpolations.lerpYaw(this.getHolder().prevRotationYaw, this.getHolder().rotationYaw, partialTick - 0.1f);
+            return (double) (currentEntityYaw - prevEntityYaw);
         });
         this.molangQueries.put("query.is_riding", () -> {
             return MolangUtils.booleanToDouble(this.getHolder().isRiding());
         });
+    }
+
+    @Override
+    public World getWorld() {
+        return this.getHolder().world;
     }
 }

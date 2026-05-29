@@ -11,11 +11,14 @@ import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
+import anightdazingzoroark.riftlib.resource.client.RiftLibCacheClient;
+import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
 import anightdazingzoroark.riftlib.util.MolangUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
@@ -39,7 +42,9 @@ public abstract class AbstractAnimationData<T> {
     protected final Map<String, Supplier<Double>> molangQueries = new HashMap<>();
     private final List<AnimatedLocator> animatedLocators = new ArrayList<>();
     private int animatedLocatorTicker;
-    private final MolangParser parser = new MolangParser();
+    @NotNull
+    private final MolangParser parser;
+    @NotNull
     public final MolangScope dataScope = new MolangScope();
     private GeoModel currentModel;
     public double tick;
@@ -56,6 +61,8 @@ public abstract class AbstractAnimationData<T> {
     public AbstractAnimationData(@NotNull T holder, @NotNull IAnimatable<?> animatable) {
         this.holder = holder;
         this.animatable = animatable;
+        //looks unintuitive i know, but its to prevent NPEs from armor data
+        this.parser = FMLCommonHandler.instance().getSide().isClient() ? RiftLibCacheClient.getInstance().parser : RiftLibCacheServer.getInstance().parser;
         this.createMolangQueries();
         this.initAnimationControllers();
         this.initAnimationVariables();
@@ -230,11 +237,7 @@ public abstract class AbstractAnimationData<T> {
         });
     }
 
-    private World getWorld() {
-        if (this.holder instanceof Entity entity) return entity.world;
-        if (this.holder instanceof TileEntity tileEntity) return tileEntity.getWorld();
-        return null;
-    }
+    public abstract World getWorld();
 
     public Map<String, Supplier<Double>> getMolangQueries() {
         return Map.copyOf(this.molangQueries);

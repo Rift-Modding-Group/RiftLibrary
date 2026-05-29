@@ -5,6 +5,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
 public class AnimationDataArmor extends AbstractAnimationData<RiftLibArmor> {
@@ -16,7 +17,6 @@ public class AnimationDataArmor extends AbstractAnimationData<RiftLibArmor> {
     public AnimationDataArmor(RiftLibArmor armor) {
         super(armor, armor);
     }
-
 
     @Override
     public void updateOnDataTick() {}
@@ -64,5 +64,11 @@ public class AnimationDataArmor extends AbstractAnimationData<RiftLibArmor> {
         toReturn.setInteger("ArmorSlot", this.slot != null ? this.slot.ordinal() : -1);
         toReturn.setTag("Stack", this.stack.writeToNBT(new NBTTagCompound()));
         return toReturn;
+    }
+
+    @Override
+    public World getWorld() {
+        if (this.wearer == null) return null;
+        return this.wearer.world;
     }
 }

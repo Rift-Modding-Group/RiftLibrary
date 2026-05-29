@@ -4,7 +4,9 @@ import anightdazingzoroark.riftlib.animation.AnimationFile;
 import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.jsonParsing.RiftLibLoader;
+import anightdazingzoroark.riftlib.molang.MolangParser;
 import net.minecraft.util.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
@@ -13,7 +15,10 @@ import java.util.Map;
  * Side-specific subclasses are responsible for discovering and opening files.
  */
 public abstract class RiftLibResourceHolder {
+    @NotNull
     protected final RiftLibLoader loader;
+    @NotNull
+    public final MolangParser parser = new MolangParser();
 
     protected RiftLibResourceHolder() {
         this.loader = new RiftLibLoader();

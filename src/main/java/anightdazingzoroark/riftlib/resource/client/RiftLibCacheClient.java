@@ -36,8 +36,6 @@ import org.jetbrains.annotations.NotNull;
 @SuppressWarnings("deprecation")
 public class RiftLibCacheClient extends RiftLibResourceHolder implements IResourceManagerReloadListener {
 	private static RiftLibCacheClient INSTANCE;
-
-	public final MolangParser parser = new MolangParser();
 	@NotNull
 	private Map<ResourceLocation, AnimationFile> animations = new HashMap<>();
 	@NotNull

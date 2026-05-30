@@ -24,7 +24,7 @@ import anightdazingzoroark.riftlib.core.util.MathUtil;
 public class AnimationProcessor {
 	private final List<IBone> modelRendererList = new ArrayList<>();
 
-	public void tickAnimation(IAnimatable<?, ?> entity, double seekTime, boolean crashWhenCantFindBone, boolean runClientEffects) {
+	public void tickAnimation(IAnimatable<?> entity, double seekTime, boolean crashWhenCantFindBone, boolean runClientEffects) {
 		// Each animation has it's own collection of animations (called the
 		// EntityAnimationManager), which allows for multiple independent animations
 		AbstractAnimationData<?, ?> animationData = entity.getAnimationData();

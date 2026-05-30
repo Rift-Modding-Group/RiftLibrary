@@ -1,20 +1,10 @@
 package anightdazingzoroark.riftlib.core.manager;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.molang.MolangParser;
-import anightdazingzoroark.riftlib.molang.utils.Interpolations;
-import anightdazingzoroark.riftlib.util.MiscUtils;
 import anightdazingzoroark.riftlib.util.MolangUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.Vec3d;
 import org.jspecify.annotations.NonNull;
-
-import java.util.HashMap;
-import java.util.function.BiFunction;
 
 public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivingBase, AnimationDataEntity> {
     public AnimationDataEntity(EntityLivingBase holder) {
@@ -44,8 +34,8 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
         });
     }
 
-    private static IAnimatable<?, AnimationDataEntity> getAnimatable(EntityLivingBase holder) {
-        if (holder instanceof IAnimatable<?, ?>) return (IAnimatable<?, AnimationDataEntity>) holder;
+    private static IAnimatable<AnimationDataEntity> getAnimatable(EntityLivingBase holder) {
+        if (holder instanceof IAnimatable<?>) return (IAnimatable<AnimationDataEntity>) holder;
         throw new IllegalArgumentException("AnimationDataEntity holder must implement IAnimatable");
     }
 }

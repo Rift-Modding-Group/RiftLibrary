@@ -20,7 +20,7 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class AvianRunnerEntity extends EntityCreature implements IAnimatable<AvianRunnerEntity, AnimationDataEntity> {
+public class AvianRunnerEntity extends EntityCreature implements IAnimatable<AnimationDataEntity> {
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
 
     public AvianRunnerEntity(World worldIn) {

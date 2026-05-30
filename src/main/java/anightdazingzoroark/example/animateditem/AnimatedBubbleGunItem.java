@@ -6,7 +6,7 @@ import anightdazingzoroark.riftlib.core.manager.AnimationDataItemStack;
 import anightdazingzoroark.riftlib.item.AnimatedItemStackHolder;
 import net.minecraft.item.ItemStack;
 
-public class AnimatedBubbleGunItem extends AnimatedItemStackHolder<AnimatedBubbleGunItem> {
+public class AnimatedBubbleGunItem extends AnimatedItemStackHolder {
     public AnimatedBubbleGunItem(ItemStack stack) {
         super(stack);
     }

@@ -34,9 +34,9 @@ import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 import anightdazingzoroark.riftlib.util.AnimationUtils;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable<A, AnimationDataEntity>> extends Render<A> implements IGeoRenderer<A> {
+public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable<AnimationDataEntity>> extends Render<A> implements IGeoRenderer<A> {
 	static {
-		AnimationController.addModelFetcher((IAnimatable<?, ?> object) -> {
+		AnimationController.addModelFetcher((IAnimatable<?> object) -> {
 			if (object instanceof Entity entity) {
 				return (IAnimatableModel<Object>) AnimationUtils.getGeoModelForEntity(entity);
 			}

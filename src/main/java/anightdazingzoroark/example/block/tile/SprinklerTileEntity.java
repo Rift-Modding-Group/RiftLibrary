@@ -8,7 +8,7 @@ import net.minecraft.tileentity.TileEntity;
 
 import java.util.List;
 
-public class SprinklerTileEntity extends TileEntity implements IAnimatable<SprinklerTileEntity, AnimationDataTileEntity> {
+public class SprinklerTileEntity extends TileEntity implements IAnimatable<AnimationDataTileEntity> {
     private final AnimationDataTileEntity animationData = new AnimationDataTileEntity(this);
 
     @Override

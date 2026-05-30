@@ -8,7 +8,7 @@ import net.minecraft.util.ResourceLocation;
 
 //this class is, just like with the model classes for rendering an entity
 //is for assigning files to be linked to a creatures hitboxes
-public abstract class EntityHitboxLinker<A extends IAnimatable<A, AnimationDataEntity> & IMultiHitboxUser<?>> {
+public abstract class EntityHitboxLinker<A extends IAnimatable<AnimationDataEntity> & IMultiHitboxUser<?>> {
     //obvious choice
     public abstract ResourceLocation getHitboxFileLocation(A entity);
 

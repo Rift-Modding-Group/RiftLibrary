@@ -16,7 +16,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
-public abstract class RiftLibProjectile<T extends RiftLibProjectile<T>> extends EntityArrow implements IAnimatable<T, AnimationDataProjectile> {
+public abstract class RiftLibProjectile extends EntityArrow implements IAnimatable<AnimationDataProjectile> {
     private final AnimationDataProjectile data = new AnimationDataProjectile(this);
 
     public RiftLibProjectile(World worldIn) {
@@ -49,8 +49,7 @@ public abstract class RiftLibProjectile<T extends RiftLibProjectile<T>> extends 
                     EntityLivingBase parent = (EntityLivingBase)(((MultiPartEntityPart) entity).parent);
                     this.projectileEntityEffects(parent);
                 }
-                else if (entity instanceof EntityLivingBase) {
-                    EntityLivingBase entitylivingbase = (EntityLivingBase) entity;
+                else if (entity instanceof EntityLivingBase entitylivingbase) {
                     this.projectileEntityEffects(entitylivingbase);
                 }
 

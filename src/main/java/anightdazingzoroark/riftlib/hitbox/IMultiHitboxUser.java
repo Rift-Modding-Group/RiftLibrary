@@ -16,7 +16,7 @@ import net.minecraft.util.DamageSource;
 import java.util.ArrayList;
 import java.util.List;
 
-public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<T, AnimationDataEntity>> extends IEntityMultiPart {
+public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<AnimationDataEntity>> extends IEntityMultiPart {
     //get the parent
     //must always return the entity its being implemented in
     //so its return statement in the entity implementing this should be "return this;"

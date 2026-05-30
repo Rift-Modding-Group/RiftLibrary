@@ -14,13 +14,13 @@ public class ServerModelTicker {
         if (event.phase != TickEvent.Phase.END) return;
 
         for (Entity entity : event.world.getLoadedEntityList()) {
-            if (entity instanceof IAnimatable<?, ?> animatable) {
+            if (entity instanceof IAnimatable<?> animatable) {
                 this.update(animatable);
             }
         }
 
         for (TileEntity tileEntity : event.world.loadedTileEntityList) {
-            if (tileEntity instanceof IAnimatable<?, ?> animatable) {
+            if (tileEntity instanceof IAnimatable<?> animatable) {
                 this.update(animatable);
             }
         }
@@ -34,7 +34,7 @@ public class ServerModelTicker {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void update(IAnimatable<?, ?> animatable) {
+    private void update(IAnimatable<?> animatable) {
         AnimatedGeoModel model = ServerModelRegistry.getServerModel(animatable);
         if (model == null) return;
         model.setServerAnimations(animatable);

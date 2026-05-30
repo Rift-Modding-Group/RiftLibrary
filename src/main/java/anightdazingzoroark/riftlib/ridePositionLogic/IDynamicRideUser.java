@@ -9,7 +9,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.List;
 
-public interface IDynamicRideUser<T extends EntityLivingBase & IAnimatable<T, AnimationDataEntity>> {
+public interface IDynamicRideUser<T extends EntityLivingBase & IAnimatable<AnimationDataEntity>> {
     /**
      * Get the parent. Must always return the entity its being implemented in.
      * */

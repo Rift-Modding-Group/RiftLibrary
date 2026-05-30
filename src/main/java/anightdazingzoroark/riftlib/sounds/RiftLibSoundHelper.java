@@ -16,7 +16,7 @@ public class RiftLibSoundHelper {
     /**
      * This function is used in AnimationProcessor to play a sound event registered in RiftLibSoundEffectRegistry.
      */
-    public static void playSound(IAnimatable<?, ?> source, AnimatedLocator locator, String soundName) {
+    public static void playSound(IAnimatable<?> source, AnimatedLocator locator, String soundName) {
         if (!RiftLibSoundEffectRegistry.soundEffectMap.containsKey(soundName)) return;
 
         SoundEvent soundEvent = RiftLibSoundEffectRegistry.soundEffectMap.get(soundName).right;
@@ -47,7 +47,7 @@ public class RiftLibSoundHelper {
         ServerProxy.MESSAGE_WRAPPER.sendTo(new RiftLibPlaySoundForPlayer(targetPlayer, soundName, soundCategory), (EntityPlayerMP) targetPlayer);
     }
 
-    private static SoundCategory getSoundCategoryFromAnimatable(IAnimatable<?, ?> source) {
+    private static SoundCategory getSoundCategoryFromAnimatable(IAnimatable<?> source) {
         if (source.getAnimationData() instanceof AnimationDataEntity entitySrc) return entitySrc.getHolder().getSoundCategory();
         else if (source.getAnimationData() instanceof AnimationDataEntity) return SoundCategory.BLOCKS;
         //will add back soon

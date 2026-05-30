@@ -10,7 +10,7 @@ public interface IAnimatableModel<E> {
 
 	AnimationProcessor getAnimationProcessor();
 
-	Animation getAnimations(String name, IAnimatable<?, ?> animatable);
+	Animation getAnimations(String name, IAnimatable<?> animatable);
 
 	/**
 	 * Gets a bone by name.

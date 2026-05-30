@@ -22,10 +22,10 @@ import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 
 @SuppressWarnings({ "unchecked" })
-public abstract class GeoTileEntityRenderer<A extends TileEntity & IAnimatable<A, AnimationDataTileEntity>> extends TileEntitySpecialRenderer<A>
+public abstract class GeoTileEntityRenderer<A extends TileEntity & IAnimatable<AnimationDataTileEntity>> extends TileEntitySpecialRenderer<A>
 		implements IGeoRenderer<A> {
 	static {
-		AnimationController.addModelFetcher((IAnimatable<?, ?> object) -> {
+		AnimationController.addModelFetcher((IAnimatable<?> object) -> {
 			if (object instanceof TileEntity tile) {
 				TileEntitySpecialRenderer<TileEntity> renderer = TileEntityRendererDispatcher.instance
 						.getRenderer(tile);

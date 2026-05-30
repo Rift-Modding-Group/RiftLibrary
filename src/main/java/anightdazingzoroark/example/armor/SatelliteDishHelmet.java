@@ -9,7 +9,7 @@ import net.minecraft.inventory.EntityEquipmentSlot;
 
 import java.util.List;
 
-public class SatelliteDishHelmet extends RiftLibArmor<SatelliteDishHelmet> {
+public class SatelliteDishHelmet extends RiftLibArmor {
     public SatelliteDishHelmet(ArmorMaterial materialIn, int renderIndexIn) {
         super(materialIn, renderIndexIn, EntityEquipmentSlot.HEAD);
         this.setCreativeTab(RiftLibMod.getRiftlibItemGroup());

@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
  * An animation controller contains the states between which an animatable object
  * will switch between and manages the playing of animations and controls them.
  * */
-public class AnimationController<A extends IAnimatable<A, D>, D extends AbstractAnimationData<?, D>> {
+public class AnimationController<A extends IAnimatable<D>, D extends AbstractAnimationData<?, D>> {
     static List<ModelFetcher<?>> modelFetchers = new ArrayList<>();
 
     private final A animatable;
@@ -413,9 +413,9 @@ public class AnimationController<A extends IAnimatable<A, D>, D extends Abstract
     }
 
     @FunctionalInterface
-    public interface ModelFetcher<T> extends Function<IAnimatable<?, ?>, IAnimatableModel<T>> {}
+    public interface ModelFetcher<T> extends Function<IAnimatable<?>, IAnimatableModel<T>> {}
 
-    private static class SingleAnimationRuntime<A extends IAnimatable<A, D>, D extends AbstractAnimationData<?, D>> {
+    private static class SingleAnimationRuntime<A extends IAnimatable<D>, D extends AbstractAnimationData<?, D>> {
         private final Map<String, BoneAnimationQueue> boneAnimationQueues = new HashMap<>();
         private final Map<String, BoneSnapshot> boneSnapshots = new HashMap<>();
         private final Set<EventKeyFrame> executedKeyFrames = new HashSet<>();
@@ -904,7 +904,6 @@ public class AnimationController<A extends IAnimatable<A, D>, D extends Abstract
             double resolved = fallbackTick;
 
             if (this.hasAnimTimeExpression()) {
-                MolangParser parser = this.animatable.getAnimationData().getParser();
                 resolved = MolangUtils.parseValueAndGet(this.animatable.getAnimationData(), this.currentAnimation.animTimeUpdateExpression) * this.animationSpeed * 20D;
             }
 

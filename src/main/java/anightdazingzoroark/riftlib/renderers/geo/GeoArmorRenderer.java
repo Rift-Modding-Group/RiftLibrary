@@ -25,12 +25,12 @@ import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import anightdazingzoroark.riftlib.util.GeoUtils;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public abstract class GeoArmorRenderer<T extends RiftLibArmor<T>> extends ModelBiped
+public abstract class GeoArmorRenderer<T extends RiftLibArmor> extends ModelBiped
 		implements IGeoRenderer<T> {
 	private static final Map<Class<? extends RiftLibArmor>, GeoArmorRenderer<?>> renderers = new ConcurrentHashMap<>();
 
 	static {
-		AnimationController.addModelFetcher((IAnimatable<?, ?> object) -> {
+		AnimationController.addModelFetcher((IAnimatable<?> object) -> {
 			if (object instanceof RiftLibArmor armor) {
 				GeoArmorRenderer<?> renderer = renderers.get(armor.getClass());
 				return renderer == null ? null : (IAnimatableModel<Object>) renderer.getGeoModelProvider();

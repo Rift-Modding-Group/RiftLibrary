@@ -14,9 +14,7 @@ import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.resource.client.RiftLibCacheClient;
 import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
 import anightdazingzoroark.riftlib.util.MolangUtils;
-import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.apache.commons.lang3.tuple.Pair;
@@ -26,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 /**
@@ -35,10 +32,8 @@ import java.util.function.Supplier;
 public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T, D>> {
     @NotNull
     private final T holder;
-    @NotNull
-    private final IAnimatable<?, D> animatable;
     private final Map<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection = new HashMap<>();
-    private final Map<String, AnimationController<?, ?>> animationControllers = new HashMap<>();
+    private final Map<String, AnimationController<? extends IAnimatable<D>, D>> animationControllers = new HashMap<>();
     private final List<AnimatableValue> initAnimationValues = new ArrayList<>();
     private final List<AnimatableValue> onUpdateAnimationValues = new ArrayList<>();
     private final Map<String, AnimatableRunValue> animationMessageEffects = new HashMap<>();
@@ -62,14 +57,13 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
 
     public AbstractAnimationData(
             @NotNull T holder,
-            @NotNull IAnimatable<?, D> animatable
+            @NotNull IAnimatable<D> animatable
     ) {
         this.holder = holder;
-        this.animatable = animatable;
         //looks unintuitive i know, but its to prevent NPEs from armor data
         this.parser = FMLCommonHandler.instance().getSide().isClient() ? RiftLibCacheClient.getInstance().parser : RiftLibCacheServer.getInstance().parser;
         this.createMolangQueries();
-        this.animatable.initializeAnimationData((D) this);
+        animatable.initializeAnimationData((D) this);
         this.initAnimationVariables();
     }
 
@@ -82,7 +76,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     /**
      * This registers animation controllers
      * */
-    public void addAnimationController(AnimationController<?, ?> animationController) {
+    public void addAnimationController(AnimationController<? extends IAnimatable<D>, D> animationController) {
         this.animationControllers.put(animationController.getName(), animationController);
     }
 
@@ -159,7 +153,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
         return this.boneSnapshotCollection;
     }
 
-    public Map<String, AnimationController<?, ?>> getAnimationControllers() {
+    public Map<String, AnimationController<? extends IAnimatable<D>, D>> getAnimationControllers() {
         return this.animationControllers;
     }
 
@@ -169,7 +163,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
 
     //check if all animations in the current state in the given controller have reached the end of their play cycle
     public boolean allAnimationsFinished(String controllerName) {
-        for (Map.Entry<String, AnimationController<?, ?>> animationControllerEntry : this.animationControllers.entrySet()) {
+        for (Map.Entry<String, AnimationController<? extends IAnimatable<D>, D>> animationControllerEntry : this.animationControllers.entrySet()) {
             if (!(animationControllerEntry.getKey().equals(controllerName))) continue;
             return animationControllerEntry.getValue().allAnimationsFinished();
         }

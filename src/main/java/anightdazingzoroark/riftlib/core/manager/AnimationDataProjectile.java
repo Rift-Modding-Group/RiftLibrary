@@ -1,23 +1,11 @@
 package anightdazingzoroark.riftlib.core.manager;
 
-import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.molang.MolangParser;
-import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import anightdazingzoroark.riftlib.projectile.RiftLibProjectile;
-import anightdazingzoroark.riftlib.util.MiscUtils;
-import anightdazingzoroark.riftlib.util.MolangUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.ActiveRenderInfo;
-import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.Vec3d;
 import org.jspecify.annotations.NonNull;
 
-import java.util.HashMap;
-import java.util.function.BiFunction;
-
-public class AnimationDataProjectile extends AbstractAnimationDataEntity<RiftLibProjectile<?>, AnimationDataProjectile> {
-    public AnimationDataProjectile(RiftLibProjectile<?> holder) {
+public class AnimationDataProjectile extends AbstractAnimationDataEntity<RiftLibProjectile, AnimationDataProjectile> {
+    public AnimationDataProjectile(RiftLibProjectile holder) {
         super(holder, holder);
     }
 

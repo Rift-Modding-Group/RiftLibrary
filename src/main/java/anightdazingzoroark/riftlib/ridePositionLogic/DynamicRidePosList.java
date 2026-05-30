@@ -45,7 +45,7 @@ public class DynamicRidePosList {
     public void updateUsableLocators() {
         EntityLivingBase dynamicRideEntity = this.dynamicRideUser.getDynamicRideUser();
         if (!dynamicRideEntity.world.isRemote) {
-            ServerModelRegistry.requireServerModel((IAnimatable<?, ?>) dynamicRideEntity, "server ride positions");
+            ServerModelRegistry.requireServerModel((IAnimatable<?>) dynamicRideEntity, "server ride positions");
         }
 
         //---define set for existing position names---

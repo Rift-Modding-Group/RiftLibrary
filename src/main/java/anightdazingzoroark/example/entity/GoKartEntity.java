@@ -12,7 +12,7 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class GoKartEntity extends EntityCreature implements IAnimatable<GoKartEntity, AnimationDataEntity> {
+public class GoKartEntity extends EntityCreature implements IAnimatable<AnimationDataEntity> {
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
 
     public GoKartEntity(World worldIn) {

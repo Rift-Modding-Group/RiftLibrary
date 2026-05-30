@@ -6,7 +6,7 @@ import anightdazingzoroark.riftlib.core.manager.AnimationDataItemStack;
 import anightdazingzoroark.riftlib.item.AnimatedItemStackHolder;
 import net.minecraft.item.ItemStack;
 
-public class AnimatedFireworkStickItem extends AnimatedItemStackHolder<AnimatedFireworkStickItem> {
+public class AnimatedFireworkStickItem extends AnimatedItemStackHolder {
     public AnimatedFireworkStickItem(ItemStack stack) {
         super(stack);
     }

@@ -34,8 +34,8 @@ public class AnimationDataTileEntity extends AbstractAnimationData<TileEntity, A
         return this.getHolder().getWorld();
     }
 
-    private static IAnimatable<?, AnimationDataTileEntity> getAnimatable(TileEntity holder) {
-        if (holder instanceof IAnimatable<?, ?>) return (IAnimatable<?, AnimationDataTileEntity>) holder;
+    private static IAnimatable<AnimationDataTileEntity> getAnimatable(TileEntity holder) {
+        if (holder instanceof IAnimatable<?>) return (IAnimatable<AnimationDataTileEntity>) holder;
         throw new IllegalArgumentException("AnimationDataTileEntity holder must implement IAnimatable");
     }
 }

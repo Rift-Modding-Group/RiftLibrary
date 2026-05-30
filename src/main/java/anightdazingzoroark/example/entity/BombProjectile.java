@@ -8,7 +8,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 
-public class BombProjectile extends RiftLibProjectile<BombProjectile> {
+public class BombProjectile extends RiftLibProjectile {
     public BombProjectile(World worldIn) {
         super(worldIn);
     }

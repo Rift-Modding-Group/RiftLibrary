@@ -6,7 +6,7 @@ import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataTileEntity;
 import net.minecraft.tileentity.TileEntity;
 
-public class MerryGoRoundTileEntity extends TileEntity implements IAnimatable<MerryGoRoundTileEntity, AnimationDataTileEntity> {
+public class MerryGoRoundTileEntity extends TileEntity implements IAnimatable<AnimationDataTileEntity> {
     private final AnimationDataTileEntity animationData = new AnimationDataTileEntity(this);
 
     @Override

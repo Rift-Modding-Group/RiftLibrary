@@ -39,6 +39,8 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     private final IAnimatable<?, D> animatable;
     private final Map<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection = new HashMap<>();
     private final Map<String, AnimationController<?, ?>> animationControllers = new HashMap<>();
+    private final List<AnimatableValue> initAnimationValues = new ArrayList<>();
+    private final List<AnimatableValue> onUpdateAnimationValues = new ArrayList<>();
     private final Map<String, AnimatableRunValue> animationMessageEffects = new HashMap<>();
     protected final Map<String, Supplier<Double>> molangQueries = new HashMap<>();
     private final List<AnimatedLocator> animatedLocators = new ArrayList<>();
@@ -68,10 +70,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
         this.parser = FMLCommonHandler.instance().getSide().isClient() ? RiftLibCacheClient.getInstance().parser : RiftLibCacheServer.getInstance().parser;
         this.createMolangQueries();
         this.animatable.initializeAnimationData((D) this);
-
-        this.initAnimationControllers();
         this.initAnimationVariables();
-        this.initAnimationMessageEffects();
     }
 
     @NotNull
@@ -79,17 +78,37 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
         return this.holder;
     }
 
-    public Map<String, Pair<IBone, BoneSnapshot>> getBoneSnapshotCollection() {
-        return this.boneSnapshotCollection;
+    //-----initialization methods start here-----
+    /**
+     * This registers animation controllers
+     * */
+    public void addAnimationController(AnimationController<?, ?> animationController) {
+        this.animationControllers.put(animationController.getName(), animationController);
     }
 
-    public Map<String, AnimationController<?, ?>> getAnimationControllers() {
-        return this.animationControllers;
+    /**
+     * This only runs once and will run when this object just started rendering
+     * This is meant for updating molang variables once.
+     */
+    public void addInitAnimationValue(AnimatableValue animatableValue) {
+        this.initAnimationValues.add(animatableValue);
     }
 
-    public Map<String, AnimatableRunValue> getAnimationMessageEffects() {
-        return this.animationMessageEffects;
+    /**
+     * This runs as long as the holder gets rendered on client or ticked on server
+     * This is meant for updating molang variables repeatedly
+     */
+    public void addOnUpdateAnimationValue(AnimatableValue animatableValue) {
+        this.onUpdateAnimationValues.add(animatableValue);
     }
+
+    /**
+     * This allows for running custom code from animations on the server or client
+     */
+    public void addAnimationMessageEffect(String name, AnimatableRunValue animMessageEffect) {
+        this.animationMessageEffects.put(name, animMessageEffect);
+    }
+    //-----initialization methods end here-----
 
     //-----animated locator stuff starts here-----
     public void createAnimatedLocators(GeoModel model) {
@@ -136,6 +155,18 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     }
     //-----animated locator stuff ends here-----
 
+    public Map<String, Pair<IBone, BoneSnapshot>> getBoneSnapshotCollection() {
+        return this.boneSnapshotCollection;
+    }
+
+    public Map<String, AnimationController<?, ?>> getAnimationControllers() {
+        return this.animationControllers;
+    }
+
+    public Map<String, AnimatableRunValue> getAnimationMessageEffects() {
+        return this.animationMessageEffects;
+    }
+
     //check if all animations in the current state in the given controller have reached the end of their play cycle
     public boolean allAnimationsFinished(String controllerName) {
         for (Map.Entry<String, AnimationController<?, ?>> animationControllerEntry : this.animationControllers.entrySet()) {
@@ -145,33 +176,16 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
         return false;
     }
 
-    private void initAnimationControllers() {
-        IAnimatable<?, D> animatable = this.animatable;
-
-        List<? extends AnimationController<?, ?>> controllers = animatable.createAnimationControllers();
-        for (AnimationController<?, ?> controller : controllers) {
-            this.animationControllers.put(controller.getName(), controller);
-        }
-    }
-
     private void initAnimationVariables() {
-        List<AnimatableValue> initAnimatableValues = this.animatable.createAnimationVariables();
-        for (AnimatableValue animatableValue : initAnimatableValues) {
+        for (AnimatableValue animatableValue : this.initAnimationValues) {
             MolangUtils.parseValue(this.parser, this.dataScope, animatableValue);
         }
     }
 
     public void updateAnimationVariables() {
-        List<AnimatableValue> updateAnimatableValues = this.animatable.tickAnimationVariables();
-        for (AnimatableValue animatableValue : updateAnimatableValues) {
+        for (AnimatableValue animatableValue : this.onUpdateAnimationValues) {
             MolangUtils.parseValue(this.parser, this.dataScope, animatableValue);
         }
-    }
-
-    private void initAnimationMessageEffects() {
-        IAnimatable<?, D> animatable = this.animatable;
-        Map<String, AnimatableRunValue> messageEffects = animatable.createAnimationMessageEffects();
-        this.animationMessageEffects.putAll(messageEffects);
     }
 
     public double getVariable(String name) {

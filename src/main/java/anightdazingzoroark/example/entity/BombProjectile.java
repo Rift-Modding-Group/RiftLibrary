@@ -8,8 +8,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 
-import java.util.List;
-
 public class BombProjectile extends RiftLibProjectile<BombProjectile> {
     public BombProjectile(World worldIn) {
         super(worldIn);
@@ -44,15 +42,13 @@ public class BombProjectile extends RiftLibProjectile<BombProjectile> {
     }
 
     @Override
-    public List<AnimationController<BombProjectile, AnimationDataProjectile>> createAnimationControllers() {
-        return List.of(
-                new AnimationController<BombProjectile, AnimationDataProjectile>(
-                        this, "bomb", "default",
-                        new AnimationControllerState<AnimationDataProjectile>("default")
-                                .addAnimation("animation.bomb.flame_particles")
-                                .addAnimation("animation.bomb.sounds")
-                )
-        );
+    public void initializeAnimationData(AnimationDataProjectile animationData) {
+        animationData.addAnimationController(new AnimationController<BombProjectile, AnimationDataProjectile>(
+                this, "bomb", "default",
+                new AnimationControllerState<AnimationDataProjectile>("default")
+                        .addAnimation("animation.bomb.flame_particles")
+                        .addAnimation("animation.bomb.sounds")
+        ));
     }
 
     @Override

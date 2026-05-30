@@ -12,18 +12,16 @@ public class SprinklerTileEntity extends TileEntity implements IAnimatable<Sprin
     private final AnimationDataTileEntity animationData = new AnimationDataTileEntity(this);
 
     @Override
-    public List<AnimationController<SprinklerTileEntity, AnimationDataTileEntity>> createAnimationControllers() {
-        return List.of(
-                new AnimationController<SprinklerTileEntity, AnimationDataTileEntity>(
-                        this, "sprinkler", "default",
-                        new AnimationControllerState<AnimationDataTileEntity>("default")
-                                .addAnimation("animation.sprinkler.spinning")
-                                .addAnimation("animation.sprinkler.hose_water_zero")
-                                .addAnimation("animation.sprinkler.hose_water_one")
-                                .addAnimation("animation.sprinkler.hose_water_two")
-                                .addAnimation("animation.sprinkler.hose_water_three")
-                )
-        );
+    public void initializeAnimationData(AnimationDataTileEntity animationData) {
+        animationData.addAnimationController(new AnimationController<SprinklerTileEntity, AnimationDataTileEntity>(
+                this, "sprinkler", "default",
+                new AnimationControllerState<AnimationDataTileEntity>("default")
+                        .addAnimation("animation.sprinkler.spinning")
+                        .addAnimation("animation.sprinkler.hose_water_zero")
+                        .addAnimation("animation.sprinkler.hose_water_one")
+                        .addAnimation("animation.sprinkler.hose_water_two")
+                        .addAnimation("animation.sprinkler.hose_water_three")
+        ));
     }
 
     @Override

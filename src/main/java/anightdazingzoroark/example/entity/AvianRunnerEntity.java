@@ -1,9 +1,11 @@
 package anightdazingzoroark.example.entity;
 
+import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataTileEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLivingBase;
@@ -99,17 +101,15 @@ public class AvianRunnerEntity extends EntityCreature implements IAnimatable<Avi
     //ride management stuff ends here
 
     @Override
-    public List<AnimationController<AvianRunnerEntity, AnimationDataEntity>> createAnimationControllers() {
-        return List.of(
-                new AnimationController<AvianRunnerEntity, AnimationDataEntity>(
-                        this, "movement", "default",
-                        new AnimationControllerState<AnimationDataEntity>("default")
-                                .addStateTransition("running", AnimationDataEntity::isMoving),
-                        new AnimationControllerState<AnimationDataEntity>("running", 0.1)
-                                .addAnimation("animation.avian_runner.run")
-                                .addStateTransition("default", data -> !data.isMoving())
-                )
-        );
+    public void initializeAnimationData(AnimationDataEntity animationData) {
+        animationData.addAnimationController(new AnimationController<AvianRunnerEntity, AnimationDataEntity>(
+                this, "movement", "default",
+                new AnimationControllerState<AnimationDataEntity>("default")
+                        .addStateTransition("running", AnimationDataEntity::isMoving),
+                new AnimationControllerState<AnimationDataEntity>("running", 0.1)
+                        .addAnimation("animation.avian_runner.run")
+                        .addStateTransition("default", data -> !data.isMoving())
+        ));
     }
 
     @Override

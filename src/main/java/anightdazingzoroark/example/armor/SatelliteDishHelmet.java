@@ -16,14 +16,12 @@ public class SatelliteDishHelmet extends RiftLibArmor<SatelliteDishHelmet> {
     }
 
     @Override
-    public List<AnimationController<SatelliteDishHelmet, AnimationDataArmor>> createAnimationControllers() {
-        return List.of(
-                new AnimationController<SatelliteDishHelmet, AnimationDataArmor>(
-                        this, "satelliteDish", "default",
-                        new AnimationControllerState<AnimationDataArmor>("default")
-                                .addAnimation("animation.satellite_dish_helmet.spin")
-                                .addAnimation("animation.satellite_dish_helmet.signal")
-                )
-        );
+    public void initializeAnimationData(AnimationDataArmor animationData) {
+        animationData.addAnimationController(new AnimationController<SatelliteDishHelmet, AnimationDataArmor>(
+                this, "satelliteDish", "default",
+                new AnimationControllerState<AnimationDataArmor>("default")
+                        .addAnimation("animation.satellite_dish_helmet.spin")
+                        .addAnimation("animation.satellite_dish_helmet.signal")
+        ));
     }
 }

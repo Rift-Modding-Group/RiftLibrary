@@ -1,11 +1,8 @@
 package anightdazingzoroark.example.animateditem;
 
-import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataItemStack;
 import anightdazingzoroark.riftlib.item.AnimatedItemStackHolder;
 import net.minecraft.item.ItemStack;
-
-import java.util.List;
 
 public class AnimatedSimpleItemStack extends AnimatedItemStackHolder<AnimatedSimpleItemStack> {
     public AnimatedSimpleItemStack(ItemStack stack) {
@@ -13,7 +10,5 @@ public class AnimatedSimpleItemStack extends AnimatedItemStackHolder<AnimatedSim
     }
 
     @Override
-    public List<AnimationController<AnimatedSimpleItemStack, AnimationDataItemStack>> createAnimationControllers() {
-        return List.of();
-    }
+    public void initializeAnimationData(AnimationDataItemStack animationData) {}
 }

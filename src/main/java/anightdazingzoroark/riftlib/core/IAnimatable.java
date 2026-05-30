@@ -12,40 +12,15 @@ import java.util.Map;
  * This interface must be applied to any object that wants to be animated
  */
 public interface IAnimatable<A extends IAnimatable<A, D>, D extends AbstractAnimationData<?, D>> {
+    /**
+     * The animation data for the object that will be animated.
+     * */
     D getAnimationData();
 
-    default void initializeAnimationData(D animationData) {}
-
     /**
-     * This registers animation controllers
+     * Operations relevant to the initialization of animation data
+     * are to be run here, such as animation controllers, molang
+     * variable initialization, etc.
      * */
-    List<AnimationController<A, D>> createAnimationControllers();
-
-    /**
-     * This only runs once and will run when this object just started rendering
-     * This is meant for updating molang variables once
-     *
-     * @return A List of AnimatableValues.
-     */
-    default List<AnimatableValue> createAnimationVariables() {
-        return new ArrayList<>();
-    }
-
-    /**
-     * This runs as long as the rendered object gets rendered
-     * This is meant for updating molang variables repeatedly
-     *
-     * @return A List of AnimatableValues.
-     */
-    default List<AnimatableValue> tickAnimationVariables() {
-        return new ArrayList<>();
-    }
-
-    /**
-     * This allows for running custom code from animations on the server or client
-     *
-     */
-    default Map<String, AnimatableRunValue> createAnimationMessageEffects() {
-        return Map.of();
-    }
+    void initializeAnimationData(D animationData);
 }

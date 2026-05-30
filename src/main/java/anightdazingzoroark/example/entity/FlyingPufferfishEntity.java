@@ -112,27 +112,20 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
     //ray stuff ends here
 
     @Override
-    public List<AnimationController<FlyingPufferfishEntity, AnimationDataEntity>> createAnimationControllers() {
-        return List.of(
-                new AnimationController<FlyingPufferfishEntity, AnimationDataEntity>(
-                        this, "puff", "default",
-                        new AnimationControllerState<AnimationDataEntity>("default")
-                                .addAnimation("animation.flying_pufferfish.inflate_loop")
-                )
-        );
+    public void initializeAnimationData(AnimationDataEntity animationData) {
+        animationData.addAnimationController(new AnimationController<FlyingPufferfishEntity, AnimationDataEntity>(
+                this, "puff", "default",
+                new AnimationControllerState<AnimationDataEntity>("default")
+                        .addAnimation("animation.flying_pufferfish.inflate_loop")
+        ));
+
+        animationData.addAnimationMessageEffect("puffUpRay", new AnimatableRunValue(
+                () -> RiftLibRayHelper.createRay(this, "puffUp"), Side.SERVER
+        ));
     }
 
     @Override
     public AnimationDataEntity getAnimationData() {
         return this.animationData;
-    }
-
-    @Override
-    public Map<String, AnimatableRunValue> createAnimationMessageEffects() {
-        return Map.of(
-                "puffUpRay", new AnimatableRunValue(
-                        () -> RiftLibRayHelper.createRay(this, "puffUp"), Side.SERVER
-                )
-        );
     }
 }

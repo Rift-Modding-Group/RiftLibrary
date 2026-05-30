@@ -277,48 +277,42 @@ public class DragonEntity extends EntityCreature implements IAnimatable<DragonEn
         return 8f;
     }
 
+
+    @Override
+    public void initializeAnimationData(AnimationDataEntity animationData) {
+        /*
+        animationData.addAnimationController(new AnimationController<DragonEntity, AnimationDataEntity>(
+                this, "test", "default",
+                new AnimationControllerState<AnimationDataEntity>("default")
+                        .addAnimation("animation.dragon.test")
+        ));
+         */
+        animationData.addAnimationController(new AnimationController<DragonEntity, AnimationDataEntity>(
+                this, "movement", "default",
+                new AnimationControllerState<AnimationDataEntity>("default")
+                        .addAnimation("animation.dragon.flying")
+        ));
+        animationData.addAnimationController(new AnimationController<DragonEntity, AnimationDataEntity>(
+                this, "attack", "default",
+                new AnimationControllerState<AnimationDataEntity>("default")
+                        .addStateTransition("fireBreathAttack", data -> this.isBreathingFire()),
+                new AnimationControllerState<AnimationDataEntity>("fireBreathAttack")
+                        .addAnimation("animation.dragon.breathe_fire_while_flying")
+                        .addStateTransition("default", data -> data.allAnimationsFinished("attack"))
+                        .addExitEffect(new AnimatableValue("'endBreathUse'"))
+        ));
+
+        animationData.addAnimationMessageEffect("startFireBreath", new AnimatableRunValue(() -> {
+            RiftLibRayHelper.createRay(this, "breatheFire");
+        }, Side.SERVER));
+        animationData.addAnimationMessageEffect("endFireBreath", new AnimatableRunValue(() -> {
+            RiftLibRayHelper.killRay(this, "breatheFire");
+        }, Side.SERVER));
+        animationData.addAnimationMessageEffect("endBreathUse", new AnimatableRunValue(() -> this.setBreathingFire(false), Side.CLIENT, Side.SERVER));
+    }
+
     @Override
     public AnimationDataEntity getAnimationData() {
         return this.animationData;
-    }
-
-    @Override
-    public List<AnimationController<DragonEntity, AnimationDataEntity>> createAnimationControllers() {
-        return List.of(
-                /*
-                new AnimationController<DragonEntity, AnimationDataEntity>(
-                        this, "test", "default",
-                        new AnimationControllerState<AnimationDataEntity>("default")
-                                .addAnimation("animation.dragon.test")
-                )
-                 */
-                new AnimationController<DragonEntity, AnimationDataEntity>(
-                        this, "movement", "default",
-                        new AnimationControllerState<AnimationDataEntity>("default")
-                                .addAnimation("animation.dragon.flying")
-                ),
-                new AnimationController<DragonEntity, AnimationDataEntity>(
-                        this, "attack", "default",
-                        new AnimationControllerState<AnimationDataEntity>("default")
-                                .addStateTransition("fireBreathAttack", data -> this.isBreathingFire()),
-                        new AnimationControllerState<AnimationDataEntity>("fireBreathAttack")
-                                .addAnimation("animation.dragon.breathe_fire_while_flying")
-                                .addStateTransition("default", data -> data.allAnimationsFinished("attack"))
-                                .addExitEffect(new AnimatableValue("'endBreathUse'"))
-                )
-        );
-    }
-
-    @Override
-    public Map<String, AnimatableRunValue> createAnimationMessageEffects() {
-        return Map.of(
-                "startFireBreath", new AnimatableRunValue(() -> {
-                    RiftLibRayHelper.createRay(this, "breatheFire");
-                }, Side.SERVER),
-                "endFireBreath", new AnimatableRunValue(() -> {
-                    RiftLibRayHelper.killRay(this, "breatheFire");
-                }, Side.SERVER),
-                "endBreathUse", new AnimatableRunValue(() -> this.setBreathingFire(false), Side.CLIENT, Side.SERVER)
-        );
     }
 }

@@ -1,6 +1,5 @@
 package anightdazingzoroark.example.armor;
 
-import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataArmor;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import anightdazingzoroark.riftlib.RiftLibMod;
@@ -15,7 +14,5 @@ public class GreenArmor extends RiftLibArmor<GreenArmor> {
 	}
 
 	@Override
-	public List<AnimationController<GreenArmor, AnimationDataArmor>> createAnimationControllers() {
-		return List.of();
-	}
+	public void initializeAnimationData(AnimationDataArmor animationData) {}
 }

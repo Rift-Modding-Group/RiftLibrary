@@ -87,14 +87,12 @@ public class GoKartEntity extends EntityCreature implements IAnimatable<GoKartEn
     //ride management stuff ends here
 
     @Override
-    public List<AnimationController<GoKartEntity, AnimationDataEntity>> createAnimationControllers() {
-        return List.of(
-                new AnimationController<GoKartEntity, AnimationDataEntity>(
-                        this, "movement", "default",
-                        new AnimationControllerState<AnimationDataEntity>("default")
-                                .addAnimation("animation.go_kart.move", AnimationDataEntity::isMoving)
-                )
-        );
+    public void initializeAnimationData(AnimationDataEntity animationData) {
+        animationData.addAnimationController(new AnimationController<GoKartEntity, AnimationDataEntity>(
+                this, "movement", "default",
+                new AnimationControllerState<AnimationDataEntity>("default")
+                        .addAnimation("animation.go_kart.move", AnimationDataEntity::isMoving)
+        ));
     }
 
     @Override

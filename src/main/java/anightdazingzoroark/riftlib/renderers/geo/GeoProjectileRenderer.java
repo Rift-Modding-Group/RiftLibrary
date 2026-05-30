@@ -16,9 +16,9 @@ import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 import anightdazingzoroark.riftlib.util.AnimationUtils;
 
 @SuppressWarnings("unchecked")
-public class GeoProjectileRenderer<T extends RiftLibProjectile<?>> extends Render<T> implements IGeoRenderer<T> {
+public class GeoProjectileRenderer<T extends RiftLibProjectile<T>> extends Render<T> implements IGeoRenderer<T> {
 	static {
-		AnimationController.addModelFetcher((IAnimatable<?> object) -> {
+		AnimationController.addModelFetcher((IAnimatable<?, ?> object) -> {
 			if (object instanceof RiftLibProjectile) {
 				return (IAnimatableModel<Object>) AnimationUtils.getGeoModelForEntity((RiftLibProjectile) object);
 			}

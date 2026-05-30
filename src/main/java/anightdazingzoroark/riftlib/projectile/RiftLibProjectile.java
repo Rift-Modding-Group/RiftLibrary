@@ -16,7 +16,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
-public abstract class RiftLibProjectile<T extends RiftLibProjectile<?>> extends EntityArrow implements IAnimatable<AnimationDataProjectile> {
+public abstract class RiftLibProjectile<T extends RiftLibProjectile<T>> extends EntityArrow implements IAnimatable<T, AnimationDataProjectile> {
     private final AnimationDataProjectile data = new AnimationDataProjectile(this);
 
     public RiftLibProjectile(World worldIn) {

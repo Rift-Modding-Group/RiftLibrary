@@ -15,7 +15,7 @@ import org.jspecify.annotations.NonNull;
 public abstract class AbstractAnimationDataEntity<T extends Entity> extends AbstractAnimationData<T> {
     private double modifiedDistanceMoved;
 
-    public AbstractAnimationDataEntity(@NonNull T holder, @NotNull IAnimatable<?> animatable) {
+    public AbstractAnimationDataEntity(@NonNull T holder, @NotNull IAnimatable<?, ?> animatable) {
         super(holder, animatable);
     }
 

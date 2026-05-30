@@ -22,10 +22,10 @@ import anightdazingzoroark.riftlib.geo.render.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 
 @SuppressWarnings({ "unchecked" })
-public abstract class GeoTileEntityRenderer<T extends TileEntity & IAnimatable<AnimationDataTileEntity>> extends TileEntitySpecialRenderer<T>
-		implements IGeoRenderer<T> {
+public abstract class GeoTileEntityRenderer<A extends TileEntity & IAnimatable<A, AnimationDataTileEntity>> extends TileEntitySpecialRenderer<A>
+		implements IGeoRenderer<A> {
 	static {
-		AnimationController.addModelFetcher((IAnimatable<?> object) -> {
+		AnimationController.addModelFetcher((IAnimatable<?, ?> object) -> {
 			if (object instanceof TileEntity tile) {
 				TileEntitySpecialRenderer<TileEntity> renderer = TileEntityRendererDispatcher.instance
 						.getRenderer(tile);
@@ -37,18 +37,18 @@ public abstract class GeoTileEntityRenderer<T extends TileEntity & IAnimatable<A
 		});
 	}
 
-	private final AnimatedGeoModel<T> modelProvider;
+	private final AnimatedGeoModel<A> modelProvider;
 
-	public GeoTileEntityRenderer(AnimatedGeoModel<T> modelProvider) {
+	public GeoTileEntityRenderer(AnimatedGeoModel<A> modelProvider) {
 		this.modelProvider = modelProvider;
 	}
 
 	@Override
-	public void render(T te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
+	public void render(A te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
 		this.render(te, x, y, z, partialTicks, destroyStage);
 	}
 
-	public void render(T tile, double x, double y, double z, float partialTicks, int destroyStage) {
+	public void render(A tile, double x, double y, double z, float partialTicks, int destroyStage) {
 		GeoModel model = modelProvider.getModel(modelProvider.getModelLocation(tile));
 		this.modelProvider.setClientAnimations(tile);
 		this.modelProvider.createAndUpdateAnimatedLocators(tile);
@@ -77,7 +77,7 @@ public abstract class GeoTileEntityRenderer<T extends TileEntity & IAnimatable<A
 	}
 
 	@Override
-	public AnimatedGeoModel<T> getGeoModelProvider() {
+	public AnimatedGeoModel<A> getGeoModelProvider() {
 		return this.modelProvider;
 	}
 
@@ -104,7 +104,7 @@ public abstract class GeoTileEntityRenderer<T extends TileEntity & IAnimatable<A
 		}
 	}
 
-	private EnumFacing getFacing(T tile) {
+	private EnumFacing getFacing(A tile) {
 		IBlockState blockState = tile.getWorld().getBlockState(tile.getPos());
 
 		if (blockState.getPropertyKeys().contains(BlockHorizontal.FACING)) {
@@ -117,7 +117,7 @@ public abstract class GeoTileEntityRenderer<T extends TileEntity & IAnimatable<A
 	}
 
 	@Override
-	public ResourceLocation getTextureLocation(T instance) {
+	public ResourceLocation getTextureLocation(A instance) {
 		return this.modelProvider.getTextureLocation(instance);
 	}
 }

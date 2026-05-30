@@ -8,14 +8,14 @@ import anightdazingzoroark.riftlib.armor.RiftLibArmor;
 
 import java.util.List;
 
-public class GreenArmor extends RiftLibArmor {
+public class GreenArmor extends RiftLibArmor<GreenArmor> {
 	public GreenArmor(ArmorMaterial materialIn, int renderIndexIn, EntityEquipmentSlot slot) {
 		super(materialIn, renderIndexIn, slot);
 		this.setCreativeTab(RiftLibMod.getRiftlibItemGroup());
 	}
 
 	@Override
-	public List<AnimationController<?, AnimationDataArmor>> createAnimationControllers() {
+	public List<AnimationController<GreenArmor, AnimationDataArmor>> createAnimationControllers() {
 		return List.of();
 	}
 }

@@ -13,7 +13,7 @@ public class AnimatedSimpleItemStack extends AnimatedItemStackHolder<AnimatedSim
     }
 
     @Override
-    public List<AnimationController<?, AnimationDataItemStack>> createAnimationControllers() {
+    public List<AnimationController<AnimatedSimpleItemStack, AnimationDataItemStack>> createAnimationControllers() {
         return List.of();
     }
 }

@@ -37,7 +37,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
-public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IRayCreator<DragonEntity>, IMultiHitboxUser<DragonEntity>, IDynamicRideUser<DragonEntity> {
+public class DragonEntity extends EntityCreature implements IAnimatable<DragonEntity, AnimationDataEntity>, IRayCreator<DragonEntity>, IMultiHitboxUser<DragonEntity>, IDynamicRideUser<DragonEntity> {
     private static final DataParameter<Boolean> BREATHING_FIRE = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
     private final DynamicRidePosList ridePositions;
@@ -283,7 +283,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     }
 
     @Override
-    public List<AnimationController<?, AnimationDataEntity>> createAnimationControllers() {
+    public List<AnimationController<DragonEntity, AnimationDataEntity>> createAnimationControllers() {
         return List.of(
                 /*
                 new AnimationController<DragonEntity, AnimationDataEntity>(

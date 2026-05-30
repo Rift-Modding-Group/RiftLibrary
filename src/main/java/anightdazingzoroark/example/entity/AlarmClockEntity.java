@@ -11,7 +11,7 @@ import net.minecraft.world.World;
 
 import java.util.List;
 
-public class AlarmClockEntity extends EntityLiving implements IAnimatable<AnimationDataEntity> {
+public class AlarmClockEntity extends EntityLiving implements IAnimatable<AlarmClockEntity, AnimationDataEntity> {
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
 
     public AlarmClockEntity(World worldIn) {
@@ -19,7 +19,7 @@ public class AlarmClockEntity extends EntityLiving implements IAnimatable<Animat
     }
 
     @Override
-    public List<AnimationController<?, AnimationDataEntity>> createAnimationControllers() {
+    public List<AnimationController<AlarmClockEntity, AnimationDataEntity>> createAnimationControllers() {
         return List.of(
                 new AnimationController<AlarmClockEntity, AnimationDataEntity>(
                         this, "clock", "default",

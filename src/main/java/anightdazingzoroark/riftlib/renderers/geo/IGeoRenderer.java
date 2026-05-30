@@ -124,7 +124,7 @@ public interface IGeoRenderer<T> {
 	default void renderAfter(T animatable, float ticks, float red, float green, float blue, float partialTicks) {}
 
     default void repositionAnimatedLocators(T animatable) {
-        if (!(animatable instanceof IAnimatable<?> animatableObject)) return;
+        if (!(animatable instanceof IAnimatable<?, ?> animatableObject)) return;
 
         List<AnimatedLocator> animatedLocators = animatableObject.getAnimationData().getAnimatedLocators();
         for (AnimatedLocator animatedLocator : animatedLocators) {

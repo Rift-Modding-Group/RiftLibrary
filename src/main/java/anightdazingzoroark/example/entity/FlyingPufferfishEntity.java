@@ -27,7 +27,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import java.util.List;
 import java.util.Map;
 
-public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<AnimationDataEntity>, IMultiHitboxUser<FlyingPufferfishEntity>, IRayCreator<FlyingPufferfishEntity> {
+public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<FlyingPufferfishEntity, AnimationDataEntity>, IMultiHitboxUser<FlyingPufferfishEntity>, IRayCreator<FlyingPufferfishEntity> {
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
     private final Map<String, RiftLibRay.Builder> rayMap;
     private HitboxDefinitionList hitboxDefinitionList;
@@ -112,7 +112,7 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
     //ray stuff ends here
 
     @Override
-    public List<AnimationController<?, AnimationDataEntity>> createAnimationControllers() {
+    public List<AnimationController<FlyingPufferfishEntity, AnimationDataEntity>> createAnimationControllers() {
         return List.of(
                 new AnimationController<FlyingPufferfishEntity, AnimationDataEntity>(
                         this, "puff", "default",

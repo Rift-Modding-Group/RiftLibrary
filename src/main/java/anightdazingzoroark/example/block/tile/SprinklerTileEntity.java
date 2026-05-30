@@ -8,11 +8,11 @@ import net.minecraft.tileentity.TileEntity;
 
 import java.util.List;
 
-public class SprinklerTileEntity extends TileEntity implements IAnimatable<AnimationDataTileEntity> {
+public class SprinklerTileEntity extends TileEntity implements IAnimatable<SprinklerTileEntity, AnimationDataTileEntity> {
     private final AnimationDataTileEntity animationData = new AnimationDataTileEntity(this);
 
     @Override
-    public List<AnimationController<?, AnimationDataTileEntity>> createAnimationControllers() {
+    public List<AnimationController<SprinklerTileEntity, AnimationDataTileEntity>> createAnimationControllers() {
         return List.of(
                 new AnimationController<SprinklerTileEntity, AnimationDataTileEntity>(
                         this, "sprinkler", "default",

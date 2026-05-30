@@ -13,7 +13,7 @@ public class AnimatedBombItem extends AnimatedItemStackHolder<AnimatedBombItem> 
     }
 
     @Override
-    public List<AnimationController<?, AnimationDataItemStack>> createAnimationControllers() {
+    public List<AnimationController<AnimatedBombItem, AnimationDataItemStack>> createAnimationControllers() {
         return List.of();
     }
 }

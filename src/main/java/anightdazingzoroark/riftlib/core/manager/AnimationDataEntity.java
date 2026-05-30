@@ -44,8 +44,8 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
         });
     }
 
-    private static IAnimatable<?> getAnimatable(EntityLivingBase holder) {
-        if (holder instanceof IAnimatable<?>) return (IAnimatable<?>) holder;
-        throw new IllegalArgumentException("AnimationDataEntity holder must implement IAnimatableNew");
+    private static IAnimatable<?, ?> getAnimatable(EntityLivingBase holder) {
+        if (holder instanceof IAnimatable<?, ?>) return (IAnimatable<?, ?>) holder;
+        throw new IllegalArgumentException("AnimationDataEntity holder must implement IAnimatable");
     }
 }

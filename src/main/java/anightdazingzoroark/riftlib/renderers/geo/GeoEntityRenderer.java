@@ -34,9 +34,9 @@ import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 import anightdazingzoroark.riftlib.util.AnimationUtils;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable<AnimationDataEntity>> extends Render<T> implements IGeoRenderer<T> {
+public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable<A, AnimationDataEntity>> extends Render<A> implements IGeoRenderer<A> {
 	static {
-		AnimationController.addModelFetcher((IAnimatable<?> object) -> {
+		AnimationController.addModelFetcher((IAnimatable<?, ?> object) -> {
 			if (object instanceof Entity entity) {
 				return (IAnimatableModel<Object>) AnimationUtils.getGeoModelForEntity(entity);
 			}
@@ -44,16 +44,16 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		});
 	}
 
-	protected final AnimatedGeoModel<T> modelProvider;
-	protected final List<GeoLayerRenderer<T>> layerRenderers = Lists.newArrayList();
+	protected final AnimatedGeoModel<A> modelProvider;
+	protected final List<GeoLayerRenderer<A>> layerRenderers = Lists.newArrayList();
 
-    public GeoEntityRenderer(RenderManager renderManager, AnimatedGeoModel<T> modelProvider) {
+    public GeoEntityRenderer(RenderManager renderManager, AnimatedGeoModel<A> modelProvider) {
 		super(renderManager);
 		this.modelProvider = modelProvider;
 	}
 
 	@Override
-	public void doRender(T entity, double x, double y, double z, float entityYaw, float partialTicks) {
+	public void doRender(A entity, double x, double y, double z, float entityYaw, float partialTicks) {
         //---get model---
         GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(entity));
 
@@ -107,7 +107,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		}
 
 		if (!(entity instanceof EntityPlayer) || !((EntityPlayer) entity).isSpectator()) {
-			for (GeoLayerRenderer<T> layerRenderer : this.layerRenderers) {
+			for (GeoLayerRenderer<A> layerRenderer : this.layerRenderers) {
 				layerRenderer.render(entity, partialTicks, 0, renderColor);
 			}
 		}
@@ -154,7 +154,7 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 	}
 
 	@Override
-	public ResourceLocation getEntityTexture(T entity) {
+	public ResourceLocation getEntityTexture(A entity) {
 		return getTextureLocation(entity);
 	}
 
@@ -166,11 +166,11 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 	/**
 	 * This must be overriden to effectively rescale the entity's model
 	 */
-	protected float entityScale(T entityLiving) {
+	protected float entityScale(A entityLiving) {
 		return 1f;
 	}
 
-	protected void applyRotations(T entityLiving, float rotationYaw, float partialTicks) {
+	protected void applyRotations(A entityLiving, float rotationYaw, float partialTicks) {
 		//normal model rotation
 		GlStateManager.rotate(180f - rotationYaw, 0, 1, 0);
 		//rotate pitch while dying
@@ -190,24 +190,24 @@ public abstract class GeoEntityRenderer<T extends EntityLivingBase & IAnimatable
 		}
 	}
 
-	protected boolean isVisible(T livingEntityIn) {
+	protected boolean isVisible(A livingEntityIn) {
 		return !livingEntityIn.isInvisible();
 	}
 
-	protected float getDeathMaxRotation(T entityLivingBaseIn) {
+	protected float getDeathMaxRotation(A entityLivingBaseIn) {
 		return 90f;
 	}
 
 	@Override
-	public ResourceLocation getTextureLocation(T instance) {
+	public ResourceLocation getTextureLocation(A instance) {
 		return this.modelProvider.getTextureLocation(instance);
 	}
 
-	public final boolean addLayer(GeoLayerRenderer<T> layer) {
+	public final boolean addLayer(GeoLayerRenderer<A> layer) {
 		return this.layerRenderers.add(layer);
 	}
 
-	protected boolean setDoRenderBrightness(T entityLivingBaseIn, float partialTicks) {
+	protected boolean setDoRenderBrightness(A entityLivingBaseIn, float partialTicks) {
 		return RenderHurtColor.set(entityLivingBaseIn, partialTicks);
 	}
 

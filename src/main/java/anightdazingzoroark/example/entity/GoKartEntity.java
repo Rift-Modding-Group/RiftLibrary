@@ -12,7 +12,7 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class GoKartEntity extends EntityCreature implements IAnimatable<AnimationDataEntity> {
+public class GoKartEntity extends EntityCreature implements IAnimatable<GoKartEntity, AnimationDataEntity> {
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
 
     public GoKartEntity(World worldIn) {
@@ -87,7 +87,7 @@ public class GoKartEntity extends EntityCreature implements IAnimatable<Animatio
     //ride management stuff ends here
 
     @Override
-    public List<AnimationController<?, AnimationDataEntity>> createAnimationControllers() {
+    public List<AnimationController<GoKartEntity, AnimationDataEntity>> createAnimationControllers() {
         return List.of(
                 new AnimationController<GoKartEntity, AnimationDataEntity>(
                         this, "movement", "default",

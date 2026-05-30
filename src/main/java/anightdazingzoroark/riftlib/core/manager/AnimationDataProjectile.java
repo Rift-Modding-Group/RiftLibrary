@@ -18,7 +18,7 @@ import java.util.function.BiFunction;
 
 public class AnimationDataProjectile extends AbstractAnimationDataEntity<RiftLibProjectile<?>> {
     public AnimationDataProjectile(RiftLibProjectile<?> holder) {
-        super(holder, getAnimatable(holder));
+        super(holder, holder);
     }
 
     @Override
@@ -28,10 +28,5 @@ public class AnimationDataProjectile extends AbstractAnimationDataEntity<RiftLib
         toReturn.setString("AnimationTargetType", "Projectile");
         toReturn.setInteger("ProjectileID", this.getHolder().getEntityId());
         return toReturn;
-    }
-
-    private static IAnimatable<?> getAnimatable(RiftLibProjectile<?> holder) {
-        if (holder instanceof IAnimatable<?>) return (IAnimatable<?>) holder;
-        throw new IllegalArgumentException("AnimationDataProjectile holder must implement IAnimatableNew");
     }
 }

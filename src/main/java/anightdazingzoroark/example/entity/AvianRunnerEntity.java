@@ -18,7 +18,7 @@ import net.minecraft.world.World;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class AvianRunnerEntity extends EntityCreature implements IAnimatable<AnimationDataEntity> {
+public class AvianRunnerEntity extends EntityCreature implements IAnimatable<AvianRunnerEntity, AnimationDataEntity> {
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
 
     public AvianRunnerEntity(World worldIn) {
@@ -99,7 +99,7 @@ public class AvianRunnerEntity extends EntityCreature implements IAnimatable<Ani
     //ride management stuff ends here
 
     @Override
-    public List<AnimationController<?, AnimationDataEntity>> createAnimationControllers() {
+    public List<AnimationController<AvianRunnerEntity, AnimationDataEntity>> createAnimationControllers() {
         return List.of(
                 new AnimationController<AvianRunnerEntity, AnimationDataEntity>(
                         this, "movement", "default",

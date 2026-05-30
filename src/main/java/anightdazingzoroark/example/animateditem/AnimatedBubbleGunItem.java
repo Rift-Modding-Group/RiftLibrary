@@ -14,7 +14,7 @@ public class AnimatedBubbleGunItem extends AnimatedItemStackHolder<AnimatedBubbl
     }
 
     @Override
-    public List<AnimationController<?, AnimationDataItemStack>> createAnimationControllers() {
+    public List<AnimationController<AnimatedBubbleGunItem, AnimationDataItemStack>> createAnimationControllers() {
         return List.of(
                 new AnimationController<AnimatedBubbleGunItem, AnimationDataItemStack>(
                         this, "blow", "default",

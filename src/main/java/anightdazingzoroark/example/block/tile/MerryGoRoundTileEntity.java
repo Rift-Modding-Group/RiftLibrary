@@ -8,11 +8,11 @@ import net.minecraft.tileentity.TileEntity;
 
 import java.util.List;
 
-public class MerryGoRoundTileEntity extends TileEntity implements IAnimatable<AnimationDataTileEntity> {
+public class MerryGoRoundTileEntity extends TileEntity implements IAnimatable<MerryGoRoundTileEntity, AnimationDataTileEntity> {
     private final AnimationDataTileEntity animationData = new AnimationDataTileEntity(this);
 
     @Override
-    public List<AnimationController<?, AnimationDataTileEntity>> createAnimationControllers() {
+    public List<AnimationController<MerryGoRoundTileEntity, AnimationDataTileEntity>> createAnimationControllers() {
         return List.of(
                 new AnimationController<MerryGoRoundTileEntity, AnimationDataTileEntity>(
                         this, "rotate", "default",

@@ -14,13 +14,7 @@ public class AnimatedFidgetSpinnerItem extends AnimatedItemStackHolder<AnimatedF
     }
 
     @Override
-    public List<AnimationController<?, AnimationDataItemStack>> createAnimationControllers() {
-        return List.of(
-                new AnimationController<AnimatedFidgetSpinnerItem, AnimationDataItemStack>(
-                        this, "spin", "default",
-                        new AnimationControllerState<AnimationDataItemStack>("default")
-                                .addAnimation("animation.fidget_spinner.spin")
-                )
-        );
+    public List<AnimationController<AnimatedFidgetSpinnerItem, AnimationDataItemStack>> createAnimationControllers() {
+        return List.of();
     }
 }

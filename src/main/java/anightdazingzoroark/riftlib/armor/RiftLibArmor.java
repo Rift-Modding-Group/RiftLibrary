@@ -15,7 +15,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import anightdazingzoroark.riftlib.renderers.geo.GeoArmorRenderer;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public abstract class RiftLibArmor extends ItemArmor implements IAnimatable<AnimationDataArmor> {
+public abstract class RiftLibArmor<T extends RiftLibArmor<T>> extends ItemArmor implements IAnimatable<T, AnimationDataArmor> {
 	private final AnimationDataArmor animationData = new AnimationDataArmor(this);
 
 	public RiftLibArmor(ArmorMaterial materialIn, int renderIndexIn, EntityEquipmentSlot slot) {

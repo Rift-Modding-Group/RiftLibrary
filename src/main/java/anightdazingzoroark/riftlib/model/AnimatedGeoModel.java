@@ -27,7 +27,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoModelProvider<T> implements IAnimatableModel<T>, IAnimatableModelProvider<T> {
+public abstract class AnimatedGeoModel<T extends IAnimatable<?, ?>> extends GeoModelProvider<T> implements IAnimatableModel<T>, IAnimatableModelProvider<T> {
 	private final AnimationProcessor animationProcessor;
 	protected GeoModel currentModel;
 
@@ -127,7 +127,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 	}
 
 	@Override
-	public Animation getAnimations(String name, IAnimatable<?> animatable) {
+	public Animation getAnimations(String name, IAnimatable<?, ?> animatable) {
 		Map<ResourceLocation, AnimationFile> animations = FMLCommonHandler.instance().getSide().isClient() ?
 				RiftLibCacheClient.getInstance().getAnimations() : RiftLibCacheServer.getInstance().getAnimations();
 		return animations.get(this.getAnimationFileLocation((T) animatable)).getAnimation(name);

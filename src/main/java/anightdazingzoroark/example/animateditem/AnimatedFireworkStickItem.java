@@ -14,7 +14,7 @@ public class AnimatedFireworkStickItem extends AnimatedItemStackHolder<AnimatedF
     }
 
     @Override
-    public List<AnimationController<?, AnimationDataItemStack>> createAnimationControllers() {
+    public List<AnimationController<AnimatedFireworkStickItem, AnimationDataItemStack>> createAnimationControllers() {
         return List.of(
                 new AnimationController<AnimatedFireworkStickItem, AnimationDataItemStack>(
                         this, "sparks", "default",

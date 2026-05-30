@@ -44,7 +44,7 @@ public class BombProjectile extends RiftLibProjectile<BombProjectile> {
     }
 
     @Override
-    public List<AnimationController<?, AnimationDataProjectile>> createAnimationControllers() {
+    public List<AnimationController<BombProjectile, AnimationDataProjectile>> createAnimationControllers() {
         return List.of(
                 new AnimationController<BombProjectile, AnimationDataProjectile>(
                         this, "bomb", "default",

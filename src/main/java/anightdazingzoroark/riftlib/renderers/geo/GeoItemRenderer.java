@@ -22,7 +22,7 @@ import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder<?>> extends TileEntityItemStackRenderer implements IGeoRenderer<T> {
+public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder<T>> extends TileEntityItemStackRenderer implements IGeoRenderer<T> {
 	/**
 	 * these constants are for cleaning up cache related to rendering of itemstacks
 	 */
@@ -32,7 +32,7 @@ public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder<?>> exte
 
 	// Register a model fetcher for this renderer
 	static {
-		AnimationController.addModelFetcher((IAnimatable<?> object) -> {
+		AnimationController.addModelFetcher((IAnimatable<?, ?> object) -> {
 			if (object instanceof AnimatedItemStackHolder holder) {
 				Item item = holder.getStack().getItem();
 				TileEntityItemStackRenderer renderer = item.getTileEntityItemStackRenderer();

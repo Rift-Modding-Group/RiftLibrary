@@ -48,7 +48,7 @@ public class RiftLibRunAnimationMessageEffect extends RiftLibMessage<RiftLibRunA
     public void executeOnServer(MinecraftServer server, RiftLibRunAnimationMessageEffect message, EntityPlayer player, MessageContext messageContext) {
         if (message.effectName == null || message.targetData == null) return;
 
-        IAnimatable<?> animatable = message.resolveTarget(player);
+        IAnimatable<?, ?> animatable = message.resolveTarget(player);
         if (animatable == null) return;
 
         Map<String, AnimatableRunValue> effects = animatable.getAnimationData().getAnimationMessageEffects();
@@ -60,7 +60,7 @@ public class RiftLibRunAnimationMessageEffect extends RiftLibMessage<RiftLibRunA
     public void executeOnClient(Minecraft client, RiftLibRunAnimationMessageEffect message, EntityPlayer player, MessageContext messageContext) {
         if (message.effectName == null || message.targetData == null) return;
 
-        IAnimatable<?> animatable = message.resolveTarget(player);
+        IAnimatable<?, ?> animatable = message.resolveTarget(player);
         if (animatable == null) return;
 
         Map<String, AnimatableRunValue> effects = animatable.getAnimationData().getAnimationMessageEffects();
@@ -69,7 +69,7 @@ public class RiftLibRunAnimationMessageEffect extends RiftLibMessage<RiftLibRunA
     }
 
     //-----note: everything here feels like they could be done in some better way...-----
-    private IAnimatable<?> resolveTarget(EntityPlayer sender) {
+    private IAnimatable<?, ?> resolveTarget(EntityPlayer sender) {
         String targetType = this.targetData.getString("AnimationTargetType");
 
         return switch (targetType) {
@@ -82,20 +82,20 @@ public class RiftLibRunAnimationMessageEffect extends RiftLibMessage<RiftLibRunA
         };
     }
 
-    private IAnimatable<?> resolveEntity(EntityPlayer sender, String idKey) {
+    private IAnimatable<?, ?> resolveEntity(EntityPlayer sender, String idKey) {
         Entity entity = sender.world.getEntityByID(this.targetData.getInteger(idKey));
-        return entity instanceof IAnimatable<?> animatable ? animatable : null;
+        return entity instanceof IAnimatable<?, ?> animatable ? animatable : null;
     }
 
-    private IAnimatable<?> resolveTileEntity(EntityPlayer sender) {
+    private IAnimatable<?, ?> resolveTileEntity(EntityPlayer sender) {
         int[] posData = this.targetData.getIntArray("TileEntityPos");
         if (posData.length != 3) return null;
 
         TileEntity tileEntity = sender.world.getTileEntity(new BlockPos(posData[0], posData[1], posData[2]));
-        return tileEntity instanceof IAnimatable<?> animatable ? animatable : null;
+        return tileEntity instanceof IAnimatable<?, ?> animatable ? animatable : null;
     }
 
-    private IAnimatable<?> resolveArmor(EntityPlayer sender) {
+    private IAnimatable<?, ?> resolveArmor(EntityPlayer sender) {
         int wearerID = this.targetData.getInteger("WearerID");
         int armorSlotIndex = this.targetData.getInteger("ArmorSlot");
         if (wearerID < 0 || armorSlotIndex < 0 || armorSlotIndex >= EntityEquipmentSlot.values().length) return null;
@@ -113,10 +113,10 @@ public class RiftLibRunAnimationMessageEffect extends RiftLibMessage<RiftLibRunA
         ItemStack expectedStack = new ItemStack(this.targetData.getCompoundTag("Stack"));
         if (!this.isSameStack(serverStack, expectedStack)) return null;
 
-        return serverStack.getItem() instanceof IAnimatable<?> animatable ? animatable : null;
+        return serverStack.getItem() instanceof IAnimatable<?, ?> animatable ? animatable : null;
     }
 
-    private IAnimatable<?> resolveItemStack(EntityPlayer sender) {
+    private IAnimatable<?, ?> resolveItemStack(EntityPlayer sender) {
         int playerHolderID = this.targetData.getInteger("PlayerHolderID");
         int handIndex = this.targetData.getInteger("PlayerHolderHand");
         if (playerHolderID < 0 || handIndex < 0 || handIndex >= EnumHand.values().length) return null;

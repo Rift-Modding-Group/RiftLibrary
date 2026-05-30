@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
  * An animation controller contains the states between which an animatable object
  * will switch between and manages the playing of animations and controls them.
  * */
-public class AnimationController<A extends IAnimatable<D>, D extends AbstractAnimationData<?>> {
+public class AnimationController<A extends IAnimatable<A, D>, D extends AbstractAnimationData<?>> {
     static List<ModelFetcher<?>> modelFetchers = new ArrayList<>();
 
     private final A animatable;
@@ -413,9 +413,9 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
     }
 
     @FunctionalInterface
-    public interface ModelFetcher<T> extends Function<IAnimatable<?>, IAnimatableModel<T>> {}
+    public interface ModelFetcher<T> extends Function<IAnimatable<?, ?>, IAnimatableModel<T>> {}
 
-    private static class SingleAnimationRuntime<A extends IAnimatable<D>, D extends AbstractAnimationData<?>> {
+    private static class SingleAnimationRuntime<A extends IAnimatable<A, D>, D extends AbstractAnimationData<?>> {
         private final Map<String, BoneAnimationQueue> boneAnimationQueues = new HashMap<>();
         private final Map<String, BoneSnapshot> boneSnapshots = new HashMap<>();
         private final Set<EventKeyFrame> executedKeyFrames = new HashSet<>();

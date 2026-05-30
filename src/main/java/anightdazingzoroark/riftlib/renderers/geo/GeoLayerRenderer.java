@@ -10,10 +10,10 @@ import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.core.util.Color;
 import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 
-public abstract class GeoLayerRenderer<T extends EntityLivingBase & IAnimatable<AnimationDataEntity>> implements LayerRenderer<T> {
-	protected final IGeoRenderer<T> entityRenderer;
+public abstract class GeoLayerRenderer<A extends EntityLivingBase & IAnimatable<A, AnimationDataEntity>> implements LayerRenderer<A> {
+	protected final IGeoRenderer<A> entityRenderer;
 
-	public GeoLayerRenderer(IGeoRenderer<T> entityRendererIn) {
+	public GeoLayerRenderer(IGeoRenderer<A> entityRendererIn) {
 		this.entityRenderer = entityRendererIn;
 	}
 
@@ -41,20 +41,20 @@ public abstract class GeoLayerRenderer<T extends EntityLivingBase & IAnimatable<
 	}
 
 	@Override
-	public void doRenderLayer(T entityIn, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scaleIn) {}
+	public void doRenderLayer(A entityIn, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scaleIn) {}
 
-	public IGeoRenderer<T> getRenderer() {
+	public IGeoRenderer<A> getRenderer() {
 		return this.entityRenderer;
 	}
 
 	@SuppressWarnings("unchecked")
-	public GeoModelProvider<T> getEntityModel() {
+	public GeoModelProvider<A> getEntityModel() {
 		return this.entityRenderer.getGeoModelProvider();
 	}
 
-	protected ResourceLocation getEntityTexture(T entityIn) {
+	protected ResourceLocation getEntityTexture(A entityIn) {
 		return this.entityRenderer.getTextureLocation(entityIn);
 	}
 
-	public abstract void render(T entitylivingbaseIn, float partialTicks, float ageInTicks, Color renderColor);
+	public abstract void render(A entitylivingbaseIn, float partialTicks, float ageInTicks, Color renderColor);
 }

@@ -11,10 +11,10 @@ import java.util.function.Supplier;
 
 public class ServerModelRegistry {
     private static final Map<Class<?>, Supplier<? extends AnimatedGeoModel<?>>> SERVER_MODEL_FACTORIES = new HashMap<>();
-    private static final Map<IAnimatable<?>, AnimatedGeoModel<?>> SERVER_MODELS = new WeakHashMap<>();
+    private static final Map<IAnimatable<?, ?>, AnimatedGeoModel<?>> SERVER_MODELS = new WeakHashMap<>();
     private static boolean modelFetcherRegistered;
 
-    public static <T extends IAnimatable<?>> void registerServerModel(Class<T> animatableClass, Supplier<? extends AnimatedGeoModel<T>> modelFactory) {
+    public static <T extends IAnimatable<?, ?>> void registerServerModel(Class<T> animatableClass, Supplier<? extends AnimatedGeoModel<T>> modelFactory) {
         ensureModelFetcherRegistered();
         SERVER_MODEL_FACTORIES.put(animatableClass, modelFactory);
     }
@@ -23,11 +23,11 @@ public class ServerModelRegistry {
         SERVER_MODELS.clear();
     }
 
-    private static boolean hasServerModel(IAnimatable<?> animatable) {
+    private static boolean hasServerModel(IAnimatable<?, ?> animatable) {
         return findFactory(animatable.getClass()) != null;
     }
 
-    public static void requireServerModel(IAnimatable<?> animatable, String featureName) {
+    public static void requireServerModel(IAnimatable<?, ?> animatable, String featureName) {
         if (hasServerModel(animatable)) return;
 
         Class<?> animatableClass = animatable.getClass();
@@ -38,7 +38,7 @@ public class ServerModelRegistry {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends IAnimatable<?>> AnimatedGeoModel<T> getServerModel(T animatable) {
+    public static <T extends IAnimatable<?, ?>> AnimatedGeoModel<T> getServerModel(T animatable) {
         AnimatedGeoModel<?> cachedModel = SERVER_MODELS.get(animatable);
         if (cachedModel != null) return (AnimatedGeoModel<T>) cachedModel;
 

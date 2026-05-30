@@ -9,14 +9,14 @@ import net.minecraft.inventory.EntityEquipmentSlot;
 
 import java.util.List;
 
-public class SatelliteDishHelmet extends RiftLibArmor {
+public class SatelliteDishHelmet extends RiftLibArmor<SatelliteDishHelmet> {
     public SatelliteDishHelmet(ArmorMaterial materialIn, int renderIndexIn) {
         super(materialIn, renderIndexIn, EntityEquipmentSlot.HEAD);
         this.setCreativeTab(RiftLibMod.getRiftlibItemGroup());
     }
 
     @Override
-    public List<AnimationController<?, AnimationDataArmor>> createAnimationControllers() {
+    public List<AnimationController<SatelliteDishHelmet, AnimationDataArmor>> createAnimationControllers() {
         return List.of(
                 new AnimationController<SatelliteDishHelmet, AnimationDataArmor>(
                         this, "satelliteDish", "default",

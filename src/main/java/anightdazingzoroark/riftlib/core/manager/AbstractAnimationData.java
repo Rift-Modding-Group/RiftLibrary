@@ -19,6 +19,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,13 +56,11 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     public double deltaTime;
     public double lifeTime;
 
-    public AbstractAnimationData(
-            @NotNull T holder,
-            @NotNull IAnimatable<D> animatable
-    ) {
+    public AbstractAnimationData(@NotNull T holder, @NotNull IAnimatable<D> animatable) {
         this.holder = holder;
         //looks unintuitive i know, but its to prevent NPEs from armor data
-        this.parser = FMLCommonHandler.instance().getSide().isClient() ? RiftLibCacheClient.getInstance().parser : RiftLibCacheServer.getInstance().parser;
+        this.parser = FMLCommonHandler.instance().getSide().isClient() ?
+                RiftLibCacheClient.getInstance().parser : RiftLibCacheServer.getInstance().parser;
         this.createMolangQueries();
         animatable.initializeAnimationData((D) this);
         this.initAnimationVariables();
@@ -158,7 +157,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     }
 
     public Map<String, AnimatableRunValue> getAnimationMessageEffects() {
-        return this.animationMessageEffects;
+        return Map.copyOf(this.animationMessageEffects);
     }
 
     //check if all animations in the current state in the given controller have reached the end of their play cycle
@@ -235,6 +234,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
         });
     }
 
+    @Nullable
     public abstract World getWorld();
 
     public Map<String, Supplier<Double>> getMolangQueries() {

@@ -280,13 +280,12 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
 
     @Override
     public void initializeAnimationData(AnimationDataEntity animationData) {
-        /*
         animationData.addAnimationController(new AnimationController<DragonEntity, AnimationDataEntity>(
                 this, "test", "default",
                 new AnimationControllerState<AnimationDataEntity>("default")
                         .addAnimation("animation.dragon.test")
         ));
-         */
+        /*
         animationData.addAnimationController(new AnimationController<DragonEntity, AnimationDataEntity>(
                 this, "movement", "default",
                 new AnimationControllerState<AnimationDataEntity>("default")
@@ -301,14 +300,17 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
                         .addStateTransition("default", data -> data.allAnimationsFinished("attack"))
                         .addExitEffect(new AnimatableValue("'endBreathUse'"))
         ));
+         */
 
         animationData.addAnimationMessageEffect("startFireBreath", new AnimatableRunValue(() -> {
-            RiftLibRayHelper.createRay(this, "breatheFire");
+            //RiftLibRayHelper.createRay(this, "breatheFire");
+            System.out.println("breathe fire!");
         }, Side.SERVER));
         animationData.addAnimationMessageEffect("endFireBreath", new AnimatableRunValue(() -> {
-            RiftLibRayHelper.killRay(this, "breatheFire");
+            //RiftLibRayHelper.killRay(this, "breatheFire");
+            System.out.println("end breathe fire!");
         }, Side.SERVER));
-        animationData.addAnimationMessageEffect("endBreathUse", new AnimatableRunValue(() -> this.setBreathingFire(false), Side.CLIENT, Side.SERVER));
+        //animationData.addAnimationMessageEffect("endBreathUse", new AnimatableRunValue(() -> this.setBreathingFire(false), Side.SERVER));
     }
 
     @Override

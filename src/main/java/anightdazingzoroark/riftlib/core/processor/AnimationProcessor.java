@@ -4,13 +4,11 @@ import java.util.*;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
-import anightdazingzoroark.riftlib.internalMessage.RiftLibRunAnimationMessageEffect;
 import anightdazingzoroark.riftlib.core.keyframe.*;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
-import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundHelper;
 import anightdazingzoroark.riftlib.util.MolangUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -88,6 +86,13 @@ public class AnimationProcessor {
 				}
 			}
 
+
+			//-----custom instructions are to be on both sides-----
+			for (EventKeyFrame.CustomInstructionKeyFrame customInstructionEvent : controller.drainCustomInstructionEvents()) {
+				MolangUtils.parseValue(animationData, customInstructionEvent.instruction);
+			}
+
+			//-----client only stuff down here-----
 			if (runClientEffects) {
 				//animation effects
 				for (EventKeyFrame.ParticleEventKeyFrame particleEvent : controller.drainParticleEvents()) {
@@ -103,16 +108,10 @@ public class AnimationProcessor {
 					AnimatedLocator locator = animationData.getAnimatedLocator(soundEvent.locator);
 					if (locator != null) RiftLibSoundHelper.playSound(entity, locator, soundEvent.effect);
 				}
-
-				//custom instructions
-				for (EventKeyFrame.CustomInstructionKeyFrame customInstructionEvent : controller.drainCustomInstructionEvents()) {
-					MolangUtils.parseValue(animationData, customInstructionEvent.instruction);
-				}
 			}
 			else {
 				controller.drainParticleEvents();
 				controller.drainSoundEvents();
-				controller.drainCustomInstructionEvents();
 			}
 		}
 

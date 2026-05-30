@@ -4,10 +4,8 @@ import anightdazingzoroark.riftlib.core.AnimatableRunValue;
 import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
-import anightdazingzoroark.riftlib.internalMessage.RiftLibRunAnimationMessageEffect;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
-import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraftforge.fml.relauncher.Side;
 
 import java.util.Arrays;
@@ -72,17 +70,18 @@ public class MolangUtils {
                 Side[] sideOrder = effectMapEntry.getValue().sideOrder();
 				if (sideOrder == null || sideOrder.length == 0) sideOrder = new Side[]{Side.SERVER};
 
-				for (Side side : sideOrder) {
-					if (side == Side.SERVER) {
-						ServerProxy.INSTRUCTION_MESSAGE_WRAPPER.sendToServer(new RiftLibRunAnimationMessageEffect(
-								valueToSend, animationData.asNBT()
-						));
-					}
-					else if (side == Side.CLIENT) {
-						ServerProxy.INSTRUCTION_MESSAGE_WRAPPER.sendToAll(new RiftLibRunAnimationMessageEffect(
-								valueToSend, animationData.asNBT()
-						));
-					}
+				boolean forServer = Arrays.stream(sideOrder).anyMatch(i -> i == Side.SERVER);
+				boolean forClient = Arrays.stream(sideOrder).anyMatch(i -> i == Side.CLIENT);
+
+				//test on server first
+				//note: based on what ive seen, there will be a point where there will be a huge delay between the animation
+				//progress and when the message gets sent. might need to edit servermodelticker to fix
+				if (forServer && animationData.getWorld() != null && !animationData.getWorld().isRemote) {
+					effectMapEntry.getValue().runValue().run();
+				}
+				//test on client next
+				else if (forClient && animationData.getWorld() != null && animationData.getWorld().isRemote) {
+					effectMapEntry.getValue().runValue().run();
 				}
 			}
 		}

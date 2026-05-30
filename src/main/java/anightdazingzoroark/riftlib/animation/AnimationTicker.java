@@ -6,9 +6,9 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 public class AnimationTicker {
-	private final AbstractAnimationData<?> data;
+	private final AbstractAnimationData<?, ?> data;
 
-	public AnimationTicker(AbstractAnimationData<?> data) {
+	public AnimationTicker(AbstractAnimationData<?, ?> data) {
 		this.data = data;
 	}
 

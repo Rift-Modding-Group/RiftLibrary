@@ -27,7 +27,7 @@ public class AnimationProcessor {
 	public void tickAnimation(IAnimatable<?, ?> entity, double seekTime, boolean crashWhenCantFindBone, boolean runClientEffects) {
 		// Each animation has it's own collection of animations (called the
 		// EntityAnimationManager), which allows for multiple independent animations
-		AbstractAnimationData<?> animationData = entity.getAnimationData();
+		AbstractAnimationData<?, ?> animationData = entity.getAnimationData();
 		// Keeps track of which bones have had animations applied to them, and
 		// eventually sets the ones that don't have an animation to their default values
 		Map<String, DirtyTracker> modelTracker = this.createNewDirtyTracker();

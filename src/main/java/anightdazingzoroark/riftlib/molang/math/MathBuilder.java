@@ -206,7 +206,7 @@ public class MathBuilder {
         return this.parseSymbols(symbols, null);
     }
 
-    public IValue parseSymbols(List<Object> symbols, @Nullable AbstractAnimationData<?> animationData) throws Exception {
+    public IValue parseSymbols(List<Object> symbols, @Nullable AbstractAnimationData<?, ?> animationData) throws Exception {
         IValue ternary = this.tryTernary(symbols);
         if (ternary != null) return ternary;
         else {
@@ -325,7 +325,7 @@ public class MathBuilder {
         else return null;
     }
 
-    protected IValue createFunction(String first, List<Object> args, @Nullable AbstractAnimationData<?> animationData) throws Exception {
+    protected IValue createFunction(String first, List<Object> args, @Nullable AbstractAnimationData<?, ?> animationData) throws Exception {
         if (first.equals("!")) {
             return new Negate(this.parseSymbols(args, animationData));
         }
@@ -383,7 +383,7 @@ public class MathBuilder {
         throw new Exception("Function '" + first + "' couldn't be found!");
     }
 
-    public IValue valueFromObject(Object object, @Nullable AbstractAnimationData<?> animationData) throws Exception {
+    public IValue valueFromObject(Object object, @Nullable AbstractAnimationData<?, ?> animationData) throws Exception {
         if (object instanceof String symbol) {
             if (symbol.startsWith("!")) {
                 return new Negate(this.valueFromObject(symbol.substring(1), animationData));

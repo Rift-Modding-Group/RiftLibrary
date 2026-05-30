@@ -67,7 +67,7 @@ public class MolangParser extends MathBuilder {
         return this.parseExpression(expression, null);
     }
 
-    public MolangExpression parseExpression(@NotNull String expression, @Nullable AbstractAnimationData<?> animationData) throws MolangException {
+    public MolangExpression parseExpression(@NotNull String expression, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
         List<String> lines = new ArrayList<>();
 
         for (String split : expression.toLowerCase().trim().split(";")) {
@@ -96,7 +96,7 @@ public class MolangParser extends MathBuilder {
         }
     }
 
-    protected MolangExpression parseOneLine(String expression, @Nullable AbstractAnimationData<?> animationData) throws MolangException {
+    protected MolangExpression parseOneLine(String expression, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
         expression = expression.trim();
         if (expression.startsWith("return ")) {
             try {
@@ -149,7 +149,7 @@ public class MolangParser extends MathBuilder {
         }
     }
 
-    private IValue parseSymbolsMolang(List<Object> symbols, @Nullable AbstractAnimationData<?> animationData) throws MolangException {
+    private IValue parseSymbolsMolang(List<Object> symbols, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
         try {
             return this.parseSymbols(symbols, animationData);
         }

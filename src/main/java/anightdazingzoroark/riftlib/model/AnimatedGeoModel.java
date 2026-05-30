@@ -53,7 +53,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?, ?>> extends GeoM
 	public void setClientAnimations(T entity) {
 		// Each animation has it's own collection of animations (called the
 		// EntityAnimationManager), which allows for multiple independent animations
-		AbstractAnimationData<?> animData = entity.getAnimationData();
+		AbstractAnimationData<?, ?> animData = entity.getAnimationData();
 
 		if (animData.ticker == null) {
 			AnimationTicker ticker = new AnimationTicker(animData);
@@ -85,7 +85,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?, ?>> extends GeoM
 
 	//-----server only stuff starts here-----
 	public void setServerAnimations(T entity) {
-		AbstractAnimationData<?> animData = entity.getAnimationData();
+		AbstractAnimationData<?, ?> animData = entity.getAnimationData();
 
 		//model is set here
 		GeoModel model = this.getModel(this.getModelLocation(entity));
@@ -110,7 +110,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?, ?>> extends GeoM
 	//-----server only stuff ends here-----
 
 	public void createAndUpdateAnimatedLocators(T entity) {
-		AbstractAnimationData<?> animData = entity.getAnimationData();
+		AbstractAnimationData<?, ?> animData = entity.getAnimationData();
 		animData.createAnimatedLocators(this.currentModel);
 		animData.updateAnimatedLocators();
 	}

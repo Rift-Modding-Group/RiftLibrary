@@ -43,7 +43,7 @@ public class VectorKeyFrameList {
     }
 
     // Helper method to transform a KeyFrameLocation to an AnimationPoint
-    public AnimationPoint getAnimationPointAtTick(AbstractAnimationData<?> animData, double tick, Axis axis) {
+    public AnimationPoint getAnimationPointAtTick(AbstractAnimationData<?, ?> animData, double tick, Axis axis) {
         KeyFrameLocation location = this.getCurrentKeyFrameLocation(tick);
         KeyFrame currentFrame = location.currentFrame;
 

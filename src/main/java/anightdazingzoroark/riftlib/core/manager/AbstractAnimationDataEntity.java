@@ -12,10 +12,10 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
-public abstract class AbstractAnimationDataEntity<T extends Entity> extends AbstractAnimationData<T> {
+public abstract class AbstractAnimationDataEntity<T extends Entity, D extends AbstractAnimationDataEntity<T, D>> extends AbstractAnimationData<T, D> {
     private double modifiedDistanceMoved;
 
-    public AbstractAnimationDataEntity(@NonNull T holder, @NotNull IAnimatable<?, ?> animatable) {
+    public AbstractAnimationDataEntity(@NonNull T holder, @NotNull IAnimatable<?, D> animatable) {
         super(holder, animatable);
     }
 

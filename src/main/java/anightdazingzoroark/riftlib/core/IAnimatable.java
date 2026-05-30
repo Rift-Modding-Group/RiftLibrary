@@ -11,8 +11,10 @@ import java.util.Map;
 /**
  * This interface must be applied to any object that wants to be animated
  */
-public interface IAnimatable<A extends IAnimatable<A, D>, D extends AbstractAnimationData<?>> {
+public interface IAnimatable<A extends IAnimatable<A, D>, D extends AbstractAnimationData<?, D>> {
     D getAnimationData();
+
+    default void initializeAnimationData(D animationData) {}
 
     /**
      * This registers animation controllers

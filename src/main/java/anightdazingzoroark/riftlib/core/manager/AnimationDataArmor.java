@@ -8,7 +8,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
-public class AnimationDataArmor extends AbstractAnimationData<RiftLibArmor<?>> {
+public class AnimationDataArmor extends AbstractAnimationData<RiftLibArmor<?>, AnimationDataArmor> {
     private EntityLivingBase wearer;
     @NotNull
     private ItemStack stack = ItemStack.EMPTY;

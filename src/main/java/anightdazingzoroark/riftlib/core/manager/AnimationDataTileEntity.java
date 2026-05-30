@@ -7,7 +7,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
-public class AnimationDataTileEntity extends AbstractAnimationData<TileEntity> {
+public class AnimationDataTileEntity extends AbstractAnimationData<TileEntity, AnimationDataTileEntity> {
     public AnimationDataTileEntity(TileEntity holder) {
         super(holder, getAnimatable(holder));
     }
@@ -34,8 +34,8 @@ public class AnimationDataTileEntity extends AbstractAnimationData<TileEntity> {
         return this.getHolder().getWorld();
     }
 
-    private static IAnimatable<?, ?> getAnimatable(TileEntity holder) {
-        if (holder instanceof IAnimatable<?, ?>) return (IAnimatable<?, ?>) holder;
+    private static IAnimatable<?, AnimationDataTileEntity> getAnimatable(TileEntity holder) {
+        if (holder instanceof IAnimatable<?, ?>) return (IAnimatable<?, AnimationDataTileEntity>) holder;
         throw new IllegalArgumentException("AnimationDataTileEntity holder must implement IAnimatable");
     }
 }

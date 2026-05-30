@@ -51,7 +51,7 @@ public class MolangUtils {
 		});
 	}
 
-	public static void parseValue(AbstractAnimationData<?> animationData, String value) {
+	public static void parseValue(AbstractAnimationData<?, ?> animationData, String value) {
 		parseValue(animationData, new AnimatableValue(value));
 	}
 
@@ -59,7 +59,7 @@ public class MolangUtils {
 	 * For use in animation controllers, its for either assigning variables from a string or
 	 * sending messages to the server. Meant for use on client only.
 	 * */
-	public static void parseValue(AbstractAnimationData<?> animationData, AnimatableValue animatableValue) {
+	public static void parseValue(AbstractAnimationData<?, ?> animationData, AnimatableValue animatableValue) {
 		//as this is animatable value we're dealing with, first we check if its a message
 		if (animatableValue.isExpression()
 				&& animatableValue.getExpressionValue().startsWith("'")
@@ -111,7 +111,7 @@ public class MolangUtils {
 	/**
 	 * Parse a molang expression and get its return value
 	 * */
-	public static double parseValueAndGet(AbstractAnimationData<?> animationData, String expression) {
+	public static double parseValueAndGet(AbstractAnimationData<?, ?> animationData, String expression) {
 		AtomicReference<Double> toReturn = new AtomicReference<>(0D);
 		MolangParser parser = animationData.getParser();
 

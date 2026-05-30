@@ -24,7 +24,7 @@ import java.util.List;
  * */
 public class AnimatedLocator {
     private final GeoLocator locator;
-    private final AbstractAnimationData<?> animationData;
+    private final AbstractAnimationData<?, ?> animationData;
     //---world space stuff---
     @NotNull
     private Vec3d worldSpacePos = new Vec3d(0, 0, 0);
@@ -32,7 +32,7 @@ public class AnimatedLocator {
     private Quaternion worldSpaceYXZQuaternion = new Quaternion();
     private boolean isUpdated = true;
 
-    public AnimatedLocator(GeoLocator geoLocator, AbstractAnimationData<?> animationData) {
+    public AnimatedLocator(GeoLocator geoLocator, AbstractAnimationData<?, ?> animationData) {
         this.locator = geoLocator;
         this.animationData = animationData;
     }

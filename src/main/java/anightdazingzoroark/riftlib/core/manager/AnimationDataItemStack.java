@@ -9,7 +9,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
-public class AnimationDataItemStack extends AbstractAnimationData<AnimatedItemStackHolder<?>> {
+public class AnimationDataItemStack extends AbstractAnimationData<AnimatedItemStackHolder<?>, AnimationDataItemStack> {
     public AnimationDataItemStack(AnimatedItemStackHolder<?> holder) {
         super(holder, holder);
     }

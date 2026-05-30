@@ -16,7 +16,7 @@ import org.jspecify.annotations.NonNull;
 import java.util.HashMap;
 import java.util.function.BiFunction;
 
-public class AnimationDataProjectile extends AbstractAnimationDataEntity<RiftLibProjectile<?>> {
+public class AnimationDataProjectile extends AbstractAnimationDataEntity<RiftLibProjectile<?>, AnimationDataProjectile> {
     public AnimationDataProjectile(RiftLibProjectile<?> holder) {
         super(holder, holder);
     }

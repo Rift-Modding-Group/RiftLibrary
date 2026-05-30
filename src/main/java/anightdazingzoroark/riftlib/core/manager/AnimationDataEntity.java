@@ -16,7 +16,7 @@ import org.jspecify.annotations.NonNull;
 import java.util.HashMap;
 import java.util.function.BiFunction;
 
-public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivingBase> {
+public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivingBase, AnimationDataEntity> {
     public AnimationDataEntity(EntityLivingBase holder) {
         super(holder, getAnimatable(holder));
     }
@@ -44,8 +44,8 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
         });
     }
 
-    private static IAnimatable<?, ?> getAnimatable(EntityLivingBase holder) {
-        if (holder instanceof IAnimatable<?, ?>) return (IAnimatable<?, ?>) holder;
+    private static IAnimatable<?, AnimationDataEntity> getAnimatable(EntityLivingBase holder) {
+        if (holder instanceof IAnimatable<?, ?>) return (IAnimatable<?, AnimationDataEntity>) holder;
         throw new IllegalArgumentException("AnimationDataEntity holder must implement IAnimatable");
     }
 }

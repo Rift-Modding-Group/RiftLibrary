@@ -32,11 +32,11 @@ import java.util.function.Supplier;
 /**
  * This class is to hold information pertaining to animation data for an animated object
  * */
-public abstract class AbstractAnimationData<T> {
+public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T, D>> {
     @NotNull
     private final T holder;
     @NotNull
-    private final IAnimatable<?, ? extends AbstractAnimationData<?>> animatable;
+    private final IAnimatable<?, D> animatable;
     private final Map<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection = new HashMap<>();
     private final Map<String, AnimationController<?, ?>> animationControllers = new HashMap<>();
     private final Map<String, AnimatableRunValue> animationMessageEffects = new HashMap<>();
@@ -60,13 +60,14 @@ public abstract class AbstractAnimationData<T> {
 
     public AbstractAnimationData(
             @NotNull T holder,
-            @NotNull IAnimatable<?, ? extends AbstractAnimationData<?>> animatable
+            @NotNull IAnimatable<?, D> animatable
     ) {
         this.holder = holder;
         this.animatable = animatable;
         //looks unintuitive i know, but its to prevent NPEs from armor data
         this.parser = FMLCommonHandler.instance().getSide().isClient() ? RiftLibCacheClient.getInstance().parser : RiftLibCacheServer.getInstance().parser;
         this.createMolangQueries();
+        this.animatable.initializeAnimationData((D) this);
 
         this.initAnimationControllers();
         this.initAnimationVariables();
@@ -145,7 +146,7 @@ public abstract class AbstractAnimationData<T> {
     }
 
     private void initAnimationControllers() {
-        IAnimatable<? extends IAnimatable<?, AbstractAnimationData<T>>, AbstractAnimationData<T>> animatable = (IAnimatable<? extends IAnimatable<?, AbstractAnimationData<T>>, AbstractAnimationData<T>>) this.animatable;
+        IAnimatable<?, D> animatable = this.animatable;
 
         List<? extends AnimationController<?, ?>> controllers = animatable.createAnimationControllers();
         for (AnimationController<?, ?> controller : controllers) {
@@ -168,7 +169,7 @@ public abstract class AbstractAnimationData<T> {
     }
 
     private void initAnimationMessageEffects() {
-        IAnimatable<? extends IAnimatable<?, AbstractAnimationData<T>>, AbstractAnimationData<T>> animatable = (IAnimatable<? extends IAnimatable<?, AbstractAnimationData<T>>, AbstractAnimationData<T>>) this.animatable;
+        IAnimatable<?, D> animatable = this.animatable;
         Map<String, AnimatableRunValue> messageEffects = animatable.createAnimationMessageEffects();
         this.animationMessageEffects.putAll(messageEffects);
     }

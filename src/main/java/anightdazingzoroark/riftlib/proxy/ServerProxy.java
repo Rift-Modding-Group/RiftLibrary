@@ -31,7 +31,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 public class ServerProxy {
     public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> MESSAGE_WRAPPER;
     public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> HITBOX_MESSAGE_WRAPPER;
-    public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> INSTRUCTION_MESSAGE_WRAPPER;
+    public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> SERVER_MODEL_MESSAGE_WRAPPER;
     public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> RAY_MESSAGE_WRAPPER;
 
     public void preInit(FMLPreInitializationEvent e) {
@@ -46,8 +46,8 @@ public class ServerProxy {
         HITBOX_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_hitbox");
         HITBOX_MESSAGE_WRAPPER.registerMessage(RiftLibSyncHitboxEntityId.class, RiftLibMessageSide.CLIENT);
 
-        INSTRUCTION_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_instruction");
-        INSTRUCTION_MESSAGE_WRAPPER.registerMessage(RiftLibRunAnimationMessageEffect.class, RiftLibMessageSide.BOTH);
+        SERVER_MODEL_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_server_model");
+        SERVER_MODEL_MESSAGE_WRAPPER.registerMessage(RiftTickClientFromServer.class, RiftLibMessageSide.CLIENT);
 
         RAY_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_ray");
         RAY_MESSAGE_WRAPPER.registerMessage(RiftLibUpdateRayPos.class, RiftLibMessageSide.SERVER);

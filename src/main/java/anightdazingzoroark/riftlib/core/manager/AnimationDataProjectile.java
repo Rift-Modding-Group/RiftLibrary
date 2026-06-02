@@ -12,7 +12,7 @@ public class AnimationDataProjectile extends AbstractAnimationDataEntity<RiftLib
     @Override
     @NonNull
     public NBTTagCompound asNBT() {
-        NBTTagCompound toReturn = new NBTTagCompound();
+        NBTTagCompound toReturn = super.asNBT();
         toReturn.setString("AnimationTargetType", "Projectile");
         toReturn.setInteger("ProjectileID", this.getHolder().getEntityId());
         return toReturn;

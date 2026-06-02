@@ -67,6 +67,10 @@ public class MolangUtils {
 			for (Map.Entry<String, AnimatableRunValue> effectMapEntry : animationData.getAnimationMessageEffects().entrySet()) {
 				if (!valueToSend.equals(effectMapEntry.getKey())) continue;
 
+				//anim data world is nullable so if theres no world, skip
+				if (animationData.getWorld() == null) continue;
+
+				//if no side order, just assume its for server only then
                 Side[] sideOrder = effectMapEntry.getValue().sideOrder();
 				if (sideOrder == null || sideOrder.length == 0) sideOrder = new Side[]{Side.SERVER};
 
@@ -74,13 +78,11 @@ public class MolangUtils {
 				boolean forClient = Arrays.stream(sideOrder).anyMatch(i -> i == Side.CLIENT);
 
 				//test on server first
-				//note: based on what ive seen, there will be a point where there will be a huge delay between the animation
-				//progress and when the message gets sent. might need to edit servermodelticker to fix
-				if (forServer && animationData.getWorld() != null && !animationData.getWorld().isRemote) {
+				if (forServer && !animationData.getWorld().isRemote) {
 					effectMapEntry.getValue().runValue().run();
 				}
 				//test on client next
-				else if (forClient && animationData.getWorld() != null && animationData.getWorld().isRemote) {
+				else if (forClient && animationData.getWorld().isRemote) {
 					effectMapEntry.getValue().runValue().run();
 				}
 			}

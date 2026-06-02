@@ -6,6 +6,8 @@ import anightdazingzoroark.riftlib.animation.AnimationFile;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 
+import anightdazingzoroark.riftlib.internalMessage.RiftTickClientFromServer;
+import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
@@ -28,7 +30,10 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoModelProvider<T> implements IAnimatableModel<T>, IAnimatableModelProvider<T> {
+	private static final long MAX_SERVER_SYNC_PREDICTION_TICKS = 3L;
 	private final AnimationProcessor animationProcessor;
+	//only relevant for server side models
+	private final Map<AbstractAnimationData<?, ?>, ServerTickCheckpoint> serverTickCheckpoints = new WeakHashMap<>();
 	protected GeoModel currentModel;
 
 	protected AnimatedGeoModel() {
@@ -55,21 +60,31 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		// EntityAnimationManager), which allows for multiple independent animations
 		AbstractAnimationData<?, ?> animData = entity.getAnimationData();
 
-		if (animData.ticker == null) {
-			AnimationTicker ticker = new AnimationTicker(animData);
-			animData.ticker = ticker;
-			MinecraftForge.EVENT_BUS.register(ticker);
+		//if there is no server model, the client will be the main authority in
+		//ticking animations.
+		if (!this.hasServerModel(entity)) {
+			if (animData.clientTicker == null) {
+				AnimationTicker ticker = new AnimationTicker(animData);
+				animData.clientTicker = ticker;
+				MinecraftForge.EVENT_BUS.register(ticker);
+			}
 		}
-		if (!Minecraft.getMinecraft().isGamePaused() || animData.shouldPlayWhilePaused) {
-            this.seekTime = animData.tick + Minecraft.getMinecraft().getRenderPartialTicks();
-		}
-        else this.seekTime = animData.tick;
 
+		//update the seek time
+		if (!Minecraft.getMinecraft().isGamePaused() || animData.shouldPlayWhilePaused) {
+			float partialTicks = Minecraft.getMinecraft().getRenderPartialTicks();
+			this.seekTime = this.hasServerModel(entity) ?
+					this.getServerSyncedSeekTime(animData, partialTicks) :
+					animData.tick + partialTicks;
+		}
+		else this.seekTime = animData.tick;
 
 		//update molang related information while the entity is rendered
 		if (!Minecraft.getMinecraft().isGamePaused() || animData.shouldPlayWhilePaused) {
 			animData.updateAnimationVariables();
 			animData.updateOnDataTick();
+
+			//System.out.println("seek time: "+this.seekTime);
 		}
 
 		//update based on animations
@@ -80,6 +95,38 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 					true
 			);
 		}
+	}
+
+	//small but useful helper method
+	@SideOnly(Side.CLIENT)
+	private boolean hasServerModel(T animatable) {
+		return ServerModelRegistry.hasServerModel(animatable);
+	}
+
+	@SideOnly(Side.CLIENT)
+	private double getServerSyncedSeekTime(AbstractAnimationData<?, ?> animData, float partialTicks) {
+		ServerTickCheckpoint checkpoint = this.serverTickCheckpoints.computeIfAbsent(
+				animData, data -> new ServerTickCheckpoint(data.tick, this.getClientWorldTime(data))
+		);
+
+		if (animData.tick > checkpoint.serverTick) {
+			checkpoint.serverTick = animData.tick;
+			checkpoint.clientWorldTime = this.getClientWorldTime(animData);
+		}
+
+		long elapsedClientTicks = Math.clamp(
+				this.getClientWorldTime(animData) - checkpoint.clientWorldTime, 0L,
+                MAX_SERVER_SYNC_PREDICTION_TICKS
+		);
+		double seekTime = checkpoint.serverTick + elapsedClientTicks + partialTicks;
+
+		checkpoint.lastSeekTime = Math.max(seekTime, checkpoint.lastSeekTime);
+		return checkpoint.lastSeekTime;
+	}
+
+	@SideOnly(Side.CLIENT)
+	private long getClientWorldTime(AbstractAnimationData<?, ?> animData) {
+		return animData.getWorld() != null ? animData.getWorld().getTotalWorldTime() : 0L;
 	}
 	//-----client only stuff ends here-----
 
@@ -94,10 +141,16 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		//create and update locators on the model
 		this.createAndUpdateAnimatedLocators(entity);
 
+		//tick anim data
 		animData.tick++;
 		animData.tickAnimatedLocators();
 		animData.updateAnimationVariables();
 		animData.updateOnDataTick();
+
+		//send tick to all clients after the server has advanced the model
+		ServerProxy.SERVER_MODEL_MESSAGE_WRAPPER.sendToAll(new RiftTickClientFromServer(animData));
+
+		//System.out.println("seek time: "+animData.tick);
 
 		if (!this.animationProcessor.getModelRendererList().isEmpty()) {
 			this.animationProcessor.tickAnimation(
@@ -185,5 +238,17 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 			this.registerBone(bone);
 		}
 		this.currentModel = model;
+	}
+
+	private static class ServerTickCheckpoint {
+		private double serverTick;
+		private long clientWorldTime;
+		private double lastSeekTime;
+
+		private ServerTickCheckpoint(double serverTick, long clientWorldTime) {
+			this.serverTick = serverTick;
+			this.clientWorldTime = clientWorldTime;
+			this.lastSeekTime = serverTick;
+		}
 	}
 }

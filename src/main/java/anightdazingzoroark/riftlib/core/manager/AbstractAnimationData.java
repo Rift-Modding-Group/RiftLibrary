@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.core.manager;
 
+import anightdazingzoroark.riftlib.animation.AnimationTicker;
 import anightdazingzoroark.riftlib.core.AnimatableRunValue;
 import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
@@ -48,7 +49,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     private GeoModel currentModel;
     public double tick;
     public boolean isFirstTick = true;
-    public Object ticker;
+    public AnimationTicker clientTicker;
     public boolean shouldPlayWhilePaused = false;
 
     //time values meant for molang queries
@@ -203,10 +204,15 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     public abstract boolean isValid();
 
     /**
-     * This is for sending animation data to the server
+     * This is for sending animation data and identifying info from server to client
+     * for server models.
      * */
     @NotNull
-    public abstract NBTTagCompound asNBT();
+    public NBTTagCompound asNBT() {
+        NBTTagCompound toReturn = new NBTTagCompound();
+        toReturn.setDouble("Tick", this.tick);
+        return toReturn;
+    }
 
     /**
      * Each AnimationData class is to have their own molang queries in addition to the ones here shared amongst all

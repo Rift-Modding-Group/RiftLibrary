@@ -23,7 +23,7 @@ public class ServerModelRegistry {
         SERVER_MODELS.clear();
     }
 
-    private static boolean hasServerModel(IAnimatable<?> animatable) {
+    public static boolean hasServerModel(IAnimatable<?> animatable) {
         return findFactory(animatable.getClass()) != null;
     }
 

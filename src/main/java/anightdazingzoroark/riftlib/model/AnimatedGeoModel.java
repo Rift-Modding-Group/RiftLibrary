@@ -70,7 +70,8 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 			}
 		}
 
-		//update the seek time
+		//update the seek time as long as the game is not paused (unless
+		//explicitly set in the anim data)
 		if (!Minecraft.getMinecraft().isGamePaused() || animData.shouldPlayWhilePaused) {
 			float partialTicks = Minecraft.getMinecraft().getRenderPartialTicks();
 			this.seekTime = this.hasServerModel(entity) ?
@@ -79,12 +80,11 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		}
 		else this.seekTime = animData.tick;
 
-		//update molang related information while the entity is rendered
+		//update molang related information while the entity is rendered and game is not
+		//paused (unless explicitly set in the anim data)
 		if (!Minecraft.getMinecraft().isGamePaused() || animData.shouldPlayWhilePaused) {
 			animData.updateAnimationVariables();
 			animData.updateOnDataTick();
-
-			//System.out.println("seek time: "+this.seekTime);
 		}
 
 		//update based on animations
@@ -150,8 +150,6 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		//send tick to all clients after the server has advanced the model
 		ServerProxy.SERVER_MODEL_MESSAGE_WRAPPER.sendToAll(new RiftTickClientFromServer(animData));
 
-		//System.out.println("seek time: "+animData.tick);
-
 		if (!this.animationProcessor.getModelRendererList().isEmpty()) {
 			this.animationProcessor.tickAnimation(
 					entity, animData.tick,
@@ -185,43 +183,6 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 				RiftLibCacheClient.getInstance().getAnimations() : RiftLibCacheServer.getInstance().getAnimations();
 		return animations.get(this.getAnimationFileLocation((T) animatable)).getAnimation(name);
 	}
-
-	/*
-	@Deprecated
-	private void setRayDisplacements(T entity, AbstractAnimationData<?> animData) {
-		if (!(entity instanceof IRayCreator<?> rayCreator)) return;
-
-		for (AnimatedLocator locator : animData.getAnimatedLocators()) {
-			for (ImmutablePair<IRayCreator<?>, RiftLibRay> rayPair : RayTicker.Client.RAY_PAIR_LIST) {
-				if (rayCreator != rayPair.getLeft() || !locator.getName().equals(rayPair.getRight().parentLocatorName)) continue;
-				Vec3d modelSpacePos = locator.getModelSpacePosition();
-				Quaternion modelSpaceQuat = locator.computeModelSpaceYXZQuaternion();
-
-				rayPair.getRight().displaceByAnim(modelSpacePos);
-				rayPair.getRight().displaceQuatByAnim(modelSpaceQuat);
-
-				ServerProxy.RAY_MESSAGE_WRAPPER.sendToServer(new RiftLibUpdateRayPos(
-						rayCreator, rayPair.getRight().rayName,
-						modelSpacePos, modelSpaceQuat
-				));
-			}
-		}
-	}
-
-	@Deprecated
-	private void setServerRayDisplacements(T entity, AbstractAnimationData<?> animData) {
-		if (!(entity instanceof IRayCreator<?> rayCreator)) return;
-
-		for (AnimatedLocator locator : animData.getAnimatedLocators()) {
-			for (ImmutablePair<IRayCreator<?>, RiftLibRay> rayPair : RayTicker.Server.RAY_PAIR_LIST) {
-				if (rayCreator != rayPair.getLeft() || !locator.getName().equals(rayPair.getRight().parentLocatorName)) continue;
-
-				rayPair.getRight().displaceByAnim(locator.getModelSpacePosition());
-				rayPair.getRight().displaceQuatByAnim(locator.computeModelSpaceYXZQuaternion());
-			}
-		}
-	}
-	 */
 
 	@Override
 	public AnimationProcessor getAnimationProcessor() {

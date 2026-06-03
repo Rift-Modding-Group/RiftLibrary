@@ -1,6 +1,7 @@
 package anightdazingzoroark.riftlib.ray;
 
 import anightdazingzoroark.riftlib.RiftLib;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.entity.Entity;
@@ -27,7 +28,7 @@ public class RiftLibRay {
     @NotNull
     public final String rayName;
     @NotNull
-    public final String parentLocatorName;
+    public final AnimatedLocator parentLocator;
     @NotNull
     private final RayType rayType;
     private final double maxRayLength;
@@ -41,13 +42,6 @@ public class RiftLibRay {
     //define if the ray can break this block
     @NotNull
     private final Function<BlockPos, Boolean> breakBlockCondition;
-
-    //the pos of the locator. is nullable so that upon initialization there
-    //will not be a giant puddle below the user
-    @Nullable
-    private Vec3d animatedLocatorPos;
-    @NotNull
-    private Quaternion animatedLocatorQuat = new Quaternion();
 
     //the origin of the ray. is nullable so that upon initialization there
     //will not be a giant puddle below the user
@@ -66,13 +60,13 @@ public class RiftLibRay {
     private boolean isDead;
 
     public RiftLibRay(
-            @NotNull IRayCreator<?> rayCreator, @NotNull String rayName, @NotNull String parentLocatorName, @NotNull RayType rayType,
+            @NotNull IRayCreator<?> rayCreator, @NotNull String rayName, @NotNull AnimatedLocator parentLocator, @NotNull RayType rayType,
             double maxRayLength, double @NotNull [] rayWidthRange, double raySpeed, boolean spreadOnHitBlock, boolean onlyOneSegment,
             @NotNull Function<BlockPos, Boolean> breakBlockCondition
     ) {
         this.rayCreator = rayCreator;
         this.rayName = rayName;
-        this.parentLocatorName = parentLocatorName;
+        this.parentLocator = parentLocator;
         this.rayType = rayType;
         this.maxRayLength = maxRayLength;
         this.rayWidthRange = rayWidthRange;
@@ -96,7 +90,7 @@ public class RiftLibRay {
         if (this.isDead) return;
 
         //-----define the ray origin pos and direction vector when not fading out-----
-        if (!this.isEnded && this.animatedLocatorPos != null) {
+        if (!this.isEnded) {
             //---common stuff---
             //determine entity yaw and turn into quaternion
             double normalYawRadians = -Math.toRadians(this.rayCreator.getRayCreator().rotationYawHead);
@@ -105,10 +99,11 @@ public class RiftLibRay {
 
             //---for origin---
             //set initial entity offset from center, in model space ofc
+            Vec3d animatedLocatorPos = this.parentLocator.getModelSpacePosition();
             Vec3d posVec = new Vec3d(
-                    -this.animatedLocatorPos.x / 16f * this.rayCreator.rayCreatorScale(),
-                    this.animatedLocatorPos.y / 16f * this.rayCreator.rayCreatorScale(),
-                    -this.animatedLocatorPos.z / 16f * this.rayCreator.rayCreatorScale()
+                    -animatedLocatorPos.x / 16f * this.rayCreator.rayCreatorScale(),
+                    animatedLocatorPos.y / 16f * this.rayCreator.rayCreatorScale(),
+                    -animatedLocatorPos.z / 16f * this.rayCreator.rayCreatorScale()
             );
 
             //rotate the locator position only by the entity yaw; the locator's own rotation affects direction, not origin
@@ -128,7 +123,7 @@ public class RiftLibRay {
             //correct quaternion for animated locator to work in world space
             Quaternion correction = QuaternionUtils.createYXZQuaternion(Math.PI / 2D, Math.PI, 0);
             Quaternion correctedLocatorQuat = new Quaternion();
-            Quaternion.mul(this.animatedLocatorQuat, correction, correctedLocatorQuat);
+            Quaternion.mul(this.parentLocator.getModelSpaceYXZQuaternion(), correction, correctedLocatorQuat);
             Quaternion.normalise(correctedLocatorQuat, correctedLocatorQuat);
 
             //proceed
@@ -175,22 +170,6 @@ public class RiftLibRay {
         }
 
         if (this.isEnded && this.raySegmentList.isEmpty()) this.killRay();
-    }
-
-    /**
-     * To be called from AnimatedGeoModel every tick for both sides, is meant for displacing the ray origin
-     * based on the position of the AnimatedLocator it's attached to.
-     * */
-    public void displaceByAnim(Vec3d animatedLocatorPos) {
-        this.animatedLocatorPos = animatedLocatorPos;
-    }
-
-    /**
-     * To be called from AnimatedGeoModel every tick for both sides, is meant for displacing the orientation
-     * based on the orientation of the AnimatedLocator it's attached to as a YXZ quaternion.
-     * */
-    public void displaceQuatByAnim(Quaternion animatedLocatorQuat) {
-        this.animatedLocatorQuat = animatedLocatorQuat;
     }
 
     /**

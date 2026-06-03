@@ -67,9 +67,9 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
 
     @Override
     protected void initEntityAI() {
-        //this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<>(this, EntityCow.class, true));
+        this.targetTasks.addTask(2, new EntityAINearestAttackableTarget<>(this, EntityCow.class, true));
 
-        //this.tasks.addTask(1, new DragonAttackAI(this, 1.0D));
+        this.tasks.addTask(1, new DragonAttackAI(this, 1.0D));
         this.tasks.addTask(2, new EntityAIWanderAvoidWater(this, 1D) {
             //-----no moving around when ridden cause fuck you xd-----
             @Override
@@ -280,12 +280,13 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
 
     @Override
     public void initializeAnimationData(AnimationDataEntity animationData) {
+        /*
         animationData.addAnimationController(new AnimationController<DragonEntity, AnimationDataEntity>(
                 this, "test", "default",
                 new AnimationControllerState<AnimationDataEntity>("default")
                         .addAnimation("animation.dragon.test")
         ));
-        /*
+         */
         animationData.addAnimationController(new AnimationController<DragonEntity, AnimationDataEntity>(
                 this, "movement", "default",
                 new AnimationControllerState<AnimationDataEntity>("default")
@@ -300,17 +301,16 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
                         .addStateTransition("default", data -> data.allAnimationsFinished("attack"))
                         .addExitEffect(new AnimatableValue("'endBreathUse'"))
         ));
-         */
 
         animationData.addAnimationMessageEffect("startFireBreath", new AnimatableRunValue(() -> {
-            //RiftLibRayHelper.createRay(this, "breatheFire");
-            System.out.println("breathe fire!");
+            RiftLibRayHelper.createRay(this, "breatheFire");
+            //System.out.println("breathe fire!");
         }, Side.SERVER));
         animationData.addAnimationMessageEffect("endFireBreath", new AnimatableRunValue(() -> {
-            //RiftLibRayHelper.killRay(this, "breatheFire");
-            System.out.println("end breathe fire!");
+            RiftLibRayHelper.killRay(this, "breatheFire");
+            //System.out.println("end breathe fire!");
         }, Side.SERVER));
-        //animationData.addAnimationMessageEffect("endBreathUse", new AnimatableRunValue(() -> this.setBreathingFire(false), Side.SERVER));
+        animationData.addAnimationMessageEffect("endBreathUse", new AnimatableRunValue(() -> this.setBreathingFire(false), Side.SERVER));
     }
 
     @Override

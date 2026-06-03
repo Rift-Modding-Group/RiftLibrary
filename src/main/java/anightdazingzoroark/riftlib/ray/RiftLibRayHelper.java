@@ -2,6 +2,7 @@ package anightdazingzoroark.riftlib.ray;
 
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibCreateOrDestroyRay;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jetbrains.annotations.NotNull;
@@ -37,10 +38,16 @@ public class RiftLibRayHelper {
             return;
         }
 
+        AnimatedLocator locator = rayCreator.getRayCreator().getAnimationData().getAnimatedLocator(rayBuilder.parentLocatorName);
+        if (locator == null) {
+            RiftLib.LOGGER.warn("Given locator {} does not exist on the entity!", rayBuilder.parentLocatorName);
+            return;
+        }
+
         RiftLibRay ray = new RiftLibRay(
                 rayBuilder.rayCreator,
                 rayName,
-                rayBuilder.parentLocatorName,
+                locator,
                 rayBuilder.getRayType(),
                 rayBuilder.getRayMaxLength(),
                 rayBuilder.getRayWidthRange(),

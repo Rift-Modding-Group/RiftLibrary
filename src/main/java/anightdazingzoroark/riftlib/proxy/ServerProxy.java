@@ -50,7 +50,6 @@ public class ServerProxy {
         SERVER_MODEL_MESSAGE_WRAPPER.registerMessage(RiftTickClientFromServer.class, RiftLibMessageSide.CLIENT);
 
         RAY_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_ray");
-        RAY_MESSAGE_WRAPPER.registerMessage(RiftLibUpdateRayPos.class, RiftLibMessageSide.SERVER);
         RAY_MESSAGE_WRAPPER.registerMessage(RiftLibCreateOrDestroyRay.class, RiftLibMessageSide.BOTH);
 
         MinecraftForge.EVENT_BUS.register(new HitboxTicker.Server());

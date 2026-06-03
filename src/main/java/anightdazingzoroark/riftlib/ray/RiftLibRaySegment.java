@@ -1,6 +1,8 @@
 package anightdazingzoroark.riftlib.ray;
 
 import anightdazingzoroark.riftlib.RiftLib;
+import anightdazingzoroark.riftlib.ray.rayShape.RiftLibRayMovingShape;
+import anightdazingzoroark.riftlib.ray.rayShape.RiftLibRayShape;
 import anightdazingzoroark.riftlib.util.MathUtils;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -36,14 +38,14 @@ public class RiftLibRaySegment {
     @NotNull
     private final IRayCreator<?> rayCreator;
     @NotNull
-    private final Vec3d initPos;
+    public final Vec3d initPos;
     @NotNull
     private Vec3d directionVector; //is expected to be a unit vector
     @NotNull
-    private final RiftLibRay.RayType rayType;
+    private final RiftLibRayShape rayShape;
 
-    private final double maxRayLength;
-    private final double @NotNull [] rayWidthRange;
+    public final double maxRayLength;
+    public final double @NotNull [] rayWidthRange;
     private final double raySpeed;
     private final boolean spreadOnHitBlock;
     @NotNull
@@ -65,14 +67,14 @@ public class RiftLibRaySegment {
     private boolean isDead;
 
     public RiftLibRaySegment(
-            @NotNull IRayCreator<?> rayCreator, @NotNull Vec3d initPos, @NotNull Vec3d directionVector, @NotNull RiftLibRay.RayType rayType,
+            @NotNull IRayCreator<?> rayCreator, @NotNull Vec3d initPos, @NotNull Vec3d directionVector, @NotNull RiftLibRayShape rayShape,
             double maxRayLength, double @NotNull [] rayWidthRange, double raySpeed, boolean spreadOnHitBlock,
             @NotNull Function<BlockPos, Boolean> breakBlockCondition
     ) {
         this.rayCreator = rayCreator;
         this.initPos = initPos;
         this.directionVector = directionVector.normalize();
-        this.rayType = rayType;
+        this.rayShape = rayShape;
         this.maxRayLength = maxRayLength;
         this.rayWidthRange = rayWidthRange;
         this.raySpeed = raySpeed;
@@ -80,20 +82,7 @@ public class RiftLibRaySegment {
         this.breakBlockCondition = breakBlockCondition;
         this.currentPos = initPos;
         this.currentWidth = rayWidthRange[0];
-
-        //non impact types start out moving, and thus, require an AABB
-        if (this.rayType != RiftLibRay.RayType.IMPACT) {
-            this.segmentAABB = new AxisAlignedBB(
-                    initPos.x - rayWidthRange[0] / 2D,
-                    initPos.y - rayWidthRange[0] / 2D,
-                    initPos.z - rayWidthRange[0] / 2D,
-                    initPos.x + rayWidthRange[0] / 2D,
-                    initPos.y + rayWidthRange[0] / 2D,
-                    initPos.z + rayWidthRange[0] / 2D
-            );
-        }
-        //impact types require starting to impact
-        else this.startImpactImpactType(new BlockPos(initPos));
+        this.rayShape.onCreateSegment(this);
     }
 
     /**
@@ -104,75 +93,7 @@ public class RiftLibRaySegment {
         if (this.isDead) return;
 
         //-----logic when impacting-----
-        if (this.isImpacting) {
-            //impact type ray specific logic
-            if (this.rayType == RiftLibRay.RayType.IMPACT) {
-                //normal operation within limits
-                if (this.impactCurrentRadius < this.impactMaxRadius) {
-                    //define previous and current target layers
-                    double previousRadius = this.impactCurrentRadius;
-                    double targetRadius = Math.min(this.impactMaxRadius, previousRadius + Math.max(0D, this.raySpeed));
-
-                    //update spherical impact layers
-                    int radiusBlocks = (int) Math.ceil(targetRadius);
-                    double previousRadiusSq = previousRadius * previousRadius;
-                    double targetRadiusSq = targetRadius * targetRadius;
-
-                    for (int x = -radiusBlocks; x <= radiusBlocks; x++) {
-                        for (int y = -radiusBlocks; y <= radiusBlocks; y++) {
-                            for (int z = -radiusBlocks; z <= radiusBlocks; z++) {
-                                int distanceSq = x * x + y * y + z * z;
-                                if (distanceSq <= previousRadiusSq || distanceSq > targetRadiusSq) continue;
-
-                                BlockPos impactPos = this.impactOriginPos.add(x, y, z);
-                                if (!this.canImpactReachPosition(impactPos)) continue;
-                                this.tryAddImpactPosition(impactPos);
-                            }
-                        }
-                    }
-                    this.impactCurrentRadius = targetRadius;
-                }
-
-                //decay impact positions
-                this.decayImpactPositions();
-
-                //kill upon going beyond bounds
-                if (this.impactCurrentRadius >= this.impactMaxRadius && this.segmentImpactPositions.isEmpty()) this.killSegment();
-            }
-            //for other ray types
-            else {
-                int maxLayer = (int) Math.ceil(this.impactMaxRadius + this.impactDepth);
-
-                if (this.impactLayer < maxLayer && !this.impactFrontier.isEmpty()) {
-                    //define spread progress and target layer
-                    this.impactCurrentRadius += Math.max(0D, this.raySpeed);
-                    int targetLayer = Math.min(maxLayer, (int) Math.floor(this.impactCurrentRadius));
-
-                    //update cylindrical impact layers
-                    while (this.impactLayer < targetLayer && !this.impactFrontier.isEmpty()) {
-                        List<BlockPos> oldFrontier = new ArrayList<>(this.impactFrontier);
-                        this.impactFrontier.clear();
-                        this.impactLayer++;
-
-                        //cardinal neighbor spread for use in impact from other ray type
-                        for (BlockPos frontierPos : oldFrontier) {
-                            for (EnumFacing facing : EnumFacing.values()) {
-                                BlockPos nextPos = frontierPos.offset(facing);
-                                if (!this.canImpactReachPosition(nextPos)) continue;
-
-                                //add upon passing checks
-                                this.tryAddImpactPosition(nextPos);
-                            }
-                        }
-                    }
-                }
-
-                //decay innermost positions
-                this.decayImpactPositions();
-
-                if ((this.impactLayer >= maxLayer || this.impactFrontier.isEmpty()) && this.segmentImpactPositions.isEmpty()) this.killSegment();
-            }
-        }
+        if (this.isImpacting) this.rayShape.updateImpact(this);
         //-----logic when moving-----
         else {
             //kill when going beyond max ray length
@@ -193,7 +114,9 @@ public class RiftLibRaySegment {
                 ImmutablePair<BlockPos, EnumFacing> impactHit = this.findImpactHit();
                 if (impactHit != null) {
                     this.distanceTravelled = stepDistance;
-                    if (this.spreadOnHitBlock) this.startImpactNonImpactType(impactHit.getLeft(), impactHit.getRight());
+                    if (this.spreadOnHitBlock && this.rayShape instanceof RiftLibRayMovingShape rayMovingShape) {
+                        rayMovingShape.startImpact(this, impactHit.getLeft(), impactHit.getRight());
+                    }
                     else this.killSegment();
                     return;
                 }
@@ -225,6 +148,110 @@ public class RiftLibRaySegment {
 
     public boolean isImpacting() {
         return this.isImpacting;
+    }
+
+    public void setImpacting() {
+        this.isImpacting = true;
+    }
+
+    @NotNull
+    public AxisAlignedBB getSegmentAABB() {
+        return this.segmentAABB;
+    }
+
+    public void setSegmentAABB(@NotNull AxisAlignedBB segmentAABB) {
+        this.segmentAABB = segmentAABB;
+    }
+
+    public double getRaySpeed() {
+        return this.raySpeed;
+    }
+
+    public double getDistanceTravelled() {
+        return this.distanceTravelled;
+    }
+
+    public double getCurrentWidth() {
+        return this.currentWidth;
+    }
+
+    public double getImpactMaxRadius() {
+        return this.impactMaxRadius;
+    }
+
+    public void setImpactMaxRadius(double value) {
+        this.impactMaxRadius = value;
+    }
+
+    public double getImpactDepth() {
+        return this.impactDepth;
+    }
+
+    public void setImpactDepth(double value) {
+        this.impactDepth = value;
+    }
+
+    public int getImpactLayer() {
+        return this.impactLayer;
+    }
+
+    public void setImpactLayer(int impactLayer) {
+        this.impactLayer = impactLayer;
+    }
+
+    public double getImpactCurrentRadius() {
+        return this.impactCurrentRadius;
+    }
+
+    public void setImpactCurrentRadius(double impactCurrentRadius) {
+        this.impactCurrentRadius = impactCurrentRadius;
+    }
+
+    public double getImpactDecayRadius() {
+        return this.impactDecayRadius;
+    }
+
+    public void setImpactDecayRadius(double value) {
+        this.impactDecayRadius = value;
+    }
+
+    @Nullable
+    public BlockPos getImpactOriginPos() {
+        return this.impactOriginPos;
+    }
+
+    public void setImpactOriginPos(@Nullable BlockPos pos) {
+        this.impactOriginPos = pos;
+    }
+
+    public boolean hasImpactPositions() {
+        return !this.segmentImpactPositions.isEmpty();
+    }
+
+    public LinkedHashSet<BlockPos> getSegmentImpactPositions() {
+        return this.segmentImpactPositions;
+    }
+
+    @NotNull
+    public Set<BlockPos> getExpiredImpactPositions() {
+        return this.expiredImpactPositions;
+    }
+
+    public boolean hasImpactFrontier() {
+        return !this.impactFrontier.isEmpty();
+    }
+
+    @NotNull
+    public List<BlockPos> getImpactFrontier() {
+        return this.impactFrontier;
+    }
+
+    public void clearImpactFrontier() {
+        this.impactFrontier.clear();
+    }
+
+    public void setImpactFace(EnumFacing enumFacing) {
+        this.impactFace = enumFacing;
     }
 
     public List<AxisAlignedBB> getSegmentAABBList() {
@@ -318,115 +345,25 @@ public class RiftLibRaySegment {
     }
 
     /**
-     * Create an impact for non impact type rays
-     * */
-    private void startImpactNonImpactType(@NotNull BlockPos hitBlockPos, @NotNull EnumFacing face) {
-        this.isImpacting = true;
-        this.impactFace = face;
-        this.impactMaxRadius = Math.max(1D, this.maxRayLength - this.distanceTravelled);
-        this.impactDepth = Math.max(1D, this.currentWidth);
-        this.impactLayer = 0;
-        this.impactCurrentRadius = 0D;
-        this.impactDecayRadius = 0D;
-        this.segmentImpactPositions.clear();
-        this.expiredImpactPositions.clear();
-        this.impactFrontier.clear();
-
-        BlockPos startPos = hitBlockPos.offset(face);
-        this.impactOriginPos = startPos;
-
-        this.tryAddImpactPosition(startPos);
-
-        double startingRadius = this.currentWidth / 2D;
-        int startingRadiusBlocks = (int) Math.ceil(startingRadius);
-
-        for (int x = -startingRadiusBlocks; x <= startingRadiusBlocks; x++) {
-            for (int y = -startingRadiusBlocks; y <= startingRadiusBlocks; y++) {
-                for (int z = -startingRadiusBlocks; z <= startingRadiusBlocks; z++) {
-                    //block if not on cylinder impact plane for non impact type rays
-                    if (x * face.getXOffset() + y * face.getYOffset() + z * face.getZOffset() == 0) continue;
-
-                    //add once passed
-                    this.tryAddImpactPosition(startPos.add(x, y, z));
-                }
-            }
-        }
-
-        //kill if impact frontier somehow is empty
-        if (this.impactFrontier.isEmpty()) this.killSegment();
-    }
-
-    /**
-     * Create an impact for impact type rays
-     * */
-    private void startImpactImpactType(@NotNull BlockPos hitBlockPos) {
-        this.isImpacting = true;
-        this.impactMaxRadius = this.rayWidthRange[1];
-        this.impactDepth = Math.max(1D, this.currentWidth);
-        this.impactLayer = 0;
-        this.impactCurrentRadius =  this.currentWidth / 2D;
-        this.impactDecayRadius = -Math.max(1D, Math.max(0D, this.raySpeed));
-        this.segmentImpactPositions.clear();
-        this.expiredImpactPositions.clear();
-        this.impactFrontier.clear();
-
-        this.impactOriginPos = hitBlockPos;
-
-        this.tryAddImpactPosition(hitBlockPos);
-
-        double startingRadius = this.currentWidth / 2D;
-        int startingRadiusBlocks = (int) Math.ceil(startingRadius);
-
-        for (int x = -startingRadiusBlocks; x <= startingRadiusBlocks; x++) {
-            for (int y = -startingRadiusBlocks; y <= startingRadiusBlocks; y++) {
-                for (int z = -startingRadiusBlocks; z <= startingRadiusBlocks; z++) {
-                    //block if out of reach of sphere plane for impact type rays
-                    if (x * x + y * y + z * z > startingRadius * startingRadius) continue;
-
-                    //add once passed
-                    this.tryAddImpactPosition(hitBlockPos.add(x, y, z));
-                }
-            }
-        }
-    }
-
-    /**
-     * To use while updating impact layers. For testing if it the provided target position
+     * To use while updating impact layers. For testing if the provided target position
      * can be reached.
      * */
-    private boolean canImpactReachPosition(@NotNull BlockPos targetPos) {
+    public boolean canImpactReachPosition(@NotNull BlockPos targetPos) {
         if (this.impactOriginPos == null) return false;
 
         //common stuff
         int relX = targetPos.getX() - this.impactOriginPos.getX();
         int relY = targetPos.getY() - this.impactOriginPos.getY();
         int relZ = targetPos.getZ() - this.impactOriginPos.getZ();
-        int relMagSq = relX * relX + relY * relY + relZ * relZ;
 
         //---step 1: search within shapes---
-        //spherical search for impact type rays
-        if (this.rayType == RiftLibRay.RayType.IMPACT) {
-            if (relMagSq > this.impactMaxRadius * this.impactMaxRadius) return false;
-        }
-        //cylindrical search for other ray types
-        else {
-            int faceXOffset = this.impactFace != null ? this.impactFace.getXOffset() : 0;
-            int faceYOffset = this.impactFace != null ? this.impactFace.getYOffset() : 0;
-            int faceZOffset = this.impactFace != null ? this.impactFace.getZOffset() : 0;
-
-            int inwardDot = -(relX * faceXOffset + relY * faceYOffset + relZ * faceZOffset);
-            if (inwardDot < 0 || inwardDot > this.impactDepth) return false;
-
-            int planeX = relX - inwardDot * -faceXOffset;
-            int planeY = relY - inwardDot * -faceYOffset;
-            int planeZ = relZ - inwardDot * -faceZOffset;
-
-            if (planeX * planeX + planeY * planeY + planeZ * planeZ > this.impactMaxRadius * this.impactMaxRadius) return false;
-        }
+        if (!this.rayShape.isWithinImpactShape(relX, relY, relZ, this.impactMaxRadius, this.impactDepth, this.impactFace)) return false;
 
         //---step 2: test if it is possible to go to that position from origin---
         if (targetPos.equals(this.impactOriginPos)) return true;
 
+        //-----step 3: perform the test as expected-----
+        int relMagSq = relX * relX + relY * relY + relZ * relZ;
         int steps = Math.max(1, (int) Math.ceil(Math.sqrt(relMagSq) * 4D));
         World world = this.rayCreator.getRayCreator().world;
 
@@ -450,7 +387,7 @@ public class RiftLibRaySegment {
     /**
      * Safely test if it is possible to add an impact position and break it.
      * */
-    private void tryAddImpactPosition(@NotNull BlockPos pos) {
+    public void tryAddImpactPosition(@NotNull BlockPos pos) {
         //-----test for if it has already been added-----
         if (this.expiredImpactPositions.contains(pos) || !this.segmentImpactPositions.add(pos)) return;
         this.segmentImpactPositions.add(pos);
@@ -466,13 +403,13 @@ public class RiftLibRaySegment {
         }
 
         //-----add to impact frontier-----
-        if (this.rayType != RiftLibRay.RayType.IMPACT) this.impactFrontier.add(pos);
+        if (this.rayShape.addsImpactPositionsToFrontier()) this.impactFrontier.add(pos);
     }
 
     /**
      * Provide decay for impact results
      * */
-    private void decayImpactPositions() {
+    public void decayImpactPositions() {
         if (this.segmentImpactPositions.isEmpty()) return;
 
         this.impactDecayRadius += Math.max(0D, this.raySpeed);
@@ -499,8 +436,7 @@ public class RiftLibRaySegment {
         int relY = pos.getY() - this.impactOriginPos.getY();
         int relZ = pos.getZ() - this.impactOriginPos.getZ();
 
-        if (this.rayType == RiftLibRay.RayType.IMPACT) return relX * relX + relY * relY + relZ * relZ <= this.impactDecayRadius * this.impactDecayRadius;
-        else return Math.abs(relX) + Math.abs(relY) + Math.abs(relZ) <= this.impactDecayRadius;
+        return this.rayShape.isWithinImpactDecayFront(relX, relY, relZ, this.impactDecayRadius);
     }
 
     private boolean canImpactContinueThrough(@NotNull BlockPos pos, @NotNull World world) {

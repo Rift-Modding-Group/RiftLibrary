@@ -2,6 +2,11 @@ package anightdazingzoroark.riftlib.ray;
 
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
+import anightdazingzoroark.riftlib.ray.rayShape.RiftLibRayBeamShape;
+import anightdazingzoroark.riftlib.ray.rayShape.RiftLibRayMovingShape;
+import anightdazingzoroark.riftlib.ray.rayShape.RiftLibRayShape;
+import anightdazingzoroark.riftlib.ray.rayShape.RiftLibRaySphereImpactShape;
+import anightdazingzoroark.riftlib.ray.rayShape.RiftLibRayUpperSphereImpactShape;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.entity.Entity;
@@ -30,7 +35,7 @@ public class RiftLibRay {
     @NotNull
     public final AnimatedLocator parentLocator;
     @NotNull
-    private final RayType rayType;
+    private final RiftLibRayShape rayShape;
     private final double maxRayLength;
     private final double @NotNull [] rayWidthRange;
     //in blocks per tick, defines the speed in which the segments travel
@@ -67,7 +72,7 @@ public class RiftLibRay {
         this.rayCreator = rayCreator;
         this.rayName = rayName;
         this.parentLocator = parentLocator;
-        this.rayType = rayType;
+        this.rayShape = rayType.getShape();
         this.maxRayLength = maxRayLength;
         this.rayWidthRange = rayWidthRange;
         this.raySpeed = raySpeed;
@@ -140,13 +145,13 @@ public class RiftLibRay {
 
             //update
             raySegment.onUpdate();
-            if (this.rayType == RayType.BEAM) raySegment.updateDirectionVector(this.directionVector);
+            if (this.rayShape.followUserRotation()) raySegment.updateDirectionVector(this.directionVector);
         }
 
         //-----create a new segment, rate is dependent on ray speed-----
         if (!this.isEnded && this.originPos != null) {
             this.raySegmentList.add(new RiftLibRaySegment(
-                    this.rayCreator, this.originPos, this.directionVector, this.rayType,
+                    this.rayCreator, this.originPos, this.directionVector, this.rayShape,
                     this.maxRayLength, this.rayWidthRange, this.raySpeed, this.spreadOnHitBlock,
                     this.breakBlockCondition
             ));
@@ -249,16 +254,32 @@ public class RiftLibRay {
          * A spray is made of AABBs traveling along a straight line, and will not
          * instantly rotate alongside the user's rotations.
          * */
-        SPRAY,
+        SPRAY(new RiftLibRayMovingShape()),
         /**
          * A fixed beam is made of AABBs forming a fixed straight line, and will
          * instantly rotate alongside the user's rotations.
          * */
-        BEAM,
+        BEAM(new RiftLibRayBeamShape()),
         /**
          * Impact only, does not move.
          */
-        IMPACT;
+        IMPACT_SPHERE(new RiftLibRaySphereImpactShape()),
+        /**
+         * Impact only, does not move, and only spreads across the upper sphere.
+         */
+        IMPACT_UPPER_SPHERE(new RiftLibRayUpperSphereImpactShape());
+
+        @NotNull
+        private final RiftLibRayShape shape;
+
+        RayType(@NotNull RiftLibRayShape shape) {
+            this.shape = shape;
+        }
+
+        @NotNull
+        public RiftLibRayShape getShape() {
+            return this.shape;
+        }
     }
 
     /**
@@ -351,6 +372,14 @@ public class RiftLibRay {
         }
 
         public Builder setShapeImpact(double startWidth, double endWidth) {
+            return this.setImpactShape(RayType.IMPACT_SPHERE, startWidth, endWidth);
+        }
+
+        public Builder setShapeUpperImpact(double startWidth, double endWidth) {
+            return this.setImpactShape(RayType.IMPACT_UPPER_SPHERE, startWidth, endWidth);
+        }
+
+        private Builder setImpactShape(@NotNull RayType rayType, double startWidth, double endWidth) {
             if (this.rayType != null) {
                 RiftLib.LOGGER.warn("This ray already has its shape defined as {}. Skipping...", this.rayType);
                 return this;
@@ -359,7 +388,7 @@ public class RiftLibRay {
                 RiftLib.LOGGER.error("Impact ray end width {} is smaller than start width {}. Skipping...", endWidth, startWidth);
                 return this;
             }
-            this.rayType = RayType.IMPACT;
+            this.rayType = rayType;
             this.minWidth = startWidth;
             this.maxWidth = Math.max(startWidth, endWidth);
             return this;
@@ -388,7 +417,7 @@ public class RiftLibRay {
         }
 
         public Builder setSpreadOnHitBlock() {
-            if (this.rayType == RayType.IMPACT) {
+            if (this.rayType != null && this.rayType.shape.startsAsImpact()) {
                 RiftLib.LOGGER.warn("Impact type rays do not travel, so using setSpreadOnHitBlock() is unnecessary.");
                 return this;
             }

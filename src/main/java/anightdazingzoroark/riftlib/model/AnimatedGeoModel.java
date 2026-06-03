@@ -6,7 +6,7 @@ import anightdazingzoroark.riftlib.animation.AnimationFile;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 
-import anightdazingzoroark.riftlib.internalMessage.RiftTickClientFromServer;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibTickClientFromServer;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
@@ -148,7 +148,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		animData.updateOnDataTick();
 
 		//send tick to all clients after the server has advanced the model
-		ServerProxy.SERVER_MODEL_MESSAGE_WRAPPER.sendToAll(new RiftTickClientFromServer(animData));
+		ServerProxy.SERVER_MODEL_MESSAGE_WRAPPER.sendToAll(new RiftLibTickClientFromServer(animData));
 
 		if (!this.animationProcessor.getModelRendererList().isEmpty()) {
 			this.animationProcessor.tickAnimation(

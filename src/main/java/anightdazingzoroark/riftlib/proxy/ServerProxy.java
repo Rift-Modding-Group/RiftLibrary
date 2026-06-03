@@ -42,12 +42,13 @@ public class ServerProxy {
         MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID);
         MESSAGE_WRAPPER.registerMessage(RiftLibCreateParticle.class, RiftLibMessageSide.CLIENT);
         MESSAGE_WRAPPER.registerMessage(RiftLibPlaySoundForPlayer.class, RiftLibMessageSide.CLIENT);
+        MESSAGE_WRAPPER.registerMessage(RiftLibApplyMessageEffect.class, RiftLibMessageSide.BOTH);
 
         HITBOX_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_hitbox");
         HITBOX_MESSAGE_WRAPPER.registerMessage(RiftLibSyncHitboxEntityId.class, RiftLibMessageSide.CLIENT);
 
         SERVER_MODEL_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_server_model");
-        SERVER_MODEL_MESSAGE_WRAPPER.registerMessage(RiftTickClientFromServer.class, RiftLibMessageSide.CLIENT);
+        SERVER_MODEL_MESSAGE_WRAPPER.registerMessage(RiftLibTickClientFromServer.class, RiftLibMessageSide.CLIENT);
 
         RAY_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_ray");
         RAY_MESSAGE_WRAPPER.registerMessage(RiftLibCreateOrDestroyRay.class, RiftLibMessageSide.BOTH);

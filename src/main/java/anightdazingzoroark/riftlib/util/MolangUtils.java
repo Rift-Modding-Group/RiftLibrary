@@ -4,8 +4,10 @@ import anightdazingzoroark.riftlib.core.AnimatableRunValue;
 import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibApplyMessageEffect;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
+import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraftforge.fml.relauncher.Side;
 
 import java.util.Arrays;
@@ -74,15 +76,21 @@ public class MolangUtils {
                 Side[] sideOrder = effectMapEntry.getValue().sideOrder();
 				if (sideOrder == null || sideOrder.length == 0) sideOrder = new Side[]{Side.SERVER};
 
+				RiftLibApplyMessageEffect applyMessageEffect = new RiftLibApplyMessageEffect(animationData, valueToSend);
+				for (Side side : sideOrder) {
+					if (side == Side.SERVER) ServerProxy.MESSAGE_WRAPPER.sendToServer(applyMessageEffect);
+					if (side == Side.CLIENT) ServerProxy.MESSAGE_WRAPPER.sendToAll(applyMessageEffect);
+				}
+
 				boolean forServer = Arrays.stream(sideOrder).anyMatch(i -> i == Side.SERVER);
 				boolean forClient = Arrays.stream(sideOrder).anyMatch(i -> i == Side.CLIENT);
 
-				//test on server first
-				if (forServer && !animationData.getWorld().isRemote) {
+				//test on client first
+				if (forClient && animationData.getWorld().isRemote) {
 					effectMapEntry.getValue().runValue().run();
 				}
-				//test on client next
-				else if (forClient && animationData.getWorld().isRemote) {
+				//test on server next
+				else if (forServer && !animationData.getWorld().isRemote) {
 					effectMapEntry.getValue().runValue().run();
 				}
 			}

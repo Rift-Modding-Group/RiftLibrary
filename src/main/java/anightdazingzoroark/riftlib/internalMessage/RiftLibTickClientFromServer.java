@@ -10,12 +10,12 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class RiftTickClientFromServer extends RiftLibMessage<RiftTickClientFromServer> {
+public class RiftLibTickClientFromServer extends RiftLibMessage<RiftLibTickClientFromServer> {
     private NBTTagCompound targetDataNBT;
 
-    public RiftTickClientFromServer() {}
+    public RiftLibTickClientFromServer() {}
 
-    public RiftTickClientFromServer(AbstractAnimationData<?, ?> targetData) {
+    public RiftLibTickClientFromServer(AbstractAnimationData<?, ?> targetData) {
         this.targetDataNBT = targetData.asNBT();
     }
 
@@ -30,10 +30,10 @@ public class RiftTickClientFromServer extends RiftLibMessage<RiftTickClientFromS
     }
 
     @Override
-    public void executeOnServer(MinecraftServer server, RiftTickClientFromServer message, EntityPlayer player, MessageContext messageContext) {}
+    public void executeOnServer(MinecraftServer server, RiftLibTickClientFromServer message, EntityPlayer player, MessageContext messageContext) {}
 
     @Override
-    public void executeOnClient(Minecraft client, RiftTickClientFromServer message, EntityPlayer player, MessageContext messageContext) {
+    public void executeOnClient(Minecraft client, RiftLibTickClientFromServer message, EntityPlayer player, MessageContext messageContext) {
         //test if nbt has anim time
         if (!message.targetDataNBT.hasKey("Tick")) return;
         double tick = message.targetDataNBT.getDouble("Tick");

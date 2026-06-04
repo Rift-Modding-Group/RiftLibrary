@@ -1,8 +1,7 @@
-package anightdazingzoroark.riftlib.propertySystem.registry;
+package anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.registry;
 
-import anightdazingzoroark.riftlib.propertySystem.propertyStorage.AbstractEntityProperties;
+import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.AbstractEntityProperties;
 import net.minecraft.entity.Entity;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.HashMap;
 import java.util.Map;

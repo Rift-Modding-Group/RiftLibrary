@@ -1,8 +1,7 @@
-package anightdazingzoroark.riftlib.propertySystem;
+package anightdazingzoroark.riftlib.nbtStorageUser.propertySystem;
 
-import anightdazingzoroark.riftlib.propertySystem.propertyStorage.AbstractEntityProperties;
-import anightdazingzoroark.riftlib.propertySystem.registry.PropertiesBootstrap;
-import anightdazingzoroark.riftlib.propertySystem.registry.PropertiesRoot;
+import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.registry.PropertiesBootstrap;
+import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.registry.PropertiesRoot;
 import net.minecraft.entity.Entity;
 
 /**

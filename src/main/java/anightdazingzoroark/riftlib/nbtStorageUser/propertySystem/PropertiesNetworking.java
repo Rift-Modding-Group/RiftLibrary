@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.propertySystem;
+package anightdazingzoroark.riftlib.nbtStorageUser.propertySystem;
 
 import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateMultiPropertyKey;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateSinglePropertyKey;

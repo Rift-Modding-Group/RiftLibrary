@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.propertySystem.registry;
+package anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.registry;
 
 import anightdazingzoroark.riftlib.RiftLib;
 import net.minecraft.entity.Entity;

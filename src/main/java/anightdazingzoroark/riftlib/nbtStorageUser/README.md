@@ -1,0 +1,1 @@
+Why are abstractions for tile entities and entity properties in a GeckoLib fork??? Well, idk, but this is my fork and I do what i feel is convenient here.

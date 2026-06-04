@@ -1,8 +1,8 @@
 package anightdazingzoroark.riftlib.internalMessage;
 
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
-import anightdazingzoroark.riftlib.propertySystem.RiftLibProperty;
-import anightdazingzoroark.riftlib.propertySystem.propertyStorage.AbstractEntityProperties;
+import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.RiftLibProperty;
+import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.AbstractEntityProperties;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;

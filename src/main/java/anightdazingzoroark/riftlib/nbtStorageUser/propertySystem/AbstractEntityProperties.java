@@ -1,7 +1,6 @@
-package anightdazingzoroark.riftlib.propertySystem.propertyStorage;
+package anightdazingzoroark.riftlib.nbtStorageUser.propertySystem;
 
-import anightdazingzoroark.riftlib.propertySystem.PropertiesNetworking;
-import anightdazingzoroark.riftlib.propertySystem.propertyStorage.propertyValue.*;
+import anightdazingzoroark.riftlib.nbtStorageUser.propertyValue.AbstractPropertyValue;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -29,7 +28,7 @@ public abstract class AbstractEntityProperties<E extends Entity> {
 
     //-----initialization and registration-----
     /**
-     * Use this to register any default values your property might have.
+     * Override this to register any default values your property might have.
      * */
     protected abstract void registerDefaults(E entity);
 
@@ -53,6 +52,7 @@ public abstract class AbstractEntityProperties<E extends Entity> {
 
     //-----methods relating to putting values-----
     //universal setter and getter
+    @SuppressWarnings("unchecked")
     private <I extends AbstractPropertyValue<?>> I getExistingProperty(String key) {
         //check if key exists
         if (!this.propertyValueMap.containsKey(key)) {

@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.propertySystem.propertyStorage.propertyValue;
+package anightdazingzoroark.riftlib.nbtStorageUser.propertyValue;
 
 import net.minecraft.nbt.NBTTagCompound;
 

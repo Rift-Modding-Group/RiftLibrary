@@ -1,11 +1,11 @@
-package anightdazingzoroark.riftlib.propertySystem.sync;
+package anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.sync;
 
 import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateAllPropertyKeys;
-import anightdazingzoroark.riftlib.propertySystem.RiftLibProperty;
-import anightdazingzoroark.riftlib.propertySystem.propertyStorage.AbstractEntityProperties;
-import anightdazingzoroark.riftlib.propertySystem.registry.PropertiesBootstrap;
-import anightdazingzoroark.riftlib.propertySystem.registry.PropertiesRoot;
-import anightdazingzoroark.riftlib.propertySystem.registry.PropertyRegistry;
+import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.RiftLibProperty;
+import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.AbstractEntityProperties;
+import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.registry.PropertiesBootstrap;
+import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.registry.PropertiesRoot;
+import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.registry.PropertyRegistry;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;

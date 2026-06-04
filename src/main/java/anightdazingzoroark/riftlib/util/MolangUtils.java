@@ -2,12 +2,12 @@ package anightdazingzoroark.riftlib.util;
 
 import anightdazingzoroark.riftlib.core.AnimatableRunValue;
 import anightdazingzoroark.riftlib.core.AnimatableValue;
+import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
-import anightdazingzoroark.riftlib.internalMessage.RiftLibApplyMessageEffect;
+import anightdazingzoroark.riftlib.model.ServerModelRegistry;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
-import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraftforge.fml.relauncher.Side;
 
 import java.util.Arrays;
@@ -51,47 +51,45 @@ public class MolangUtils {
 		});
 	}
 
-	public static void parseValue(AbstractAnimationData<?, ?> animationData, String value) {
-		parseValue(animationData, new AnimatableValue(value));
+	public static void parseValue(IAnimatable<?> animatable, String value) {
+		parseValue(animatable, new AnimatableValue(value));
 	}
 
 	/**
 	 * For use in animation controllers, its for either assigning variables from a string or
 	 * sending messages to the server. Meant for use on client only.
 	 * */
-	public static void parseValue(AbstractAnimationData<?, ?> animationData, AnimatableValue animatableValue) {
+	public static void parseValue(IAnimatable<?> animatable, AnimatableValue animatableValue) {
+		AbstractAnimationData<?, ?> animationData = animatable.getAnimationData();
+
 		//as this is animatable value we're dealing with, first we check if its a message
+		//note that these messages only work if on the server
 		if (animatableValue.isExpression()
 				&& animatableValue.getExpressionValue().startsWith("'")
 				&& animatableValue.getExpressionValue().endsWith("'")
 		) {
+			//if world doesnt exist, skip. this is mostly here cos
+			//AbstractAnimationData.getWorld() is nullable and i need
+			//a way for intellij to stfu about it
+			if (animationData.getWorld() == null) return;
+
 			String valueToSend = animatableValue.getExpressionValue().substring(1, animatableValue.getExpressionValue().length() - 1);
 			for (Map.Entry<String, AnimatableRunValue> effectMapEntry : animationData.getAnimationMessageEffects().entrySet()) {
 				if (!valueToSend.equals(effectMapEntry.getKey())) continue;
 
-				//anim data world is nullable so if theres no world, skip
-				if (animationData.getWorld() == null) continue;
-
-				//if no side order, just assume its for server only then
+				//if no side order, just assume its for client only then
                 Side[] sideOrder = effectMapEntry.getValue().sideOrder();
-				if (sideOrder == null || sideOrder.length == 0) sideOrder = new Side[]{Side.SERVER};
+				if (sideOrder == null || sideOrder.length == 0) sideOrder = new Side[]{Side.CLIENT};
 
-				RiftLibApplyMessageEffect applyMessageEffect = new RiftLibApplyMessageEffect(animationData, valueToSend);
+				//require the presence of a server model if it specifies server side
+				if (Arrays.asList(sideOrder).contains(Side.SERVER)) {
+					ServerModelRegistry.requireServerModel(animatable, "server animation message effects");
+				}
+
+				//now apply message effect based on side order
 				for (Side side : sideOrder) {
-					if (side == Side.SERVER) ServerProxy.MESSAGE_WRAPPER.sendToServer(applyMessageEffect);
-					if (side == Side.CLIENT) ServerProxy.MESSAGE_WRAPPER.sendToAll(applyMessageEffect);
-				}
-
-				boolean forServer = Arrays.stream(sideOrder).anyMatch(i -> i == Side.SERVER);
-				boolean forClient = Arrays.stream(sideOrder).anyMatch(i -> i == Side.CLIENT);
-
-				//test on client first
-				if (forClient && animationData.getWorld().isRemote) {
-					effectMapEntry.getValue().runValue().run();
-				}
-				//test on server next
-				else if (forServer && !animationData.getWorld().isRemote) {
-					effectMapEntry.getValue().runValue().run();
+					if (side == Side.SERVER && !animationData.getWorld().isRemote) effectMapEntry.getValue().runValue().run();
+					if (side == Side.CLIENT && animationData.getWorld().isRemote) effectMapEntry.getValue().runValue().run();
 				}
 			}
 		}

@@ -28,7 +28,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-@SuppressWarnings({ "rawtypes", "unchecked" })
+@SuppressWarnings({"unchecked" })
 public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoModelProvider<T> implements IAnimatableModel<T>, IAnimatableModelProvider<T> {
 	private static final long MAX_SERVER_SYNC_PREDICTION_TICKS = 3L;
 	private final AnimationProcessor animationProcessor;
@@ -60,21 +60,22 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		// EntityAnimationManager), which allows for multiple independent animations
 		AbstractAnimationData<?, ?> animData = entity.getAnimationData();
 
+		//helper flag for checking for server model
+		boolean hasServerModel = this.hasServerModel(entity);
+
 		//if there is no server model, the client will be the main authority in
 		//ticking animations.
-		if (!this.hasServerModel(entity)) {
-			if (animData.clientTicker == null) {
-				AnimationTicker ticker = new AnimationTicker(animData);
-				animData.clientTicker = ticker;
-				MinecraftForge.EVENT_BUS.register(ticker);
-			}
+		if (!hasServerModel && animData.clientTicker == null) {
+			AnimationTicker ticker = new AnimationTicker(animData);
+			animData.clientTicker = ticker;
+			MinecraftForge.EVENT_BUS.register(ticker);
 		}
 
 		//update the seek time as long as the game is not paused (unless
 		//explicitly set in the anim data)
 		if (!Minecraft.getMinecraft().isGamePaused() || animData.shouldPlayWhilePaused) {
 			float partialTicks = Minecraft.getMinecraft().getRenderPartialTicks();
-			this.seekTime = this.hasServerModel(entity) ?
+			this.seekTime = hasServerModel ?
 					this.getServerSyncedSeekTime(animData, partialTicks) :
 					animData.tick + partialTicks;
 		}
@@ -87,7 +88,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 			animData.updateOnDataTick();
 		}
 
-		//update based on animations
+		//process animations
 		if (!this.animationProcessor.getModelRendererList().isEmpty()) {
 			this.animationProcessor.tickAnimation(
 					entity, this.seekTime,
@@ -150,6 +151,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		//send tick to all clients after the server has advanced the model
 		ServerProxy.SERVER_MODEL_MESSAGE_WRAPPER.sendToAll(new RiftLibTickClientFromServer(animData));
 
+		//process animations
 		if (!this.animationProcessor.getModelRendererList().isEmpty()) {
 			this.animationProcessor.tickAnimation(
 					entity, animData.tick,

@@ -86,10 +86,9 @@ public class AnimationProcessor {
 				}
 			}
 
-
-			//-----custom instructions are to be on both sides-----
+			//-----running custom instructions-----
 			for (EventKeyFrame.CustomInstructionKeyFrame customInstructionEvent : controller.drainCustomInstructionEvents()) {
-				MolangUtils.parseValue(animationData, customInstructionEvent.instruction);
+				MolangUtils.parseValue(entity, customInstructionEvent.instruction);
 			}
 
 			//-----client only stuff down here-----

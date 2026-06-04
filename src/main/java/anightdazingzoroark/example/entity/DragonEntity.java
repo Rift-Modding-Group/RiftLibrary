@@ -302,13 +302,11 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
                         .addExitEffect(new AnimatableValue("'endBreathUse'"))
         ));
 
-        animationData.addAnimationMessageEffect("startFireBreath", new AnimatableRunValue(() -> {
-            RiftLibRayHelper.createRay(this, "breatheFire");
+        animationData.addAnimationMessageEffect("startFireBreath", new AnimatableRunValue(() -> RiftLibRayHelper.createRay(this, "breatheFire"), Side.SERVER));
+        animationData.addAnimationMessageEffect("endFireBreath", new AnimatableRunValue(() -> RiftLibRayHelper.killRay(this, "breatheFire"), Side.SERVER));
+        animationData.addAnimationMessageEffect("endBreathUse", new AnimatableRunValue(() -> {
+            this.setBreathingFire(false);
         }, Side.CLIENT, Side.SERVER));
-        animationData.addAnimationMessageEffect("endFireBreath", new AnimatableRunValue(() -> {
-            RiftLibRayHelper.killRay(this, "breatheFire");
-        }, Side.CLIENT, Side.SERVER));
-        animationData.addAnimationMessageEffect("endBreathUse", new AnimatableRunValue(() -> this.setBreathingFire(false), Side.SERVER));
     }
 
     @Override

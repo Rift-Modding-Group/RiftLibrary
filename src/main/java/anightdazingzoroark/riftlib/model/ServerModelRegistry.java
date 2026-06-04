@@ -27,6 +27,10 @@ public class ServerModelRegistry {
         return findFactory(animatable.getClass()) != null;
     }
 
+    /**
+     * For assurance that a specific mechanic requires the existence of a server model. If none,
+     * IllegalStateException it is.
+     * */
     public static void requireServerModel(IAnimatable<?> animatable, String featureName) {
         if (hasServerModel(animatable)) return;
 

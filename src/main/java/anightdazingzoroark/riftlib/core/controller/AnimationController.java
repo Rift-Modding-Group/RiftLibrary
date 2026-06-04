@@ -219,7 +219,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
         try {
             if (!this.initialized) {
                 this.currentState = this.initialState;
-                this.applyEffects(processingData, this.getCurrentControllerState().getEntryEffects());
+                this.applyEffects(this.getCurrentControllerState().getEntryEffects());
                 this.initialized = true;
             }
 
@@ -391,17 +391,17 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             String nextStateName = transitionEntry.getKey();
             if (this.currentState.equals(nextStateName)) return transitionLength;
 
-            this.applyEffects(processingData, currentControllerState.getExitEffects());
+            this.applyEffects(currentControllerState.getExitEffects());
             this.currentState = this.getState(nextStateName).name;
-            this.applyEffects(processingData, this.getCurrentControllerState().getEntryEffects());
+            this.applyEffects(this.getCurrentControllerState().getEntryEffects());
             return transitionLength;
         }
         return transitionLength;
     }
 
-    private void applyEffects(D processingData, Collection<AnimatableValue> effects) {
+    private void applyEffects(Collection<AnimatableValue> effects) {
         for (AnimatableValue effect : effects) {
-            MolangUtils.parseValue(processingData, effect);
+            MolangUtils.parseValue(this.animatable, effect);
         }
     }
 

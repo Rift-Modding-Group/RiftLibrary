@@ -7,6 +7,6 @@ import net.minecraftforge.fml.relauncher.Side;
  *
  * @param runValue The runnable to execute upon receiving a message.
  * @param sideOrder The order in sides (server or client) in which it is to be executed on.
- *                  If left blank, it will default to Side.SERVER.
+ *                  If left blank, it will default to Side.CLIENT.
  * */
 public record AnimatableRunValue(Runnable runValue, Side... sideOrder) {}

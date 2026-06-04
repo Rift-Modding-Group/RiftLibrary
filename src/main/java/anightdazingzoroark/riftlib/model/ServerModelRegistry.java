@@ -14,6 +14,10 @@ public class ServerModelRegistry {
     private static final Map<IAnimatable<?>, AnimatedGeoModel<?>> SERVER_MODELS = new WeakHashMap<>();
     private static boolean modelFetcherRegistered;
 
+    public static <T extends IAnimatable<?>> void registerServerModel(Class<T> animatableClass, AnimatedGeoModel<T> modelFactory) {
+        registerServerModel(animatableClass, () -> modelFactory);
+    }
+
     public static <T extends IAnimatable<?>> void registerServerModel(Class<T> animatableClass, Supplier<? extends AnimatedGeoModel<T>> modelFactory) {
         ensureModelFetcherRegistered();
         SERVER_MODEL_FACTORIES.put(animatableClass, modelFactory);

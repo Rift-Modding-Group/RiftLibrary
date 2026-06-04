@@ -7,21 +7,23 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
+import java.util.ArrayList;
+
 public class ServerModelTicker {
     @SubscribeEvent
     public void onWorldTick(TickEvent.WorldTickEvent event) {
         if (event.side.isClient()) return;
         if (event.phase != TickEvent.Phase.END) return;
 
-        for (Entity entity : event.world.getLoadedEntityList()) {
-            if (entity instanceof IAnimatable<?> animatable) {
-                this.update(animatable);
+        for (Entity entity : new ArrayList<>(event.world.getLoadedEntityList())) {
+            if (!entity.isDead && entity instanceof IAnimatable) {
+                update((IAnimatable<?>) entity);
             }
         }
 
-        for (TileEntity tileEntity : event.world.loadedTileEntityList) {
-            if (tileEntity instanceof IAnimatable<?> animatable) {
-                this.update(animatable);
+        for (TileEntity tile : new ArrayList<>(event.world.loadedTileEntityList)) {
+            if (!tile.isInvalid() && tile instanceof IAnimatable) {
+                update((IAnimatable<?>) tile);
             }
         }
     }

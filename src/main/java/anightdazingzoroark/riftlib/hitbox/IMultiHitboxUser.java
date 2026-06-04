@@ -126,9 +126,10 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
         return false;
     }
 
-    //this makes it so that when HWYLA is installed
-    //the info box directly shows info about the parent
-    //this can be left false if you want to replace it with something else you want
+    /**
+    * This makes it so that when HWYLA is installed, the info box directly shows info about the parent.
+    * Set this to false if you already have a different factory for hitboxes.
+     */
     default boolean hitboxUseHWYLA() {
         return true;
     }

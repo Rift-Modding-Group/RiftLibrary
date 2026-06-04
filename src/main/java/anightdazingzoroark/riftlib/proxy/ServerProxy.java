@@ -18,6 +18,8 @@ import anightdazingzoroark.riftlib.message.RiftLibMessageWrapper;
 import anightdazingzoroark.riftlib.model.ServerModelRegistry;
 import anightdazingzoroark.riftlib.model.ServerModelTicker;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleComponentRegistry;
+import anightdazingzoroark.riftlib.propertySystem.registry.PropertiesBootstrap;
+import anightdazingzoroark.riftlib.propertySystem.sync.PropertySyncEvents;
 import anightdazingzoroark.riftlib.ray.RayTicker;
 import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosTicker;
@@ -33,6 +35,7 @@ public class ServerProxy {
     public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> HITBOX_MESSAGE_WRAPPER;
     public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> SERVER_MODEL_MESSAGE_WRAPPER;
     public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> RAY_MESSAGE_WRAPPER;
+    public static RiftLibMessageWrapper<RiftLibMessage, RiftLibMessage> PROPERTIES_WRAPPER;
 
     public void preInit(FMLPreInitializationEvent e) {
         //registerVariable particle component registry
@@ -53,10 +56,20 @@ public class ServerProxy {
         RAY_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_ray");
         RAY_MESSAGE_WRAPPER.registerMessage(RiftLibCreateOrDestroyRay.class, RiftLibMessageSide.BOTH);
 
+        PROPERTIES_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_wrapper");
+        PROPERTIES_WRAPPER.registerMessage(RiftLibUpdateSinglePropertyKey.class, RiftLibMessageSide.CLIENT);
+        PROPERTIES_WRAPPER.registerMessage(RiftLibUpdateMultiPropertyKey.class, RiftLibMessageSide.CLIENT);
+        PROPERTIES_WRAPPER.registerMessage(RiftLibUpdateAllPropertyKeys.class, RiftLibMessageSide.CLIENT);
+
+        //internal model related events
         MinecraftForge.EVENT_BUS.register(new HitboxTicker.Server());
         MinecraftForge.EVENT_BUS.register(new RayTicker.Server());
         MinecraftForge.EVENT_BUS.register(new ServerModelTicker());
         MinecraftForge.EVENT_BUS.register(new DynamicRidePosTicker.Server());
+
+        //custom entity property system setup
+        PropertiesBootstrap.register();
+        MinecraftForge.EVENT_BUS.register(new PropertySyncEvents());
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {

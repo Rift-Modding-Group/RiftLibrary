@@ -85,7 +85,26 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
             }
         });
         this.tasks.addTask(3, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
-        this.tasks.addTask(4, new EntityAILookIdle(this));
+        this.tasks.addTask(4, new EntityAILookIdle(this) {
+            private DragonEntity dragonEntity;
+
+            private EntityAILookIdle initAnonymous(DragonEntity dragonEntity) {
+                this.dragonEntity = dragonEntity;
+                return this;
+            }
+
+            @Override
+            public boolean shouldExecute() {
+                if (this.dragonEntity.isBeingRidden()) return false;
+                return super.shouldExecute();
+            }
+
+            @Override
+            public boolean shouldContinueExecuting() {
+                if (this.dragonEntity.isBeingRidden()) return false;
+                return super.shouldExecute();
+            }
+        }.initAnonymous(this)); //thank you stackoverflow xd
     }
 
     protected void applyEntityAttributes() {

@@ -4,6 +4,7 @@ import java.util.List;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosSnapshot;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
@@ -13,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -22,6 +24,7 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextFormatting;
@@ -151,6 +154,22 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 				}
 			}
 		}
+	}
+
+	/**
+	 * Make it so that when rendering an entity, hitboxes being in range of camera also counts.
+	 * */
+	@Override
+	public boolean shouldRender(A livingEntity, ICamera camera, double camX, double camY, double camZ) {
+		boolean mainRender = super.shouldRender(livingEntity, camera, camX, camY, camZ);
+		if (livingEntity.getParts() == null) return mainRender;
+
+		for (Entity hitboxPart : livingEntity.getParts()) {
+			AxisAlignedBB hitboxAABB = hitboxPart.getEntityBoundingBox();
+			if (camera.isBoundingBoxInFrustum(hitboxAABB)) return true;
+		}
+
+		return mainRender;
 	}
 
 	@Override

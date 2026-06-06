@@ -17,21 +17,21 @@ public class RiftLibRayHelper {
     /**
      * Creates a ray on both sides, takes into account if called from client or server too.
      * */
-    public static void createRay(IRayCreator<?> rayCreator, String rayName) {
+    public static void createRay(IRayCreator<?> rayCreator, String rayName, String locatorName) {
         if (rayCreator.getRayCreator().world.isRemote) {
-            createRayOnSide(rayCreator, rayName);
-            ServerProxy.RAY_MESSAGE_WRAPPER.sendToServer(new RiftLibCreateOrDestroyRay(true, rayCreator, rayName));
+            createRayOnSide(rayCreator, rayName, locatorName);
+            ServerProxy.RAY_MESSAGE_WRAPPER.sendToServer(new RiftLibCreateOrDestroyRay(true, rayCreator, rayName, locatorName));
         }
         else {
-            ServerProxy.RAY_MESSAGE_WRAPPER.sendToAll(new RiftLibCreateOrDestroyRay(true, rayCreator, rayName));
-            createRayOnSide(rayCreator, rayName);
+            ServerProxy.RAY_MESSAGE_WRAPPER.sendToAll(new RiftLibCreateOrDestroyRay(true, rayCreator, rayName, locatorName));
+            createRayOnSide(rayCreator, rayName, locatorName);
         }
     }
 
     /**
      * Create a ray on the side it was called on only.
      * */
-    public static void createRayOnSide(IRayCreator<?> rayCreator, String rayName) {
+    public static void createRayOnSide(IRayCreator<?> rayCreator, String rayName, String locatorName) {
         RiftLibRay.Builder rayBuilder = rayCreator.getRayBuilders().get(rayName);
 
         //ensure theres a ray type
@@ -44,9 +44,9 @@ public class RiftLibRayHelper {
         ServerModelRegistry.requireServerModel(rayCreator.getRayCreator(), "rays");
 
         //ensure theres a locator
-        AnimatedLocator locator = rayCreator.getRayCreator().getAnimationData().getAnimatedLocator(rayBuilder.parentLocatorName);
+        AnimatedLocator locator = rayCreator.getRayCreator().getAnimationData().getAnimatedLocator(locatorName);
         if (locator == null) {
-            RiftLib.LOGGER.warn("Given locator {} does not exist on the entity!", rayBuilder.parentLocatorName);
+            RiftLib.LOGGER.warn("Given locator {} does not exist on the entity!", locatorName);
             return;
         }
 
@@ -69,15 +69,15 @@ public class RiftLibRayHelper {
     }
 
     /**
-     * Works on both sides, kills a ray on the client side. The ray will fade out then die on both sides.
+     * Works on both sides, kills a ray.
      * */
     public static void killRay(IRayCreator<?> rayCreator, @NotNull String rayName) {
         if (rayCreator.getRayCreator().world.isRemote) {
             killRayOnSide(rayCreator, rayName);
-            ServerProxy.RAY_MESSAGE_WRAPPER.sendToServer(new RiftLibCreateOrDestroyRay(false, rayCreator, rayName));
+            ServerProxy.RAY_MESSAGE_WRAPPER.sendToServer(new RiftLibCreateOrDestroyRay(false, rayCreator, rayName, ""));
         }
         else {
-            ServerProxy.RAY_MESSAGE_WRAPPER.sendToAll(new RiftLibCreateOrDestroyRay(false, rayCreator, rayName));
+            ServerProxy.RAY_MESSAGE_WRAPPER.sendToAll(new RiftLibCreateOrDestroyRay(false, rayCreator, rayName, ""));
             killRayOnSide(rayCreator, rayName);
         }
     }

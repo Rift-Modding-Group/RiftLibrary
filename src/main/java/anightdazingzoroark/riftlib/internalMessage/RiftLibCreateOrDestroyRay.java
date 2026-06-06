@@ -18,13 +18,15 @@ public class RiftLibCreateOrDestroyRay extends RiftLibMessage<RiftLibCreateOrDes
     private boolean create;
     private int entityId;
     private String rayName;
+    private String locatorName;
 
     public RiftLibCreateOrDestroyRay() {}
 
-    public RiftLibCreateOrDestroyRay(boolean create, IRayCreator<?> rayCreator, String rayName) {
+    public RiftLibCreateOrDestroyRay(boolean create, IRayCreator<?> rayCreator, String rayName, String locatorName) {
         this.create = create;
         this.entityId = rayCreator.getRayCreator().getEntityId();
         this.rayName = rayName;
+        this.locatorName = locatorName;
     }
 
     @Override
@@ -32,6 +34,7 @@ public class RiftLibCreateOrDestroyRay extends RiftLibMessage<RiftLibCreateOrDes
         this.create = buf.readBoolean();
         this.entityId = buf.readInt();
         this.rayName = ByteBufUtils.readUTF8String(buf);
+        this.locatorName = ByteBufUtils.readUTF8String(buf);
     }
 
     @Override
@@ -39,6 +42,7 @@ public class RiftLibCreateOrDestroyRay extends RiftLibMessage<RiftLibCreateOrDes
         buf.writeBoolean(this.create);
         buf.writeInt(this.entityId);
         ByteBufUtils.writeUTF8String(buf, this.rayName);
+        ByteBufUtils.writeUTF8String(buf, this.locatorName);
     }
 
     @Override
@@ -46,7 +50,7 @@ public class RiftLibCreateOrDestroyRay extends RiftLibMessage<RiftLibCreateOrDes
         Entity entity = server.getEntityWorld().getEntityByID(message.entityId);
         if (!(entity instanceof IRayCreator<?> rayCreator)) return;
 
-        if (message.create) RiftLibRayHelper.createRayOnSide(rayCreator, message.rayName);
+        if (message.create) RiftLibRayHelper.createRayOnSide(rayCreator, message.rayName, message.locatorName);
         else RiftLibRayHelper.killRayOnSide(rayCreator, message.rayName);
     }
 
@@ -55,7 +59,7 @@ public class RiftLibCreateOrDestroyRay extends RiftLibMessage<RiftLibCreateOrDes
         Entity entity = client.world.getEntityByID(message.entityId);
         if (!(entity instanceof IRayCreator<?> rayCreator)) return;
 
-        if (message.create) RiftLibRayHelper.createRayOnSide(rayCreator, message.rayName);
+        if (message.create) RiftLibRayHelper.createRayOnSide(rayCreator, message.rayName, message.locatorName);
         else RiftLibRayHelper.killRayOnSide(rayCreator, message.rayName);
     }
 }

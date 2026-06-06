@@ -288,8 +288,6 @@ public class RiftLibRay {
     public static class Builder {
         @NotNull
         public final IRayCreator<?> rayCreator;
-        @NotNull
-        public final String parentLocatorName;
 
         @Nullable
         private RayType rayType;
@@ -306,9 +304,8 @@ public class RiftLibRay {
         @NotNull
         private Function<BlockPos, Boolean> breakBlockCondition = pos -> false;
 
-        public Builder(@NotNull IRayCreator<?> rayCreator, @NotNull String parentLocatorName) {
+        public Builder(@NotNull IRayCreator<?> rayCreator) {
             this.rayCreator = rayCreator;
-            this.parentLocatorName = parentLocatorName;
         }
 
         public Builder setShapeSpray(double maxLength, double width) {

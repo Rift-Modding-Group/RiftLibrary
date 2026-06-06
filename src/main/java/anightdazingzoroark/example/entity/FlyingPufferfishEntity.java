@@ -37,7 +37,7 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
         super(worldIn);
         this.setSize(1f, 1f);
         this.rayMap = Map.of(
-                "puffUp", new RiftLibRay.Builder(this, "rayCenter")
+                "puffUp", new RiftLibRay.Builder(this)
                         .setShapeImpact(0, 8)
                         .setRaySpeed(1)
                         .setBreakBlockCondition(blockPos -> {
@@ -120,7 +120,7 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
         ));
 
         animationData.addAnimationMessageEffect("puffUpRay", new AnimatableRunValue(
-                () -> RiftLibRayHelper.createRay(this, "puffUp"), Side.SERVER
+                () -> RiftLibRayHelper.createRay(this, "puffUp", "rayCenter"), Side.SERVER
         ));
     }
 

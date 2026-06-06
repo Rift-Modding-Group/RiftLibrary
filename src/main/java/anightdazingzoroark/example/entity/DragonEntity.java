@@ -51,7 +51,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
         this.enablePersistence();
         this.ridePositions = new DynamicRidePosList(this, this.animationData);
         this.rayMap = Map.of(
-                "breatheFire", new RiftLibRay.Builder(this, "fireLocator")
+                "breatheFire", new RiftLibRay.Builder(this)
                         .setRaySpeed(0.5D)
                         .setShapeSpray(8D, 1D)
                         .setSpreadOnHitBlock()
@@ -321,7 +321,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
                         .addExitEffect(new AnimatableValue("'endBreathUse'"))
         ));
 
-        animationData.addAnimationMessageEffect("startFireBreath", new AnimatableRunValue(() -> RiftLibRayHelper.createRay(this, "breatheFire"), Side.SERVER));
+        animationData.addAnimationMessageEffect("startFireBreath", new AnimatableRunValue(() -> RiftLibRayHelper.createRay(this, "breatheFire", "fireLocator"), Side.SERVER));
         animationData.addAnimationMessageEffect("endFireBreath", new AnimatableRunValue(() -> RiftLibRayHelper.killRay(this, "breatheFire"), Side.SERVER));
         animationData.addAnimationMessageEffect("endBreathUse", new AnimatableRunValue(() -> {
             this.setBreathingFire(false);

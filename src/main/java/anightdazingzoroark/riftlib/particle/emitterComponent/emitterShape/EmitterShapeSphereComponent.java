@@ -2,10 +2,10 @@ package anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape;
 
 import anightdazingzoroark.riftlib.exceptions.InvalidValueException;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
-import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
+import anightdazingzoroark.riftlib.shape.threeDimShape.RiftLibEllipsoidShape;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Map;
@@ -48,17 +48,7 @@ public class EmitterShapeSphereComponent extends RiftLibEmitterShapeComponent {
 
     @Override
     public Vec3d defineParticleOffset(RiftLibParticleEmitter emitter) {
-        double radius = this.surfaceOnly ? this.radius.get() : (2 * emitter.random.nextDouble() - 1) * this.radius.get();
-        double offsetY = (2 * emitter.random.nextDouble() - 1) * radius;
-        double radiusAtY = Math.sqrt(radius * radius - offsetY * offsetY);
-        double theta = 2 * Math.PI * emitter.random.nextDouble();
-        double offsetX = radiusAtY * Math.cos(theta);
-        double offsetZ = radiusAtY * Math.sin(theta);
-        return new Vec3d(
-                offsetX + this.offset[0].get(),
-                offsetY + this.offset[1].get(),
-                offsetZ + this.offset[2].get()
-        );
+        return new RiftLibEllipsoidShape(this.getOffsetVector(), this.radius.get()).randomPoint(this.surfaceOnly);
     }
 
     @Override

@@ -14,6 +14,14 @@ public abstract class RiftLibEmitterShapeComponent extends RiftLibEmitterCompone
         emitter.emitterShape = this;
     }
 
+    protected Vec3d getOffsetVector() {
+        return new Vec3d(
+                this.offset[0].get(),
+                this.offset[1].get(),
+                this.offset[2].get()
+        );
+    }
+
     public abstract Vec3d defineParticleOffset(RiftLibParticleEmitter emitter);
 
     public abstract Vec3d defineDirection(RiftLibParticleEmitter emitter, double emissionX, double emissionY, double emissionZ);

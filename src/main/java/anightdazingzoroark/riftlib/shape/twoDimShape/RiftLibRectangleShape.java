@@ -20,8 +20,8 @@ public class RiftLibRectangleShape extends RiftLibTwoDimShape {
     @Override
     protected double getEquationValue(@NotNull Vec3d point) {
         Vec3d shapeOffset = this.getUnrotatedShapeOffset(point);
-        double halfWidth = this.xWidth / 2.0;
-        double halfHeight = this.zWidth / 2.0;
+        double halfWidth = this.xWidth / 2D;
+        double halfHeight = this.zWidth / 2D;
         double xDistance = Math.abs(shapeOffset.x);
         double zDistance = Math.abs(shapeOffset.z);
         return Math.max(xDistance / halfWidth, zDistance / halfHeight);
@@ -43,16 +43,16 @@ public class RiftLibRectangleShape extends RiftLibTwoDimShape {
             else if (perimeterPosition < this.xWidth + this.zWidth) {
                 shapeOffset = new Vec3d(halfWidth, 0, -halfHeight + perimeterPosition - this.xWidth);
             }
-            else if (perimeterPosition < this.xWidth * 2.0 + this.zWidth) {
+            else if (perimeterPosition < this.xWidth * 2D + this.zWidth) {
                 shapeOffset = new Vec3d(halfWidth - (perimeterPosition - this.xWidth - this.zWidth), 0, halfHeight);
             }
-            else shapeOffset = new Vec3d(-halfWidth, 0, halfHeight - (perimeterPosition - this.xWidth * 2.0 - this.zWidth));
+            else shapeOffset = new Vec3d(-halfWidth, 0, halfHeight - (perimeterPosition - this.xWidth * 2D - this.zWidth));
         }
         else {
             shapeOffset = new Vec3d(
-                    (this.random.nextDouble() - 0.5) * this.xWidth,
+                    this.random.nextDouble() * this.xWidth,
                     0,
-                    (this.random.nextDouble() - 0.5) * this.zWidth
+                    this.random.nextDouble() * this.zWidth
             );
         }
 

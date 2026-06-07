@@ -59,18 +59,16 @@ public abstract class RiftLibThreeDimShape extends RiftLibShape {
      * */
     public abstract double getSurfaceArea();
 
+    /**
+     * Add a cutoff to the shape.
+     * */
     public void addCutoff(@NotNull ThreeDimCutoff threeDimCutoff) {
         if (this.cutoffs.contains(threeDimCutoff)) return;
         this.cutoffs.add(threeDimCutoff);
     }
 
-    public void removeCutoff(@NotNull ThreeDimCutoff threeDimCutoff) {
-        if (!this.cutoffs.contains(threeDimCutoff)) return;
-        this.cutoffs.remove(threeDimCutoff);
-    }
-
     /**
-     * A cutoff point is a portion of a RiftLibThreeDimShape which will only be calculated.
+     * A cutoff point is a portion of a RiftLibThreeDimShape from the origin which will only be calculated.
      * Multiple of them can be put in a 3d shape.
      * */
     public enum ThreeDimCutoff {

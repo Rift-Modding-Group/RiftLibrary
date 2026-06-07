@@ -6,6 +6,7 @@ import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
+import anightdazingzoroark.riftlib.shape.twoDimShape.RiftLibEllipseShape;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Map;
@@ -72,7 +73,6 @@ public class EmitterShapeDiscComponent extends RiftLibEmitterShapeComponent {
 
     @Override
     public Vec3d defineParticleOffset(RiftLibParticleEmitter emitter) {
-        //disc formula is x^2 + y^2 = r^2
         Vec3d vecNormal = new Vec3d(
                 this.planeNormal[0].get(),
                 this.planeNormal[1].get(),
@@ -83,17 +83,10 @@ public class EmitterShapeDiscComponent extends RiftLibEmitterShapeComponent {
         Vec3d helper = (Math.abs(vecNormal.y) < 1) ? new Vec3d(0, 1, 0) : new Vec3d(1, 0, 0);
         Vec3d vecX = vecNormal.crossProduct(helper).normalize();
         Vec3d vecY = vecNormal.crossProduct(vecX).normalize();
+        Vec3d sampledDiscPoint = new RiftLibEllipseShape(Vec3d.ZERO, this.radius.get()).randomPoint(this.surfaceOnly);
+        Vec3d inPlane = vecX.scale(sampledDiscPoint.x).add(vecY.scale(sampledDiscPoint.z));
 
-        double radius = this.surfaceOnly ? this.radius.get() : emitter.random.nextDouble() * this.radius.get();
-        double theta = 2 * Math.PI * emitter.random.nextDouble();
-
-        Vec3d inPlane = vecX.scale(radius * Math.cos(theta)).add(vecY.scale(radius * Math.sin(theta)));
-
-        return new Vec3d(
-                inPlane.x + this.offset[0].get(),
-                inPlane.y + this.offset[1].get(),
-                inPlane.z + this.offset[2].get()
-        );
+        return inPlane.add(this.getOffsetVector());
     }
 
     @Override

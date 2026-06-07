@@ -2,10 +2,10 @@ package anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape;
 
 import anightdazingzoroark.riftlib.exceptions.InvalidValueException;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
-import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
+import anightdazingzoroark.riftlib.shape.threeDimShape.RiftLibBoxShape;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.Map;
@@ -48,59 +48,12 @@ public class EmitterShapeBoxComponent extends RiftLibEmitterShapeComponent {
 
     @Override
     public Vec3d defineParticleOffset(RiftLibParticleEmitter emitter) {
-        //in cubes, |x|, |y|, and |z| are less than or equal to associated dimension length
-        double randomX = emitter.random.nextDouble() * this.halfDimensions[0].get() * 2 - this.halfDimensions[0].get();
-        double randomY = emitter.random.nextDouble() * this.halfDimensions[1].get() * 2 - this.halfDimensions[1].get();
-        double randomZ = emitter.random.nextDouble() * this.halfDimensions[2].get() * 2 - this.halfDimensions[2].get();
-
-        if (this.surfaceOnly) {
-            int face = emitter.random.nextInt(6);
-
-            return switch (face) {
-                //positive x
-                case 0 -> new Vec3d(
-                        this.halfDimensions[0].get() + this.offset[0].get(),
-                        randomY + this.offset[1].get(),
-                        randomZ + this.offset[2].get()
-                );
-                //negative x
-                case 1 -> new Vec3d(
-                        -this.halfDimensions[0].get() + this.offset[0].get(),
-                        randomY + this.offset[1].get(),
-                        randomZ + this.offset[2].get()
-                );
-                //positive y
-                case 2 -> new Vec3d(
-                        randomX + this.offset[0].get(),
-                        this.halfDimensions[1].get() + this.offset[1].get(),
-                        randomZ + this.offset[2].get()
-                );
-                //negative y
-                case 3 -> new Vec3d(
-                        randomX + this.offset[0].get(),
-                        -this.halfDimensions[1].get() + this.offset[1].get(),
-                        randomZ + this.offset[2].get()
-                );
-                //positive z
-                case 4 -> new Vec3d(
-                        randomX + this.offset[0].get(),
-                        randomY + this.offset[1].get(),
-                        this.halfDimensions[2].get() + this.offset[2].get()
-                );
-                //negative z
-                case 5 -> new Vec3d(
-                        randomX + this.offset[0].get(),
-                        randomY + this.offset[1].get(),
-                        -this.halfDimensions[2].get() + this.offset[2].get()
-                );
-                default -> Vec3d.ZERO;
-            };
-        }
-        else return new Vec3d(
-                randomX + this.offset[0].get(),
-                randomY + this.offset[1].get(),
-                randomZ + this.offset[2].get()
-        );
+        return new RiftLibBoxShape(
+                this.getOffsetVector(),
+                this.halfDimensions[0].get() * 2.0,
+                this.halfDimensions[1].get() * 2.0,
+                this.halfDimensions[2].get() * 2.0
+        ).randomPoint(this.surfaceOnly);
     }
 
     @Override

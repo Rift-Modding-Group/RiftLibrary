@@ -3,17 +3,15 @@ package anightdazingzoroark.riftlib.shape.threeDimShape;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 
-public class RiftLibEllipsoid extends RiftLibThreeDimShape {
-    private final double xRadius;
-    private final double yRadius;
-    private final double zRadius;
+public class RiftLibEllipsoidShape extends RiftLibThreeDimShape {
+    private final double xRadius, yRadius, zRadius;
 
     //presumes use of sphere
-    public RiftLibEllipsoid(@NotNull Vec3d shapeOrigin, double radius) {
+    public RiftLibEllipsoidShape(@NotNull Vec3d shapeOrigin, double radius) {
         this(shapeOrigin, radius, radius, radius);
     }
 
-    public RiftLibEllipsoid(@NotNull Vec3d shapeOrigin, double xRadius, double yRadius, double zRadius) {
+    public RiftLibEllipsoidShape(@NotNull Vec3d shapeOrigin, double xRadius, double yRadius, double zRadius) {
         super(shapeOrigin);
         this.xRadius = xRadius;
         this.yRadius = yRadius;
@@ -58,12 +56,13 @@ public class RiftLibEllipsoid extends RiftLibThreeDimShape {
         return 4D / 3D * Math.PI * this.xRadius * this.yRadius * this.zRadius * this.getCutoffFraction();
     }
 
+    //thank you knud thomsen, very cool!
     @Override
     public double getSurfaceArea() {
         double power = 1.6075;
         double xy = Math.pow(this.xRadius * this.yRadius, power);
         double xz = Math.pow(this.xRadius * this.zRadius, power);
         double yz = Math.pow(this.yRadius * this.zRadius, power);
-        return 4D * Math.PI * Math.pow((xy + xz + yz) / 3D, 1.0 / power) * this.getCutoffFraction();
+        return 4D * Math.PI * Math.pow((xy + xz + yz) / 3D, 1D / power) * this.getCutoffFraction();
     }
 }

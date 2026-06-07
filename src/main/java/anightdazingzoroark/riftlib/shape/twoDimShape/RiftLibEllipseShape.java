@@ -31,8 +31,8 @@ public class RiftLibEllipseShape extends RiftLibTwoDimShape {
     @Override
     @NotNull
     public Vec3d randomPoint(boolean edgeOnly) {
-        double angle = this.random.nextDouble() * Math.PI * 2.0;
-        double radiusScale = edgeOnly ? 1.0 : Math.sqrt(this.random.nextDouble());
+        double angle = this.random.nextDouble() * Math.PI * 2D;
+        double radiusScale = edgeOnly ? 1D : Math.sqrt(this.random.nextDouble());
         Vec3d shapeOffset = new Vec3d(
                 Math.cos(angle) * this.xRadius * radiusScale,
                 0,

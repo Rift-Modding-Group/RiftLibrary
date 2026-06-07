@@ -10,7 +10,8 @@ import java.util.Random;
 
 /**
  * This class is to be for use in particle emitter shapes and impact shapes.
- * It supports 2d and 3d shapes and defines the areas.
+ * It supports 2d and 3d shapes and is to be used as a helper class for dealing
+ * with shape/volume related calculations.
  * */
 public abstract class RiftLibShape {
     /**
@@ -133,8 +134,8 @@ public abstract class RiftLibShape {
 
     /**
      * Get rotations in rad the shape is rotated by, since not everyone can
-     * visualize quaternion rotations in their head. (lord kelvin was right
-     * when he said that this shit was evil)
+     * visualize quaternion rotations in their head (lord kelvin was right
+     * when he said that this shit was evil).
      * */
     @NotNull
     public Vec3d getRotations() {

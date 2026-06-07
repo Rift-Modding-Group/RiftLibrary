@@ -30,8 +30,8 @@ public class RiftLibRectangleShape extends RiftLibTwoDimShape {
     @Override
     @NotNull
     public Vec3d randomPoint(boolean edgeOnly) {
-        double halfWidth = this.xWidth / 2.0;
-        double halfHeight = this.zWidth / 2.0;
+        double halfWidth = this.xWidth / 2D;
+        double halfHeight = this.zWidth / 2D;
         Vec3d shapeOffset;
 
         if (edgeOnly) {

@@ -52,6 +52,6 @@ public class RiftLibEllipseShape extends RiftLibTwoDimShape {
         double a = this.xRadius;
         double b = this.zRadius;
         double h = ((a - b) * (a - b)) / ((a + b) * (a + b));
-        return Math.PI * (a + b) * (1.0 + (3.0 * h) / (10.0 + Math.sqrt(4.0 - 3.0 * h)));
+        return Math.PI * (a + b) * (1D + (3D * h) / (10D + Math.sqrt(4D - 3D * h)));
     }
 }

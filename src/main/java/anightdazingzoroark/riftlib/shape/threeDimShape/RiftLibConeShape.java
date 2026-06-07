@@ -1,18 +1,17 @@
 package anightdazingzoroark.riftlib.shape.threeDimShape;
 
-import anightdazingzoroark.riftlib.core.util.Axis;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * In cones, the origin is considered to be the point where all the slanted lines meet.
+ * In cones, the origin is always considered to be the point where all the slanted lines meet.
  * In other words... the top.
  * */
 public class RiftLibConeShape extends RiftLibThreeDimShape {
     protected double baseRadius, height;
 
     public RiftLibConeShape(@NotNull Vec3d shapeOrigin, double baseRadius, double height) {
-        super(shapeOrigin);
+        super(shapeOrigin, false);
         this.baseRadius = baseRadius;
         this.height = height;
     }
@@ -93,25 +92,6 @@ public class RiftLibConeShape extends RiftLibThreeDimShape {
     @Override
     public double getSurfaceArea() {
         return Math.PI * this.baseRadius * (this.baseRadius + this.getSlantHeight()) * this.getCutoffFraction();
-    }
-
-    /**
-     * As the origin is not at the center of the shape, the cutoff fraction is
-     * kind of different down here.
-     * */
-    @Override
-    protected double getCutoffFraction() {
-        if (this.cutoffs.contains(ThreeDimCutoff.POS_Y)) return 0D;
-
-        double fraction = 1D;
-        long xCutoffs = this.cutoffs.stream().filter(cutoff -> cutoff.axis == Axis.X).count();
-        long zCutoffs = this.cutoffs.stream().filter(cutoff -> cutoff.axis == Axis.Z).count();
-
-        if (xCutoffs > 1 || zCutoffs > 1) return 0D;
-        if (xCutoffs == 1) fraction *= 0.5D;
-        if (zCutoffs == 1) fraction *= 0.5D;
-
-        return fraction;
     }
 
     private double getSlantHeight() {

@@ -12,7 +12,7 @@ public class RiftLibEllipsoidShape extends RiftLibThreeDimShape {
     }
 
     public RiftLibEllipsoidShape(@NotNull Vec3d shapeOrigin, double xRadius, double yRadius, double zRadius) {
-        super(shapeOrigin);
+        super(shapeOrigin, true); //origin is always center in ellipsoid shapes
         this.xRadius = xRadius;
         this.yRadius = yRadius;
         this.zRadius = zRadius;

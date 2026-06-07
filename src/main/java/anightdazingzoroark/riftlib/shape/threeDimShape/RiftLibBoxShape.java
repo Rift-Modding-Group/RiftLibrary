@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
  * "Box" is more concise than "Rectangular cuboid", now take that dumbass mathematicians.
  * */
 public class RiftLibBoxShape extends RiftLibThreeDimShape {
-    private final double xLength, yLength, zLength;
+    protected double xLength, yLength, zLength;
 
     //presumes use of cube
     public RiftLibBoxShape(@NotNull Vec3d shapeOrigin, double sideLength) {
@@ -94,5 +94,30 @@ public class RiftLibBoxShape extends RiftLibThreeDimShape {
         double sideTwoArea = this.xLength * this.yLength;
         double sideThreeArea = this.zLength * this.yLength;
         return (sideOneArea * 2 + sideTwoArea * 2 + sideThreeArea * 2) * this.getCutoffFraction();
+    }
+
+    /**
+     * Mutable variant of this class.
+     * */
+    public static class Mutable extends RiftLibBoxShape {
+        public Mutable(@NotNull Vec3d shapeOrigin, double sideLength) {
+            super(shapeOrigin, sideLength);
+        }
+
+        public Mutable(@NotNull Vec3d shapeOrigin, double xLength, double yLength, double zLength) {
+            super(shapeOrigin, xLength, yLength, zLength);
+        }
+
+        public void setSideLength(double sideLength) {
+            this.xLength = sideLength;
+            this.yLength = sideLength;
+            this.zLength = sideLength;
+        }
+
+        public void setLengths(double xLength, double yLength, double zLength) {
+            this.xLength = xLength;
+            this.yLength = yLength;
+            this.zLength = zLength;
+        }
     }
 }

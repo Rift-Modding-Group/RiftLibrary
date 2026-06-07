@@ -4,7 +4,7 @@ import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 
 public class RiftLibEllipsoidShape extends RiftLibThreeDimShape {
-    private final double xRadius, yRadius, zRadius;
+    protected double xRadius, yRadius, zRadius;
 
     //presumes use of sphere
     public RiftLibEllipsoidShape(@NotNull Vec3d shapeOrigin, double radius) {
@@ -64,5 +64,38 @@ public class RiftLibEllipsoidShape extends RiftLibThreeDimShape {
         double xz = Math.pow(this.xRadius * this.zRadius, power);
         double yz = Math.pow(this.yRadius * this.zRadius, power);
         return 4D * Math.PI * Math.pow((xy + xz + yz) / 3D, 1D / power) * this.getCutoffFraction();
+    }
+
+    /**
+     * Mutable variant of this class.
+     * */
+    public static class Mutable extends RiftLibEllipsoidShape {
+        public Mutable(@NotNull Vec3d shapeOrigin, double radius) {
+            super(shapeOrigin, radius);
+        }
+
+        public Mutable(@NotNull Vec3d shapeOrigin, double xRadius, double yRadius, double zRadius) {
+            super(shapeOrigin, xRadius, yRadius, zRadius);
+        }
+
+        /**
+         * If the ellipsoid is presumed to be a sphere, use this to update
+         * its total radius.
+         * */
+        public void setRadius(double radius) {
+            this.xRadius = radius;
+            this.yRadius = radius;
+            this.zRadius = radius;
+        }
+
+        /**
+         * If the ellipsoid is presumed to be a, well, ellipsoid, use this to
+         * update its radiuses.
+         * */
+        public void setRadius(double xRadius, double yRadius, double zRadius) {
+            this.xRadius = xRadius;
+            this.yRadius = yRadius;
+            this.zRadius = zRadius;
+        }
     }
 }

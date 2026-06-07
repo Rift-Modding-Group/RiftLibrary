@@ -51,7 +51,7 @@ public class RiftLibRayHelper {
         }
 
         RiftLibRay ray = new RiftLibRay(
-                rayBuilder.rayCreator,
+                rayCreator,
                 rayName,
                 locator,
                 rayBuilder.getRayType(),

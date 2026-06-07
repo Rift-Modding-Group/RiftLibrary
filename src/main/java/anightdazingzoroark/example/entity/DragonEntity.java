@@ -51,7 +51,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
         this.enablePersistence();
         this.ridePositions = new DynamicRidePosList(this, this.animationData);
         this.rayMap = Map.of(
-                "breatheFire", new RiftLibRay.Builder(this)
+                "breatheFire", new RiftLibRay.Builder()
                         .setRaySpeed(0.5D)
                         .setShapeSpray(8D, 1D)
                         .setSpreadOnHitBlock()

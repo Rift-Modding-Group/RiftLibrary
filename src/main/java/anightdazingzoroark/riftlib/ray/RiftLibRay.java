@@ -286,9 +286,6 @@ public class RiftLibRay {
      * A ray builder is like a template but for the rays to create.
      * */
     public static class Builder {
-        @NotNull
-        public final IRayCreator<?> rayCreator;
-
         @Nullable
         private RayType rayType;
         private double maxLength = 1;
@@ -303,10 +300,6 @@ public class RiftLibRay {
 
         @NotNull
         private Function<BlockPos, Boolean> breakBlockCondition = pos -> false;
-
-        public Builder(@NotNull IRayCreator<?> rayCreator) {
-            this.rayCreator = rayCreator;
-        }
 
         public Builder setShapeSpray(double maxLength, double width) {
             if (this.rayType != null) {

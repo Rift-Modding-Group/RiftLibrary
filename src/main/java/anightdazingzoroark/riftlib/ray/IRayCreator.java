@@ -19,7 +19,7 @@ public interface IRayCreator<T extends EntityLivingBase & IAnimatable<AnimationD
     /**
      * Ray builders are to be defined here.
      * */
-    Map<String, RiftLibRay.Builder> getRayBuilders();
+    Map<String, RiftLibRayBuilder> getRayBuilders();
 
     /**
      * When a ray is being applied, its information is sent to the server using this method.

@@ -16,6 +16,14 @@ public class RiftLibConeShape extends RiftLibThreeDimShape {
         this.height = height;
     }
 
+    public double getBaseRadius() {
+        return this.baseRadius;
+    }
+
+    public double getHeight() {
+        return this.height;
+    }
+
     @Override
     protected double getEquationValue(@NotNull Vec3d point) {
         Vec3d shapeOffset = this.getUnrotatedShapeOffset(point);

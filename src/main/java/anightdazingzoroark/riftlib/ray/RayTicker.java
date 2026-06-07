@@ -2,8 +2,7 @@ package anightdazingzoroark.riftlib.ray;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -91,15 +90,15 @@ public class RayTicker {
             for (ImmutablePair<IRayCreator<?>, RiftLibRay> rayPair : RAY_PAIR_LIST) {
                 if (rayPair.getRight().isDead()) continue;
 
-                for (AxisAlignedBB aabb : rayPair.getRight().getSegmentAABBList()) {
-                    RenderGlobal.drawSelectionBoundingBox(
-                            aabb.offset(-viewerX, -viewerY, -viewerZ).grow(0.002D),
-                            1f,
-                            0.25f,
-                            0f,
-                            1f
-                    );
+                GL11.glColor4f(1f, 0.25f, 0f, 1f);
+                GL11.glBegin(GL11.GL_LINES);
+                for (RiftLibRaySegment.DebugLine line : rayPair.getRight().getDebugGridLines()) {
+                    Vec3d start = line.start();
+                    Vec3d end = line.end();
+                    GL11.glVertex3d(start.x - viewerX, start.y - viewerY, start.z - viewerZ);
+                    GL11.glVertex3d(end.x - viewerX, end.y - viewerY, end.z - viewerZ);
                 }
+                GL11.glEnd();
             }
 
             GL11.glLineWidth(1.0F);

@@ -32,4 +32,14 @@ public class MathUtils {
         }
         return slope * (x - xMin) + yMin;
     }
+
+    public static double max(double... values) {
+        if (values == null || values.length == 0) return Double.NaN;
+
+        double toReturn = values[0];
+        for (double value : values) {
+            if (value >= toReturn) toReturn = value;
+        }
+        return toReturn;
+    }
 }

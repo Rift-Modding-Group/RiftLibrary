@@ -32,11 +32,11 @@ public class RiftLibRayHelper {
      * Create a ray on the side it was called on only.
      * */
     public static void createRayOnSide(IRayCreator<?> rayCreator, String rayName, String locatorName) {
-        RiftLibRay.Builder rayBuilder = rayCreator.getRayBuilders().get(rayName);
+        RiftLibRayBuilder rayBuilder = rayCreator.getRayBuilders().get(rayName);
 
-        //ensure theres a ray type
-        if (rayBuilder.getRayType() == null) {
-            RiftLib.LOGGER.warn("This ray has no ray type, and thus will not form.");
+        //test validity
+        if (!rayBuilder.isValid()) {
+            RiftLib.LOGGER.warn("This ray is invalid, and thus will not form.");
             return;
         }
 
@@ -50,18 +50,7 @@ public class RiftLibRayHelper {
             return;
         }
 
-        RiftLibRay ray = new RiftLibRay(
-                rayCreator,
-                rayName,
-                locator,
-                rayBuilder.getRayType(),
-                rayBuilder.getRayMaxLength(),
-                rayBuilder.getRayWidthRange(),
-                rayBuilder.getRaySpeed(),
-                rayBuilder.getSpreadOnHitBlock(),
-                rayBuilder.getOnlyOneSegment(),
-                rayBuilder.getBreakBlockCondition()
-        );
+        RiftLibRay ray = new RiftLibRay(rayCreator, rayName, locator, rayBuilder);
 
         ImmutablePair<IRayCreator<?>, RiftLibRay> pairToAdd = new ImmutablePair<>(rayCreator, ray);
         if (rayCreator.getRayCreator().world.isRemote) RayTicker.Client.RAY_PAIR_LIST.add(pairToAdd);

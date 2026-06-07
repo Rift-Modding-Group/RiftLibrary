@@ -16,6 +16,14 @@ public class RiftLibCylinderShape extends RiftLibThreeDimShape {
         this.height = height;
     }
 
+    public double getRadius() {
+        return this.radius;
+    }
+
+    public double getHeight() {
+        return this.height;
+    }
+
     @Override
     protected double getEquationValue(@NotNull Vec3d point) {
         Vec3d shapeOffset = this.getUnrotatedShapeOffset(point);

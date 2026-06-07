@@ -9,10 +9,7 @@ import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
-import anightdazingzoroark.riftlib.ray.IRayCreator;
-import anightdazingzoroark.riftlib.ray.RiftLibRay;
-import anightdazingzoroark.riftlib.ray.RiftLibRayHelper;
-import anightdazingzoroark.riftlib.ray.RiftLibRaySegment;
+import anightdazingzoroark.riftlib.ray.*;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosList;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
 import net.minecraft.block.material.Material;
@@ -41,7 +38,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     private static final DataParameter<Boolean> BREATHING_FIRE = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
     private final DynamicRidePosList ridePositions;
-    private final Map<String, RiftLibRay.Builder> rayMap;
+    private final Map<String, RiftLibRayBuilder> rayMap;
     private HitboxDefinitionList hitboxDefinitionList;
     private Entity[] hitboxes = {};
 
@@ -51,7 +48,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
         this.enablePersistence();
         this.ridePositions = new DynamicRidePosList(this, this.animationData);
         this.rayMap = Map.of(
-                "breatheFire", new RiftLibRay.Builder()
+                "breatheFire", new RiftLibRayBuilder()
                         .setRaySpeed(0.5D)
                         .setShapeSpray(8D, 1D)
                         .setSpreadOnHitBlock()
@@ -241,7 +238,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     }
 
     @Override
-    public Map<String, RiftLibRay.Builder> getRayBuilders() {
+    public Map<String, RiftLibRayBuilder> getRayBuilders() {
         return this.rayMap;
     }
 

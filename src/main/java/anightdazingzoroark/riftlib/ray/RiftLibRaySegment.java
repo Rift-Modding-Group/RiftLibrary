@@ -1,24 +1,20 @@
 package anightdazingzoroark.riftlib.ray;
 
-import anightdazingzoroark.riftlib.RiftLib;
-import anightdazingzoroark.riftlib.ray.rayShape.RiftLibRayMovingShape;
+import anightdazingzoroark.riftlib.core.util.Axis;
 import anightdazingzoroark.riftlib.ray.rayShape.RiftLibRayShape;
+import anightdazingzoroark.riftlib.ray.rayWidth.RiftLibRayWidth;
+import anightdazingzoroark.riftlib.ray.rayWidth.RiftLibRayWidthRange;
 import anightdazingzoroark.riftlib.util.MathUtils;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.Function;
 
 /**
  * Meant to be created on the client. A ray segment represents a collidable
@@ -36,52 +32,50 @@ public class RiftLibRaySegment {
     private final List<BlockPos> impactFrontier = new ArrayList<>();
 
     @NotNull
-    private final IRayCreator<?> rayCreator;
+    public final IRayCreator<?> rayCreator;
     @NotNull
     public final Vec3d initPos;
     @NotNull
     private Vec3d directionVector; //is expected to be a unit vector
     @NotNull
+    public final RiftLibRayBuilder builder;
+    @NotNull
     private final RiftLibRayShape rayShape;
 
-    public final double maxRayLength;
-    public final double @NotNull [] rayWidthRange;
-    private final double raySpeed;
-    private final boolean spreadOnHitBlock;
     @NotNull
-    private final Function<BlockPos, Boolean> breakBlockCondition;
-
-    private Vec3d currentPos;
-    private double currentWidth;
+    public final RiftLibRayWidth.Mutable currentWidth;
     private double distanceTravelled;
-    private double impactMaxRadius;
+    @NotNull
+    private RiftLibRayWidth impactMaxWidth = new RiftLibRayWidth(0D);
     private double impactDepth;
     private int impactLayer;
-    private double impactCurrentRadius;
-    private double impactDecayRadius;
-    private BlockPos impactOriginPos;
+    @NotNull
+    private RiftLibRayWidth.Mutable impactCurrentWidth = new RiftLibRayWidth.Mutable(0D);
+    @NotNull
+    private RiftLibRayWidth.Mutable impactDecayWidth = new RiftLibRayWidth.Mutable(0D);
     @Nullable
-    private EnumFacing impactFace;
+    private BlockPos impactOriginPos;
 
     private boolean isImpacting;
     private boolean isDead;
 
-    public RiftLibRaySegment(
-            @NotNull IRayCreator<?> rayCreator, @NotNull Vec3d initPos, @NotNull Vec3d directionVector, @NotNull RiftLibRayShape rayShape,
-            double maxRayLength, double @NotNull [] rayWidthRange, double raySpeed, boolean spreadOnHitBlock,
-            @NotNull Function<BlockPos, Boolean> breakBlockCondition
-    ) {
+    public RiftLibRaySegment(@NotNull IRayCreator<?> rayCreator, @NotNull Vec3d initPos, @NotNull Vec3d directionVector, @NotNull RiftLibRayBuilder builder) {
         this.rayCreator = rayCreator;
         this.initPos = initPos;
         this.directionVector = directionVector.normalize();
-        this.rayShape = rayShape;
-        this.maxRayLength = maxRayLength;
-        this.rayWidthRange = rayWidthRange;
-        this.raySpeed = raySpeed;
-        this.spreadOnHitBlock = spreadOnHitBlock;
-        this.breakBlockCondition = breakBlockCondition;
-        this.currentPos = initPos;
-        this.currentWidth = rayWidthRange[0];
+        this.builder = builder;
+        this.rayShape = builder.getRayShape();
+
+        RiftLibRayWidthRange rayWidthRange = this.builder.getRayWidthRange();
+        if (rayWidthRange.isThreeDim()) {
+            this.currentWidth = new RiftLibRayWidth.Mutable(
+                    rayWidthRange.getStartWidth(Axis.X),
+                    rayWidthRange.getStartWidth(Axis.Y),
+                    rayWidthRange.getStartWidth(Axis.Z)
+            );
+        }
+        else this.currentWidth = new RiftLibRayWidth.Mutable(rayWidthRange.getStartWidth());
+
         this.rayShape.onCreateSegment(this);
     }
 
@@ -97,33 +91,27 @@ public class RiftLibRaySegment {
         //-----logic when moving-----
         else {
             //kill when going beyond max ray length
-            if (this.distanceTravelled >= this.maxRayLength) {
+            if (this.distanceTravelled >= this.builder.getRayMaxLength()) {
                 this.killSegment();
                 return;
             }
 
             //define how many steps to take and length of each step
-            double stepLength = Math.min(this.raySpeed, this.maxRayLength - this.distanceTravelled);
+            double stepLength = Math.min(this.builder.getRaySpeed(), this.builder.getRayMaxLength() - this.distanceTravelled);
             int steps = Math.max(1, (int)Math.ceil(stepLength / 0.25D));
+            double startDistance = this.distanceTravelled;
 
             //walk along each step
             for (int i = 1; i <= steps; i++) {
-                double stepDistance = this.distanceTravelled + stepLength * i / (double)steps;
+                double stepDistance = startDistance + stepLength * i / (double) steps;
                 this.moveToDistance(stepDistance);
 
-                ImmutablePair<BlockPos, EnumFacing> impactHit = this.findImpactHit();
+                ImmutablePair<BlockPos, EnumFacing> impactHit = this.rayShape.findImpactHit(this);
                 if (impactHit != null) {
-                    this.distanceTravelled = stepDistance;
-                    if (this.spreadOnHitBlock && this.rayShape instanceof RiftLibRayMovingShape rayMovingShape) {
-                        rayMovingShape.startImpact(this, impactHit.getLeft(), impactHit.getRight());
-                    }
-                    else this.killSegment();
+                    this.rayShape.startImpact(this, impactHit.getLeft(), impactHit.getRight());
                     return;
                 }
             }
-
-            //update distance traveled
-            this.distanceTravelled += stepLength;
         }
     }
 
@@ -154,6 +142,25 @@ public class RiftLibRaySegment {
         this.isImpacting = true;
     }
 
+    public double getDistanceTravelled() {
+        return this.distanceTravelled;
+    }
+
+    public double getCurrentWidth() {
+        if (!this.currentWidth.isThreeDim()) return this.currentWidth.getWidth();
+        return this.currentWidth.getMaxWidth();
+    }
+
+    @NotNull
+    public RiftLibRayWidth getCurrentRayWidth() {
+        return this.currentWidth;
+    }
+
+    @NotNull
+    public Vec3d getDirectionVector() {
+        return this.directionVector;
+    }
+
     @NotNull
     public AxisAlignedBB getSegmentAABB() {
         return this.segmentAABB;
@@ -163,24 +170,22 @@ public class RiftLibRaySegment {
         this.segmentAABB = segmentAABB;
     }
 
-    public double getRaySpeed() {
-        return this.raySpeed;
-    }
-
-    public double getDistanceTravelled() {
-        return this.distanceTravelled;
-    }
-
-    public double getCurrentWidth() {
-        return this.currentWidth;
-    }
-
     public double getImpactMaxRadius() {
-        return this.impactMaxRadius;
+        if (!this.impactMaxWidth.isThreeDim()) return this.impactMaxWidth.getWidth();
+        return this.impactMaxWidth.getMaxWidth();
     }
 
     public void setImpactMaxRadius(double value) {
-        this.impactMaxRadius = value;
+        this.impactMaxWidth = new RiftLibRayWidth(value);
+    }
+
+    @NotNull
+    public RiftLibRayWidth getImpactMaxWidth() {
+        return this.impactMaxWidth;
+    }
+
+    public void setImpactMaxWidth(@NotNull RiftLibRayWidth value) {
+        this.impactMaxWidth = value;
     }
 
     public double getImpactDepth() {
@@ -200,19 +205,43 @@ public class RiftLibRaySegment {
     }
 
     public double getImpactCurrentRadius() {
-        return this.impactCurrentRadius;
+        if (!this.impactCurrentWidth.isThreeDim()) return this.impactCurrentWidth.getWidth();
+        return this.impactCurrentWidth.getMaxWidth();
     }
 
     public void setImpactCurrentRadius(double impactCurrentRadius) {
-        this.impactCurrentRadius = impactCurrentRadius;
+        this.impactCurrentWidth = new RiftLibRayWidth.Mutable(impactCurrentRadius);
+    }
+
+    @NotNull
+    public RiftLibRayWidth.Mutable getImpactCurrentWidth() {
+        return this.impactCurrentWidth;
+    }
+
+    public void setImpactCurrentWidth(@NotNull RiftLibRayWidth value) {
+        this.impactCurrentWidth = value.isThreeDim()
+                ? new RiftLibRayWidth.Mutable(value.getWidth(Axis.X), value.getWidth(Axis.Y), value.getWidth(Axis.Z))
+                : new RiftLibRayWidth.Mutable(value.getWidth());
     }
 
     public double getImpactDecayRadius() {
-        return this.impactDecayRadius;
+        if (!this.impactDecayWidth.isThreeDim()) return this.impactDecayWidth.getWidth();
+        return this.impactDecayWidth.getMaxWidth();
     }
 
     public void setImpactDecayRadius(double value) {
-        this.impactDecayRadius = value;
+        this.impactDecayWidth = new RiftLibRayWidth.Mutable(value);
+    }
+
+    @NotNull
+    public RiftLibRayWidth.Mutable getImpactDecayWidth() {
+        return this.impactDecayWidth;
+    }
+
+    public void setImpactDecayWidth(@NotNull RiftLibRayWidth value) {
+        this.impactDecayWidth = value.isThreeDim()
+                ? new RiftLibRayWidth.Mutable(value.getWidth(Axis.X), value.getWidth(Axis.Y), value.getWidth(Axis.Z))
+                : new RiftLibRayWidth.Mutable(value.getWidth());
     }
 
     @Nullable
@@ -237,173 +266,48 @@ public class RiftLibRaySegment {
         return this.expiredImpactPositions;
     }
 
-    public boolean hasImpactFrontier() {
-        return !this.impactFrontier.isEmpty();
-    }
-
     @NotNull
     public List<BlockPos> getImpactFrontier() {
         return this.impactFrontier;
     }
 
-    public void clearImpactFrontier() {
-        this.impactFrontier.clear();
-    }
-
-    public void setImpactFace(EnumFacing enumFacing) {
-        this.impactFace = enumFacing;
-    }
-
     public List<AxisAlignedBB> getSegmentAABBList() {
-        List<AxisAlignedBB> toReturn = new ArrayList<>();
-        //ignore segment aabb if impacting
-        if (!this.isImpacting) toReturn.add(this.segmentAABB);
-
-        for (BlockPos impactPos : this.segmentImpactPositions) {
-            toReturn.add(new AxisAlignedBB(
-                    impactPos.getX(), impactPos.getY(), impactPos.getZ(),
-                    impactPos.getX() + 1D, impactPos.getY() + 1D, impactPos.getZ() + 1D
-            ));
-        }
-
-        return toReturn;
+        return List.of(this.segmentAABB);
     }
 
     private void moveToDistance(double distance) {
-        this.currentPos = this.initPos.add(this.directionVector.scale(distance));
-        this.currentWidth = MathUtils.slopeResult(distance, true, 0, this.maxRayLength, this.rayWidthRange[0], this.rayWidthRange[1]);
+        this.distanceTravelled = distance;
 
-        this.segmentAABB = new AxisAlignedBB(
-                this.currentPos.x - this.currentWidth / 2D,
-                this.currentPos.y - this.currentWidth / 2D,
-                this.currentPos.z - this.currentWidth / 2D,
-                this.currentPos.x + this.currentWidth / 2D,
-                this.currentPos.y + this.currentWidth / 2D,
-                this.currentPos.z + this.currentWidth / 2D
-        );
-    }
+        RiftLibRayWidthRange rayWidthRange = this.builder.getRayWidthRange();
+        double maxLength = this.builder.getRayMaxLength();
 
-    /**
-     * Create an impact hit, represented by an ImmutablePair with a BlockPos
-     * and an EnumFacing. For use by rays in motion.
-     * */
-    private ImmutablePair<BlockPos, EnumFacing> findImpactHit() {
-        int minX = MathHelper.floor(this.segmentAABB.minX);
-        int minY = MathHelper.floor(this.segmentAABB.minY);
-        int minZ = MathHelper.floor(this.segmentAABB.minZ);
-        int maxX = MathHelper.floor(this.segmentAABB.maxX);
-        int maxY = MathHelper.floor(this.segmentAABB.maxY);
-        int maxZ = MathHelper.floor(this.segmentAABB.maxZ);
-
-        World world = this.rayCreator.getRayCreator().world;
-        BlockPos bestPos = null;
-        double bestDistanceSq = Double.MAX_VALUE;
-
-        for (int x = minX; x <= maxX; x++) {
-            for (int y = minY; y <= maxY; y++) {
-                for (int z = minZ; z <= maxZ; z++) {
-                    BlockPos testPos = new BlockPos(x, y, z);
-                    if (!world.isBlockLoaded(testPos)) continue;
-
-                    IBlockState state = world.getBlockState(testPos);
-                    if (!this.isSolidBlockingBlock(world, testPos, state)) continue;
-
-                    AxisAlignedBB blockBox = state.getCollisionBoundingBox(world, testPos);
-                    if (blockBox == null) continue;
-
-                    if (!this.segmentAABB.intersects(
-                            blockBox.minX + x, blockBox.minY + y, blockBox.minZ + z,
-                            blockBox.maxX + x, blockBox.maxY + y, blockBox.maxZ + z
-                    )) {
-                        continue;
-                    }
-
-                    double distanceSq = this.currentPos.squareDistanceTo(
-                            x + 0.5D,
-                            y + 0.5D,
-                            z + 0.5D
-                    );
-                    if (distanceSq < bestDistanceSq) {
-                        bestDistanceSq = distanceSq;
-                        bestPos = testPos;
-                    }
-                }
+        if (rayWidthRange.isThreeDim()) {
+            if (maxLength <= 0D) {
+                this.currentWidth.setWidth(Axis.X, rayWidthRange.getEndWidth(Axis.X));
+                this.currentWidth.setWidth(Axis.Y, rayWidthRange.getEndWidth(Axis.Y));
+                this.currentWidth.setWidth(Axis.Z, rayWidthRange.getEndWidth(Axis.Z));
+            }
+            else {
+                this.currentWidth.setWidth(
+                        Axis.X,
+                        MathUtils.slopeResult(distance, true, 0D, maxLength, rayWidthRange.getStartWidth(Axis.X), rayWidthRange.getEndWidth(Axis.X))
+                );
+                this.currentWidth.setWidth(
+                        Axis.Y,
+                        MathUtils.slopeResult(distance, true, 0D, maxLength, rayWidthRange.getStartWidth(Axis.Y), rayWidthRange.getEndWidth(Axis.Y))
+                );
+                this.currentWidth.setWidth(
+                        Axis.Z,
+                        MathUtils.slopeResult(distance, true, 0D, maxLength, rayWidthRange.getStartWidth(Axis.Z), rayWidthRange.getEndWidth(Axis.Z))
+                );
             }
         }
-
-        if (bestPos == null) return null;
-        return new ImmutablePair<>(
-                bestPos,
-                //is basically the complete opposite of the direction vector, defines
-                //the side that got impacted
-                EnumFacing.getFacingFromVector(
-                    (float)-this.directionVector.x,
-                    (float)-this.directionVector.y,
-                    (float)-this.directionVector.z
-                )
-        );
-    }
-
-    /**
-     * To use while updating impact layers. For testing if the provided target position
-     * can be reached.
-     * */
-    public boolean canImpactReachPosition(@NotNull BlockPos targetPos) {
-        if (this.impactOriginPos == null) return false;
-
-        //common stuff
-        int relX = targetPos.getX() - this.impactOriginPos.getX();
-        int relY = targetPos.getY() - this.impactOriginPos.getY();
-        int relZ = targetPos.getZ() - this.impactOriginPos.getZ();
-
-        //---step 1: search within shapes---
-        if (!this.rayShape.isWithinImpactShape(relX, relY, relZ, this.impactMaxRadius, this.impactDepth, this.impactFace)) return false;
-
-        //---step 2: test if it is possible to go to that position from origin---
-        if (targetPos.equals(this.impactOriginPos)) return true;
-
-        //-----step 3: perform the test as expected-----
-        int relMagSq = relX * relX + relY * relY + relZ * relZ;
-        int steps = Math.max(1, (int) Math.ceil(Math.sqrt(relMagSq) * 4D));
-        World world = this.rayCreator.getRayCreator().world;
-
-        for (int i = 1; i < steps; i++) {
-            double progress = i / (double) steps;
-            BlockPos testPos = new BlockPos(
-                    MathHelper.floor(this.impactOriginPos.getX() + 0.5D + relX * progress),
-                    MathHelper.floor(this.impactOriginPos.getY() + 0.5D + relY * progress),
-                    MathHelper.floor(this.impactOriginPos.getZ() + 0.5D + relZ * progress)
-            );
-
-            if (testPos.equals(this.impactOriginPos) || testPos.equals(targetPos)) continue;
-            if (this.canImpactContinueThrough(testPos, world)) continue;
-
-            return false;
+        else {
+            if (maxLength <= 0D) this.currentWidth.setWidth(rayWidthRange.getEndWidth());
+            else this.currentWidth.setWidth(MathUtils.slopeResult(distance, true, 0D, maxLength, rayWidthRange.getStartWidth(), rayWidthRange.getEndWidth()));
         }
 
-        return true;
-    }
-
-    /**
-     * Safely test if it is possible to add an impact position and break it.
-     * */
-    public void tryAddImpactPosition(@NotNull BlockPos pos) {
-        //-----test for if it has already been added-----
-        if (this.expiredImpactPositions.contains(pos) || !this.segmentImpactPositions.add(pos)) return;
-        this.segmentImpactPositions.add(pos);
-
-        //-----test for if the impact can continue through block-----
-        World world = this.rayCreator.getRayCreator().world;
-        if (!this.canImpactContinueThrough(pos, world)) return;
-
-        //-----break block on server-----
-        IBlockState state = world.getBlockState(pos);
-        if (!world.isRemote && state.getMaterial() != Material.AIR && state.getMaterial() != Material.FIRE) {
-            world.destroyBlock(pos, true);
-        }
-
-        //-----add to impact frontier-----
-        if (this.rayShape.addsImpactPositionsToFrontier()) this.impactFrontier.add(pos);
+        this.rayShape.updateMovingShape(this);
     }
 
     /**
@@ -412,73 +316,41 @@ public class RiftLibRaySegment {
     public void decayImpactPositions() {
         if (this.segmentImpactPositions.isEmpty()) return;
 
-        this.impactDecayRadius += Math.max(0D, this.raySpeed);
-        if (this.impactDecayRadius <= 0D) return;
+        double decaySpeed = Math.max(0D, this.builder.getRaySpeed());
+        if (this.impactDecayWidth.isThreeDim()) {
+            this.impactDecayWidth.setWidth(Axis.X, this.impactDecayWidth.getWidth(Axis.X) + decaySpeed);
+            this.impactDecayWidth.setWidth(Axis.Y, this.impactDecayWidth.getWidth(Axis.Y) + decaySpeed);
+            this.impactDecayWidth.setWidth(Axis.Z, this.impactDecayWidth.getWidth(Axis.Z) + decaySpeed);
+        }
+        else this.impactDecayWidth.setWidth(this.impactDecayWidth.getWidth() + decaySpeed);
+        if (this.getImpactDecayRadius() <= 0D) return;
 
         Iterator<BlockPos> it = this.segmentImpactPositions.iterator();
 
         while (it.hasNext()) {
             BlockPos impactPos = it.next();
-            if (!this.isWithinImpactDecayFront(impactPos)) continue;
+            //test if given block pos is within impact decay front
+            if (!this.rayShape.isWithinImpactDecayFront(this, impactPos)) continue;
 
             it.remove();
             this.expiredImpactPositions.add(impactPos);
         }
     }
 
-    /**
-     * Test if block pos is within impact decay front
-     * */
-    private boolean isWithinImpactDecayFront(@NotNull BlockPos pos) {
-        if (this.impactOriginPos == null) return false;
-
-        int relX = pos.getX() - this.impactOriginPos.getX();
-        int relY = pos.getY() - this.impactOriginPos.getY();
-        int relZ = pos.getZ() - this.impactOriginPos.getZ();
-
-        return this.rayShape.isWithinImpactDecayFront(relX, relY, relZ, this.impactDecayRadius);
+    @NotNull
+    public Set<BlockPos> getBlockPositionsInCurrentShape() {
+        return this.rayShape.getBlockPositionsInCurrentShape(this);
     }
 
-    private boolean canImpactContinueThrough(@NotNull BlockPos pos, @NotNull World world) {
-        IBlockState state = world.getBlockState(pos);
-        if (!this.isAlwaysBreakableForImpact(world, pos, state) && !this.breakBlockCondition.apply(pos)) return false;
-        return !this.hasDiagonalUnbreakableConnectionAround(pos, world);
+    public boolean intersectsEntity(@NotNull Entity entity) {
+        return this.rayShape.intersectsEntity(this, entity);
     }
 
-    /**
-     * Make sure that breakable blocks that have at least 2 adjacent unbreakable blocks
-     * forming a diagonal do not get broken.
-     * */
-    private boolean hasDiagonalUnbreakableConnectionAround(@NotNull BlockPos pos, @NotNull World world) {
-        EnumFacing[] facings = EnumFacing.values();
+    //-----debug lines are all dealt with here. they're for client use and for helping out with visualizing ray segments when debugging-----
+    public record DebugLine(@NotNull Vec3d start, @NotNull Vec3d end) {}
 
-        for (int i = 0; i < facings.length; i++) {
-            EnumFacing firstFacing = facings[i];
-            BlockPos firstPos = pos.offset(firstFacing);
-            if (!this.isUnbreakableForImpact(firstPos, world)) continue;
-
-            for (int j = i + 1; j < facings.length; j++) {
-                EnumFacing secondFacing = facings[j];
-                if (firstFacing.getAxis() == secondFacing.getAxis()) continue;
-
-                BlockPos secondPos = pos.offset(secondFacing);
-                if (this.isUnbreakableForImpact(secondPos, world)) return true;
-            }
-        }
-
-        return false;
-    }
-
-    private boolean isUnbreakableForImpact(@NotNull BlockPos pos, @NotNull World world) {
-        IBlockState state = world.getBlockState(pos);
-        return !this.isAlwaysBreakableForImpact(world, pos, state) && !this.breakBlockCondition.apply(pos);
-    }
-
-    private boolean isAlwaysBreakableForImpact(@NotNull World world, @NotNull BlockPos pos, @NotNull IBlockState state) {
-        return state.getMaterial() == Material.AIR || state.getMaterial() == Material.FIRE || !this.isSolidBlockingBlock(world, pos, state);
-    }
-
-    private boolean isSolidBlockingBlock(@NotNull World world, @NotNull BlockPos pos, @NotNull IBlockState state) {
-        return state.getMaterial().isSolid() && state.getCollisionBoundingBox(world, pos) != null;
+    @NotNull
+    public List<DebugLine> getDebugGridLines() {
+        return this.rayShape.getDebugGridLines(this);
     }
 }

@@ -18,6 +18,18 @@ public class RiftLibEllipsoidShape extends RiftLibThreeDimShape {
         this.zRadius = zRadius;
     }
 
+    public double getXRadius() {
+        return this.xRadius;
+    }
+
+    public double getYRadius() {
+        return this.yRadius;
+    }
+
+    public double getZRadius() {
+        return this.zRadius;
+    }
+
     @Override
     protected double getEquationValue(@NotNull Vec3d point) {
         Vec3d shapeOffset = this.getUnrotatedShapeOffset(point);

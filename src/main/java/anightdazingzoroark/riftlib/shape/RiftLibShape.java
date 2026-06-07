@@ -31,6 +31,11 @@ public abstract class RiftLibShape {
         this.shapeOrigin = shapeOrigin;
     }
 
+    @NotNull
+    public Vec3d getShapeOrigin() {
+        return this.shapeOrigin;
+    }
+
     /**
      * Return the normalized equation value for a world space point.
      * Implementations should convert the point to a centered, unrotated
@@ -122,6 +127,14 @@ public abstract class RiftLibShape {
      * */
     public void rotateShape(double xRad, double yRad, double zRad) {
         this.yxzQuat = QuaternionUtils.createYXZQuaternion(xRad, yRad, zRad);
+    }
+
+    /**
+     * Rotate the shape using an already-created quaternion.
+     * */
+    public void rotateShape(@NotNull Quaternion quaternion) {
+        this.yxzQuat = new Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+        Quaternion.normalise(this.yxzQuat, this.yxzQuat);
     }
 
     /**

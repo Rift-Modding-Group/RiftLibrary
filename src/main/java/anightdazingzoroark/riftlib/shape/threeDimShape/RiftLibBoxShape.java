@@ -36,6 +36,18 @@ public class RiftLibBoxShape extends RiftLibThreeDimShape {
     }
 
     //-----everything else-----
+    public double getXLength() {
+        return this.xLength;
+    }
+
+    public double getYLength() {
+        return this.yLength;
+    }
+
+    public double getZLength() {
+        return this.zLength;
+    }
+
     @Override
     protected double getEquationValue(@NotNull Vec3d point) {
         Vec3d shapeOffset = this.getUnrotatedShapeOffset(point);

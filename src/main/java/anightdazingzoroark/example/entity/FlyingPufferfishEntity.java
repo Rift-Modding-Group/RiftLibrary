@@ -9,27 +9,22 @@ import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.ray.IRayCreator;
 import anightdazingzoroark.riftlib.ray.RiftLibRay;
+import anightdazingzoroark.riftlib.ray.RiftLibRayBuilder;
 import anightdazingzoroark.riftlib.ray.RiftLibRayHelper;
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityFlying;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.network.datasync.DataParameter;
-import net.minecraft.network.datasync.DataSerializers;
-import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 
-import java.util.List;
 import java.util.Map;
 
 public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<AnimationDataEntity>, IMultiHitboxUser<FlyingPufferfishEntity>, IRayCreator<FlyingPufferfishEntity> {
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
-    private final Map<String, RiftLibRay.Builder> rayMap;
+    private final Map<String, RiftLibRayBuilder> rayMap;
     private HitboxDefinitionList hitboxDefinitionList;
     private Entity[] hitboxes = {};
 
@@ -37,8 +32,8 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
         super(worldIn);
         this.setSize(1f, 1f);
         this.rayMap = Map.of(
-                "puffUp", new RiftLibRay.Builder()
-                        .setShapeImpact(0, 8)
+                "puffUp", new RiftLibRayBuilder()
+                        .setShapeImpactSphere(0, 8)
                         .setRaySpeed(1)
                         .setBreakBlockCondition(blockPos -> {
                             IBlockState blockState = this.world.getBlockState(blockPos);
@@ -98,7 +93,7 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
     }
 
     @Override
-    public Map<String, RiftLibRay.Builder> getRayBuilders() {
+    public Map<String, RiftLibRayBuilder> getRayBuilders() {
         return this.rayMap;
     }
 

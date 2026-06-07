@@ -1,18 +1,11 @@
 package anightdazingzoroark.riftlib.ray;
 
-import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
-import anightdazingzoroark.riftlib.ray.rayShape.RiftLibRayBeamShape;
-import anightdazingzoroark.riftlib.ray.rayShape.RiftLibRayMovingShape;
-import anightdazingzoroark.riftlib.ray.rayShape.RiftLibRayShape;
-import anightdazingzoroark.riftlib.ray.rayShape.RiftLibRaySphereImpactShape;
-import anightdazingzoroark.riftlib.ray.rayShape.RiftLibRayUpperSphereImpactShape;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
@@ -20,7 +13,6 @@ import org.jetbrains.annotations.Nullable;
 import org.lwjglx.util.vector.Quaternion;
 
 import java.util.*;
-import java.util.function.Function;
 
 /**
  * Meant to be simultaneously created on the server and the client. This defines "rays",
@@ -35,18 +27,7 @@ public class RiftLibRay {
     @NotNull
     public final AnimatedLocator parentLocator;
     @NotNull
-    private final RiftLibRayShape rayShape;
-    private final double maxRayLength;
-    private final double @NotNull [] rayWidthRange;
-    //in blocks per tick, defines the speed in which the segments travel
-    private final double raySpeed;
-    //if true, the ray will spread upon hitting a block
-    private final boolean spreadOnHitBlock;
-    //create only one segment
-    private final boolean onlyOneSegment;
-    //define if the ray can break this block
-    @NotNull
-    private final Function<BlockPos, Boolean> breakBlockCondition;
+    public final RiftLibRayBuilder builder;
 
     //the origin of the ray. is nullable so that upon initialization there
     //will not be a giant puddle below the user
@@ -64,21 +45,13 @@ public class RiftLibRay {
     //flag to signal removal of the ray
     private boolean isDead;
 
-    public RiftLibRay(
-            @NotNull IRayCreator<?> rayCreator, @NotNull String rayName, @NotNull AnimatedLocator parentLocator, @NotNull RayType rayType,
-            double maxRayLength, double @NotNull [] rayWidthRange, double raySpeed, boolean spreadOnHitBlock, boolean onlyOneSegment,
-            @NotNull Function<BlockPos, Boolean> breakBlockCondition
-    ) {
+    //how many fields can this shit even hold anymore
+    //might as well pass the builder by this point
+    public RiftLibRay(@NotNull IRayCreator<?> rayCreator, @NotNull String rayName, @NotNull AnimatedLocator parentLocator, @NotNull RiftLibRayBuilder builder) {
         this.rayCreator = rayCreator;
         this.rayName = rayName;
         this.parentLocator = parentLocator;
-        this.rayShape = rayType.getShape();
-        this.maxRayLength = maxRayLength;
-        this.rayWidthRange = rayWidthRange;
-        this.raySpeed = raySpeed;
-        this.spreadOnHitBlock = spreadOnHitBlock;
-        this.onlyOneSegment = onlyOneSegment;
-        this.breakBlockCondition = breakBlockCondition;
+        this.builder = builder;
     }
 
     /**
@@ -145,18 +118,14 @@ public class RiftLibRay {
 
             //update
             raySegment.onUpdate();
-            if (this.rayShape.followUserRotation()) raySegment.updateDirectionVector(this.directionVector);
+            if (this.builder.followUserRotation()) raySegment.updateDirectionVector(this.directionVector);
         }
 
         //-----create a new segment, rate is dependent on ray speed-----
         if (!this.isEnded && this.originPos != null) {
-            this.raySegmentList.add(new RiftLibRaySegment(
-                    this.rayCreator, this.originPos, this.directionVector, this.rayShape,
-                    this.maxRayLength, this.rayWidthRange, this.raySpeed, this.spreadOnHitBlock,
-                    this.breakBlockCondition
-            ));
+            this.raySegmentList.add(new RiftLibRaySegment(this.rayCreator, this.originPos, this.directionVector, this.builder));
 
-            if (this.onlyOneSegment) this.endRay();
+            if (this.builder.getOnlyOneSegment()) this.endRay();
         }
 
         //-----send ray information to the ray creator-----
@@ -203,42 +172,28 @@ public class RiftLibRay {
         return toReturn;
     }
 
-    private Set<Entity> getEntitiesInRaySegments() {
-        List<AxisAlignedBB> aabbList = this.getSegmentAABBList();
-        Set<Entity> toReturn = new HashSet<>();
-        World world = this.rayCreator.getRayCreator().world;
-
-        for (AxisAlignedBB aabb : aabbList) {
-            List<Entity> entityList = world.getEntitiesWithinAABB(Entity.class, aabb);
-            for (Entity entity : entityList) {
-                if (entity.equals(this.rayCreator.getRayCreator())) continue;
-                if (toReturn.contains(entity)) continue;
-                toReturn.add(entity);
-            }
+    public List<RiftLibRaySegment.DebugLine> getDebugGridLines() {
+        List<RiftLibRaySegment.DebugLine> toReturn = new ArrayList<>();
+        for (RiftLibRaySegment raySegment : this.raySegmentList) {
+            if (raySegment.isDead()) continue;
+            toReturn.addAll(raySegment.getDebugGridLines());
         }
 
         return toReturn;
     }
 
-    private Set<BlockPos> getBlockPositionsInRaySegments() {
-        List<AxisAlignedBB> aabbList = this.getSegmentAABBList();
-        Set<BlockPos> toReturn = new HashSet<>();
+    private Set<Entity> getEntitiesInRaySegments() {
+        Set<Entity> toReturn = new HashSet<>();
+        World world = this.rayCreator.getRayCreator().world;
 
-        for (AxisAlignedBB aabb : aabbList) {
-            int minX = MathHelper.floor(aabb.minX);
-            int minY = MathHelper.floor(aabb.minY);
-            int minZ = MathHelper.floor(aabb.minZ);
-            int maxX = MathHelper.floor(aabb.maxX);
-            int maxY = MathHelper.floor(aabb.maxY);
-            int maxZ = MathHelper.floor(aabb.maxZ);
-
-            for (int x = minX; x <= maxX; x++) {
-                for (int y = minY; y <= maxY; y++) {
-                    for (int z = minZ; z <= maxZ; z++) {
-                        BlockPos testPos = new BlockPos(x, y, z);
-                        if (!aabb.intersects(x, y, z, x + 1D, y + 1D, z + 1D)) continue;
-                        toReturn.add(testPos);
-                    }
+        for (RiftLibRaySegment raySegment : this.raySegmentList) {
+            for (AxisAlignedBB aabb : raySegment.getSegmentAABBList()) {
+                List<Entity> entityList = world.getEntitiesWithinAABB(Entity.class, aabb);
+                for (Entity entity : entityList) {
+                    if (entity.equals(this.rayCreator.getRayCreator())) continue;
+                    if (toReturn.contains(entity)) continue;
+                    if (!raySegment.intersectsEntity(entity)) continue;
+                    toReturn.add(entity);
                 }
             }
         }
@@ -246,197 +201,14 @@ public class RiftLibRay {
         return toReturn;
     }
 
-    /**
-     * This is for the shape of the ray.
-     * */
-    public enum RayType {
-        /**
-         * A spray is made of AABBs traveling along a straight line, and will not
-         * instantly rotate alongside the user's rotations.
-         * */
-        SPRAY(new RiftLibRayMovingShape()),
-        /**
-         * A fixed beam is made of AABBs forming a fixed straight line, and will
-         * instantly rotate alongside the user's rotations.
-         * */
-        BEAM(new RiftLibRayBeamShape()),
-        /**
-         * Impact only, does not move.
-         */
-        IMPACT_SPHERE(new RiftLibRaySphereImpactShape()),
-        /**
-         * Impact only, does not move, and only spreads across the upper sphere.
-         */
-        IMPACT_UPPER_SPHERE(new RiftLibRayUpperSphereImpactShape());
+    private Set<BlockPos> getBlockPositionsInRaySegments() {
+        Set<BlockPos> toReturn = new HashSet<>();
 
-        @NotNull
-        private final RiftLibRayShape shape;
-
-        RayType(@NotNull RiftLibRayShape shape) {
-            this.shape = shape;
+        for (RiftLibRaySegment raySegment : this.raySegmentList) {
+            toReturn.addAll(raySegment.getBlockPositionsInCurrentShape());
         }
 
-        @NotNull
-        public RiftLibRayShape getShape() {
-            return this.shape;
-        }
-    }
-
-    /**
-     * A ray builder is like a template but for the rays to create.
-     * */
-    public static class Builder {
-        @Nullable
-        private RayType rayType;
-        private double maxLength = 1;
-        private double minWidth = 1;
-        private double maxWidth = 1;
-
-        private double raySpeed = 1D;
-
-        private boolean spreadOnHitBlock;
-
-        private boolean onlyOneSegment;
-
-        @NotNull
-        private Function<BlockPos, Boolean> breakBlockCondition = pos -> false;
-
-        public Builder setShapeSpray(double maxLength, double width) {
-            if (this.rayType != null) {
-                RiftLib.LOGGER.warn("This ray already has its shape defined as {}. Skipping...", this.rayType);
-                return this;
-            }
-            this.rayType = RayType.SPRAY;
-            this.maxLength = maxLength;
-            this.minWidth = width;
-            this.maxWidth = width;
-            return this;
-        }
-
-        public Builder setShapeSpray(double maxLength, double minWidth, double maxWidth) {
-            if (this.rayType != null) {
-                RiftLib.LOGGER.warn("This ray already has its shape defined as {}. Skipping...", this.rayType);
-                return this;
-            }
-            if (maxWidth < minWidth) {
-                RiftLib.LOGGER.error("Ray max width {} is smaller than min width {}. Skipping...", maxWidth, minWidth);
-                return this;
-            }
-            this.rayType = RayType.SPRAY;
-            this.maxLength = maxLength;
-            this.minWidth = minWidth;
-            this.maxWidth = maxWidth;
-            return this;
-        }
-
-        public Builder setShapeBeam(double maxLength, double width) {
-            if (this.rayType != null) {
-                RiftLib.LOGGER.warn("This ray already has its shape defined as {}. Skipping...", this.rayType);
-                return this;
-            }
-            if (maxWidth < minWidth) {
-                RiftLib.LOGGER.error("Ray max width {} is smaller than min width {}. Skipping...", maxWidth, minWidth);
-                return this;
-            }
-            this.rayType = RayType.BEAM;
-            this.maxLength = maxLength;
-            this.minWidth = width;
-            this.maxWidth = width;
-            return this;
-        }
-
-        public Builder setShapeBeam(double maxLength, double minWidth, double maxWidth) {
-            if (this.rayType != null) {
-                RiftLib.LOGGER.warn("This ray already has its shape defined as {}. Skipping...", this.rayType);
-                return this;
-            }
-            if (maxWidth < minWidth) {
-                RiftLib.LOGGER.error("Ray max width {} is smaller than min width {}. Skipping...", maxWidth, minWidth);
-                return this;
-            }
-            this.rayType = RayType.BEAM;
-            this.maxLength = maxLength;
-            this.minWidth = minWidth;
-            this.maxWidth = maxWidth;
-            return this;
-        }
-
-        public Builder setShapeImpact(double startWidth, double endWidth) {
-            return this.setImpactShape(RayType.IMPACT_SPHERE, startWidth, endWidth);
-        }
-
-        public Builder setShapeUpperImpact(double startWidth, double endWidth) {
-            return this.setImpactShape(RayType.IMPACT_UPPER_SPHERE, startWidth, endWidth);
-        }
-
-        private Builder setImpactShape(@NotNull RayType rayType, double startWidth, double endWidth) {
-            if (this.rayType != null) {
-                RiftLib.LOGGER.warn("This ray already has its shape defined as {}. Skipping...", this.rayType);
-                return this;
-            }
-            if (endWidth < startWidth) {
-                RiftLib.LOGGER.error("Impact ray end width {} is smaller than start width {}. Skipping...", endWidth, startWidth);
-                return this;
-            }
-            this.rayType = rayType;
-            this.minWidth = startWidth;
-            this.maxWidth = Math.max(startWidth, endWidth);
-            return this;
-        }
-
-        @Nullable
-        public RayType getRayType() {
-            return this.rayType;
-        }
-
-        public double[] getRayWidthRange() {
-            return new double[]{this.minWidth, this.maxWidth};
-        }
-
-        public double getRayMaxLength() {
-            return this.maxLength;
-        }
-
-        public Builder setRaySpeed(double value) {
-            this.raySpeed = value;
-            return this;
-        }
-
-        public double getRaySpeed() {
-            return this.raySpeed;
-        }
-
-        public Builder setSpreadOnHitBlock() {
-            if (this.rayType != null && this.rayType.shape.startsAsImpact()) {
-                RiftLib.LOGGER.warn("Impact type rays do not travel, so using setSpreadOnHitBlock() is unnecessary.");
-                return this;
-            }
-            this.spreadOnHitBlock = true;
-            return this;
-        }
-
-        public boolean getSpreadOnHitBlock() {
-            return this.spreadOnHitBlock;
-        }
-
-        public Builder setBreakBlockCondition(@NotNull Function<BlockPos, Boolean> value) {
-            this.breakBlockCondition = value;
-            return this;
-        }
-
-        @NotNull
-        public Function<BlockPos, Boolean> getBreakBlockCondition() {
-            return this.breakBlockCondition;
-        }
-
-        public Builder setOnlyOneSegment() {
-            this.onlyOneSegment = true;
-            return this;
-        }
-
-        public boolean getOnlyOneSegment() {
-            return this.onlyOneSegment;
-        }
+        return toReturn;
     }
 
     /**

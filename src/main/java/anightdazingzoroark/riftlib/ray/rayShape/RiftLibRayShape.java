@@ -297,14 +297,14 @@ public abstract class RiftLibRayShape {
     protected boolean canImpactContinueThrough(@NotNull RiftLibRaySegment segment, @NotNull BlockPos pos) {
         World world = segment.rayCreator.getRayCreator().world;
         IBlockState state = world.getBlockState(pos);
-        if (!this.isAlwaysBreakableForImpact(world, pos, state) && !segment.builder.getBreakBlockCondition().apply(pos)) return false;
+        if (!this.isAlwaysBreakableForImpact(world, pos, state) && !segment.builder.getBreakBlockCondition().apply(segment.rayCreator, pos)) return false;
         return !this.hasDiagonalUnbreakableConnectionAround(segment, pos);
     }
 
     private boolean isUnbreakableForImpact(@NotNull RiftLibRaySegment segment, @NotNull BlockPos pos) {
         World world = segment.rayCreator.getRayCreator().world;
         IBlockState state = world.getBlockState(pos);
-        return !this.isAlwaysBreakableForImpact(world, pos, state) && !segment.builder.getBreakBlockCondition().apply(pos);
+        return !this.isAlwaysBreakableForImpact(world, pos, state) && !segment.builder.getBreakBlockCondition().apply(segment.rayCreator, pos);
     }
 
     private boolean isAlwaysBreakableForImpact(@NotNull World world, @NotNull BlockPos pos, @NotNull IBlockState state) {

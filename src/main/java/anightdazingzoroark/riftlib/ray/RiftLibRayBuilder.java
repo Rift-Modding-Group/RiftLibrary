@@ -6,6 +6,7 @@ import anightdazingzoroark.riftlib.ray.rayWidth.RiftLibRayWidthRange;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -22,7 +23,7 @@ public class RiftLibRayBuilder {
     private boolean spreadOnHitBlock;
     private boolean onlyOneSegment;
     @NotNull
-    private Function<BlockPos, Boolean> breakBlockCondition = pos -> false;
+    private BiFunction<IRayCreator<?>, BlockPos, Boolean> breakBlockCondition = (rayCreator, pos) -> false;
 
     //-----setters-----
     //---shape setters---
@@ -79,6 +80,21 @@ public class RiftLibRayBuilder {
     }
 
     public RiftLibRayBuilder setShapeImpactEllipse(
+            double startXZRadius, double startYRadius,
+            double endXZRadius, double endYRadius
+    ) {
+        return this.setShapeImpactEllipse(startXZRadius, startYRadius, endXZRadius, endYRadius, false);
+    }
+
+    public RiftLibRayBuilder setShapeImpactEllipse(
+            double startXZRadius, double startYRadius,
+            double endXZRadius, double endYRadius,
+            boolean upperOnly
+    ) {
+        return this.setShapeImpactEllipse(startXZRadius, startYRadius, startXZRadius, endXZRadius, endYRadius, endXZRadius, upperOnly);
+    }
+
+    public RiftLibRayBuilder setShapeImpactEllipse(
             double startXRadius, double startYRadius, double startZRadius,
             double endXRadius, double endYRadius, double endZRadius
     ) {
@@ -126,7 +142,7 @@ public class RiftLibRayBuilder {
         return this;
     }
 
-    public RiftLibRayBuilder setBreakBlockCondition(@NotNull Function<BlockPos, Boolean> value) {
+    public RiftLibRayBuilder setBreakBlockCondition(@NotNull BiFunction<IRayCreator<?>, BlockPos, Boolean> value) {
         this.breakBlockCondition = value;
         return this;
     }
@@ -171,7 +187,7 @@ public class RiftLibRayBuilder {
     }
 
     @NotNull
-    public Function<BlockPos, Boolean> getBreakBlockCondition() {
+    public BiFunction<IRayCreator<?>, BlockPos, Boolean> getBreakBlockCondition() {
         return this.breakBlockCondition;
     }
 

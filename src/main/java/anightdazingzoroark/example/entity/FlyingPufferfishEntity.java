@@ -35,9 +35,9 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
                 "puffUp", new RiftLibRayBuilder()
                         .setShapeImpactSphere(0, 8)
                         .setRaySpeed(1)
-                        .setBreakBlockCondition(blockPos -> {
-                            IBlockState blockState = this.world.getBlockState(blockPos);
-                            float hardness = blockState.getBlockHardness(this.world, blockPos);
+                        .setBreakBlockCondition((rayCreator, blockPos) -> {
+                            IBlockState blockState = rayCreator.getRayCreator().world.getBlockState(blockPos);
+                            float hardness = blockState.getBlockHardness(rayCreator.getRayCreator().world, blockPos);
                             return hardness <= 1f && hardness >= 0f;
                         })
                         .setOnlyOneSegment()

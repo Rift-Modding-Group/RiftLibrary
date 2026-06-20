@@ -5,7 +5,6 @@ import anightdazingzoroark.riftlib.internalMessage.RiftLibCreateOrDestroyRay;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.model.ServerModelRegistry;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -51,10 +50,8 @@ public class RiftLibRayHelper {
         }
 
         RiftLibRay ray = new RiftLibRay(rayCreator, rayName, locator, rayBuilder);
-
-        ImmutablePair<IRayCreator<?>, RiftLibRay> pairToAdd = new ImmutablePair<>(rayCreator, ray);
-        if (rayCreator.getRayCreator().world.isRemote) RayTicker.Client.RAY_PAIR_LIST.add(pairToAdd);
-        else RayTicker.Server.RAY_PAIR_LIST.add(pairToAdd);
+        if (rayCreator.getRayCreator().world.isRemote) RayTicker.Client.RAY_LIST.add(ray);
+        else RayTicker.Server.RAY_LIST.add(ray);
     }
 
     /**
@@ -75,12 +72,11 @@ public class RiftLibRayHelper {
      * Kill a ray on the side it was called on only.
      * */
     public static void killRayOnSide(IRayCreator<?> rayCreator, @NotNull String rayName) {
-        List<ImmutablePair<IRayCreator<?>, RiftLibRay>> listToKillOn = rayCreator.getRayCreator().world.isRemote ? RayTicker.Client.RAY_PAIR_LIST : RayTicker.Server.RAY_PAIR_LIST;
+        List<RiftLibRay> listToKillOn = rayCreator.getRayCreator().world.isRemote ? RayTicker.Client.RAY_LIST : RayTicker.Server.RAY_LIST;
 
-        for (ImmutablePair<IRayCreator<?>, RiftLibRay> rayPair : listToKillOn) {
-            if (rayCreator == rayPair.getLeft() && rayName.equals(rayPair.getRight().rayName)) {
-                rayPair.getRight().endRay();
-            }
+        for (RiftLibRay ray : listToKillOn) {
+            if (!rayCreator.equals(ray.rayCreator) || !rayName.equals(ray.rayName)) continue;
+            ray.endRay();
         }
     }
 }

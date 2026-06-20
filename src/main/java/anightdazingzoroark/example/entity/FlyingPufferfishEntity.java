@@ -8,6 +8,7 @@ import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.ray.IRayCreator;
+import anightdazingzoroark.riftlib.ray.rayShape.impact.RiftLibRaySphereImpactShape;
 import anightdazingzoroark.riftlib.ray.RiftLibRay;
 import anightdazingzoroark.riftlib.ray.RiftLibRayBuilder;
 import anightdazingzoroark.riftlib.ray.RiftLibRayHelper;
@@ -33,11 +34,14 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
         this.setSize(1f, 1f);
         this.rayMap = Map.of(
                 "puffUp", new RiftLibRayBuilder()
-                        .setShapeImpactSphere(0, 8)
-                        .setRaySpeed(1)
-                        .setBreakBlockCondition((rayCreator, blockPos) -> {
-                            IBlockState blockState = rayCreator.getRayCreator().world.getBlockState(blockPos);
-                            float hardness = blockState.getBlockHardness(rayCreator.getRayCreator().world, blockPos);
+                        .setImpactOnly()
+                        .setImpactShape(RiftLibRaySphereImpactShape::new)
+                        .setMotionSpeed(1D)
+                        .setMaxMotionDistance(8)
+                        .setBlockBreakCheck((rayCreator, blockPos) -> {
+                            World world = rayCreator.getRayCreator().world;
+                            IBlockState blockState = world.getBlockState(blockPos);
+                            float hardness = blockState.getBlockHardness(world, blockPos);
                             return hardness <= 1f && hardness >= 0f;
                         })
                         .setOnlyOneSegment()

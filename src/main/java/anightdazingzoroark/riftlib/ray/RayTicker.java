@@ -2,14 +2,12 @@ package anightdazingzoroark.riftlib.ray;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
@@ -17,38 +15,38 @@ import java.util.Iterator;
 import java.util.List;
 
 public class RayTicker {
-    private static void updateRays(List<ImmutablePair<IRayCreator<?>, RiftLibRay>> rayPairList) {
+    private static void updateRays(List<RiftLibRay> rayPairList) {
         //iterate over ray list
-        Iterator<ImmutablePair<IRayCreator<?>, RiftLibRay>> it = rayPairList.iterator();
+        Iterator<RiftLibRay> it = rayPairList.iterator();
         while (it.hasNext()) {
-            ImmutablePair<IRayCreator<?>, RiftLibRay> rayPair = it.next();
+            RiftLibRay ray = it.next();
 
             //update the ray
-            rayPair.getRight().onUpdate();
+            ray.onUpdate();
 
             //remove from list of rays if dead
-            if (rayPair.getRight().isDead()) it.remove();
+            if (ray.isDead()) it.remove();
         }
     }
 
     public static class Server {
-        public static final List<ImmutablePair<IRayCreator<?>, RiftLibRay>> RAY_PAIR_LIST = new ArrayList<>();
+        public static final List<RiftLibRay> RAY_LIST = new ArrayList<>();
 
         @SubscribeEvent
         public void onServerTick(TickEvent.ServerTickEvent event) {
             if (event.phase != TickEvent.Phase.END) return;
-            updateRays(RAY_PAIR_LIST);
+            updateRays(RAY_LIST);
         }
 
         @SubscribeEvent
         public void onWorldUnload(WorldEvent.Unload event) {
             if (event.getWorld().isRemote) return;
-            RAY_PAIR_LIST.clear();
+            RAY_LIST.clear();
         }
     }
 
     public static class Client {
-        public static final List<ImmutablePair<IRayCreator<?>, RiftLibRay>> RAY_PAIR_LIST = new ArrayList<>();
+        public static final List<RiftLibRay> RAY_LIST = new ArrayList<>();
 
         @SubscribeEvent
         @SideOnly(Side.CLIENT)
@@ -57,7 +55,7 @@ public class RayTicker {
             if (Minecraft.getMinecraft().isGamePaused()) return;
 
             if (event.phase != TickEvent.Phase.END) return;
-            updateRays(RAY_PAIR_LIST);
+            updateRays(RAY_LIST);
         }
 
         /**
@@ -87,21 +85,19 @@ public class RayTicker {
             GlStateManager.depthMask(false);
             GL11.glLineWidth(2.0F);
 
-            for (ImmutablePair<IRayCreator<?>, RiftLibRay> rayPair : RAY_PAIR_LIST) {
-                if (rayPair.getRight().isDead()) continue;
+            GL11.glColor4f(1f, 0.25f, 0f, 1f);
+            GL11.glBegin(GL11.GL_LINES);
+            for (RiftLibRay ray : RAY_LIST) {
+                if (ray.isDead()) continue;
 
-                GL11.glColor4f(1f, 0.25f, 0f, 1f);
-                GL11.glBegin(GL11.GL_LINES);
-                for (RiftLibRaySegment.DebugLine line : rayPair.getRight().getDebugGridLines()) {
-                    Vec3d start = line.start();
-                    Vec3d end = line.end();
+                ray.forEachDebugLine(event.getPartialTicks(), (start, end) -> {
                     GL11.glVertex3d(start.x - viewerX, start.y - viewerY, start.z - viewerZ);
                     GL11.glVertex3d(end.x - viewerX, end.y - viewerY, end.z - viewerZ);
-                }
-                GL11.glEnd();
+                });
             }
+            GL11.glEnd();
 
-            GL11.glLineWidth(1.0F);
+            GL11.glLineWidth(1f);
             GlStateManager.depthMask(true);
             GlStateManager.enableCull();
             GlStateManager.enableLighting();
@@ -114,7 +110,7 @@ public class RayTicker {
         @SideOnly(Side.CLIENT)
         public void onWorldUnload(WorldEvent.Unload event) {
             if (!event.getWorld().isRemote) return;
-            RAY_PAIR_LIST.clear();
+            RAY_LIST.clear();
         }
     }
 }

@@ -1,27 +1,30 @@
 package anightdazingzoroark.riftlib.ray;
 
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
+import anightdazingzoroark.riftlib.ray.rayShape.movement.RiftLibRayMovementShape;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjglx.util.vector.Quaternion;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.BiConsumer;
 
 /**
  * Meant to be simultaneously created on the server and the client. This defines "rays",
- * which are essentially vectors that affect any blocks or entities that cross
- * them.
- * */
+ * which are essentially vectors that affect any blocks or entities that cross them.
+ */
 public class RiftLibRay {
     @NotNull
-    private final IRayCreator<?> rayCreator;
+    public final IRayCreator<?> rayCreator;
     @NotNull
     public final String rayName;
     @NotNull
@@ -33,130 +36,136 @@ public class RiftLibRay {
     //will not be a giant puddle below the user
     @Nullable
     private Vec3d originPos;
-    //the direction the ray must travel in
-    @NotNull
-    private Vec3d directionVector = new Vec3d(0, 0, -1);
 
-    //all the segments in a ray
+    //last valid locator pose, retained while existing segments finish after the ray ends
+    @Nullable
+    private RayPose rayPose;
+
+    //all moving and impacting segments in the ray
+    @NotNull
     private final List<RiftLibRaySegment> raySegmentList = new ArrayList<>();
+
+    //how many segments have ever been created; used only for the onlyOneSegment flag
+    private int segmentsCreated;
+
+    //shape for ray in motion
+    @NotNull
+    private final RiftLibRayMovementShape movementShape;
 
     //flag to signal the start of the end of the ray
     private boolean isEnded;
     //flag to signal removal of the ray
     private boolean isDead;
 
-    //how many fields can this shit even hold anymore
-    //might as well pass the builder by this point
-    public RiftLibRay(@NotNull IRayCreator<?> rayCreator, @NotNull String rayName, @NotNull AnimatedLocator parentLocator, @NotNull RiftLibRayBuilder builder) {
+    public RiftLibRay(
+            @NotNull IRayCreator<?> rayCreator,
+            @NotNull String rayName,
+            @NotNull AnimatedLocator parentLocator,
+            @NotNull RiftLibRayBuilder builder
+    ) {
         this.rayCreator = rayCreator;
         this.rayName = rayName;
         this.parentLocator = parentLocator;
         this.builder = builder;
+        this.movementShape = builder.getMovementShape().get();
     }
 
     /**
      * This updates the ray and is meant to be called on both sides.
-     * */
+     */
     public void onUpdate() {
-        //-----kill the ray and its segments if the ray creator died for some reason-----
-        if (!this.rayCreator.getRayCreator().isEntityAlive()) {
-            for (RiftLibRaySegment raySegment : this.raySegmentList) raySegment.killSegment();
+        //-----kill the ray and its segments if the ray creator died, or if the locator disappeared-----
+        if (!this.rayCreator.getRayCreator().isEntityAlive() || !this.parentLocator.isValid()) {
             this.killRay();
         }
 
         //-----do not update if ray is dead-----
         if (this.isDead) return;
 
-        //-----define the ray origin pos and direction vector when not fading out-----
+        //-----define the ray pose when not fading out-----
         if (!this.isEnded) {
-            //---common stuff---
-            //determine entity yaw and turn into quaternion
-            double normalYawRadians = -Math.toRadians(this.rayCreator.getRayCreator().rotationYawHead);
-            double riddenYawRadians = -Math.toRadians(this.rayCreator.getRayCreator().rotationYaw);
-            double finalYawRadians = this.rayCreator.getRayCreator().isBeingRidden() ? riddenYawRadians : normalYawRadians;
-
-            //---for origin---
-            //set initial entity offset from center, in model space ofc
-            Vec3d animatedLocatorPos = this.parentLocator.getModelSpacePosition();
-            Vec3d posVec = new Vec3d(
-                    -animatedLocatorPos.x / 16f * this.rayCreator.rayCreatorScale(),
-                    animatedLocatorPos.y / 16f * this.rayCreator.rayCreatorScale(),
-                    -animatedLocatorPos.z / 16f * this.rayCreator.rayCreatorScale()
-            );
-
-            //rotate the locator position only by the entity yaw; the locator's own rotation affects direction, not origin
-            posVec = VectorUtils.rotateVectorWithQuaternion(posVec, QuaternionUtils.createXYZQuaternion(0, finalYawRadians, 0));
-
-            //position to entity pos
-            posVec = new Vec3d(
-                    posVec.x + this.rayCreator.getRayCreator().posX,
-                    posVec.y + this.rayCreator.getRayCreator().posY,
-                    posVec.z + this.rayCreator.getRayCreator().posZ
-            );
-
-            //set final pos vec
-            this.originPos = posVec;
-
-            //---for direction vector---
-            //correct quaternion for animated locator to work in world space
-            Quaternion correction = QuaternionUtils.createYXZQuaternion(Math.PI / 2D, Math.PI, 0);
-            Quaternion correctedLocatorQuat = new Quaternion();
-            Quaternion.mul(this.parentLocator.getModelSpaceYXZQuaternion(), correction, correctedLocatorQuat);
-            Quaternion.normalise(correctedLocatorQuat, correctedLocatorQuat);
-
-            //proceed
-            Vec3d forwardVec = new Vec3d(0, 0, -1); //good ol point northward vector
-            forwardVec = VectorUtils.rotateVectorWithQuaternion(forwardVec, correctedLocatorQuat).normalize();
-            forwardVec = VectorUtils.rotateVectorWithQuaternion(forwardVec, QuaternionUtils.createYXZQuaternion(0, finalYawRadians, 0)).normalize();
-            this.directionVector = forwardVec;
+            this.rayPose = this.currentPose();
+            this.originPos = this.rayPose.origin();
         }
 
-        //-----update segment list-----
-        Iterator<RiftLibRaySegment> it = this.raySegmentList.iterator();
-        while (it.hasNext()) {
-            RiftLibRaySegment raySegment = it.next();
+        //-----define sets of entities and block positions to send to server-----
+        Set<Entity> hitEntities = new HashSet<>();
+        Set<BlockPos> hitBlocks = new LinkedHashSet<>();
 
-            //update
-            raySegment.onUpdate();
-            if (this.builder.followUserRotation()) raySegment.updateDirectionVector(this.directionVector);
-        }
+        //-----create ray segments-----
+        if (this.rayPose != null) {
+            if (!this.isEnded && this.builder.getStartsWithImpact() && this.segmentsCreated == 0) {
+                this.raySegmentList.add(new RiftLibRaySegment(
+                        this.rayCreator,
+                        this.rayPose.origin(),
+                        this.rayPose.direction(),
+                        this.rayPose.up(),
+                        new BlockPos(this.rayPose.origin()),
+                        null,
+                        this.builder
+                ));
+                this.segmentsCreated++;
+            }
 
-        //-----create a new segment, rate is dependent on ray speed-----
-        if (!this.isEnded && this.originPos != null) {
-            this.raySegmentList.add(new RiftLibRaySegment(this.rayCreator, this.originPos, this.directionVector, this.builder));
+            for (RiftLibRaySegment raySegment : this.raySegmentList) {
+                raySegment.tick(this.rayPose, hitBlocks, hitEntities);
+            }
 
-            if (this.builder.getOnlyOneSegment()) this.endRay();
+            if (!this.isEnded && this.builder.getHasMotion() && this.canCreateMoreSegments()) {
+                for (RiftLibRayMovementShape.SegmentSeed seed : this.movementShape.createSegments(this.rayPose, this.builder)) {
+                    if (!this.canCreateMoreSegments()) break;
+                    this.raySegmentList.add(new RiftLibRaySegment(
+                            this.rayCreator,
+                            seed.center(),
+                            seed.direction(),
+                            seed.length(),
+                            this.builder
+                    ));
+                    this.segmentsCreated++;
+                }
+            }
         }
 
         //-----send ray information to the ray creator-----
-        if (!this.rayCreator.getRayCreator().world.isRemote && this.originPos != null) {
+        if (!this.rayCreator.getRayCreator().world.isRemote
+                && this.originPos != null
+                && (!hitBlocks.isEmpty() || !hitEntities.isEmpty())) {
             this.rayCreator.applyRaySegments(
-                    this.rayName, new BlockPos(this.originPos),
-                    new RayHitResult(this.getEntitiesInRaySegments(), this.getBlockPositionsInRaySegments())
+                    this.rayName,
+                    new BlockPos(this.originPos),
+                    new RayHitResult(hitEntities, hitBlocks)
             );
         }
 
-        //-----remove from list of segments if dead after callers had a tick to consume their final state-----
-        it = this.raySegmentList.iterator();
-        while (it.hasNext()) {
-            RiftLibRaySegment raySegment = it.next();
-            if (raySegment.isDead()) it.remove();
+        //-----remove segments after callers had a tick to consume their final state-----
+        this.raySegmentList.removeIf(RiftLibRaySegment::isDead);
+        if (this.raySegmentList.isEmpty()
+                && (this.builder.getStartsWithImpact() || this.builder.getOnlyOneSegment())) {
+            this.endRay();
         }
 
+        //-----kill ray when ended and theres no more segments to update-----
         if (this.isEnded && this.raySegmentList.isEmpty()) this.killRay();
+    }
+
+    private boolean canCreateMoreSegments() {
+        //only legal maximums are 1 or infinite
+        return !this.builder.getOnlyOneSegment() || this.segmentsCreated == 0;
     }
 
     /**
      * Use this to end this ray to make it fade out.
-     * */
+     */
     public void endRay() {
         this.isEnded = true;
     }
 
     /**
      * Use this to kill this ray and make it just disappear.
-     * */
+     */
     public void killRay() {
+        for (RiftLibRaySegment raySegment : this.raySegmentList) raySegment.killSegment();
+        this.raySegmentList.clear();
         this.isDead = true;
     }
 
@@ -164,55 +173,103 @@ public class RiftLibRay {
         return this.isDead;
     }
 
-    public List<AxisAlignedBB> getSegmentAABBList() {
-        List<AxisAlignedBB> toReturn = new ArrayList<>();
-        for (RiftLibRaySegment raySegment : this.raySegmentList) {
-            toReturn.addAll(raySegment.getSegmentAABBList());
-        }
-        return toReturn;
-    }
+    /**
+     * Define the current ray pose using ray creator and locator position
+     * */
+    @NotNull
+    private RayPose currentPose() {
+        //---common stuff---
+        //determine entity yaw and turn into quaternion
+        double normalYawRadians = -Math.toRadians(this.rayCreator.getRayCreator().rotationYawHead);
+        double riddenYawRadians = -Math.toRadians(this.rayCreator.getRayCreator().rotationYaw);
+        double finalYawRadians = this.rayCreator.getRayCreator().isBeingRidden() ? riddenYawRadians : normalYawRadians;
 
-    public List<RiftLibRaySegment.DebugLine> getDebugGridLines() {
-        List<RiftLibRaySegment.DebugLine> toReturn = new ArrayList<>();
-        for (RiftLibRaySegment raySegment : this.raySegmentList) {
-            if (raySegment.isDead()) continue;
-            toReturn.addAll(raySegment.getDebugGridLines());
-        }
+        //---for origin---
+        //set initial entity offset from center, in model space ofc
+        Vec3d animatedLocatorPos = this.parentLocator.getModelSpacePosition();
+        Vec3d posVec = new Vec3d(
+                -animatedLocatorPos.x / 16f * this.rayCreator.rayCreatorScale(),
+                animatedLocatorPos.y / 16f * this.rayCreator.rayCreatorScale(),
+                -animatedLocatorPos.z / 16f * this.rayCreator.rayCreatorScale()
+        );
 
-        return toReturn;
-    }
+        //rotate the locator position only by the entity yaw; the locator's own rotation affects direction, not origin
+        posVec = VectorUtils.rotateVectorWithQuaternion(
+                posVec,
+                QuaternionUtils.createXYZQuaternion(0D, finalYawRadians, 0D)
+        );
 
-    private Set<Entity> getEntitiesInRaySegments() {
-        Set<Entity> toReturn = new HashSet<>();
-        World world = this.rayCreator.getRayCreator().world;
+        //position to entity pos
+        posVec = new Vec3d(
+                posVec.x + this.rayCreator.getRayCreator().posX,
+                posVec.y + this.rayCreator.getRayCreator().posY,
+                posVec.z + this.rayCreator.getRayCreator().posZ
+        );
 
-        for (RiftLibRaySegment raySegment : this.raySegmentList) {
-            for (AxisAlignedBB aabb : raySegment.getSegmentAABBList()) {
-                List<Entity> entityList = world.getEntitiesWithinAABB(Entity.class, aabb);
-                for (Entity entity : entityList) {
-                    if (entity.equals(this.rayCreator.getRayCreator())) continue;
-                    if (toReturn.contains(entity)) continue;
-                    if (!raySegment.intersectsEntity(entity)) continue;
-                    toReturn.add(entity);
-                }
-            }
-        }
+        //---for direction vector and up vector---
+        //rotate the model axes by the locator, then apply the same X/Z conversion
+        //used by the locator position before rotating into entity world space
+        Quaternion locatorQuaternion = this.parentLocator.getModelSpaceYXZQuaternion();
+        Quaternion.normalise(locatorQuaternion, locatorQuaternion);
 
-        return toReturn;
-    }
+        Vec3d modelForward = VectorUtils.rotateVectorWithQuaternion(
+                new Vec3d(0D, 0D, -1D),
+                locatorQuaternion
+        ).normalize();
+        Vec3d modelUp = VectorUtils.rotateVectorWithQuaternion(
+                new Vec3d(0D, 1D, 0D),
+                locatorQuaternion
+        ).normalize();
+        Vec3d forwardVec = new Vec3d(-modelForward.x, modelForward.y, -modelForward.z);
+        Vec3d upVec = new Vec3d(-modelUp.x, modelUp.y, -modelUp.z);
 
-    private Set<BlockPos> getBlockPositionsInRaySegments() {
-        Set<BlockPos> toReturn = new HashSet<>();
+        Quaternion entityYaw = QuaternionUtils.createYXZQuaternion(0D, finalYawRadians, 0D);
+        forwardVec = VectorUtils.rotateVectorWithQuaternion(forwardVec, entityYaw).normalize();
+        upVec = VectorUtils.rotateVectorWithQuaternion(upVec, entityYaw).normalize();
 
-        for (RiftLibRaySegment raySegment : this.raySegmentList) {
-            toReturn.addAll(raySegment.getBlockPositionsInCurrentShape());
-        }
-
-        return toReturn;
+        return new RayPose(posVec, forwardVec, upVec);
     }
 
     /**
-     * This ray result is to be immutable and to be sent to the server.
-     * */
+     * Debug grid lines are the visualization of the ray and are visible when hitbox view is on.
+     * They are meant for client use only.
+     */
+    public void forEachDebugLine(float partialTicks, @NotNull BiConsumer<Vec3d, Vec3d> lineConsumer) {
+        for (RiftLibRaySegment raySegment : this.raySegmentList) {
+            if (raySegment.isDead()) continue;
+            raySegment.forEachDebugLine(partialTicks, lineConsumer);
+        }
+    }
+
+    /**
+     * This ray result is immutable and is sent to the IRayCreator on the server only.
+     */
     public record RayHitResult(Set<Entity> hitEntities, Set<BlockPos> hitBlockPositions) {}
+
+    /**
+     * World-space locator pose for this tick.
+     */
+    public record RayPose(@NotNull Vec3d origin, @NotNull Vec3d direction, @NotNull Vec3d up) {
+        public RayPose {
+            direction = direction.normalize();
+            up = up.normalize();
+            if (Math.abs(direction.dotProduct(up)) > 0.999D) {
+                up = Math.abs(direction.y) > 0.999D
+                        ? new Vec3d(1D, 0D, 0D)
+                        : new Vec3d(0D, 1D, 0D);
+            }
+        }
+
+        @NotNull
+        public Vec3d right() {
+            return this.direction.crossProduct(this.up).normalize();
+        }
+
+        @NotNull
+        public Vec3d offset(double rightAmount, double upAmount, double forwardAmount) {
+            return this.origin.add(this.right().scale(rightAmount))
+                    .add(this.up.scale(upAmount))
+                    .add(this.direction.scale(forwardAmount));
+        }
+    }
 }

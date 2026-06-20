@@ -66,7 +66,7 @@ public class DragonAttackAI extends EntityAIBase {
     public void updateTask() {
         EntityLivingBase entitylivingbase = this.dragon.getAttackTarget();
         if (entitylivingbase == null) return;
-        this.dragon.getLookHelper().setLookPositionWithEntity(entitylivingbase, 30.0F, 30.0F);
+        if (!this.dragon.isBreathingFire()) this.dragon.getLookHelper().setLookPositionWithEntity(entitylivingbase, 30f, 30f);
         this.targetX = entitylivingbase.posX;
         this.targetY = entitylivingbase.getEntityBoundingBox().minY;
         this.targetZ = entitylivingbase.posZ;
@@ -76,8 +76,8 @@ public class DragonAttackAI extends EntityAIBase {
         if (this.dragon.getEntitySenses().canSee(entitylivingbase) && this.delayCounter <= 0) {
             this.delayCounter = 4 + this.dragon.getRNG().nextInt(7);
 
-            if (d0 > 1024.0D) this.delayCounter += 10;
-            else if (d0 > 256.0D) this.delayCounter += 5;
+            if (d0 > 1024D) this.delayCounter += 10;
+            else if (d0 > 256D) this.delayCounter += 5;
 
             if (d0 >= this.getAttackReachSqr(entitylivingbase)) {
                 if (!this.dragon.getNavigator().tryMoveToEntityLiving(entitylivingbase, this.speedTowardsTarget)) this.delayCounter += 15;
@@ -100,6 +100,6 @@ public class DragonAttackAI extends EntityAIBase {
     }
 
     protected double getAttackReachSqr(EntityLivingBase attackTarget) {
-        return (this.dragon.attackWidth() * this.dragon.attackWidth() + attackTarget.width);
+        return Math.pow(this.dragon.attackWidth(), 2) + attackTarget.width + 4;
     }
 }

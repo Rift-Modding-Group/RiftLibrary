@@ -22,4 +22,5 @@ dependencies {
     }
     modImplementation 'curse.maven:hei-557549:6187146' // Use for mod Mixin example
     compileOnly files("lib/Hwyla-1.8.26-B41_1.12.2.jar")
+    implementation "org.apache.commons:commons-geometry-euclidean:1.0"
 }

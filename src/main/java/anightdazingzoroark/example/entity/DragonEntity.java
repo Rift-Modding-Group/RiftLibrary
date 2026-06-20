@@ -10,13 +10,14 @@ import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.ray.*;
+import anightdazingzoroark.riftlib.ray.rayShape.movement.RiftLibRayBoxMovementShape;
+import anightdazingzoroark.riftlib.ray.rayShape.impact.RiftLibRaySphereImpactShape;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosList;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.*;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.passive.EntityCow;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -25,13 +26,11 @@ import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Map;
 
 public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IRayCreator<DragonEntity>, IMultiHitboxUser<DragonEntity>, IDynamicRideUser<DragonEntity> {
@@ -49,9 +48,14 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
         this.ridePositions = new DynamicRidePosList(this, this.animationData);
         this.rayMap = Map.of(
                 "breatheFire", new RiftLibRayBuilder()
-                        .setRaySpeed(0.5D)
-                        .setShapeSpray(8D, 1D)
-                        .setSpreadOnHitBlock()
+                        .setMotionThenImpact()
+                        .setMotionSpeed(1D)
+                        .setMaxMotionDistance(12D)
+                        .setMovementShape(() -> new RiftLibRayBoxMovementShape(
+                                0.1D, 4D,
+                                false, false
+                        ))
+                        .setImpactShape(RiftLibRaySphereImpactShape::new)
         );
         this.isImmuneToFire = true;
     }
@@ -81,7 +85,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
                 return super.shouldExecute();
             }
         });
-        this.tasks.addTask(3, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
+        this.tasks.addTask(3, new EntityAIWatchClosest(this, EntityPlayer.class, 8f));
         this.tasks.addTask(4, new EntityAILookIdle(this) {
             private DragonEntity dragonEntity;
 
@@ -255,6 +259,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
                 }
             }
 
+            /*
             int fireChecks = 0;
             int fireBlocksPlaced = 0;
             for (BlockPos pos : rayHitResult.hitBlockPositions()) {
@@ -277,6 +282,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
                     fireBlocksPlaced++;
                 }
             }
+             */
         }
     }
     //ray management stuff ends here
@@ -320,9 +326,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
 
         animationData.addAnimationMessageEffect("startFireBreath", new AnimatableRunValue(() -> RiftLibRayHelper.createRay(this, "breatheFire", "fireLocator"), Side.SERVER));
         animationData.addAnimationMessageEffect("endFireBreath", new AnimatableRunValue(() -> RiftLibRayHelper.killRay(this, "breatheFire"), Side.SERVER));
-        animationData.addAnimationMessageEffect("endBreathUse", new AnimatableRunValue(() -> {
-            this.setBreathingFire(false);
-        }, Side.CLIENT, Side.SERVER));
+        animationData.addAnimationMessageEffect("endBreathUse", new AnimatableRunValue(() -> this.setBreathingFire(false), Side.CLIENT, Side.SERVER));
     }
 
     @Override

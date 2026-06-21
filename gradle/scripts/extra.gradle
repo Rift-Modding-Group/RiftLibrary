@@ -3,3 +3,7 @@
 
 // If you wish to use the default helper methods, uncomment the line below
 // apply from: 'gradle/scripts/helpers.gradle'
+shadowJar {
+    relocate "org.apache.commons.geometry", "${root_package}.${mod_id}.shadow.org.apache.commons.geometry"
+    relocate "org.apache.commons.numbers", "${root_package}.${mod_id}.shadow.org.apache.commons.numbers"
+}

@@ -7,14 +7,13 @@ import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.model.ServerModelRegistry;
 import anightdazingzoroark.riftlib.util.HitboxUtils;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.IEntityMultiPart;
-import net.minecraft.entity.MultiPartEntityPart;
+import net.minecraft.entity.*;
 import net.minecraft.util.DamageSource;
+import org.spongepowered.asm.mixin.injection.struct.InjectorGroupInfo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<AnimationDataEntity>> extends IEntityMultiPart {
     //get the parent
@@ -30,8 +29,13 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
         T entity = this.getMultiHitboxUser();
         if (entity == null) return;
 
-        //set linker
-        EntityHitboxLinker hitboxLinker = RiftLibLinkerRegistry.INSTANCE.hitboxLinkerMap.get(entity.getClass());
+        //find linker class
+        Class<?> entityClass = entity.getClass();
+        EntityHitboxLinker hitboxLinker = null;
+        for (Map.Entry<Class<? extends EntityLiving>, EntityHitboxLinker<?>> hitboxLinkEntry : RiftLibLinkerRegistry.INSTANCE.hitboxLinkerMap.entrySet()) {
+            if (!hitboxLinkEntry.getKey().isAssignableFrom(entityClass)) continue;
+            hitboxLinker = hitboxLinkEntry.getValue();
+        }
         if (hitboxLinker == null) return;
 
         //search definition list

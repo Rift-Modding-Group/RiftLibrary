@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 /**
  * Builder for ray creation to be passed into RiftLibRay
  */
-public final class RiftLibRayBuilder {
+public class RiftLibRayBuilder {
     private boolean motionDefined;
     private boolean hasMotion = true;
     private boolean hasImpact;

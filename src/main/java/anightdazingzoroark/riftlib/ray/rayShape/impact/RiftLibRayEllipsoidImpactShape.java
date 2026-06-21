@@ -17,23 +17,19 @@ public class RiftLibRayEllipsoidImpactShape extends RiftLibImpactShape {
         this(
                 Precision.doubleEquivalenceOfEpsilon(1.0E-6D),
                 (point, size) -> true,
-                xScale,
-                yScale,
-                zScale
+                xScale, yScale, zScale
         );
     }
 
     private RiftLibRayEllipsoidImpactShape(
             @NotNull Precision.DoubleEquivalence precision,
             @NotNull BiPredicate<Vector3D, Double> localClip,
-            double xScale,
-            double yScale,
-            double zScale
+            double xScale, double yScale, double zScale
     ) {
         super(precision, localClip);
-        this.xScale = Math.max(MIN_SIZE, Math.abs(xScale));
-        this.yScale = Math.max(MIN_SIZE, Math.abs(yScale));
-        this.zScale = Math.max(MIN_SIZE, Math.abs(zScale));
+        this.xScale = Math.clamp(xScale, 0D, 1D);
+        this.yScale = Math.clamp(yScale, 0D, 1D);
+        this.zScale = Math.clamp(zScale, 0D, 1D);
     }
 
     @Override
@@ -61,18 +57,18 @@ public class RiftLibRayEllipsoidImpactShape extends RiftLibImpactShape {
     private record EllipsoidRegion(double xRadius, double yRadius, double zRadius, @NotNull Precision.DoubleEquivalence precision) implements Region<Vector3D> {
         @Override
         public boolean isFull() {
-                return false;
-            }
+            return false;
+        }
 
         @Override
         public boolean isEmpty() {
-                return false;
-            }
+            return false;
+        }
 
         @Override
         public double getSize() {
-                return 4D / 3D * Math.PI * this.xRadius * this.yRadius * this.zRadius;
-            }
+            return 4D / 3D * Math.PI * this.xRadius * this.yRadius * this.zRadius;
+        }
 
         @Override
         public double getBoundarySize() {
@@ -85,8 +81,8 @@ public class RiftLibRayEllipsoidImpactShape extends RiftLibImpactShape {
 
         @Override
         public Vector3D getCentroid() {
-                return Vector3D.ZERO;
-            }
+            return Vector3D.ZERO;
+        }
 
         @Override
         public RegionLocation classify(Vector3D point) {

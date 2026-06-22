@@ -1,6 +1,6 @@
 package anightdazingzoroark.riftlib.internalMessage;
 
-import anightdazingzoroark.riftlib.hitbox.EntityHitbox;
+import anightdazingzoroark.riftlib.hitbox.RiftLibCollisionHitbox;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
 import io.netty.buffer.ByteBuf;
@@ -17,7 +17,7 @@ public class RiftLibSyncHitboxEntityId extends RiftLibMessage<RiftLibSyncHitboxE
 
     public RiftLibSyncHitboxEntityId() {}
 
-    public RiftLibSyncHitboxEntityId(Entity parent, EntityHitbox<?> hitbox) {
+    public RiftLibSyncHitboxEntityId(Entity parent, RiftLibCollisionHitbox<?> hitbox) {
         this.parentEntityId = parent.getEntityId();
         this.hitboxName = hitbox.partName;
         this.hitboxEntityId = hitbox.getEntityId();
@@ -56,7 +56,7 @@ public class RiftLibSyncHitboxEntityId extends RiftLibMessage<RiftLibSyncHitboxE
 
         multiHitboxUser.setHitboxes();
 
-        EntityHitbox<?> hitbox = multiHitboxUser.getHitboxByName(message.hitboxName);
+        RiftLibCollisionHitbox<?> hitbox = multiHitboxUser.getHitboxByName(message.hitboxName);
         if (hitbox == null) return;
 
         hitbox.syncEntityIdFromServer(message.hitboxEntityId);

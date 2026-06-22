@@ -1,17 +1,16 @@
 package anightdazingzoroark.riftlib.hitbox;
 
-import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.util.HitboxUtils;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MultiPartEntityPart;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 import org.lwjglx.util.vector.Quaternion;
@@ -19,7 +18,11 @@ import org.lwjglx.util.vector.Quaternion;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EntityHitbox<T extends IMultiHitboxUser<?>> extends MultiPartEntityPart {
+/**
+ * This hitbox deals with entity collisions and where players can attack on
+ * IMultiHitboxUser instances
+ * */
+public class RiftLibCollisionHitbox<T extends IMultiHitboxUser<?>> extends MultiPartEntityPart implements IHitbox<T> {
     private final float damageMultiplier;
     //these are the final definitive scales of the hitbox and will be used for such
     public final float fixedWidth;
@@ -31,7 +34,7 @@ public class EntityHitbox<T extends IMultiHitboxUser<?>> extends MultiPartEntity
     private boolean isDisabled;
     public final List<EntityHitboxDamageDefinition> damageDefinitions = new ArrayList<>();
 
-    public EntityHitbox(T parent, AnimatedLocator hitboxLocator, float damageMultiplier, float width, float height, boolean affectedByAnim) {
+    public RiftLibCollisionHitbox(T parent, AnimatedLocator hitboxLocator, float damageMultiplier, float width, float height, boolean affectedByAnim) {
         super(parent, HitboxUtils.locatorHitboxToHitbox(hitboxLocator.getName()), width, height);
         this.hitboxLocator = hitboxLocator;
         this.damageMultiplier = damageMultiplier;
@@ -52,7 +55,7 @@ public class EntityHitbox<T extends IMultiHitboxUser<?>> extends MultiPartEntity
             this.world.entitiesById.removeObject(this.getEntityId());
         }
 
-        EntityHitbox<?> entityAlreadyUsingID = this.world.getEntityByID(entityId) instanceof EntityHitbox<?> entityHitbox ? entityHitbox : null;
+        RiftLibCollisionHitbox<?> entityAlreadyUsingID = this.world.getEntityByID(entityId) instanceof RiftLibCollisionHitbox<?> entityHitbox ? entityHitbox : null;
         if (entityAlreadyUsingID != null && entityAlreadyUsingID.getParent() == this.getParent()) {
             this.world.entitiesById.removeObject(entityId);
         }
@@ -66,57 +69,64 @@ public class EntityHitbox<T extends IMultiHitboxUser<?>> extends MultiPartEntity
         EntityLivingBase parentEntityLiving = this.getParent().getMultiHitboxUser();
 
         //-----set scale-----
-        float locatorWidthDelta = Math.max(
-                this.hitboxLocator.getParentBone().getScaleX(),
-                this.hitboxLocator.getParentBone().getScaleZ()
-        );
-        float locatorHeightDelta = this.hitboxLocator.getParentBone().getScaleY();
-        float finalWidth = this.fixedWidth * this.getParent().multiHitboxUserScale() * locatorWidthDelta;
-        float finalHeight = this.fixedHeight * this.getParent().multiHitboxUserScale() * locatorHeightDelta;
-        this.setSize(finalWidth, finalHeight);
+        float[] finalSize = this.getHitboxSize();
+        this.setSize(finalSize[0], finalSize[1]);
 
         //-----set position-----
-        //correct the model space positions first
-        Vec3d modelSpacePos = this.hitboxLocator.getModelSpacePosition();
-        float newHitboxX = -(float) modelSpacePos.x / 16f;
-        float newHitboxY = (float) modelSpacePos.y / 16f - (this.fixedHeight / 2f) - (this.hitboxLocator.getParentBone().getScaleY() - 1) / 3;
-        float newHitboxZ = -(float) modelSpacePos.z / 16f;
+        Vec3d finalPosition = this.getHitboxPosition();
+        this.setPositionAndUpdate(finalPosition.x, finalPosition.y, finalPosition.z);
 
-        //set initial entity offset from center
-        Vec3d posVec = new Vec3d(
-                newHitboxX * this.getParent().multiHitboxUserScale(),
-                newHitboxY * this.getParent().multiHitboxUserScale(),
-                newHitboxZ * this.getParent().multiHitboxUserScale()
-        );
-
-        //determine yaw
-        double normalYawRadians = -Math.toRadians(parentEntityLiving.rotationYawHead);
-        double riddenYawRadians = -Math.toRadians(parentEntityLiving.rotationYaw);
-        double finalYawRadians = parentEntityLiving.isBeingRidden() ? riddenYawRadians : normalYawRadians;
-
-        //rotate vector around yaw
-        Quaternion quaternion = QuaternionUtils.createXYZQuaternion(0, finalYawRadians, 0);
-        posVec = VectorUtils.rotateVectorWithQuaternion(posVec, quaternion);
-
-        //put in world
-        this.setPositionAndUpdate(
-                this.getParentAsEntityLiving().posX + posVec.x,
-                this.getParentAsEntityLiving().posY + posVec.y,
-                this.getParentAsEntityLiving().posZ + posVec.z
-        );
+        //-----handle collisions-----
+        if (this.getParent().hitboxCanCollideWithEntities() && !this.world.isRemote) {
+            List<Entity> entities = this.world.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox().expand(0.2D, 0D, 0.2D));
+            entities.stream().filter(entity -> entity != this.parent && !(entity instanceof MultiPartEntityPart) && entity.canBePushed())
+                    .forEach(this::collideEntityWithHitbox);
+        }
 
         //-----remove if entity is dead or no longer exists-----
-        if (this.getParentAsEntityLiving() == null || !this.getParentAsEntityLiving().isEntityAlive()) {
+        if (!parentEntityLiving.isEntityAlive()) {
             this.world.removeEntityDangerously(this);
         }
         super.onUpdate();
     }
 
-    @Override
-    public boolean processInitialInteract(EntityPlayer player, EnumHand hand) {
-        return this.getParentAsEntityLiving().processInitialInteract(player, hand);
+    /**
+     * This special collision method is to make it so hitboxes perform entity collision
+     * without having to override Entity.applyEntityCollision
+     * (note: is really bad xd)
+     * */
+    private void collideEntityWithHitbox(Entity entityIn) {
+        EntityLivingBase parent = this.getParent().getMultiHitboxUser();
+        if (entityIn == null || entityIn.equals(parent) || parent.isRidingSameEntity(entityIn) || entityIn.noClip) return;
+
+        double dispX = entityIn.posX - parent.posX;
+        double dispZ = entityIn.posZ - parent.posZ;
+        double maxDisp = MathHelper.absMax(dispX, dispZ);
+
+        maxDisp = MathHelper.sqrt(maxDisp);
+        dispX /= maxDisp;
+        dispZ /= maxDisp;
+        double d3 = Math.min(1D / maxDisp, 1D);
+
+        dispX *= d3;
+        dispZ *= d3;
+        dispX *= 0.05f;
+        dispZ *= 0.05f;
+        dispX *= 1f - parent.entityCollisionReduction;
+        dispZ *= 1f - parent.entityCollisionReduction;
+
+        entityIn.addVelocity(dispX, 0D, dispZ);
+
+        //mark dirty to force push on players
+        if (entityIn instanceof EntityPlayer) entityIn.velocityChanged = true;
     }
 
+    @Override
+    public boolean processInitialInteract(EntityPlayer player, EnumHand hand) {
+        return this.getParent().getMultiHitboxUser().processInitialInteract(player, hand);
+    }
+
+    @Override
     public boolean attackEntityFrom(DamageSource source, float amount) {
         if (this.damageSourceIsRider(source)) {
             return false;
@@ -125,32 +135,37 @@ public class EntityHitbox<T extends IMultiHitboxUser<?>> extends MultiPartEntity
     }
 
     private boolean damageSourceIsRider(DamageSource source) {
-        if (this.getParentAsEntityLiving() == null || source == null) return false;
+        if (source == null) return false;
+        EntityLivingBase parentEntityLiving = this.getParent().getMultiHitboxUser();
 
-        if (this.getParentAsEntityLiving().isBeingRidden()) {
-            if (source.getTrueSource() != null && this.getParentAsEntityLiving().isPassenger(source.getTrueSource())) {
+        if (parentEntityLiving.isBeingRidden()) {
+            if (source.getTrueSource() != null && parentEntityLiving.isPassenger(source.getTrueSource())) {
                 return true;
             }
-            if (source.getImmediateSource() != null && this.getParentAsEntityLiving().isPassenger(source.getImmediateSource())) {
+            if (source.getImmediateSource() != null && parentEntityLiving.isPassenger(source.getImmediateSource())) {
                 return true;
             }
         }
         return false;
     }
 
-
-    @Deprecated
-    public Vec3d getDisplacementVec() {
-        return new Vec3d(0, 0, 0);
-    }
-
-    //recommended instead of using the parent variable
+    /**
+     * Recommended instead of using the parent variable
+     * */
+    @SuppressWarnings("unchecked")
+    @NotNull
     public T getParent() {
         return (T) this.parent;
     }
 
-    public EntityLiving getParentAsEntityLiving() {
-        return (EntityLiving) this.parent;
+    @Override
+    public @NotNull AnimatedLocator getHitboxLocator() {
+        return this.hitboxLocator;
+    }
+
+    @Override
+    public float[] getFixedSize() {
+        return new float[]{this.fixedWidth, this.fixedHeight};
     }
 
     public void setDisabled(boolean value) {

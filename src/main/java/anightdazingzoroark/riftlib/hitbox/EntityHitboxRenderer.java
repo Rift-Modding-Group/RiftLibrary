@@ -8,19 +8,19 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class EntityHitboxRenderer extends Render<EntityHitbox> {
+public class EntityHitboxRenderer extends Render<RiftLibCollisionHitbox> {
     protected EntityHitboxRenderer(RenderManager renderManager) {
         super(renderManager);
     }
 
     @Override
-    protected ResourceLocation getEntityTexture(EntityHitbox entity) {
+    protected ResourceLocation getEntityTexture(RiftLibCollisionHitbox entity) {
         return null;
     }
 
-    public static class Factory implements IRenderFactory<EntityHitbox> {
+    public static class Factory implements IRenderFactory<RiftLibCollisionHitbox> {
         @Override
-        public Render<? super EntityHitbox> createRenderFor(RenderManager manager) {
+        public Render<? super RiftLibCollisionHitbox> createRenderFor(RenderManager manager) {
             return new EntityHitboxRenderer(manager);
         }
     }

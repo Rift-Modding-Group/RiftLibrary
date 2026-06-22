@@ -1,6 +1,5 @@
 package anightdazingzoroark.riftlib.hitbox;
 
-import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.RiftLibLinkerRegistry;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
@@ -9,18 +8,20 @@ import anightdazingzoroark.riftlib.model.ServerModelRegistry;
 import anightdazingzoroark.riftlib.util.HitboxUtils;
 import net.minecraft.entity.*;
 import net.minecraft.util.DamageSource;
-import org.spongepowered.asm.mixin.injection.struct.InjectorGroupInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<AnimationDataEntity>> extends IEntityMultiPart {
-    //get the parent
-    //must always return the entity its being implemented in
-    //so its return statement in the entity implementing this should be "return this;"
+    /**
+     * Get the parent. Must always return the entity its being implemented in.
+     * */
     T getMultiHitboxUser();
 
+    /**
+     * Get the model scale of the user.
+     * */
     default float multiHitboxUserScale() {
         return 1f;
     }
@@ -46,7 +47,7 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
         AnimationDataEntity animData = entity.getAnimationData();
         if (animData.getAnimatedLocators().isEmpty()) return;
 
-        List<EntityHitbox<?>> hitboxesToAdd = new ArrayList<>();
+        List<RiftLibCollisionHitbox<?>> hitboxesToAdd = new ArrayList<>();
         for (HitboxDefinitionList.HitboxDefinition hitboxDefinition : definitionList.list) {
             //find the locator to peg to first
             String locatorName = "hitbox_"+hitboxDefinition.locator();
@@ -55,7 +56,7 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
             if (locatorToSet == null || !HitboxUtils.locatorCanBeHitbox(locatorToSet)) return;
 
             //create the hitbox
-            EntityHitbox<?> hitbox = new EntityHitbox<>(
+            RiftLibCollisionHitbox<?> hitbox = new RiftLibCollisionHitbox<>(
                     this,
                     locatorToSet,
                     hitboxDefinition.damageMultiplier(),
@@ -66,7 +67,7 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
 
             //add the damage definitions
             for (HitboxDefinitionList.HitboxDamageDefinition damageDefinition : hitboxDefinition.damageDefinitionList()) {
-                hitbox.damageDefinitions.add(new EntityHitbox.EntityHitboxDamageDefinition(
+                hitbox.damageDefinitions.add(new RiftLibCollisionHitbox.EntityHitboxDamageDefinition(
                         damageDefinition.damageSource(),
                         damageDefinition.damageType(),
                         damageDefinition.damageMultiplier()
@@ -76,7 +77,7 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
             hitboxesToAdd.add(hitbox);
         }
 
-        for (EntityHitbox<?> hitbox : hitboxesToAdd) this.addPart(hitbox);
+        for (RiftLibCollisionHitbox<?> hitbox : hitboxesToAdd) this.addPart(hitbox);
         this.setHitboxDefinitionList(definitionList);
     }
 
@@ -93,7 +94,7 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
     void setHitboxDefinitionList(HitboxDefinitionList hitboxDefinitionList);
 
     //-----helper functions for hitboxes from here on out-----
-    default void addPart(EntityHitbox hitbox) {
+    default void addPart(RiftLibCollisionHitbox<?> hitbox) {
         if (this.getMultiHitboxUser() == null) return;
         if (this.getMultiHitboxUser().getParts() == null) return;
         Entity[] newHitboxArray = new Entity[this.getMultiHitboxUser().getParts().length + 1];
@@ -105,11 +106,11 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
         this.getMultiHitboxUser().world.entitiesById.addKey(hitbox.getEntityId(), hitbox);
     }
 
-    default EntityHitbox getHitboxByName(String name) {
+    default RiftLibCollisionHitbox<?> getHitboxByName(String name) {
         if (this.getMultiHitboxUser() == null) return null;
         if (this.getMultiHitboxUser().getParts() == null) return null;
         for (int x = 0; x < this.getMultiHitboxUser().getParts().length; x++) {
-            EntityHitbox hitbox = (EntityHitbox) this.getMultiHitboxUser().getParts()[x];
+            RiftLibCollisionHitbox<?> hitbox = (RiftLibCollisionHitbox<?>) this.getMultiHitboxUser().getParts()[x];
             if (hitbox.partName.equals(name)) return hitbox;
         }
         return null;
@@ -117,7 +118,7 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
 
     //this is for dealing with damage multipliers from attacking at different parts
     default boolean attackEntityFromPart(MultiPartEntityPart part, DamageSource source, float damage) {
-        EntityHitbox hitbox = (EntityHitbox) part;
+        RiftLibCollisionHitbox<?> hitbox = (RiftLibCollisionHitbox<?>) part;
         if (!hitbox.isDisabled()) {
             //get the individual damage definitions of the hitbox and multiply em with newDamage
             //if those dont exist, use the default damageMultiplier
@@ -136,5 +137,12 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
      */
     default boolean hitboxUseHWYLA() {
         return true;
+    }
+
+    /**
+     * This makes it so that if true, this entity's hitboxes can collide with other entities
+     * */
+    default boolean hitboxCanCollideWithEntities() {
+        return false;
     }
 }

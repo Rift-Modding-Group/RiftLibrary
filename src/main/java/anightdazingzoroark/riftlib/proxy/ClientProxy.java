@@ -14,7 +14,7 @@ import anightdazingzoroark.example.armor.GreenArmor;
 import anightdazingzoroark.example.armor.SatelliteDishHelmet;
 import anightdazingzoroark.riftlib.RiftLibLinkerRegistry;
 import anightdazingzoroark.riftlib.RiftLibMod;
-import anightdazingzoroark.riftlib.hitbox.EntityHitbox;
+import anightdazingzoroark.riftlib.hitbox.RiftLibCollisionHitbox;
 import anightdazingzoroark.riftlib.hitbox.EntityHitboxRenderer;
 import anightdazingzoroark.riftlib.hitbox.HitboxTicker;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
@@ -43,7 +43,7 @@ public class ClientProxy extends ServerProxy {
     @Override
     public void preInit(FMLPreInitializationEvent e) {
         super.preInit(e);
-        RenderingRegistry.registerEntityRenderingHandler(EntityHitbox.class, new EntityHitboxRenderer.Factory());
+        RenderingRegistry.registerEntityRenderingHandler(RiftLibCollisionHitbox.class, new EntityHitboxRenderer.Factory());
         MinecraftForge.EVENT_BUS.register(new ParticleTicker());
         MinecraftForge.EVENT_BUS.register(new RiftLibSoundEffectRegistry());
         MinecraftForge.EVENT_BUS.register(new GeoItemRendererTicker());

@@ -19,9 +19,7 @@ public interface IAnimatableModel<E> {
 	 * @return the bone
 	 */
 	default IBone getBone(String boneName) {
-		IBone bone = this.getAnimationProcessor().getBone(boneName);
-	    //todo: maybe add to config omitting errors from here
-		if (bone == null) RiftLib.LOGGER.warn("Cannot find bone {}.", boneName);
-		return bone;
+		RiftLib.LOGGER.warn("Cannot find bone {}.", boneName);
+		return null;
 	}
 }

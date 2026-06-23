@@ -16,6 +16,7 @@ import anightdazingzoroark.riftlib.resource.client.RiftLibCacheClient;
 import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
 import anightdazingzoroark.riftlib.util.MolangUtils;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.apache.commons.lang3.tuple.Pair;
@@ -39,6 +40,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     private final List<AnimatableValue> initAnimationValues = new ArrayList<>();
     private final List<AnimatableValue> onUpdateAnimationValues = new ArrayList<>();
     private final Map<String, AnimatableRunValue> animationMessageEffects = new HashMap<>();
+    private final Map<ResourceLocation, GeoModel> modelCopies = new HashMap<>();
     protected final Map<String, Supplier<Double>> molangQueries = new HashMap<>();
     private final List<AnimatedLocator> animatedLocators = new ArrayList<>();
     private int animatedLocatorTicker;
@@ -149,10 +151,19 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     public List<AnimatedLocator> getAnimatedLocators() {
         return this.animatedLocators;
     }
+
+    public GeoModel getOrCreateModelCopy(ResourceLocation location, Supplier<GeoModel> modelSupplier) {
+        GeoModel model = this.modelCopies.get(location);
+        if (model != null) return model;
+
+        model = modelSupplier.get();
+        this.modelCopies.put(location, model);
+        return model;
+    }
     //-----animated locator stuff ends here-----
 
     /**
-     * Helper flag to mark anim data as synchronized with server
+     * Helper flag to mark anim data as synced with server
      * */
     public boolean isServerSynced() {
         return this.serverSynced;

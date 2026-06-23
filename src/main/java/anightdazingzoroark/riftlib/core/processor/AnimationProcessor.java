@@ -19,18 +19,22 @@ import anightdazingzoroark.riftlib.core.snapshot.DirtyTracker;
 import anightdazingzoroark.riftlib.core.util.MathUtil;
 
 public class AnimationProcessor {
-	private final List<IBone> modelRendererList = new ArrayList<>();
-
-	public void tickAnimation(IAnimatable<?> entity, double seekTime, boolean crashWhenCantFindBone, boolean runClientEffects) {
+	public void tickAnimation(
+			IAnimatable<?> entity,
+			List<IBone> modelRendererList,
+			double seekTime,
+			boolean crashWhenCantFindBone,
+			boolean runClientEffects
+	) {
 		// Each animation has it's own collection of animations (called the
 		// EntityAnimationManager), which allows for multiple independent animations
 		AbstractAnimationData<?, ?> animationData = entity.getAnimationData();
 		// Keeps track of which bones have had animations applied to them, and
 		// eventually sets the ones that don't have an animation to their default values
-		Map<String, DirtyTracker> modelTracker = this.createNewDirtyTracker();
+		Map<String, DirtyTracker> modelTracker = this.createNewDirtyTracker(modelRendererList);
 
 		// Store the current value of each bone rotation/position/scale
-		this.updateBoneSnapshots(animationData.getBoneSnapshotCollection());
+		this.updateBoneSnapshots(modelRendererList, animationData.getBoneSnapshotCollection());
 
 		Map<String, Pair<IBone, BoneSnapshot>> boneSnapshots = animationData.getBoneSnapshotCollection();
 
@@ -40,7 +44,7 @@ public class AnimationProcessor {
 		//get changes from all anim controllers
 		for (AnimationController<?, ?> controller : animationData.getAnimationControllers().values()) {
 			controller.isJustStarting = animationData.isFirstTick;
-			controller.process(seekTime, this.modelRendererList, boneSnapshots, crashWhenCantFindBone);
+			controller.process(seekTime, modelRendererList, boneSnapshots, crashWhenCantFindBone);
 
 			for (BoneAnimationQueue boneAnimation : controller.getBoneAnimationQueues().values()) {
 				IBone bone = boneAnimation.bone;
@@ -116,7 +120,7 @@ public class AnimationProcessor {
 		}
 
 		//apply changes from anims to bones and locators
-		for (IBone bone : this.modelRendererList) {
+		for (IBone bone : modelRendererList) {
 			BoneSnapshot initialSnapshot = bone.getInitialSnapshot();
 			BoneSnapshot snapshot = boneSnapshots.get(bone.getName()).getRight();
 
@@ -233,7 +237,7 @@ public class AnimationProcessor {
 		animationData.isFirstTick = false;
 	}
 
-	private Map<String, DirtyTracker> createNewDirtyTracker() {
+	private Map<String, DirtyTracker> createNewDirtyTracker(List<IBone> modelRendererList) {
 		Map<String, DirtyTracker> tracker = new HashMap<>();
 		for (IBone bone : modelRendererList) {
 			tracker.put(bone.getName(), new DirtyTracker(false, false, false, bone));
@@ -241,40 +245,11 @@ public class AnimationProcessor {
 		return tracker;
 	}
 
-	private void updateBoneSnapshots(Map<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection) {
+	private void updateBoneSnapshots(List<IBone> modelRendererList, Map<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection) {
 		for (IBone bone : modelRendererList) {
 			if (!boneSnapshotCollection.containsKey(bone.getName())) {
 				boneSnapshotCollection.put(bone.getName(), Pair.of(bone, new BoneSnapshot(bone.getInitialSnapshot())));
 			}
 		}
-	}
-
-	/**
-	 * Gets a bone by name.
-	 *
-	 * @param boneName The bone name
-	 * @return the bone
-	 */
-	public IBone getBone(String boneName) {
-		return modelRendererList.stream().filter(x -> x.getName().equals(boneName)).findFirst().orElse(null);
-	}
-
-	/**
-	 * Register model renderer. Each AnimatedModelRenderer (group in blockbench)
-	 * NEEDS to be registered via this method.
-	 *
-	 * @param modelRenderer The model renderer
-	 */
-	public void registerModelRenderer(IBone modelRenderer) {
-		modelRenderer.saveInitialSnapshot();
-		modelRendererList.add(modelRenderer);
-	}
-
-	public void clearModelRendererList() {
-		this.modelRendererList.clear();
-	}
-
-	public List<IBone> getModelRendererList() {
-		return modelRendererList;
 	}
 }

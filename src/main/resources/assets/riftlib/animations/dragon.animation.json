@@ -124,7 +124,7 @@
 				}
 			},
 			"timeline": {
-				"0.375": "'performAttack'"
+				"0.375": "function.send_message('performAttack')"
 			}
 		},
 		"animation.dragon.land_pose": {
@@ -315,8 +315,8 @@
 				}
 			},
 			"timeline": {
-				"0.25": "'startFireBreath'",
-				"1.5": "'endFireBreath'"
+				"0.25": "function.send_message('startFireBreath')",
+				"1.5": "function.send_message('endFireBreath')"
 			},
 			"particle_effects": {
 				"0.25": {
@@ -366,8 +366,8 @@
 				}
 			},
 			"timeline": {
-				"0.25": "'startFireBreath'",
-				"1.5": "'endFireBreath'"
+				"0.25": "function.send_message('startFireBreath')",
+				"1.5": "function.send_message('endFireBreath')"
 			},
 			"particle_effects": {
 				"0.25": {

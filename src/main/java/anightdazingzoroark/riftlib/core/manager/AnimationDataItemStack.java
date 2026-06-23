@@ -23,8 +23,8 @@ public class AnimationDataItemStack extends AbstractAnimationData<AnimatedItemSt
     }
 
     @Override
-    public @NotNull NBTTagCompound asNBT() {
-        NBTTagCompound toReturn = super.asNBT();
+    public @NotNull NBTTagCompound getNBT() {
+        NBTTagCompound toReturn = super.getNBT();
         ItemStack stack = this.getHolder().getStack();
         EntityPlayer playerHolder = this.getPlayerHolder();
         EnumHand playerHolderHand = playerHolder == null ? null : this.getPlayerHoldingHand(playerHolder, stack);

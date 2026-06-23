@@ -5,13 +5,14 @@ import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
-import anightdazingzoroark.riftlib.model.ServerModelRegistry;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibApplyMessageEffect;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
+import anightdazingzoroark.riftlib.proxy.ServerProxy;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 
-import java.util.Arrays;
-import java.util.Map;
+import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class MolangUtils {
@@ -31,11 +32,14 @@ public class MolangUtils {
 	 * This is for use in AnimationData related stuff, its for
 	 * assigning variables from AnimatableValues to a Molang Scope.
 	 * */
-	public static void parseValue(MolangParser parser, MolangScope dataScope, AnimatableValue animatableValue) {
+	public static void parseValue(AbstractAnimationData<?, ?> animationData, AnimatableValue animatableValue) {
+		MolangParser parser = animationData.getParser();
+		MolangScope dataScope = animationData.getDataScope();
+
 		parser.withScope(dataScope, () -> {
 			if (animatableValue.isExpression()) {
 				try {
-					parser.parseExpression(animatableValue.getExpressionValue()).get();
+					parser.parseExpression(animatableValue.getExpressionValue(), animationData).get();
 				}
 				catch (Exception e) {
 					throw new RuntimeException(e);
@@ -46,7 +50,7 @@ public class MolangUtils {
 				if (parser.isFunction(name)) {
 					throw new RuntimeException(new MolangException("Cannot assign value to function '"+name+"'!"));
 				}
-				parser.setValue(name, animatableValue.getConstantValue().right);
+				parser.setVariable(name, animatableValue.getConstantValue().right);
 			}
 		});
 	}
@@ -56,63 +60,11 @@ public class MolangUtils {
 	}
 
 	/**
-	 * For use in animation controllers, its for either assigning variables from a string or
-	 * sending messages to the server. Meant for use on client only.
+	 * For use in animation controllers and custom animation instructions.
 	 * */
 	public static void parseValue(IAnimatable<?> animatable, AnimatableValue animatableValue) {
 		AbstractAnimationData<?, ?> animationData = animatable.getAnimationData();
-
-		//as this is animatable value we're dealing with, first we check if its a message
-		//note that these messages only work if on the server
-		if (animatableValue.isExpression()
-				&& animatableValue.getExpressionValue().startsWith("'")
-				&& animatableValue.getExpressionValue().endsWith("'")
-		) {
-			//if world doesnt exist, skip. this is mostly here cos
-			//AbstractAnimationData.getWorld() is nullable and i need
-			//a way for intellij to stfu about it
-			if (animationData.getWorld() == null) return;
-
-			String valueToSend = animatableValue.getExpressionValue().substring(1, animatableValue.getExpressionValue().length() - 1);
-			for (Map.Entry<String, AnimatableRunValue> effectMapEntry : animationData.getAnimationMessageEffects().entrySet()) {
-				if (!valueToSend.equals(effectMapEntry.getKey())) continue;
-
-				//if no side order, just assume its for client only then
-                Side[] sideOrder = effectMapEntry.getValue().sideOrder();
-				if (sideOrder == null || sideOrder.length == 0) sideOrder = new Side[]{Side.CLIENT};
-
-				//require the presence of a server model if it specifies server side
-				if (Arrays.asList(sideOrder).contains(Side.SERVER)) {
-					ServerModelRegistry.requireServerModel(animatable, "server animation message effects");
-				}
-
-				//now apply message effect based on side order
-				for (Side side : sideOrder) {
-					if (side == Side.SERVER && !animationData.getWorld().isRemote) effectMapEntry.getValue().runValue().run();
-					if (side == Side.CLIENT && animationData.getWorld().isRemote) effectMapEntry.getValue().runValue().run();
-				}
-			}
-		}
-		else {
-			MolangParser parser = animationData.getParser();
-			parser.withScope(animationData.getDataScope(), () -> {
-				if (animatableValue.isExpression()) {
-					try {
-						parser.parseExpression(animatableValue.getExpressionValue(), animationData).get();
-					}
-					catch (Exception e) {
-						throw new RuntimeException(e);
-					}
-				}
-				else {
-					String name = animatableValue.getConstantValue().left;
-					if (parser.isFunction(name)) {
-						throw new RuntimeException(new MolangException("Cannot assign value to function '"+name+"'!"));
-					}
-					parser.setValue(name, animatableValue.getConstantValue().right);
-				}
-			});
-		}
+		parseValue(animationData, animatableValue);
 	}
 
 	/**

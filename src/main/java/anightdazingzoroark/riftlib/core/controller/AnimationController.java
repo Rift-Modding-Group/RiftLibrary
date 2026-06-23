@@ -19,8 +19,11 @@ import anightdazingzoroark.riftlib.core.processor.IBone;
 import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
 import anightdazingzoroark.riftlib.core.util.Axis;
 import anightdazingzoroark.riftlib.core.util.MathUtil;
+import anightdazingzoroark.riftlib.model.ServerModelRegistry;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.util.MolangUtils;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.relauncher.Side;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
@@ -946,6 +949,11 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
         }
 
         private IAnimatableModel<A> getModel() {
+            if (FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER
+                    && ServerModelRegistry.hasServerModel(this.animatable)) {
+                return (IAnimatableModel<A>) ServerModelRegistry.getServerModel(this.animatable);
+            }
+
             for (ModelFetcher<?> modelFetcher : modelFetchers) {
                 IAnimatableModel<A> model = (IAnimatableModel<A>) modelFetcher.apply(this.animatable);
                 if (model != null) return model;

@@ -58,7 +58,7 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 	@Override
 	public void doRender(A entity, double x, double y, double z, float entityYaw, float partialTicks) {
         //---get model---
-        GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(entity));
+        GeoModel model = this.modelProvider.getModel(entity);
 
 		//rest is good ol rendering code
 		GlStateManager.pushMatrix();

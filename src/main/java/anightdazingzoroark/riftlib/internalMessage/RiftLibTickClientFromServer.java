@@ -1,7 +1,9 @@
 package anightdazingzoroark.riftlib.internalMessage;
 
+import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
+import anightdazingzoroark.riftlib.model.ServerModelRegistry;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -16,7 +18,7 @@ public class RiftLibTickClientFromServer extends RiftLibMessage<RiftLibTickClien
     public RiftLibTickClientFromServer() {}
 
     public RiftLibTickClientFromServer(AbstractAnimationData<?, ?> targetData) {
-        this.targetDataNBT = targetData.asNBT();
+        this.targetDataNBT = targetData.getNBT();
     }
 
     @Override
@@ -34,15 +36,15 @@ public class RiftLibTickClientFromServer extends RiftLibMessage<RiftLibTickClien
 
     @Override
     public void executeOnClient(Minecraft client, RiftLibTickClientFromServer message, EntityPlayer player, MessageContext messageContext) {
-        //test if nbt has anim time
-        if (!message.targetDataNBT.hasKey("Tick")) return;
-        double tick = message.targetDataNBT.getDouble("Tick");
-
         //test for matching valid anim data on client end
         AbstractAnimationData<?, ?> animData = AnimationDataResolver.resolveNBTAsData(client.world, message.targetDataNBT);
         if (animData == null) return;
 
-        //set tick
-        animData.tick = tick;
+        //set nbt
+        animData.readNBT(message.targetDataNBT);
+        animData.setServerSynced(true);
+        if (animData.getHolder() instanceof IAnimatable<?> animatable) {
+            ServerModelRegistry.prepareServerSyncedAnimationData(animatable);
+        }
     }
 }

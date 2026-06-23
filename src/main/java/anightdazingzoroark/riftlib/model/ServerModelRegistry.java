@@ -59,6 +59,13 @@ public class ServerModelRegistry {
         return (AnimatedGeoModel<T>) model;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static void prepareServerSyncedAnimationData(IAnimatable<?> animatable) {
+        AnimatedGeoModel model = getServerModel(animatable);
+        if (model == null) return;
+        model.prepareServerSyncedAnimationData(animatable);
+    }
+
     private static Supplier<? extends AnimatedGeoModel<?>> findFactory(Class<?> animatableClass) {
         Supplier<? extends AnimatedGeoModel<?>> exactFactory = SERVER_MODEL_FACTORIES.get(animatableClass);
 

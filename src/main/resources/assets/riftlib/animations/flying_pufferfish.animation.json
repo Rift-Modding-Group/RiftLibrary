@@ -141,7 +141,7 @@
 				}
 			},
 			"timeline": {
-				"0.25": "'puffUpRay'"
+				"0.25": "function.send_message('puffUpRay')"
 			}
 		}
 	}

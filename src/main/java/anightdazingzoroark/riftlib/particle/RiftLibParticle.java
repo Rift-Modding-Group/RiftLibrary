@@ -88,12 +88,12 @@ public class RiftLibParticle {
     //all molang variables are created here
     private void setupMolangVariables() {
         this.molangParser.withScope(this.particleScope, () -> {
-            this.molangParser.setValue("variable.particle_age", 0);
-            this.molangParser.setValue("variable.particle_lifetime", 0);
-            this.molangParser.setValue("variable.particle_random_1", Math.random());
-            this.molangParser.setValue("variable.particle_random_2", Math.random());
-            this.molangParser.setValue("variable.particle_random_3", Math.random());
-            this.molangParser.setValue("variable.particle_random_4", Math.random());
+            this.molangParser.setVariable("variable.particle_age", 0);
+            this.molangParser.setVariable("variable.particle_lifetime", 0);
+            this.molangParser.setVariable("variable.particle_random_1", Math.random());
+            this.molangParser.setVariable("variable.particle_random_2", Math.random());
+            this.molangParser.setVariable("variable.particle_random_3", Math.random());
+            this.molangParser.setVariable("variable.particle_random_4", Math.random());
         });
     }
 
@@ -133,8 +133,8 @@ public class RiftLibParticle {
             }
 
             //dynamically set molang variables
-            this.molangParser.setValue("variable.particle_age", this.age / 20D);
-            this.molangParser.setValue("variable.particle_lifetime", this.lifetime / 20D);
+            this.molangParser.setVariable("variable.particle_age", this.age / 20D);
+            this.molangParser.setVariable("variable.particle_lifetime", this.lifetime / 20D);
 
             //update temp pos
             this.tempPos.setPos(this.x, this.y, this.z);

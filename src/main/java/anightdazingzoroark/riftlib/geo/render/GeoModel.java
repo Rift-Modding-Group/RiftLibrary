@@ -10,6 +10,68 @@ public class GeoModel {
 	public List<GeoBone> topLevelBones = new ArrayList<>();
 	public RawGeoModel.RawModelDescription description;
 
+	public GeoModel copy() {
+		GeoModel copy = new GeoModel();
+		copy.description = this.description;
+
+		for (GeoBone bone : this.topLevelBones) {
+			copy.topLevelBones.add(copyBone(bone, null));
+		}
+
+		return copy;
+	}
+
+	private static GeoBone copyBone(GeoBone source, GeoBone parent) {
+		GeoBone copy = new GeoBone();
+		copy.parent = parent;
+		copy.name = source.name;
+		copy.mirror = source.mirror;
+		copy.inflate = source.inflate;
+		copy.dontRender = source.dontRender;
+		copy.reset = source.reset;
+		copy.extraData = source.extraData;
+
+		copy.setHidden(source.isHidden(), source.childBonesAreHiddenToo());
+		copy.setCubesHidden(source.cubesAreHidden());
+		copy.setScaleX(source.getScaleX());
+		copy.setScaleY(source.getScaleY());
+		copy.setScaleZ(source.getScaleZ());
+		copy.setPositionX(source.getPositionX());
+		copy.setPositionY(source.getPositionY());
+		copy.setPositionZ(source.getPositionZ());
+		copy.setRotationX(source.getRotationX());
+		copy.setRotationY(source.getRotationY());
+		copy.setRotationZ(source.getRotationZ());
+		copy.setPivotX(source.getPivotX());
+		copy.setPivotY(source.getPivotY());
+		copy.setPivotZ(source.getPivotZ());
+
+		copy.childCubes.addAll(source.childCubes);
+
+		for (GeoLocator locator : source.childLocators) {
+			copy.childLocators.add(copyLocator(locator, copy));
+		}
+
+		for (GeoBone child : source.childBones) {
+			copy.childBones.add(copyBone(child, copy));
+		}
+
+		return copy;
+	}
+
+	private static GeoLocator copyLocator(GeoLocator source, GeoBone parent) {
+		GeoLocator copy = new GeoLocator(parent, source.name);
+		copy.setHidden(source.isHidden(), source.childBonesAreHiddenToo());
+		copy.setCubesHidden(source.cubesAreHidden());
+		copy.setPositionX(source.getPositionX());
+		copy.setPositionY(source.getPositionY());
+		copy.setPositionZ(source.getPositionZ());
+		copy.setRotationX(source.getRotationX());
+		copy.setRotationY(source.getRotationY());
+		copy.setRotationZ(source.getRotationZ());
+		return copy;
+	}
+
 	public Optional<GeoBone> getBone(String name) {
 		for (GeoBone bone : topLevelBones) {
 			GeoBone optionalBone = getBoneRecursively(name, bone);

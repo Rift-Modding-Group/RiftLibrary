@@ -1,13 +1,19 @@
 package anightdazingzoroark.riftlib.molang;
 
+import anightdazingzoroark.riftlib.core.AnimatableRunValue;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibApplyMessageEffect;
 import anightdazingzoroark.riftlib.molang.math.*;
 import anightdazingzoroark.riftlib.molang.expressions.MolangAssignment;
 import anightdazingzoroark.riftlib.molang.expressions.MolangExpression;
 import anightdazingzoroark.riftlib.molang.expressions.MolangMultiStatement;
 import anightdazingzoroark.riftlib.molang.expressions.MolangValue;
 import anightdazingzoroark.riftlib.molang.math.Variable;
+import anightdazingzoroark.riftlib.proxy.ServerProxy;
+import anightdazingzoroark.riftlib.util.MolangUtils;
+import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -23,6 +29,51 @@ public class MolangParser extends MathBuilder {
     private final ThreadLocal<Deque<MolangScope>> scopeStack = ThreadLocal.withInitial(ArrayDeque::new);
     private MolangMultiStatement currentStatement;
 
+    /**
+     * In this constructor, all other functions are dealt with here
+     * */
+    public MolangParser() {
+        super();
+        this.registerFunction("function.send_message", 1, (values, animData) -> {
+            if (animData == null) return 0D;
+            String messageName = values[0].getString();
+
+            //check for presence of effect and world
+            AnimatableRunValue effect = animData.getAnimationMessageEffects().get(messageName);
+            World world = animData.getWorld();
+            if (effect == null || world == null) return 0D;
+
+            //define return value and side order
+            boolean toReturn = false;
+            Side[] sideOrder = effect.sideOrder();
+            if (sideOrder == null || sideOrder.length == 0) sideOrder = new Side[]{Side.CLIENT}; //client is presumed target if no side order is defined
+
+            //iterate over all side orders
+            for (Side side : sideOrder) {
+                if (side == Side.SERVER) {
+                    if (world.isRemote) {
+                        if (ServerProxy.MESSAGE_WRAPPER == null) continue;
+                        ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibApplyMessageEffect(animData, messageName));
+                    }
+                    else effect.runValue().run();
+                    toReturn = true;
+                }
+                else if (side == Side.CLIENT) {
+                    if (world.isRemote) effect.runValue().run();
+                    else {
+                        if (ServerProxy.MESSAGE_WRAPPER == null) continue;
+                        ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibApplyMessageEffect(animData, messageName));
+                    }
+                    toReturn = true;
+                }
+            }
+
+            return MolangUtils.booleanToDouble(toReturn);
+        });
+        //this.registerFunction("function.create_hitbox", -1);
+    }
+
+    //-----molang scope stuff starts here-----
     public MolangScope scope() {
         Deque<MolangScope> scope = this.scopeStack.get();
         return scope.isEmpty() ? null : scope.peek();
@@ -45,8 +96,9 @@ public class MolangParser extends MathBuilder {
             this.popScope();
         }
     }
+    //-----molang scope stuff ends here-----
 
-    public void setValue(String name, double value) {
+    public void setVariable(String name, double value) {
         Variable variable = this.getVariable(name);
         if (variable != null) variable.set(value);
     }
@@ -70,7 +122,7 @@ public class MolangParser extends MathBuilder {
     public MolangExpression parseExpression(@NotNull String expression, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
         List<String> lines = new ArrayList<>();
 
-        for (String split : expression.toLowerCase().trim().split(";")) {
+        for (String split : this.splitStatements(this.lowercaseOutsideStrings(expression.trim()))) {
             if (!split.trim().isEmpty()) lines.add(split);
         }
 

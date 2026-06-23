@@ -51,12 +51,14 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     public boolean isFirstTick = true;
     public AnimationTicker clientTicker;
     public boolean shouldPlayWhilePaused = false;
+    private boolean serverSynced;
 
     //time values meant for molang queries
     public double animTime;
     public double deltaTime;
     public double lifeTime;
 
+    @SuppressWarnings("unchecked")
     public AbstractAnimationData(@NotNull T holder, @NotNull IAnimatable<D> animatable) {
         this.holder = holder;
         //looks unintuitive i know, but its to prevent NPEs from armor data
@@ -149,6 +151,17 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     }
     //-----animated locator stuff ends here-----
 
+    /**
+     * Helper flag to mark anim data as synchronized with server
+     * */
+    public boolean isServerSynced() {
+        return this.serverSynced;
+    }
+
+    public void setServerSynced(boolean serverSynced) {
+        this.serverSynced = serverSynced;
+    }
+
     public Map<String, Pair<IBone, BoneSnapshot>> getBoneSnapshotCollection() {
         return this.boneSnapshotCollection;
     }
@@ -161,7 +174,9 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
         return Map.copyOf(this.animationMessageEffects);
     }
 
-    //check if all animations in the current state in the given controller have reached the end of their play cycle
+    /**
+     * Check if all animations in the current state in the given controller have reached the end of their play cycle
+     * */
     public boolean allAnimationsFinished(String controllerName) {
         for (Map.Entry<String, AnimationController<? extends IAnimatable<D>, D>> animationControllerEntry : this.animationControllers.entrySet()) {
             if (!(animationControllerEntry.getKey().equals(controllerName))) continue;
@@ -170,21 +185,23 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
         return false;
     }
 
+    //-----anim variable related stuff starts here-----
     private void initAnimationVariables() {
         for (AnimatableValue animatableValue : this.initAnimationValues) {
-            MolangUtils.parseValue(this.parser, this.dataScope, animatableValue);
+            MolangUtils.parseValue(this, animatableValue);
         }
     }
 
     public void updateAnimationVariables() {
         for (AnimatableValue animatableValue : this.onUpdateAnimationValues) {
-            MolangUtils.parseValue(this.parser, this.dataScope, animatableValue);
+            MolangUtils.parseValue(this, animatableValue);
         }
     }
 
     public double getVariable(String name) {
         return MolangUtils.getVariable(this.parser, this.dataScope, name);
     }
+    //-----anim variable related stuff ends here-----
 
     @NotNull
     public MolangParser getParser() {
@@ -201,6 +218,9 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
      * */
     public abstract void updateOnDataTick();
 
+    /**
+     * Determine the validity of the holder
+     * */
     public abstract boolean isValid();
 
     /**
@@ -208,10 +228,34 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
      * for server models.
      * */
     @NotNull
-    public NBTTagCompound asNBT() {
+    public NBTTagCompound getNBT() {
         NBTTagCompound toReturn = new NBTTagCompound();
         toReturn.setDouble("Tick", this.tick);
+
+        //setting molang variables
+        NBTTagCompound molangVariablesNBT = new NBTTagCompound();
+        for (Map.Entry<String, Double> entry : this.dataScope.getValues().entrySet()) {
+            molangVariablesNBT.setDouble(entry.getKey(), entry.getValue());
+        }
+        toReturn.setTag("MolangVariables", molangVariablesNBT);
+
         return toReturn;
+    }
+
+    /**
+     * This is for receiving animation data from server to client
+     * for server models
+     * */
+    public void readNBT(@NotNull NBTTagCompound nbtTagCompound) {
+        this.tick = nbtTagCompound.getDouble("Tick");
+
+        //read and set molang variables from nbt
+        NBTTagCompound variablesTag = nbtTagCompound.getCompoundTag("MolangVariables");
+        Map<String, Double> values = new HashMap<>();
+        for (String key : variablesTag.getKeySet()) {
+            values.put(key, variablesTag.getDouble(key));
+        }
+        this.dataScope.replaceValues(values);
     }
 
     /**

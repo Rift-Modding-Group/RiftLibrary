@@ -17,7 +17,7 @@ public class RiftLibApplyMessageEffect extends RiftLibMessage<RiftLibApplyMessag
     public RiftLibApplyMessageEffect() {}
 
     public RiftLibApplyMessageEffect(AbstractAnimationData<?, ?> animData, String messageName) {
-        this.animDataNBT = animData.asNBT();
+        this.animDataNBT = animData.getNBT();
         this.messageName = messageName;
     }
 

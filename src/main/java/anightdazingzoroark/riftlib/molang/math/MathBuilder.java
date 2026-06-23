@@ -1,56 +1,58 @@
 package anightdazingzoroark.riftlib.molang.math;
 
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
+import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BiFunction;
 
 public class MathBuilder {
     public final Map<String, Variable> variables = new HashMap<>();
     public final Map<String, Function> functions = new HashMap<>();
 
+    /**
+     * In this constructor, all math related functions will be registered here
+     * */
     public MathBuilder() {
-        this.registerFunction("math.pi", 0, values -> Math.PI);
-        this.registerFunction("math.e", 0, values -> Math.E);
-        this.registerFunction("math.floor", 1, values -> Math.floor(values[0].get()));
-        this.registerFunction("math.round", 1, values -> (double) Math.round(values[0].get()));
-        this.registerFunction("math.ceil", 1, values -> Math.ceil(values[0].get()));
-        this.registerFunction("math.trunc", 1, values -> {
+        this.registerFunction("math.pi", 0, (values, animData) -> Math.PI);
+        this.registerFunction("math.e", 0, (values, animData) -> Math.E);
+        this.registerFunction("math.floor", 1, (values, animData) -> Math.floor(values[0].get()));
+        this.registerFunction("math.round", 1, (values, animData) -> (double) Math.round(values[0].get()));
+        this.registerFunction("math.ceil", 1, (values, animData) -> Math.ceil(values[0].get()));
+        this.registerFunction("math.trunc", 1, (values, animData) -> {
             double value = values[0].get();
             return value < 0D ? Math.ceil(value) : Math.floor(value);
         });
-        this.registerFunction("math.clamp", 3, values -> Math.clamp(values[0].get(), values[1].get(), values[2].get()));
-        this.registerFunction("math.max", 2, values -> Math.max(values[0].get(), values[1].get()));
-        this.registerFunction("math.min", 2, values -> Math.min(values[0].get(), values[1].get()));
-        this.registerFunction("math.abs", 1, values -> Math.abs(values[0].get()));
-        this.registerFunction("math.acos", 1, values -> Math.toDegrees(Math.acos(values[0].get())));
-        this.registerFunction("math.asin", 1, values -> Math.toDegrees(Math.asin(values[0].get())));
-        this.registerFunction("math.atan", 1, values -> Math.toDegrees(Math.atan(values[0].get())));
-        this.registerFunction("math.atan2", 2, values -> Math.toDegrees(Math.atan2(values[0].get(), values[1].get())));
-        this.registerFunction("math.cos", 1, values -> Math.cos(Math.toRadians(values[0].get())));
-        this.registerFunction("math.sin", 1, values -> Math.sin(Math.toRadians(values[0].get())));
-        this.registerFunction("math.tan", 1, values -> Math.tan(Math.toRadians(values[0].get())));
-        this.registerFunction("math.exp", 1, values -> Math.exp(values[0].get()));
-        this.registerFunction("math.ln", 1, values -> Math.log(values[0].get()));
-        this.registerFunction("math.sqrt", 1, values -> Math.sqrt(values[0].get()));
-        this.registerFunction("math.mod", 2, values -> values[0].get() % values[1].get());
-        this.registerFunction("math.pow", 2, values -> Math.pow(values[0].get(), values[1].get()));
-        this.registerFunction("math.lerp", 3, values -> {
+        this.registerFunction("math.clamp", 3, (values, animData) -> Math.clamp(values[0].get(), values[1].get(), values[2].get()));
+        this.registerFunction("math.max", 2, (values, animData) -> Math.max(values[0].get(), values[1].get()));
+        this.registerFunction("math.min", 2, (values, animData) -> Math.min(values[0].get(), values[1].get()));
+        this.registerFunction("math.abs", 1, (values, animData) -> Math.abs(values[0].get()));
+        this.registerFunction("math.acos", 1, (values, animData) -> Math.toDegrees(Math.acos(values[0].get())));
+        this.registerFunction("math.asin", 1, (values, animData) -> Math.toDegrees(Math.asin(values[0].get())));
+        this.registerFunction("math.atan", 1, (values, animData) -> Math.toDegrees(Math.atan(values[0].get())));
+        this.registerFunction("math.atan2", 2, (values, animData) -> Math.toDegrees(Math.atan2(values[0].get(), values[1].get())));
+        this.registerFunction("math.cos", 1, (values, animData) -> Math.cos(Math.toRadians(values[0].get())));
+        this.registerFunction("math.sin", 1, (values, animData) -> Math.sin(Math.toRadians(values[0].get())));
+        this.registerFunction("math.tan", 1, (values, animData) -> Math.tan(Math.toRadians(values[0].get())));
+        this.registerFunction("math.exp", 1, (values, animData) -> Math.exp(values[0].get()));
+        this.registerFunction("math.ln", 1, (values, animData) -> Math.log(values[0].get()));
+        this.registerFunction("math.sqrt", 1, (values, animData) -> Math.sqrt(values[0].get()));
+        this.registerFunction("math.mod", 2, (values, animData) -> values[0].get() % values[1].get());
+        this.registerFunction("math.pow", 2, (values, animData) -> Math.pow(values[0].get(), values[1].get()));
+        this.registerFunction("math.lerp", 3, (values, animData) -> {
             return Interpolations.lerp(values[0].get(), values[1].get(), values[2].get());
         });
-        this.registerFunction("math.lerprotate", 3, values -> {
+        this.registerFunction("math.lerprotate", 3, (values, animData) -> {
             return Interpolations.lerpYaw(values[0].get(), values[1].get(), values[2].get());
         });
-        this.registerFunction("math.hermite_blend", 1, values -> {
+        this.registerFunction("math.hermite_blend", 1, (values, animData) -> {
             double min = Math.ceil(values[0].get());
             return Math.floor(3D * Math.pow(min, 2D) - 2D * Math.pow(min, 3D));
         });
-        this.registerFunction("math.die_roll", 3, values -> {
+        this.registerFunction("math.die_roll", 3, (values, animData) -> {
             int amount = Math.max(0, (int) Math.floor(values[0].get()));
             double lowerBound = Math.min(values[1].get(), values[2].get());
             double upperBound = Math.max(values[1].get(), values[2].get());
@@ -62,7 +64,7 @@ public class MathBuilder {
 
             return total;
         });
-        this.registerFunction("math.die_roll_integer", 3, values -> {
+        this.registerFunction("math.die_roll_integer", 3, (values, animData) -> {
             int amount = Math.max(0, (int) Math.floor(values[0].get()));
             int lowerBound = (int) Math.ceil(Math.min(values[1].get(), values[2].get()));
             int upperBound = (int) Math.floor(Math.max(values[1].get(), values[2].get()));
@@ -75,29 +77,30 @@ public class MathBuilder {
 
             return total;
         });
-        this.registerFunction("math.random", 2, values -> {
+        this.registerFunction("math.random", 2, (values, animData) -> {
             double lowerBound = values[0].get();
             double upperBound = values[1].get();
             if (lowerBound > upperBound) return 0D;
 
-            java.util.Random random = new java.util.Random();
+            Random random = new Random();
             return random.nextDouble(lowerBound, upperBound);
         });
-        this.registerFunction("math.random_integer", 2, values -> {
+        this.registerFunction("math.random_integer", 2, (values, animData) -> {
             int lowerBound = (int) values[0].get();
             int upperBound = (int) values[1].get();
             if (lowerBound > upperBound) return 0D;
 
-            java.util.Random random = new java.util.Random();
+            Random random = new Random();
             return (double) random.nextInt(lowerBound, upperBound);
         });
     }
 
+    //-----registry stuff starts here-----
     protected void registerVariable(Variable variable) {
         this.variables.put(variable.getName(), variable);
     }
 
-    private void registerFunction(String name, int argCount, java.util.function.Function<IValue[], Double> operation) {
+    protected void registerFunction(String name, int argCount, BiFunction<IValue[], AbstractAnimationData<?, ?>, Double> operation) {
         this.functions.put(name, new Function(name) {
             @Override
             public int requiredArgCount() {
@@ -106,36 +109,69 @@ public class MathBuilder {
 
             @Override
             @NotNull
-            public java.util.function.Function<IValue[], Double> operation() {
+            public BiFunction<IValue[], AbstractAnimationData<?, ?>, Double> operation() {
                 return operation;
             }
         });
     }
+    //-----registry stuff ends here-----
 
     public IValue parse(String expression) throws Exception {
         return this.parseSymbols(this.breakdownChars(this.breakdown(expression)));
     }
 
     public String[] breakdown(String expression) throws Exception {
-        if (!expression.matches("^[\\w\\d\\s_+-/*%^&|<>=!?:.,()]+$")) {
-            throw new Exception("Given expression '" + expression + "' contains illegal characters!");
-        }
-        else {
-            expression = expression.replaceAll("\\s+", "");
-            String[] chars = expression.split("(?!^)");
-            int left = 0;
-            int right = 0;
+        StringBuilder normalized = new StringBuilder();
+        int left = 0;
+        int right = 0;
+        boolean inString = false;
+        boolean escaping = false;
+        char quote = 0;
 
-            for (String s : chars) {
-                if (s.equals("(")) ++left;
-                else if (s.equals(")")) ++right;
+        for (int i = 0; i < expression.length(); ++i) {
+            char c = expression.charAt(i);
+
+            if (inString) {
+                normalized.append(c);
+
+                if (escaping) escaping = false;
+                else if (c == '\\') escaping = true;
+                else if (c == quote) {
+                    inString = false;
+                    quote = 0;
+                }
+
+                continue;
             }
 
-            if (left != right) {
-                throw new Exception("Given expression '" + expression + "' has more uneven amount of parenthesis, there are " + left + " open and " + right + " closed!");
+            if (this.isQuote(c)) {
+                inString = true;
+                quote = c;
+                normalized.append(c);
+                continue;
             }
-            else return chars;
+
+            if (Character.isWhitespace(c)) continue;
+
+            if (!this.isLegalExpressionCharacter(c)) {
+                throw new Exception("Given expression '" + expression + "' contains illegal characters!");
+            }
+
+            if (c == '(') ++left;
+            else if (c == ')') ++right;
+
+            normalized.append(c);
         }
+
+        if (inString) {
+            throw new Exception("Given expression '" + expression + "' has an unterminated string literal!");
+        }
+
+        if (left != right) {
+            throw new Exception("Given expression '" + expression + "' has more uneven amount of parenthesis, there are " + left + " open and " + right + " closed!");
+        }
+
+        return normalized.toString().split("(?!^)");
     }
 
     public List<Object> breakdownChars(String[] chars) {
@@ -145,6 +181,41 @@ public class MathBuilder {
 
         for (int i = 0; i < len; ++i) {
             String s = chars[i];
+            if (this.isQuote(s)) {
+                if (!buffer.isEmpty()) {
+                    symbols.add(buffer);
+                    buffer = "";
+                }
+
+                StringBuilder literal = new StringBuilder();
+                boolean escaping = false;
+
+                for (int j = i + 1; j < len; ++j) {
+                    String c = chars[j];
+
+                    if (escaping) {
+                        literal.append(this.unescapeStringCharacter(c.charAt(0)));
+                        escaping = false;
+                        continue;
+                    }
+
+                    if (c.equals("\\")) {
+                        escaping = true;
+                        continue;
+                    }
+
+                    if (c.equals(s)) {
+                        symbols.add(new StringValue(literal.toString()));
+                        i = j;
+                        break;
+                    }
+
+                    literal.append(c);
+                }
+
+                continue;
+            }
+
             boolean longOperator = i > 0 && this.isOperator(chars[i - 1] + s);
             if (!this.isOperator(s) && !longOperator && !s.equals(",")) {
                 if (s.equals("(")) {
@@ -157,6 +228,29 @@ public class MathBuilder {
 
                     for (int j = i + 1; j < len; ++j) {
                         String c = chars[j];
+                        if (this.isQuote(c)) {
+                            String stringQuote = c;
+                            buffer = buffer + c;
+                            boolean escaping = false;
+
+                            for (++j; j < len; ++j) {
+                                c = chars[j];
+                                buffer = buffer + c;
+
+                                if (escaping) {
+                                    escaping = false;
+                                }
+                                else if (c.equals("\\")) {
+                                    escaping = true;
+                                }
+                                else if (c.equals(stringQuote)) {
+                                    break;
+                                }
+                            }
+
+                            continue;
+                        }
+
                         if (c.equals("(")) ++counter;
                         else if (c.equals(")")) --counter;
 
@@ -202,11 +296,11 @@ public class MathBuilder {
         return symbols;
     }
 
-    public IValue parseSymbols(List<Object> symbols) throws Exception {
+    public IValue parseSymbols(List<Object> symbols) throws MolangException {
         return this.parseSymbols(symbols, null);
     }
 
-    public IValue parseSymbols(List<Object> symbols, @Nullable AbstractAnimationData<?, ?> animationData) throws Exception {
+    public IValue parseSymbols(List<Object> symbols, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
         IValue ternary = this.tryTernary(symbols);
         if (ternary != null) return ternary;
         else {
@@ -220,7 +314,7 @@ public class MathBuilder {
                         //if this is a function with no args we're dealing with, return an exception
                         String funcName = (String) first;
                         if (this.isFunctionNoArgs(funcName)) {
-                            throw new Exception("Function "+funcName+" does not accept any arguments, yet it is treated as if it does!");
+                            throw new MolangException("Function "+funcName+" does not accept any arguments, yet it is treated as if it does!");
                         }
                         //normal function creation
                         return this.createFunction(funcName, (List) second, animationData);
@@ -294,7 +388,7 @@ public class MathBuilder {
         return -1;
     }
 
-    protected IValue tryTernary(List<Object> symbols) throws Exception {
+    protected IValue tryTernary(List<Object> symbols) throws MolangException {
         int question = -1;
         int questions = 0;
         int colon = -1;
@@ -325,7 +419,7 @@ public class MathBuilder {
         else return null;
     }
 
-    protected IValue createFunction(String first, List<Object> args, @Nullable AbstractAnimationData<?, ?> animationData) throws Exception {
+    protected IValue createFunction(String first, List<Object> args, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
         if (first.equals("!")) {
             return new Negate(this.parseSymbols(args, animationData));
         }
@@ -361,13 +455,13 @@ public class MathBuilder {
                         "Function '%s' requires at least %s arguments. %s are given!",
                         function.name, function.requiredArgCount(), argsArr.length
                 );
-                throw new Exception(message);
+                throw new MolangException(message);
             }
 
             return new IValue() {
                 @Override
                 public double get() {
-                    return function.operation().apply(argsArr);
+                    return function.operation().apply(argsArr, animationData);
                 }
             };
         }
@@ -380,10 +474,10 @@ public class MathBuilder {
             };
         }
 
-        throw new Exception("Function '" + first + "' couldn't be found!");
+        throw new MolangException("Function '" + first + "' couldn't be found!");
     }
 
-    public IValue valueFromObject(Object object, @Nullable AbstractAnimationData<?, ?> animationData) throws Exception {
+    public IValue valueFromObject(Object object, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
         if (object instanceof String symbol) {
             if (symbol.startsWith("!")) {
                 return new Negate(this.valueFromObject(symbol.substring(1), animationData));
@@ -410,23 +504,104 @@ public class MathBuilder {
                 }
             }
         }
+        else if (object instanceof IValue value) {
+            return value;
+        }
         else if (object instanceof List) {
             return new Group(this.parseSymbols((List) object, animationData));
         }
 
-        throw new Exception("Given object couldn't be converted to value! " + object);
+        throw new MolangException("Given object couldn't be converted to value! " + object);
+    }
+
+    protected String lowercaseOutsideStrings(String expression) {
+        StringBuilder builder = new StringBuilder();
+        boolean inString = false;
+        boolean escaping = false;
+        char quote = 0;
+
+        for (int i = 0; i < expression.length(); ++i) {
+            char c = expression.charAt(i);
+
+            if (inString) {
+                builder.append(c);
+
+                if (escaping) escaping = false;
+                else if (c == '\\') escaping = true;
+                else if (c == quote) {
+                    inString = false;
+                    quote = 0;
+                }
+
+                continue;
+            }
+
+            if (this.isQuote(c)) {
+                inString = true;
+                quote = c;
+                builder.append(c);
+            }
+            else builder.append(Character.toLowerCase(c));
+        }
+
+        return builder.toString();
+    }
+
+    protected List<String> splitStatements(String expression) {
+        List<String> statements = new ArrayList<>();
+        StringBuilder buffer = new StringBuilder();
+        boolean inString = false;
+        boolean escaping = false;
+        char quote = 0;
+
+        for (int i = 0; i < expression.length(); ++i) {
+            char c = expression.charAt(i);
+
+            if (inString) {
+                buffer.append(c);
+
+                if (escaping) {
+                    escaping = false;
+                }
+                else if (c == '\\') {
+                    escaping = true;
+                }
+                else if (c == quote) {
+                    inString = false;
+                    quote = 0;
+                }
+
+                continue;
+            }
+
+            if (this.isQuote(c)) {
+                inString = true;
+                quote = c;
+                buffer.append(c);
+            }
+            else if (c == ';') {
+                statements.add(buffer.toString());
+                buffer.setLength(0);
+            }
+            else {
+                buffer.append(c);
+            }
+        }
+
+        statements.add(buffer.toString());
+        return statements;
     }
 
     protected Variable getVariable(String name) {
         return this.variables.get(name);
     }
 
-    protected Operation operationForOperator(String op) throws Exception {
+    protected Operation operationForOperator(String op) throws MolangException {
         for (Operation operation : Operation.values()) {
             if (operation.sign.equals(op)) return operation;
         }
 
-        throw new Exception("There is no such operator '" + op + "'!");
+        throw new MolangException("There is no such operator '" + op + "'!");
     }
 
     //a "value returner" is basically a non-alphanumeric representation of some kind of value
@@ -446,11 +621,36 @@ public class MathBuilder {
     //this is to block value assignments to functions, like the ones for
     //math and the ones for molang queries.
     public boolean isFunction(String s) {
-        return s.startsWith("query.") || s.startsWith("math.");
+        String lower = s.toLowerCase();
+        return lower.startsWith("query.") || lower.startsWith("math.") || lower.startsWith("function.");
     }
 
     protected boolean isDecimal(String s) {
         return s.matches("^-?\\d+(\\.\\d+)?$");
+    }
+
+    protected boolean isQuote(String s) {
+        return s.length() == 1 && this.isQuote(s.charAt(0));
+    }
+
+    protected boolean isQuote(char c) {
+        return c == '\'' || c == '"';
+    }
+
+    protected boolean isLegalExpressionCharacter(char c) {
+        return (c >= 'a' && c <= 'z')
+                || (c >= 'A' && c <= 'Z')
+                || (c >= '0' && c <= '9')
+                || "_+-/*%^&|<>=!?:.,()".indexOf(c) >= 0;
+    }
+
+    protected char unescapeStringCharacter(char c) {
+        return switch (c) {
+            case 'n' -> '\n';
+            case 'r' -> '\r';
+            case 't' -> '\t';
+            default -> c;
+        };
     }
 
     protected boolean isFunctionNoArgs(String s) {

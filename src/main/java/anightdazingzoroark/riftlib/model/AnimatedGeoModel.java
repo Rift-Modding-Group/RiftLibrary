@@ -31,6 +31,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SuppressWarnings({"unchecked" })
 public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoModelProvider<T> implements IAnimatableModel<T>, IAnimatableModelProvider<T> {
 	private static final long MAX_SERVER_SYNC_PREDICTION_TICKS = 3L;
+	private static final Map<AbstractAnimationData<?, ?>, Map<ResourceLocation, GeoModel>> SERVER_SYNCED_MODEL_COPIES = new WeakHashMap<>();
 	private final AnimationProcessor animationProcessor;
 	//only relevant for server side models
 	private final Map<AbstractAnimationData<?, ?>, ServerTickCheckpoint> serverTickCheckpoints = new WeakHashMap<>();
@@ -61,7 +62,8 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		AbstractAnimationData<?, ?> animData = entity.getAnimationData();
 
 		//helper flag for checking for server model
-		boolean hasServerModel = this.hasServerModel(entity);
+		boolean hasServerModel = this.hasServerModel(entity) || animData.isServerSynced();
+		if (hasServerModel) this.prepareServerSyncedAnimationData(entity);
 
 		//if there is no server model, the client will be the main authority in
 		//ticking animations.
@@ -84,7 +86,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		//update molang related information while the entity is rendered and game is not
 		//paused (unless explicitly set in the anim data)
 		if (!Minecraft.getMinecraft().isGamePaused() || animData.shouldPlayWhilePaused) {
-			animData.updateAnimationVariables();
+			if (!hasServerModel) animData.updateAnimationVariables();
 			animData.updateOnDataTick();
 		}
 
@@ -134,9 +136,10 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 	//-----server only stuff starts here-----
 	public void setServerAnimations(T entity) {
 		AbstractAnimationData<?, ?> animData = entity.getAnimationData();
+		animData.setServerSynced(true);
 
 		//model is set here
-		GeoModel model = this.getModel(this.getModelLocation(entity));
+		GeoModel model = this.getServerSyncedModel(animData, this.getModelLocation(entity));
 		if (model != this.currentModel) this.setCurrentModel(model);
 
 		//create and update locators on the model
@@ -160,12 +163,28 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 			);
 		}
 	}
+
+	public void prepareServerSyncedAnimationData(T entity) {
+		this.getModel(entity);
+		this.createAndUpdateAnimatedLocators(entity);
+	}
 	//-----server only stuff ends here-----
 
 	public void createAndUpdateAnimatedLocators(T entity) {
 		AbstractAnimationData<?, ?> animData = entity.getAnimationData();
 		animData.createAnimatedLocators(this.currentModel);
 		animData.updateAnimatedLocators();
+	}
+
+	public GeoModel getModel(T object) {
+		AbstractAnimationData<?, ?> animData = object.getAnimationData();
+		ResourceLocation location = this.getModelLocation(object);
+		if (ServerModelRegistry.hasServerModel(object) || animData.isServerSynced()) {
+			GeoModel model = this.getServerSyncedModel(animData, location);
+			if (model != this.currentModel) this.setCurrentModel(model);
+			return model;
+		}
+		return this.getModel(location);
 	}
 
 	@Override
@@ -177,6 +196,21 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		if (model != this.currentModel) this.setCurrentModel(model);
 
 		return model;
+	}
+
+	private GeoModel getServerSyncedModel(AbstractAnimationData<?, ?> animData, ResourceLocation location) {
+		synchronized (SERVER_SYNCED_MODEL_COPIES) {
+			Map<ResourceLocation, GeoModel> models = SERVER_SYNCED_MODEL_COPIES.computeIfAbsent(animData, data -> new HashMap<>());
+			GeoModel model = models.get(location);
+			if (model != null) return model;
+
+			GeoModel sharedModel = super.getModel(location);
+			if (sharedModel == null) throw new GeoModelException(location, "Could not find model.");
+
+			model = sharedModel.copy();
+			models.put(location, model);
+			return model;
+		}
 	}
 
 	@Override

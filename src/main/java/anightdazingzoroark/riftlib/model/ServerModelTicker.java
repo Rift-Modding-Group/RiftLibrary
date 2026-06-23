@@ -17,15 +17,13 @@ public class ServerModelTicker {
         if (event.phase != TickEvent.Phase.END) return;
 
         for (Entity entity : new ArrayList<>(event.world.getLoadedEntityList())) {
-            if (!entity.isDead && entity instanceof IAnimatable) {
-                update((IAnimatable<?>) entity);
-            }
+            if (!entity.isEntityAlive() || !(entity instanceof IAnimatable<?>)) continue;
+            this.update((IAnimatable<?>) entity);
         }
 
         for (TileEntity tile : new ArrayList<>(event.world.loadedTileEntityList)) {
-            if (!tile.isInvalid() && tile instanceof IAnimatable) {
-                update((IAnimatable<?>) tile);
-            }
+            if (tile.isInvalid() || !(tile instanceof IAnimatable<?>)) continue;
+            this.update((IAnimatable<?>) tile);
         }
     }
 

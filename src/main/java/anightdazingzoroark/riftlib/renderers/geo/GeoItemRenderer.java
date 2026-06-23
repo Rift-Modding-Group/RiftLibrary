@@ -116,7 +116,7 @@ public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder> extends
 	public void render(ItemStack itemStack, ItemCameraTransforms.TransformType transformType) {
 		T animatable = this.getOrCreateHolder(itemStack, transformType);
 
-		GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(animatable));
+		GeoModel model = this.modelProvider.getModel(animatable);
 		this.modelProvider.setClientAnimations(animatable);
 		if (transformType != ItemCameraTransforms.TransformType.GUI) this.modelProvider.createAndUpdateAnimatedLocators(animatable);
 		GlStateManager.pushMatrix();

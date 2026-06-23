@@ -49,7 +49,7 @@ public abstract class GeoTileEntityRenderer<A extends TileEntity & IAnimatable<A
 	}
 
 	public void render(A tile, double x, double y, double z, float partialTicks, int destroyStage) {
-		GeoModel model = modelProvider.getModel(modelProvider.getModelLocation(tile));
+		GeoModel model = this.modelProvider.getModel(tile);
 		this.modelProvider.setClientAnimations(tile);
 		this.modelProvider.createAndUpdateAnimatedLocators(tile);
 

@@ -24,4 +24,13 @@ public final class MolangScope {
     public void set(String name, double value) {
         this.values.put(name, value);
     }
+
+    public Map<String, Double> getValues() {
+        return Map.copyOf(this.values);
+    }
+
+    public void replaceValues(Map<String, Double> values) {
+        this.values.clear();
+        this.values.putAll(values);
+    }
 }

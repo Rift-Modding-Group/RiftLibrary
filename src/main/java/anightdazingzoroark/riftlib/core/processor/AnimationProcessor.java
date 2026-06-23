@@ -7,13 +7,12 @@ import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.keyframe.*;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
+import anightdazingzoroark.riftlib.model.ServerModelRegistry;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundHelper;
 import anightdazingzoroark.riftlib.util.MolangUtils;
 import org.apache.commons.lang3.tuple.Pair;
-
-import anightdazingzoroark.riftlib.molang.MolangParser;
 
 import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
 import anightdazingzoroark.riftlib.core.snapshot.DirtyTracker;
@@ -87,8 +86,10 @@ public class AnimationProcessor {
 			}
 
 			//-----running custom instructions-----
+			boolean isServerSynced = animationData.isServerSynced() || ServerModelRegistry.hasServerModel(entity);
+			boolean runCustomInstructions = !runClientEffects || !isServerSynced;
 			for (EventKeyFrame.CustomInstructionKeyFrame customInstructionEvent : controller.drainCustomInstructionEvents()) {
-				MolangUtils.parseValue(entity, customInstructionEvent.instruction);
+				if (runCustomInstructions) MolangUtils.parseValue(entity, customInstructionEvent.instruction);
 			}
 
 			//-----client only stuff down here-----

@@ -77,7 +77,7 @@ public abstract class GeoArmorRenderer<T extends RiftLibArmor> extends ModelBipe
 	}
 
 	public void render(float partialTicks) {
-        GeoModel model = this.modelProvider.getModel(this.modelProvider.getModelLocation(this.currentArmorItem));
+        GeoModel model = this.modelProvider.getModel(this.currentArmorItem);
 
 		GlStateManager.translate(0.0D, 1.501F, 0.0D);
 		GlStateManager.scale(-1.0F, -1.0F, 1.0F);
@@ -207,7 +207,7 @@ public abstract class GeoArmorRenderer<T extends RiftLibArmor> extends ModelBipe
 
 	@SuppressWarnings("incomplete-switch")
 	public GeoArmorRenderer applySlot(EntityEquipmentSlot slot) {
-		this.modelProvider.getModel(this.modelProvider.getModelLocation(this.currentArmorItem));
+		this.modelProvider.getModel(this.currentArmorItem);
 
         this.tryHideBone(this.headBone, true);
         this.tryHideBone(this.bodyBone, true);

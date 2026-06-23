@@ -23,99 +23,111 @@ import java.util.Map;
  * when the parent was disappeared.
  * */
 public class HitboxTicker {
-    private final HashMap<Integer, List<RiftLibCollisionHitbox<?>>> hitboxMap = new HashMap<>();
-
     /**
-     * This adds content to the hitbox map.
+     * Handler for collision hitboxes
      * */
-    private void manageLoadedUsersHitboxes(World world) {
-        List<Integer> hitboxUserIDs = new ArrayList<>();
-        //try initialize hitboxes first
-        for (Entity entity : world.getLoadedEntityList()) {
-            if (!(entity instanceof IMultiHitboxUser<?> multiHitboxUser)) continue;
+    private static class Collisions {
+        private final HashMap<Integer, List<RiftLibCollisionHitbox<?>>> hitboxMap = new HashMap<>();
 
-            multiHitboxUser.setHitboxes();
-            if (entity.getParts() == null || entity.getParts().length == 0) continue;
+        /**
+         * This adds content to the hitbox map.
+         * */
+        private void manageLoadedUsersHitboxes(World world) {
+            List<Integer> hitboxUserIDs = new ArrayList<>();
+            //try initialize hitboxes first
+            for (Entity entity : world.getLoadedEntityList()) {
+                if (!(entity instanceof IMultiHitboxUser<?> multiHitboxUser)) continue;
 
-            //get and put loaded entity ids
-            hitboxUserIDs.add(entity.getEntityId());
+                multiHitboxUser.setHitboxes();
+                if (entity.getParts() == null || entity.getParts().length == 0) continue;
+
+                //get and put loaded entity ids
+                hitboxUserIDs.add(entity.getEntityId());
+            }
+
+            //add hitboxes next
+            //iterate over every id to see if the entity is loaded
+            //if it is already in the map, add it
+            //otherwise ignore
+            for (int hitboxUserID : hitboxUserIDs) {
+                if (this.hitboxMap.containsKey(hitboxUserID)) continue;
+
+                Entity entity = world.getEntityByID(hitboxUserID);
+                List<RiftLibCollisionHitbox<?>> hitboxes = new ArrayList<>();
+                if (entity == null) continue;
+                for (Entity entityPart : entity.getParts()) {
+                    if (!(entityPart instanceof RiftLibCollisionHitbox<?> entityHitbox)) continue;
+                    hitboxes.add(entityHitbox);
+                }
+                this.hitboxMap.put(hitboxUserID, hitboxes);
+            }
         }
 
-        //add hitboxes next
-        //iterate over every id to see if the entity is loaded
-        //if it is already in the map, add it
-        //otherwise ignore
-        for (int hitboxUserID : hitboxUserIDs) {
-            if (this.hitboxMap.containsKey(hitboxUserID)) continue;
-
-            Entity entity = world.getEntityByID(hitboxUserID);
-            List<RiftLibCollisionHitbox<?>> hitboxes = new ArrayList<>();
-            if (entity == null) continue;
-            for (Entity entityPart : entity.getParts()) {
-                if (!(entityPart instanceof RiftLibCollisionHitbox<?> entityHitbox)) continue;
-                hitboxes.add(entityHitbox);
+        /**
+         * This updates all the hitboxes in the hitbox map.
+         * */
+        private void updateLoadedUsersHitboxes() {
+            for (Map.Entry<Integer, List<RiftLibCollisionHitbox<?>>> entry : this.hitboxMap.entrySet()) {
+                //update the hitboxes only
+                for (RiftLibCollisionHitbox<?> entityHitbox : entry.getValue()) {
+                    entityHitbox.onUpdate();
+                }
             }
-            this.hitboxMap.put(hitboxUserID, hitboxes);
+        }
+
+        /**
+         * This forcibly syncs from server to all clients the entityIds of the hitboxes.
+         * */
+        private void updateTrackingClientsWithHitboxEntityIDs(World world) {
+            if (world.isRemote || ServerProxy.HITBOX_MESSAGE_WRAPPER == null) return;
+
+            for (Map.Entry<Integer, List<RiftLibCollisionHitbox<?>>> entry : this.hitboxMap.entrySet()) {
+                Entity entity = world.getEntityByID(entry.getKey());
+                if (entity == null) continue;
+
+                for (RiftLibCollisionHitbox<?> entityHitbox : entry.getValue()) {
+                    ServerProxy.HITBOX_MESSAGE_WRAPPER.sendToAllTracking(new RiftLibSyncHitboxEntityId(entity, entityHitbox), entity);
+                }
+            }
+        }
+
+        /**
+         * Clean up the map to remove dead hitboxes.
+         * */
+        private void cleanupLoadedUsersHitboxes() {
+            List<Integer> userIDsToRemove = new ArrayList<>();
+            outer: for (Map.Entry<Integer, List<RiftLibCollisionHitbox<?>>> entry : this.hitboxMap.entrySet()) {
+                for (RiftLibCollisionHitbox<?> entityHitbox : entry.getValue()) {
+                    //if the part exists, it might be because its parent still does too
+                    //so skip them
+                    if (entityHitbox.isAddedToWorld()) continue outer;
+                    userIDsToRemove.add(entry.getKey());
+                }
+            }
+
+            for (int hitboxUserID : userIDsToRemove) this.hitboxMap.remove(hitboxUserID);
+        }
+
+        private void clearMap() {
+            this.hitboxMap.clear();
         }
     }
 
     /**
-     * This updates all the hitboxes in the hitbox map.
+     * Handler for offense hitboxes
      * */
-    private void updateLoadedUsersHitboxes() {
-        for (Map.Entry<Integer, List<RiftLibCollisionHitbox<?>>> entry : this.hitboxMap.entrySet()) {
-            //update the hitboxes only
-            for (RiftLibCollisionHitbox<?> entityHitbox : entry.getValue()) {
-                entityHitbox.onUpdate();
-            }
-        }
-    }
+    private static class Offenses {
 
-    /**
-     * This forcibly syncs from server to all clients the entityIds of the hitboxes.
-     * */
-    private void updateTrackingClientsWithHitboxEntityIDs(World world) {
-        if (world.isRemote || ServerProxy.HITBOX_MESSAGE_WRAPPER == null) return;
-
-        for (Map.Entry<Integer, List<RiftLibCollisionHitbox<?>>> entry : this.hitboxMap.entrySet()) {
-            Entity entity = world.getEntityByID(entry.getKey());
-            if (entity == null) continue;
-
-            for (RiftLibCollisionHitbox<?> entityHitbox : entry.getValue()) {
-                ServerProxy.HITBOX_MESSAGE_WRAPPER.sendToAllTracking(new RiftLibSyncHitboxEntityId(entity, entityHitbox), entity);
-            }
-        }
-    }
-
-    /**
-     * Clean up the map to remove dead hitboxes.
-     * */
-    private void cleanupLoadedUsersHitboxes() {
-        List<Integer> userIDsToRemove = new ArrayList<>();
-        outer: for (Map.Entry<Integer, List<RiftLibCollisionHitbox<?>>> entry : this.hitboxMap.entrySet()) {
-            for (RiftLibCollisionHitbox<?> entityHitbox : entry.getValue()) {
-                //if the part exists, it might be because its parent still does too
-                //so skip them
-                if (entityHitbox.isAddedToWorld()) continue outer;
-                userIDsToRemove.add(entry.getKey());
-            }
-        }
-
-        for (int hitboxUserID : userIDsToRemove) this.hitboxMap.remove(hitboxUserID);
-    }
-
-    private void clearMap() {
-        this.hitboxMap.clear();
     }
 
     /**
      * Events for server.
      * */
     public static class Server {
-        private final HitboxTicker hitboxTicker;
+        private final HitboxTicker.Collisions hitboxTicker;
 
         public Server() {
-            this.hitboxTicker = new HitboxTicker();
+            this.hitboxTicker = new HitboxTicker.Collisions();
         }
 
         @SubscribeEvent
@@ -138,10 +150,10 @@ public class HitboxTicker {
      * Events for client.
      * */
     public static class Client {
-        private final HitboxTicker hitboxTicker;
+        private final HitboxTicker.Collisions hitboxTicker;
 
         public Client() {
-            this.hitboxTicker = new HitboxTicker();
+            this.hitboxTicker = new HitboxTicker.Collisions();
         }
 
         @SubscribeEvent

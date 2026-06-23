@@ -17,6 +17,7 @@ import java.util.Set;
  * if they ever wanna deal with soulslike combat hitboxes
  * */
 public class RiftLibOffenseHitbox<T extends IMultiHitboxUser<?>> implements IHitbox<T> {
+    public final int hitboxId;
     @NotNull
     private final T parent;
     @NotNull
@@ -24,16 +25,20 @@ public class RiftLibOffenseHitbox<T extends IMultiHitboxUser<?>> implements IHit
     //these are the final definitive scales of the hitbox and will be used for such
     public final float fixedWidth;
     public final float fixedHeight;
-    private final Set<Integer> alreadyHit = new HashSet<>();
+    private final Set<Integer> alreadyHitEntities = new HashSet<>();
     private boolean isDead;
 
-    public RiftLibOffenseHitbox(@NotNull T parent, @NotNull AnimatedLocator hitboxLocator, float width, float height) {
+    public RiftLibOffenseHitbox(int hitboxId, @NotNull T parent, @NotNull AnimatedLocator hitboxLocator, float width, float height) {
+        this.hitboxId = hitboxId;
         this.parent = parent;
         this.hitboxLocator = hitboxLocator;
         this.fixedWidth = width;
         this.fixedHeight = height;
     }
 
+    /**
+     * Only ever update on server
+     * */
     public void onUpdate() {
         //-----dont update further when dead-----
         if (this.isDead) return;
@@ -52,9 +57,17 @@ public class RiftLibOffenseHitbox<T extends IMultiHitboxUser<?>> implements IHit
 
         //-----apply damage to hit entities-----
         for (Entity target : candidates) {
-            if (!this.alreadyHit.add(target.getEntityId())) continue;
+            if (!this.alreadyHitEntities.add(target.getEntityId())) continue;
             parentEntityLiving.attackEntityAsMob(target);
         }
+    }
+
+    public void kill() {
+        this.isDead = true;
+    }
+
+    public boolean isDead() {
+        return this.isDead;
     }
 
     @Override

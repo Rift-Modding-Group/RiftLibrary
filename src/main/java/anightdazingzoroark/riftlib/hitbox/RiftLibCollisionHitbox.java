@@ -2,8 +2,6 @@ package anightdazingzoroark.riftlib.hitbox;
 
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.util.HitboxUtils;
-import anightdazingzoroark.riftlib.util.QuaternionUtils;
-import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MultiPartEntityPart;
@@ -13,7 +11,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
-import org.lwjglx.util.vector.Quaternion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -154,12 +151,14 @@ public class RiftLibCollisionHitbox<T extends IMultiHitboxUser<?>> extends Multi
      * */
     @SuppressWarnings("unchecked")
     @NotNull
+    @Override
     public T getParent() {
         return (T) this.parent;
     }
 
     @Override
-    public @NotNull AnimatedLocator getHitboxLocator() {
+    @NotNull
+    public AnimatedLocator getHitboxLocator() {
         return this.hitboxLocator;
     }
 

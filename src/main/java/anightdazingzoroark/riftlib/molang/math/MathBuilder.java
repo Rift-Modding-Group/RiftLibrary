@@ -450,7 +450,10 @@ public class MathBuilder {
 
             Function function = this.functions.get(first);
             IValue[] argsArr = values.toArray(new IValue[0]);
-            if (argsArr.length < function.requiredArgCount()) {
+
+            //exception for unexpected argument counts
+            //note that a negative arg count for a function means it has no limit
+            if (argsArr.length < function.requiredArgCount() && function.requiredArgCount() >= 0) {
                 String message = String.format(
                         "Function '%s' requires at least %s arguments. %s are given!",
                         function.name, function.requiredArgCount(), argsArr.length

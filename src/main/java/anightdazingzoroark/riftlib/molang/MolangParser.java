@@ -70,7 +70,24 @@ public class MolangParser extends MathBuilder {
 
             return MolangUtils.booleanToDouble(toReturn);
         });
-        //this.registerFunction("function.create_hitbox", -1);
+        this.registerFunction("function.create_offensive_hitbox", -1, (values, animData) -> {
+            if (animData == null || animData.getWorld() == null || animData.getWorld().isRemote) return 0D;
+
+            for (IValue value : values) {
+                String valueString = value.getString();
+            }
+
+            return 1D;
+        });
+        this.registerFunction("function.destroy_offensive_hitbox", -1, (values, animData) -> {
+            if (animData == null || animData.getWorld() == null || animData.getWorld().isRemote) return 0D;
+
+            for (IValue value : values) {
+                String valueString = value.getString();
+            }
+
+            return 1D;
+        });
     }
 
     //-----molang scope stuff starts here-----

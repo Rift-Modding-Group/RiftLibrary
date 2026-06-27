@@ -1,6 +1,6 @@
 {
 	"format_version": "1.12.0",
-	"minecraft:geometry": [
+	"riftlibrary:geometry": [
 		{
 			"description": {
 				"identifier": "geometry.unknown",
@@ -17,10 +17,15 @@
 					"cubes": [
 						{"origin": [-8, 0, -8], "size": [16, 16, 16], "uv": [0, 0]}
 					],
-					"locators": {
-						"hitbox_body": [0, 8, 0],
-						"rayCenter": [0, 8, 0]
-					}
+					"bounding_boxes": [
+						{
+							"name": "body",
+							"origin": [-8, 0, -8],
+							"size": [16, 16],
+							"collision": true,
+							"damage_multiplier": 1
+						}
+					]
 				},
 				{
 					"name": "tail",

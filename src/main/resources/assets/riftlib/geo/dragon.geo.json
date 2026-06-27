@@ -1,6 +1,6 @@
 {
 	"format_version": "1.12.0",
-	"minecraft:geometry": [
+	"riftlibrary:geometry": [
 		{
 			"description": {
 				"identifier": "geometry.dragon",
@@ -28,12 +28,43 @@
 						{"origin": [-3.5, 8, 1], "size": [7, 11, 8], "uv": [48, 50]}
 					],
 					"locators": {
-						"hitbox_hip": [0, 13.5, 5],
-						"hitbox_body_0": [0, 14, -3],
-						"hitbox_body_1": [0, 14, -10.5],
 						"rider_pos_main": [0, 19, -7.5],
 						"rider_pos_1": [0, 19, 4.5]
-					}
+					},
+					"bounding_boxes": [
+						{
+							"name": "body0",
+							"origin": [-3.75, 9, -15.25],
+							"size": [7.5, 10],
+							"collision": true,
+							"tags": ["body"],
+							"damage_multiplier": 1
+						},
+						{
+							"name": "body1",
+							"origin": [-3.75, 9, -10.75],
+							"size": [7.5, 10],
+							"collision": true,
+							"tags": ["body"],
+							"damage_multiplier": 1
+						},
+						{
+							"name": "body2",
+							"origin": [-3.75, 9, -6.25],
+							"size": [7.5, 10],
+							"collision": true,
+							"tags": ["body"],
+							"damage_multiplier": 1
+						},
+						{
+							"name": "body3",
+							"origin": [-4, 8, 1],
+							"size": [8, 11],
+							"collision": true,
+							"tags": ["body"],
+							"damage_multiplier": 1
+						}
+					]
 				},
 				{
 					"name": "leftWing0",
@@ -81,41 +112,111 @@
 					"name": "tail0",
 					"parent": "body",
 					"pivot": [0, 17, 9],
-					"rotation": [-20, 0, 0],
 					"cubes": [
 						{"origin": [-2.5, 10, 7], "size": [5, 8, 10], "uv": [54, 21]}
 					],
-					"locators": {
-						"hitbox_tail_0": [0, 14, 13]
-					}
+					"bounding_boxes": [
+						{
+							"name": "tail0",
+							"origin": [-2.75, 9.5, 7.75],
+							"size": [5.5, 9],
+							"collision": true,
+							"tags": ["tail"],
+							"damage_multiplier": 1
+						},
+						{
+							"name": "tail1",
+							"origin": [-2.75, 9.5, 11.75],
+							"size": [5.5, 9],
+							"collision": true,
+							"tags": ["tail"],
+							"damage_multiplier": 1
+						}
+					]
 				},
 				{
 					"name": "tail1",
 					"parent": "tail0",
 					"pivot": [-0.5, 17.1, 17],
-					"rotation": [22.5, 0, 0],
 					"cubes": [
 						{"origin": [-2, 11.5, 14], "size": [4, 6, 15], "uv": [46, 0]}
 					],
-					"locators": {
-						"hitbox_tail_1": [0, 14.5, 17.5],
-						"hitbox_tail_2": [0, 14.5, 22.5],
-						"hitbox_tail_3": [0, 14.5, 26.5]
-					}
+					"bounding_boxes": [
+						{
+							"name": "tail2",
+							"origin": [-2.25, 11.25, 13.75],
+							"size": [4.5, 6.5],
+							"collision": true,
+							"tags": ["tail"],
+							"damage_multiplier": 1
+						},
+						{
+							"name": "tail3",
+							"origin": [-2.25, 11.25, 24.75],
+							"size": [4.5, 6.5],
+							"collision": true,
+							"tags": ["tail"],
+							"damage_multiplier": 1
+						},
+						{
+							"name": "tail4",
+							"origin": [-2.25, 11.25, 17.75],
+							"size": [4.5, 6.5],
+							"collision": true,
+							"tags": ["tail"],
+							"damage_multiplier": 1
+						},
+						{
+							"name": "tail5",
+							"origin": [-2.25, 11.25, 20.75],
+							"size": [4.5, 6.5],
+							"collision": true,
+							"tags": ["tail"],
+							"damage_multiplier": 1
+						}
+					]
 				},
 				{
 					"name": "tail2",
 					"parent": "tail1",
 					"pivot": [0, 16.5, 29],
-					"rotation": [22.5, 0, 0],
 					"cubes": [
 						{"origin": [-1.5, 13, 27], "size": [3, 4, 12], "uv": [78, 39]}
 					],
-					"locators": {
-						"hitbox_tail_4": [0, 14.5, 30.5],
-						"hitbox_tail_5": [0, 14.5, 33.5],
-						"hitbox_tail_6": [0, 14.5, 37.5]
-					}
+					"bounding_boxes": [
+						{
+							"name": "tail6",
+							"origin": [-2, 12.75, 26.75],
+							"size": [4, 4.5],
+							"collision": true,
+							"tags": ["tail"],
+							"damage_multiplier": 1
+						},
+						{
+							"name": "tail7",
+							"origin": [-2, 12.75, 35.25],
+							"size": [4, 4.5],
+							"collision": true,
+							"tags": ["tail"],
+							"damage_multiplier": 1
+						},
+						{
+							"name": "tail8",
+							"origin": [-2, 12.75, 29.75],
+							"size": [4, 4.5],
+							"collision": true,
+							"tags": ["tail"],
+							"damage_multiplier": 1
+						},
+						{
+							"name": "tail9",
+							"origin": [-2, 12.75, 32.25],
+							"size": [4, 4.5],
+							"collision": true,
+							"tags": ["tail"],
+							"damage_multiplier": 1
+						}
+					]
 				},
 				{
 					"name": "neck",
@@ -124,9 +225,16 @@
 					"cubes": [
 						{"origin": [-2, 10, -20], "size": [4, 8, 8], "pivot": [0, 17, -14], "rotation": [-17.5, 0, 0], "uv": [78, 68]}
 					],
-					"locators": {
-						"hitbox_neck": [0, 15, -17.25]
-					}
+					"bounding_boxes": [
+						{
+							"name": "neck",
+							"origin": [-2.25, 10, -19.5],
+							"size": [4.5, 9],
+							"collision": true,
+							"tags": ["head"],
+							"damage_multiplier": 1
+						}
+					]
 				},
 				{
 					"name": "head",
@@ -136,12 +244,48 @@
 						{"origin": [-3, 12, -28], "size": [6, 8, 9], "uv": [48, 69]},
 						{"origin": [-2, 14.5, -37], "size": [4, 5, 9], "uv": [0, 79]}
 					],
-					"locators": {
-						"hitbox_head": [0, 16, -23.5],
-						"hitbox_jaws_0": [0, 16, -30.25],
-						"hitbox_jaws_1": [0, 16, -34.75],
-						"rider_pos_2": [0, 20, -24]
-					}
+					"bounding_boxes": [
+						{
+							"name": "head0",
+							"origin": [-3.25, 11.75, -25.25],
+							"size": [6.5, 8.5],
+							"collision": true,
+							"tags": ["head"],
+							"damage_multiplier": 1
+						},
+						{
+							"name": "head1",
+							"origin": [-3.25, 11.75, -28.25],
+							"size": [6.5, 8.5],
+							"collision": true,
+							"tags": ["head"],
+							"damage_multiplier": 1
+						},
+						{
+							"name": "head2",
+							"origin": [-2.25, 12.25, -32.25],
+							"size": [4.5, 7.5],
+							"collision": true,
+							"tags": ["head"],
+							"damage_multiplier": 1
+						},
+						{
+							"name": "head4",
+							"origin": [-2.25, 12.25, -37.25],
+							"size": [4.5, 7.5],
+							"collision": true,
+							"tags": ["head"],
+							"damage_multiplier": 1
+						},
+						{
+							"name": "head3",
+							"origin": [-2.25, 12.25, -34.75],
+							"size": [4.5, 7.5],
+							"collision": true,
+							"tags": ["head"],
+							"damage_multiplier": 1
+						}
+					]
 				},
 				{
 					"name": "lowerJaw",
@@ -179,10 +323,24 @@
 						{"origin": [4, 1, 6.5], "size": [2, 9, 3], "uv": [78, 84]},
 						{"origin": [3.5, 0, 3.5], "size": [3, 2, 5], "uv": [84, 14]}
 					],
-					"locators": {
-						"hitbox_left_leg_0": [5, 11.5, 5],
-						"hitbox_left_leg_1": [5, 5, 8]
-					}
+					"bounding_boxes": [
+						{
+							"name": "leftLeg0",
+							"origin": [-6.75, 6.75, 2.5],
+							"size": [5, 9.5],
+							"collision": true,
+							"tags": ["leg"],
+							"damage_multiplier": 1
+						},
+						{
+							"name": "leftLeg1",
+							"origin": [-6.5, 0, 6.5],
+							"size": [3, 10],
+							"collision": true,
+							"tags": ["leg"],
+							"damage_multiplier": 1
+						}
+					]
 				},
 				{
 					"name": "rightLeg",
@@ -193,10 +351,24 @@
 						{"origin": [-6, 1, 6.5], "size": [2, 9, 3], "uv": [42, 86]},
 						{"origin": [-6.5, 0, 3.5], "size": [3, 2, 5], "uv": [84, 21]}
 					],
-					"locators": {
-						"hitbox_left_leg_2": [-5, 11.5, 5],
-						"hitbox_left_leg_3": [-5, 5, 8]
-					}
+					"bounding_boxes": [
+						{
+							"name": "rightLeg0",
+							"origin": [1.75, 6.75, 2.5],
+							"size": [5, 9.5],
+							"collision": true,
+							"tags": ["leg"],
+							"damage_multiplier": 1
+						},
+						{
+							"name": "leftLeg12",
+							"origin": [3.5, 0, 6.5],
+							"size": [3, 10],
+							"collision": true,
+							"tags": ["leg"],
+							"damage_multiplier": 1
+						}
+					]
 				}
 			]
 		}

@@ -7,6 +7,7 @@ import anightdazingzoroark.riftlib.exceptions.GeoModelException;
 import anightdazingzoroark.riftlib.jsonParsing.constructor.AnimationConstructor;
 import anightdazingzoroark.riftlib.jsonParsing.constructor.HitboxConstructor;
 import anightdazingzoroark.riftlib.jsonParsing.constructor.ParticleConstructor;
+import anightdazingzoroark.riftlib.jsonParsing.raw.RawMolangValue;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationChannel;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationFile;
 import anightdazingzoroark.riftlib.jsonParsing.raw.geo.*;
@@ -34,6 +35,7 @@ public class RiftLibLoader {
             .registerTypeAdapter(RawAnimationChannel.class, new RawAnimationChannel.Deserializer())
             .registerTypeAdapter(RawParticleComponent.class, new RawParticleComponent.Deserializer())
             .registerTypeAdapter(RawModelLocatorList.class, new RawModelLocatorList.Deserialize())
+            .registerTypeAdapter(RawMolangValue.class, new RawMolangValue.Deserializer())
             .create();
 
 	public GeoModel loadGeoModel(RiftLibResourceReader resourceReader, ResourceLocation location) {
@@ -41,10 +43,6 @@ public class RiftLibLoader {
 			// Deserialize from json into basic json objects, bones are still stored as a
 			// flat list
 			RawGeoModel rawModel = this.gson.fromJson(getResourceAsString(location, resourceReader), RawGeoModel.class);;
-
-            if (FormatVersion.forValue(rawModel.format_version) != FormatVersion.VERSION_1_12_0) {
-				throw new GeoModelException(location, "Wrong geometry json version, expected 1.12.0");
-			}
 
 			// Parse the flat list of bones into a raw hierarchical tree of "BoneGroup"s
 			RawGeometryTree rawGeometryTree = new RawGeometryTree(rawModel, location);

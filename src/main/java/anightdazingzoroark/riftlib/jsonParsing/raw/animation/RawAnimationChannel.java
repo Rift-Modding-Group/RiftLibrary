@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.jsonParsing.raw.animation;
 
+import anightdazingzoroark.riftlib.jsonParsing.raw.RawMolangValue;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
@@ -18,19 +19,11 @@ public class RawAnimationChannel {
         //this is primitive because by default, timestamp of keyframe is gonna be 0
         public double time;
         //note that vectors are by strings because of the existence of molang
-        public RawVectorValue[] vector;
+        public RawMolangValue[] vector;
         public String easingType;
         //i have no idea what this does cos i couldn't find use cases not even in GeckoLib's
         //old example files but well
         public double[] easingArgs;
-    }
-
-    public static class RawVectorValue {
-        //for only numerical values
-        public Double numericalValue;
-
-        //for values that may contain molang
-        public String stringValue;
     }
 
     public static class Deserializer implements JsonDeserializer<RawAnimationChannel> {
@@ -42,7 +35,7 @@ public class RawAnimationChannel {
             if (json.isJsonArray() || json.isJsonPrimitive()) {
                 RawKeyframe initRawKeyframe = new RawKeyframe();
                 initRawKeyframe.time = 0.0D;
-                initRawKeyframe.vector = this.deserializeVector(json);
+                initRawKeyframe.vector = this.deserializeVector(json, typeOfT, context);
 
                 toReturn.keyframes = Collections.singletonList(initRawKeyframe);
             }
@@ -65,11 +58,11 @@ public class RawAnimationChannel {
 
                         //it just a vector (as array or singular)
                         if (entry.getValue().isJsonArray() || entry.getValue().isJsonPrimitive()) {
-                            rawKeyframe.vector = this.deserializeVector(entry.getValue());
+                            rawKeyframe.vector = this.deserializeVector(entry.getValue(), typeOfT, context);
                         }
                         //explicit vector declaration
                         else {
-                            rawKeyframe.vector = this.deserializeVector(entry.getValue().getAsJsonObject().get("vector"));
+                            rawKeyframe.vector = this.deserializeVector(entry.getValue().getAsJsonObject().get("vector"), typeOfT, context);
                         }
 
                         //easing type stuff
@@ -83,7 +76,7 @@ public class RawAnimationChannel {
                         }
                     }
                     //now for if its an explicit vector declaration
-                    else rawKeyframe.vector = this.deserializeVector(entry.getValue());
+                    else rawKeyframe.vector = this.deserializeVector(entry.getValue(), typeOfT, context);
 
                     frames.add(rawKeyframe);
                 }
@@ -103,46 +96,30 @@ public class RawAnimationChannel {
             return toReturn;
         }
 
-        private RawVectorValue[] deserializeVector(JsonElement element) {
+        private RawMolangValue[] deserializeVector(JsonElement element, Type typeOfT, JsonDeserializationContext context) {
+            RawMolangValue[] toReturn = new RawMolangValue[3];
+            RawMolangValue.Deserializer deserializer = new RawMolangValue.Deserializer();
+
             //take note that there will be times where the vector is just 1 singular element
             //in that case, the vector is the same value on all axes
             //start with normal array case
             if (element.isJsonArray()) {
                 JsonArray jsonArray = element.getAsJsonArray();
-                RawVectorValue[] toReturn = new RawVectorValue[jsonArray.size()];
 
                 for (int i = 0; i < toReturn.length; i++) {
                     JsonElement elementInJsonArray = jsonArray.get(i);
-
-                    RawVectorValue vectorValue = this.parseVectorComponent(elementInJsonArray);
+                    RawMolangValue vectorValue = deserializer.deserialize(elementInJsonArray, typeOfT, context);
                     toReturn[i] = vectorValue;
                 }
 
-                return toReturn;
             }
             //now with singular case
             else {
-                RawVectorValue vectorValue = this.parseVectorComponent(element);
-                RawVectorValue[] toReturn = new RawVectorValue[3];
+                RawMolangValue vectorValue = deserializer.deserialize(element, typeOfT, context);
                 Arrays.fill(toReturn, vectorValue);
 
-                return toReturn;
             }
-        }
-
-        private RawVectorValue parseVectorComponent(JsonElement element) {
-            if (!element.isJsonPrimitive()) {
-                throw new JsonParseException("Expected primitive in vector, got: " + element);
-            }
-
-            JsonPrimitive primitive = element.getAsJsonPrimitive();
-            RawVectorValue vectorValue = new RawVectorValue();
-
-            if (primitive.isNumber()) vectorValue.numericalValue = primitive.getAsDouble();
-            else if (primitive.isString()) vectorValue.stringValue = primitive.getAsString();
-            else throw new JsonParseException("Expected number or string in vector, got: " + primitive);
-
-            return vectorValue;
+            return toReturn;
         }
 
         private boolean isDoubleOnly(String string) {

@@ -4,6 +4,7 @@ import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.easing.EasingType;
 import anightdazingzoroark.riftlib.core.keyframe.*;
+import anightdazingzoroark.riftlib.jsonParsing.raw.RawMolangValue;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationChannel;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationFile;
 
@@ -203,7 +204,7 @@ public class AnimationConstructor {
         return toReturn;
     }
 
-    private static KeyFrame.KeyFrameAxisValue parseExpression(RawAnimationChannel.RawVectorValue element) {
+    private static KeyFrame.KeyFrameAxisValue parseExpression(RawMolangValue element) {
         //presumes that the vector value was a string
         if (element.stringValue != null) return new KeyFrame.KeyFrameAxisValue(element.stringValue);
             //presumes that the vector value was a double

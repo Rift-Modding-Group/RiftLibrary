@@ -1,14 +1,12 @@
 package anightdazingzoroark.riftlib.jsonParsing.raw.geo;
 
+import anightdazingzoroark.riftlib.jsonParsing.raw.RawMolangValue;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
 public class RawGeoModel {
-    @SerializedName("format_version")
-    public String format_version;
-
-    @SerializedName("minecraft:geometry")
+    @SerializedName("riftlibrary:geometry")
     public List<MinecraftGeometry> geometry;
 
     public static class MinecraftGeometry {
@@ -86,5 +84,25 @@ public class RawGeoModel {
 
         @SerializedName("uv")
         public RawUVUnion uv;
+    }
+
+    public static class RawModelCollisionBox {
+        @SerializedName("name")
+        public String name;
+
+        @SerializedName("origin")
+        public double[] origin;
+
+        @SerializedName("size")
+        public double[] size;
+
+        @SerializedName("collision")
+        public Boolean collision;
+
+        @SerializedName("tags")
+        public String[] tags;
+
+        @SerializedName("damage_multiplier")
+        public RawMolangValue damageMultiplier;
     }
 }

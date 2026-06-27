@@ -45,7 +45,7 @@ public class RawParticleComponent {
         }
     }
 
-    public static enum ComponentValueType {
+    public enum ComponentValueType {
         NUMBER,
         STRING,
         BOOLEAN,

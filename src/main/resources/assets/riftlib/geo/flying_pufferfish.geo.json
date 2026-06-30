@@ -17,15 +17,15 @@
 					"cubes": [
 						{"origin": [-8, 0, -8], "size": [16, 16, 16], "uv": [0, 0]}
 					],
-					"bounding_boxes": [
-						{
+					"bounding_boxes": {
+						"body": {
 							"name": "body",
 							"origin": [-8, 0, -8],
 							"size": [16, 16],
 							"collision": true,
 							"damage_multiplier": 1
 						}
-					]
+					}
 				},
 				{
 					"name": "tail",

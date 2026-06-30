@@ -1,7 +1,9 @@
 package anightdazingzoroark.riftlib.core.keyframe;
 
+import anightdazingzoroark.riftlib.core.ExpressionValue;
 import anightdazingzoroark.riftlib.core.easing.EasingType;
 import anightdazingzoroark.riftlib.core.util.Axis;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,66 +71,30 @@ public class KeyFrame {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof KeyFrame)) return false;
-        KeyFrame objKeyFrameValue = (KeyFrame) obj;
+        if (!(obj instanceof KeyFrame objKeyFrameValue)) return false;
         return this.hashCode() == objKeyFrameValue.hashCode();
-    }
-
-    /**
-     * This class is meant for storing a value for a keyframe for a specific axis
-     */
-    public static class KeyFrameAxisValue {
-        private final boolean isExpression;
-        private Double constValue;
-        private String expressionValue;
-
-        public KeyFrameAxisValue(Double value) {
-            this.constValue = value;
-            this.isExpression = false;
-        }
-
-        public KeyFrameAxisValue(String value) {
-            this.expressionValue = value;
-            this.isExpression = true;
-        }
-
-        public boolean isExpression() {
-            return this.isExpression;
-        }
-
-        public Double getConstValue() {
-            return this.constValue;
-        }
-
-        public String getExpressionValue() {
-            return this.expressionValue;
-        }
     }
 
     /**
      * This class is meant for storing a vector of KeyFrameAxisValues
      */
     public static class KeyFrameVectorValue {
-        private final KeyFrameAxisValue xAxisValue;
-        private final KeyFrameAxisValue yAxisValue;
-        private final KeyFrameAxisValue zAxisValue;
+        private final ExpressionValue xAxisValue;
+        private final ExpressionValue yAxisValue;
+        private final ExpressionValue zAxisValue;
 
-        public KeyFrameVectorValue(KeyFrameAxisValue xAxisValue, KeyFrameAxisValue yAxisValue, KeyFrameAxisValue zAxisValue) {
+        public KeyFrameVectorValue(ExpressionValue xAxisValue, ExpressionValue yAxisValue, ExpressionValue zAxisValue) {
             this.xAxisValue = xAxisValue;
             this.yAxisValue = yAxisValue;
             this.zAxisValue = zAxisValue;
         }
 
-        public KeyFrameAxisValue getValueFromAxis(Axis axis) {
-            switch (axis) {
-                case X:
-                    return this.xAxisValue;
-                case Y:
-                    return this.yAxisValue;
-                case Z:
-                    return this.zAxisValue;
-            }
-            return null;
+        public ExpressionValue getValueFromAxis(@NotNull Axis axis) {
+            return switch (axis) {
+                case X -> this.xAxisValue;
+                case Y -> this.yAxisValue;
+                case Z -> this.zAxisValue;
+            };
         }
     }
 }

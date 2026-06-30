@@ -45,7 +45,7 @@ public class RawModelLocatorList {
                         rawModelLocator.rotation = context.deserialize(object.get("rotation"), double[].class);
                     }
                 }
-                else throw new JsonParseException("Unexpected type: " + json.toString());
+                else throw new JsonParseException("Unexpected type for "+entry.getKey()+": " + json.toString());
                 toReturn.list.add(rawModelLocator);
             }
 

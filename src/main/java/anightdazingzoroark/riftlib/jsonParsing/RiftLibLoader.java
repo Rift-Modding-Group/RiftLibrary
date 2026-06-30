@@ -30,11 +30,12 @@ import java.util.Map;
 
 public class RiftLibLoader {
     private final Gson gson = new GsonBuilder()
+            .registerTypeAdapter(RawMolangValue.class, new RawMolangValue.Deserializer())
             .registerTypeAdapter(RawUVUnion.class, new RawUVUnion.Deserializer())
             .registerTypeAdapter(RawAnimationChannel.class, new RawAnimationChannel.Deserializer())
             .registerTypeAdapter(RawParticleComponent.class, new RawParticleComponent.Deserializer())
             .registerTypeAdapter(RawModelLocatorList.class, new RawModelLocatorList.Deserialize())
-            .registerTypeAdapter(RawMolangValue.class, new RawMolangValue.Deserializer())
+            .registerTypeAdapter(RawModelBoundingBoxList.class, new RawModelBoundingBoxList.Deserializer())
             .create();
 
 	public GeoModel loadGeoModel(RiftLibResourceReader resourceReader, ResourceLocation location) {

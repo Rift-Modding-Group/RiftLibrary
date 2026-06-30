@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.core.keyframe;
 
+import anightdazingzoroark.riftlib.core.ExpressionValue;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.core.util.Axis;
 import anightdazingzoroark.riftlib.molang.MolangParser;
@@ -47,13 +48,8 @@ public class VectorKeyFrameList {
         KeyFrameLocation location = this.getCurrentKeyFrameLocation(tick);
         KeyFrame currentFrame = location.currentFrame;
 
-        KeyFrame.KeyFrameAxisValue startValueUnparsed = currentFrame.getStartValue().getValueFromAxis(axis);
-        KeyFrame.KeyFrameAxisValue endValueUnparsed = currentFrame.getEndValue().getValueFromAxis(axis);
-
-        double startValue = startValueUnparsed.isExpression() ?
-                MolangUtils.parseValueAndGet(animData, startValueUnparsed.getExpressionValue()) : startValueUnparsed.getConstValue();
-        double endValue = endValueUnparsed.isExpression() ?
-                MolangUtils.parseValueAndGet(animData, endValueUnparsed.getExpressionValue()) : endValueUnparsed.getConstValue();
+        double startValue = currentFrame.getStartValue().getValueFromAxis(axis).get(animData);
+        double endValue = currentFrame.getEndValue().getValueFromAxis(axis).get(animData);
 
         if (this.isRotation) {
             if (currentFrame.getStartValue().getValueFromAxis(axis).isExpression()) {

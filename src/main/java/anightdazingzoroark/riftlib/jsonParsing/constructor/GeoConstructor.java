@@ -2,15 +2,10 @@ package anightdazingzoroark.riftlib.jsonParsing.constructor;
 
 import javax.vecmath.Vector3f;
 
-import anightdazingzoroark.riftlib.geo.GeoLocator;
-import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawGeoModel;
-import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawGeometryTree;
+import anightdazingzoroark.riftlib.core.ExpressionValue;
+import anightdazingzoroark.riftlib.geo.*;
+import anightdazingzoroark.riftlib.jsonParsing.raw.geo.*;
 
-import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawModelBoneGroup;
-import anightdazingzoroark.riftlib.geo.GeoBone;
-import anightdazingzoroark.riftlib.geo.GeoCube;
-import anightdazingzoroark.riftlib.geo.GeoModel;
-import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawModelLocatorList;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 
 public class GeoConstructor {
@@ -77,6 +72,27 @@ public class GeoConstructor {
 				);
 
 				geoBone.childLocators.add(toAdd);
+			}
+		}
+
+		//add bounding boxes
+		if (rawBone.boundingBoxes != null && !rawBone.boundingBoxes.list.isEmpty()) {
+			for (RawModelBoundingBoxList.RawBoundingBox rawBoundingBox : rawBone.boundingBoxes.list) {
+				GeoBoundingBox toAdd = new GeoBoundingBox(geoBone, rawBoundingBox.name);
+
+				toAdd.getPosition().set(
+						(float) -rawBoundingBox.origin[0],
+						(float) rawBoundingBox.origin[1],
+						(float) rawBoundingBox.origin[2]
+				);
+
+				toAdd.setSize((float) rawBoundingBox.size[0], (float) rawBoundingBox.size[1]);
+
+				toAdd.canCollide = rawBoundingBox.collision;
+				toAdd.tags = rawBoundingBox.tags;
+				if (rawBoundingBox.damageMultiplier != null) toAdd.damageMultiplier = new ExpressionValue(rawBoundingBox.damageMultiplier);
+
+				geoBone.childBoundingBoxes.add(toAdd);
 			}
 		}
 

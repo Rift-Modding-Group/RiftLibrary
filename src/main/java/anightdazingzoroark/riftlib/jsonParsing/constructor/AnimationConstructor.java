@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.jsonParsing.constructor;
 
+import anightdazingzoroark.riftlib.core.ExpressionValue;
 import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.easing.EasingType;
@@ -124,9 +125,9 @@ public class AnimationConstructor {
 
     private static VectorKeyFrameList convertRawChannelToFrameList(RawAnimationChannel rawAnimationChannel, boolean isRotation) throws NumberFormatException {
         VectorKeyFrameList toReturn = new VectorKeyFrameList(isRotation);
-        KeyFrame.KeyFrameAxisValue previousXValue = null;
-        KeyFrame.KeyFrameAxisValue previousYValue = null;
-        KeyFrame.KeyFrameAxisValue previousZValue = null;
+        ExpressionValue previousXValue = null;
+        ExpressionValue previousYValue = null;
+        ExpressionValue previousZValue = null;
 
         //vector mode for raw anim channels only has 1 keyframe so there's that
         int channelSize = rawAnimationChannel.isKeyframed() ? rawAnimationChannel.keyframes.size() : 1;
@@ -138,19 +139,9 @@ public class AnimationConstructor {
             Double currentKeyFrameLocation = rawKeyframe.time;
             double animationTimeDifference = currentKeyFrameLocation - previousKeyFrameLocation;
 
-            KeyFrame.KeyFrameAxisValue xValue = parseExpression(rawKeyframe.vector[0]);
-            KeyFrame.KeyFrameAxisValue yValue = parseExpression(rawKeyframe.vector[1]);
-            KeyFrame.KeyFrameAxisValue zValue = parseExpression(rawKeyframe.vector[2]);
-
-            KeyFrame.KeyFrameAxisValue currentXValue = isRotation && !xValue.isExpression()
-                    ? new KeyFrame.KeyFrameAxisValue(Math.toRadians(-xValue.getConstValue()))
-                    : xValue;
-            KeyFrame.KeyFrameAxisValue currentYValue = isRotation && !yValue.isExpression()
-                    ? new KeyFrame.KeyFrameAxisValue(Math.toRadians(-yValue.getConstValue()))
-                    : yValue;
-            KeyFrame.KeyFrameAxisValue currentZValue = isRotation && !zValue.isExpression()
-                    ? new KeyFrame.KeyFrameAxisValue(Math.toRadians(zValue.getConstValue()))
-                    : zValue;
+            ExpressionValue currentXValue = new ExpressionValue(rawKeyframe.vector[0]);
+            ExpressionValue currentYValue = new ExpressionValue(rawKeyframe.vector[1]);
+            ExpressionValue currentZValue = new ExpressionValue(rawKeyframe.vector[2]);
 
             KeyFrame.KeyFrameVectorValue currentVector = new KeyFrame.KeyFrameVectorValue(
                     currentXValue,
@@ -202,13 +193,6 @@ public class AnimationConstructor {
         }
 
         return toReturn;
-    }
-
-    private static KeyFrame.KeyFrameAxisValue parseExpression(RawMolangValue element) {
-        //presumes that the vector value was a string
-        if (element.stringValue != null) return new KeyFrame.KeyFrameAxisValue(element.stringValue);
-            //presumes that the vector value was a double
-        else return new KeyFrame.KeyFrameAxisValue(element.numericalValue);
     }
 
     private static List<Double> convertEasingArgsToList(double[] easingArgsArray) {

@@ -12,9 +12,10 @@ import javax.vecmath.Vector3f;
 public class GeoBone implements IBone {
 	public GeoBone parent;
 
-	public List<GeoBone> childBones = new ArrayList<>();
-	public List<GeoCube> childCubes = new ArrayList<>();
-	public List<GeoLocator> childLocators = new ArrayList<>();
+	public final List<GeoBone> childBones = new ArrayList<>();
+	public final List<GeoCube> childCubes = new ArrayList<>();
+	public final List<GeoLocator> childLocators = new ArrayList<>();
+	public final List<GeoBoundingBox> childBoundingBoxes = new ArrayList<>();
 
 	public String name;
 	private BoneSnapshot initialSnapshot;

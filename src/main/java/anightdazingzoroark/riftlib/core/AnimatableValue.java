@@ -2,6 +2,7 @@ package anightdazingzoroark.riftlib.core;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
+@Deprecated
 public class AnimatableValue {
     private String variableName;
     private Double constantValue;

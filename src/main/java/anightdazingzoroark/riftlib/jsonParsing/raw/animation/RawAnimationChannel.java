@@ -35,7 +35,7 @@ public class RawAnimationChannel {
             if (json.isJsonArray() || json.isJsonPrimitive()) {
                 RawKeyframe initRawKeyframe = new RawKeyframe();
                 initRawKeyframe.time = 0.0D;
-                initRawKeyframe.vector = this.deserializeVector(json, typeOfT, context);
+                initRawKeyframe.vector = this.deserializeVector(json, context);
 
                 toReturn.keyframes = Collections.singletonList(initRawKeyframe);
             }
@@ -58,11 +58,11 @@ public class RawAnimationChannel {
 
                         //it just a vector (as array or singular)
                         if (entry.getValue().isJsonArray() || entry.getValue().isJsonPrimitive()) {
-                            rawKeyframe.vector = this.deserializeVector(entry.getValue(), typeOfT, context);
+                            rawKeyframe.vector = this.deserializeVector(entry.getValue(), context);
                         }
                         //explicit vector declaration
                         else {
-                            rawKeyframe.vector = this.deserializeVector(entry.getValue().getAsJsonObject().get("vector"), typeOfT, context);
+                            rawKeyframe.vector = this.deserializeVector(entry.getValue().getAsJsonObject().get("vector"), context);
                         }
 
                         //easing type stuff
@@ -76,7 +76,7 @@ public class RawAnimationChannel {
                         }
                     }
                     //now for if its an explicit vector declaration
-                    else rawKeyframe.vector = this.deserializeVector(entry.getValue(), typeOfT, context);
+                    else rawKeyframe.vector = this.deserializeVector(entry.getValue(), context);
 
                     frames.add(rawKeyframe);
                 }
@@ -96,9 +96,8 @@ public class RawAnimationChannel {
             return toReturn;
         }
 
-        private RawMolangValue[] deserializeVector(JsonElement element, Type typeOfT, JsonDeserializationContext context) {
+        private RawMolangValue[] deserializeVector(JsonElement element, JsonDeserializationContext context) {
             RawMolangValue[] toReturn = new RawMolangValue[3];
-            RawMolangValue.Deserializer deserializer = new RawMolangValue.Deserializer();
 
             //take note that there will be times where the vector is just 1 singular element
             //in that case, the vector is the same value on all axes
@@ -108,14 +107,14 @@ public class RawAnimationChannel {
 
                 for (int i = 0; i < toReturn.length; i++) {
                     JsonElement elementInJsonArray = jsonArray.get(i);
-                    RawMolangValue vectorValue = deserializer.deserialize(elementInJsonArray, typeOfT, context);
+                    RawMolangValue vectorValue = context.deserialize(elementInJsonArray, RawMolangValue.class);
                     toReturn[i] = vectorValue;
                 }
 
             }
             //now with singular case
             else {
-                RawMolangValue vectorValue = deserializer.deserialize(element, typeOfT, context);
+                RawMolangValue vectorValue = context.deserialize(element, RawMolangValue.class);
                 Arrays.fill(toReturn, vectorValue);
 
             }

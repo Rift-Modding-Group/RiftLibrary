@@ -61,6 +61,9 @@ public class RawGeoModel {
 
         @SerializedName("locators")
         public RawModelLocatorList locators;
+
+        @SerializedName("bounding_boxes")
+        public RawModelBoundingBoxList boundingBoxes;
     }
 
     public static class RawModelCube {
@@ -84,25 +87,5 @@ public class RawGeoModel {
 
         @SerializedName("uv")
         public RawUVUnion uv;
-    }
-
-    public static class RawModelCollisionBox {
-        @SerializedName("name")
-        public String name;
-
-        @SerializedName("origin")
-        public double[] origin;
-
-        @SerializedName("size")
-        public double[] size;
-
-        @SerializedName("collision")
-        public Boolean collision;
-
-        @SerializedName("tags")
-        public String[] tags;
-
-        @SerializedName("damage_multiplier")
-        public RawMolangValue damageMultiplier;
     }
 }

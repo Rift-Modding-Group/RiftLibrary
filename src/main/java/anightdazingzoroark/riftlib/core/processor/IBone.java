@@ -1,55 +1,22 @@
 package anightdazingzoroark.riftlib.core.processor;
 
 import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
+import org.jetbrains.annotations.NotNull;
+
+import javax.vecmath.Vector3f;
 
 public interface IBone {
-	float getRotationX();
+	@NotNull
+	Vector3f getRotation();
 
-	float getRotationY();
+	@NotNull
+	Vector3f getPosition();
 
-	float getRotationZ();
+	@NotNull
+	Vector3f getScale();
 
-	float getPositionX();
-
-	float getPositionY();
-
-	float getPositionZ();
-
-	float getScaleX();
-
-	float getScaleY();
-
-	float getScaleZ();
-
-	void setRotationX(float value);
-
-	void setRotationY(float value);
-
-	void setRotationZ(float value);
-
-	void setPositionX(float value);
-
-	void setPositionY(float value);
-
-	void setPositionZ(float value);
-
-	void setScaleX(float value);
-
-	void setScaleY(float value);
-
-	void setScaleZ(float value);
-
-	void setPivotX(float value);
-
-	void setPivotY(float value);
-
-	void setPivotZ(float value);
-
-	float getPivotX();
-
-	float getPivotY();
-
-	float getPivotZ();
+	@NotNull
+	Vector3f getPivot();
 
 	boolean isHidden();
 

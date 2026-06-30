@@ -1,7 +1,7 @@
 package anightdazingzoroark.riftlib.resource;
 
 import anightdazingzoroark.riftlib.animation.AnimationFile;
-import anightdazingzoroark.riftlib.geo.render.GeoModel;
+import anightdazingzoroark.riftlib.geo.GeoModel;
 import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.jsonParsing.RiftLibLoader;
 import anightdazingzoroark.riftlib.molang.MolangParser;

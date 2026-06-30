@@ -3,7 +3,6 @@ package anightdazingzoroark.riftlib.jsonParsing;
 import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.animation.AnimationFile;
 import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
-import anightdazingzoroark.riftlib.exceptions.GeoModelException;
 import anightdazingzoroark.riftlib.jsonParsing.constructor.AnimationConstructor;
 import anightdazingzoroark.riftlib.jsonParsing.constructor.HitboxConstructor;
 import anightdazingzoroark.riftlib.jsonParsing.constructor.ParticleConstructor;
@@ -21,7 +20,7 @@ import com.google.gson.GsonBuilder;
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.jsonParsing.constructor.GeoConstructor;
-import anightdazingzoroark.riftlib.geo.render.GeoModel;
+import anightdazingzoroark.riftlib.geo.GeoModel;
 import org.apache.commons.io.IOUtils;
 
 import java.io.FileNotFoundException;

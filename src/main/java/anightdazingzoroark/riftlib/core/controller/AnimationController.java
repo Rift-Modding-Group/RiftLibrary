@@ -634,13 +634,13 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                                 AnimationPoint zPoint = rotationKeyFrames.getAnimationPointAtTick(data, transitionResolvedTick, Axis.Z);
 
                                 boneAnimationQueue.rotationXQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
-                                        boneSnapshot.rotationValueX - initialSnapshot.rotationValueX,
+                                        boneSnapshot.getRotation().x - initialSnapshot.getRotation().z,
                                         xPoint.animationStartValue));
                                 boneAnimationQueue.rotationYQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
-                                        boneSnapshot.rotationValueY - initialSnapshot.rotationValueY,
+                                        boneSnapshot.getRotation().y - initialSnapshot.getRotation().y,
                                         yPoint.animationStartValue));
                                 boneAnimationQueue.rotationZQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
-                                        boneSnapshot.rotationValueZ - initialSnapshot.rotationValueZ,
+                                        boneSnapshot.getRotation().z - initialSnapshot.getRotation().z,
                                         zPoint.animationStartValue));
                             }
 
@@ -650,11 +650,11 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                                 AnimationPoint zPoint = positionKeyFrames.getAnimationPointAtTick(data, transitionResolvedTick, Axis.Z);
 
                                 boneAnimationQueue.positionXQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
-                                        boneSnapshot.positionOffsetX, xPoint.animationStartValue));
+                                        boneSnapshot.getPosition().x, xPoint.animationStartValue));
                                 boneAnimationQueue.positionYQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
-                                        boneSnapshot.positionOffsetY, yPoint.animationStartValue));
+                                        boneSnapshot.getPosition().y, yPoint.animationStartValue));
                                 boneAnimationQueue.positionZQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
-                                        boneSnapshot.positionOffsetZ, zPoint.animationStartValue));
+                                        boneSnapshot.getPosition().z, zPoint.animationStartValue));
                             }
 
                             if (!scaleKeyFrames.isEmpty()) {
@@ -663,11 +663,11 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                                 AnimationPoint zPoint = scaleKeyFrames.getAnimationPointAtTick(data, transitionResolvedTick, Axis.Z);
 
                                 boneAnimationQueue.scaleXQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
-                                        boneSnapshot.scaleValueX, xPoint.animationStartValue));
+                                        boneSnapshot.getScale().x, xPoint.animationStartValue));
                                 boneAnimationQueue.scaleYQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
-                                        boneSnapshot.scaleValueY, yPoint.animationStartValue));
+                                        boneSnapshot.getScale().y, yPoint.animationStartValue));
                                 boneAnimationQueue.scaleZQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
-                                        boneSnapshot.scaleValueZ, zPoint.animationStartValue));
+                                        boneSnapshot.getScale().z, zPoint.animationStartValue));
                             }
                         }
                     }
@@ -708,25 +708,25 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                     BoneSnapshot initialSnapshot = first.get().getInitialSnapshot();
 
                     boneAnimationQueue.rotationXQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
-                            boneSnapshot.rotationValueX - initialSnapshot.rotationValueX, 0));
+                            boneSnapshot.getRotation().x - initialSnapshot.getRotation().x, 0));
                     boneAnimationQueue.rotationYQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
-                            boneSnapshot.rotationValueY - initialSnapshot.rotationValueY, 0));
+                            boneSnapshot.getRotation().y - initialSnapshot.getRotation().y, 0));
                     boneAnimationQueue.rotationZQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
-                            boneSnapshot.rotationValueZ - initialSnapshot.rotationValueZ, 0));
+                            boneSnapshot.getRotation().z - initialSnapshot.getRotation().z, 0));
 
                     boneAnimationQueue.positionXQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
-                            boneSnapshot.positionOffsetX, 0));
+                            boneSnapshot.getPosition().x, 0));
                     boneAnimationQueue.positionYQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
-                            boneSnapshot.positionOffsetY, 0));
+                            boneSnapshot.getPosition().y, 0));
                     boneAnimationQueue.positionZQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
-                            boneSnapshot.positionOffsetZ, 0));
+                            boneSnapshot.getPosition().z, 0));
 
                     boneAnimationQueue.scaleXQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
-                            boneSnapshot.scaleValueX, 1));
+                            boneSnapshot.getScale().x, 1));
                     boneAnimationQueue.scaleYQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
-                            boneSnapshot.scaleValueY, 1));
+                            boneSnapshot.getScale().y, 1));
                     boneAnimationQueue.scaleZQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
-                            boneSnapshot.scaleValueZ, 1));
+                            boneSnapshot.getScale().z, 1));
                 }
             }
 

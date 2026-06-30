@@ -1,78 +1,22 @@
 package anightdazingzoroark.riftlib.core.snapshot;
 
 import anightdazingzoroark.riftlib.core.processor.IBone;
+import org.jetbrains.annotations.NotNull;
+
+import javax.vecmath.Vector3f;
 
 public class BoneSnapshot {
-	public BoneSnapshot(IBone modelRenderer) {
-		rotationValueX = modelRenderer.getRotationX();
-		rotationValueY = modelRenderer.getRotationY();
-		rotationValueZ = modelRenderer.getRotationZ();
+	public final String name;
+	private final IBone modelRenderer;
 
-		positionOffsetX = modelRenderer.getPositionX();
-		positionOffsetY = modelRenderer.getPositionY();
-		positionOffsetZ = modelRenderer.getPositionZ();
+	@NotNull
+	private final Vector3f scale = new Vector3f(1f, 1f, 1f);
 
-		scaleValueX = modelRenderer.getScaleX();
-		scaleValueY = modelRenderer.getScaleY();
-		scaleValueZ = modelRenderer.getScaleZ();
+	@NotNull
+	private final Vector3f position = new Vector3f();
 
-		this.modelRenderer = modelRenderer;
-		this.name = modelRenderer.getName();
-	}
-
-	public BoneSnapshot(IBone modelRenderer, boolean dontSaveRotations) {
-		if (dontSaveRotations) {
-			rotationValueX = 0;
-			rotationValueY = 0;
-			rotationValueZ = 0;
-		}
-
-		rotationValueX = modelRenderer.getRotationX();
-		rotationValueY = modelRenderer.getRotationY();
-		rotationValueZ = modelRenderer.getRotationZ();
-
-		positionOffsetX = modelRenderer.getPositionX();
-		positionOffsetY = modelRenderer.getPositionY();
-		positionOffsetZ = modelRenderer.getPositionZ();
-
-		scaleValueX = modelRenderer.getScaleX();
-		scaleValueY = modelRenderer.getScaleY();
-		scaleValueZ = modelRenderer.getScaleZ();
-
-		this.modelRenderer = modelRenderer;
-		this.name = modelRenderer.getName();
-	}
-
-	public BoneSnapshot(BoneSnapshot snapshot) {
-		scaleValueX = snapshot.scaleValueX;
-		scaleValueY = snapshot.scaleValueY;
-		scaleValueZ = snapshot.scaleValueZ;
-
-		positionOffsetX = snapshot.positionOffsetX;
-		positionOffsetY = snapshot.positionOffsetY;
-		positionOffsetZ = snapshot.positionOffsetZ;
-
-		rotationValueX = snapshot.rotationValueX;
-		rotationValueY = snapshot.rotationValueY;
-		rotationValueZ = snapshot.rotationValueZ;
-		this.modelRenderer = snapshot.modelRenderer;
-		this.name = snapshot.name;
-	}
-
-	public String name;
-	private IBone modelRenderer;
-
-	public float scaleValueX;
-	public float scaleValueY;
-	public float scaleValueZ;
-
-	public float positionOffsetX;
-	public float positionOffsetY;
-	public float positionOffsetZ;
-
-	public float rotationValueX;
-	public float rotationValueY;
-	public float rotationValueZ;
+	@NotNull
+	private final Vector3f rotation = new Vector3f();
 
 	public float mostRecentResetRotationTick = 0;
 	public float mostRecentResetPositionTick = 0;
@@ -81,6 +25,35 @@ public class BoneSnapshot {
 	public boolean isCurrentlyRunningRotationAnimation = true;
 	public boolean isCurrentlyRunningPositionAnimation = true;
 	public boolean isCurrentlyRunningScaleAnimation = true;
+
+	public BoneSnapshot(IBone modelRenderer) {
+		this.rotation.set(modelRenderer.getRotation());
+		this.position.set(modelRenderer.getPosition());
+		this.scale.set(modelRenderer.getScale());
+
+		this.modelRenderer = modelRenderer;
+		this.name = modelRenderer.getName();
+	}
+
+	public BoneSnapshot(IBone modelRenderer, boolean dontSaveRotations) {
+		if (dontSaveRotations) this.rotation.set(0f, 0f, 0f);
+
+		this.rotation.set(modelRenderer.getRotation());
+		this.position.set(modelRenderer.getPosition());
+		this.scale.set(modelRenderer.getScale());
+
+		this.modelRenderer = modelRenderer;
+		this.name = modelRenderer.getName();
+	}
+
+	public BoneSnapshot(BoneSnapshot snapshot) {
+		this.scale.set(snapshot.getScale());
+		this.position.set(snapshot.getPosition());
+		this.rotation.set(snapshot.getRotation());
+
+		this.modelRenderer = snapshot.modelRenderer;
+		this.name = snapshot.name;
+	}
 
 	@Override
 	public boolean equals(Object o) {
@@ -97,5 +70,20 @@ public class BoneSnapshot {
 	@Override
 	public int hashCode() {
 		return name.hashCode();
+	}
+
+	@NotNull
+	public Vector3f getRotation() {
+		return this.rotation;
+	}
+
+	@NotNull
+	public Vector3f getPosition() {
+		return this.position;
+	}
+
+	@NotNull
+	public Vector3f getScale() {
+		return this.scale;
 	}
 }

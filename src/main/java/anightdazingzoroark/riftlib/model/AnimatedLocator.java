@@ -1,8 +1,8 @@
 package anightdazingzoroark.riftlib.model;
 
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
-import anightdazingzoroark.riftlib.geo.render.GeoBone;
-import anightdazingzoroark.riftlib.geo.render.GeoLocator;
+import anightdazingzoroark.riftlib.geo.GeoBone;
+import anightdazingzoroark.riftlib.geo.GeoLocator;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.ParticleTicker;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
@@ -83,9 +83,9 @@ public class AnimatedLocator {
         for (int i = chain.size() - 1; i >= 0; i--) {
             GeoBone boneToTest = chain.get(i);
             Quaternion quatBone = QuaternionUtils.createYXZQuaternion(
-                    boneToTest.getRotationX(),
-                    boneToTest.getRotationY(),
-                    boneToTest.getRotationZ()
+                    boneToTest.getRotation().x,
+                    boneToTest.getRotation().y,
+                    boneToTest.getRotation().z
             );
 
             Quaternion.normalise(quatBone, quatBone);
@@ -97,9 +97,9 @@ public class AnimatedLocator {
 
         //now apply the locator's rotation
         Quaternion quatLocator = QuaternionUtils.createYXZQuaternion(
-                this.locator.getRotationX(),
-                this.locator.getRotationY(),
-                this.locator.getRotationZ()
+                this.locator.getRotation().x,
+                this.locator.getRotation().y,
+                this.locator.getRotation().z
         );
 
         Quaternion.normalise(quatLocator, quatLocator);
@@ -152,7 +152,7 @@ public class AnimatedLocator {
         GeoBone boneToTest = this.locator.parent;
 
         while (boneToTest != null) {
-            toReturn = toReturn.add(boneToTest.getPositionX(), boneToTest.getPositionY(), boneToTest.getPositionZ());
+            toReturn = toReturn.add(boneToTest.getPosition().x, boneToTest.getPosition().y, boneToTest.getPosition().z);
             boneToTest = boneToTest.parent;
         }
         return toReturn;
@@ -170,17 +170,17 @@ public class AnimatedLocator {
         for (GeoBone boneToTest : chain) {
             //get vector for direction from pivot to pos
             Vec3d vecPivot = new Vec3d(
-                    boneToTest.getPivotX(),
-                    boneToTest.getPivotY(),
-                    boneToTest.getPivotZ()
+                    boneToTest.getPivot().x,
+                    boneToTest.getPivot().y,
+                    boneToTest.getPivot().z
             );
             Vec3d vecDirection = vecPos.subtract(vecPivot);
 
             //create quaternion from current rotations, conjugate it too
             Quaternion quatBoneRot = QuaternionUtils.createXYZQuaternion(
-                    boneToTest.getRotationX(),
-                    boneToTest.getRotationY(),
-                    boneToTest.getRotationZ()
+                    boneToTest.getRotation().x,
+                    boneToTest.getRotation().y,
+                    boneToTest.getRotation().z
             );
             Quaternion.normalise(quatBoneRot, quatBoneRot);
 
@@ -204,9 +204,9 @@ public class AnimatedLocator {
 
     private Vec3d getLocatorPosition() {
         return new Vec3d(
-                this.locator.getPositionX(),
-                this.locator.getPositionY(),
-                this.locator.getPositionZ()
+                this.locator.getPosition().x,
+                this.locator.getPosition().y,
+                this.locator.getPosition().z
         );
     }
 

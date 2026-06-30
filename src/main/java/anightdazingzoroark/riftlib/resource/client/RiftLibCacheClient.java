@@ -15,7 +15,6 @@ import java.util.zip.ZipFile;
 import anightdazingzoroark.riftlib.animation.AnimationFile;
 import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.jsonParsing.RiftLibResourceReader;
-import anightdazingzoroark.riftlib.molang.MolangParser;
 
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.resource.RiftLibResourceHolder;
@@ -28,7 +27,7 @@ import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.LegacyV2Adapter;
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.RiftLib;
-import anightdazingzoroark.riftlib.geo.render.GeoModel;
+import anightdazingzoroark.riftlib.geo.GeoModel;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.client.FMLFolderResourcePack;
 import org.jetbrains.annotations.NotNull;

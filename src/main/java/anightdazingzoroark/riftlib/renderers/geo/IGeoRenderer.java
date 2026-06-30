@@ -3,7 +3,7 @@ package anightdazingzoroark.riftlib.renderers.geo;
 import javax.vecmath.*;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.geo.render.*;
+import anightdazingzoroark.riftlib.geo.*;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.util.MatrixUtils;
 import anightdazingzoroark.riftlib.util.ParticleUtils;

@@ -2,10 +2,9 @@ package anightdazingzoroark.riftlib.resource.server;
 
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.animation.AnimationFile;
-import anightdazingzoroark.riftlib.geo.render.GeoModel;
+import anightdazingzoroark.riftlib.geo.GeoModel;
 import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.jsonParsing.RiftLibResourceReader;
-import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.resource.RiftLibResourceHolder;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Loader;

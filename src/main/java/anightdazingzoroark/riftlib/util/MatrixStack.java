@@ -10,8 +10,8 @@ import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import net.minecraft.util.math.Vec3d;
 import org.lwjglx.util.vector.Quaternion;
 
-import anightdazingzoroark.riftlib.geo.render.GeoBone;
-import anightdazingzoroark.riftlib.geo.render.GeoCube;
+import anightdazingzoroark.riftlib.geo.GeoBone;
+import anightdazingzoroark.riftlib.geo.GeoCube;
 
 /**
  * Simple implementation of a matrix stack
@@ -82,15 +82,15 @@ public class MatrixStack {
 	}
 
 	public void moveToPivot(GeoBone bone) {
-		this.translate(bone.rotationPointX / 16, bone.rotationPointY / 16, bone.rotationPointZ / 16);
+		this.translate(bone.getPivot().x / 16f, bone.getPivot().y / 16f, bone.getPivot().z / 16f);
 	}
 
 	public void moveBackFromPivot(GeoBone bone) {
-		this.translate(-bone.rotationPointX / 16, -bone.rotationPointY / 16, -bone.rotationPointZ / 16);
+		this.translate(-bone.getPivot().x / 16f, -bone.getPivot().y / 16f, -bone.getPivot().z / 16f);
 	}
 
 	public void translate(GeoBone bone) {
-		this.translate(-bone.getPositionX() / 16, bone.getPositionY() / 16, bone.getPositionZ() / 16);
+		this.translate(-bone.getPosition().x / 16f, bone.getPosition().y / 16f, bone.getPosition().z / 16f);
 	}
 
     public void translate(AnimatedLocator locator) {
@@ -119,7 +119,7 @@ public class MatrixStack {
 	}
 
 	public void scale(GeoBone bone) {
-		this.scale(bone.getScaleX(), bone.getScaleY(), bone.getScaleZ());
+		this.scale(bone.getScale().x, bone.getScale().y, bone.getScale().z);
 	}
 
 	/* Rotate */
@@ -158,16 +158,16 @@ public class MatrixStack {
 	}
 
 	public void rotate(GeoBone bone) {
-		if (bone.getRotationZ() != 0.0F) {
-			this.rotateZ(bone.getRotationZ());
+		if (bone.getRotation().z != 0f) {
+			this.rotateZ(bone.getRotation().z);
 		}
 
-		if (bone.getRotationY() != 0.0F) {
-			this.rotateY(bone.getRotationY());
+		if (bone.getRotation().y != 0f) {
+			this.rotateY(bone.getRotation().y);
 		}
 
-		if (bone.getRotationX() != 0.0F) {
-			this.rotateX(bone.getRotationX());
+		if (bone.getRotation().x != 0f) {
+			this.rotateX(bone.getRotation().x);
 		}
 	}
 

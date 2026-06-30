@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.geo.render;
+package anightdazingzoroark.riftlib.geo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,23 +28,14 @@ public class GeoModel {
 		copy.mirror = source.mirror;
 		copy.inflate = source.inflate;
 		copy.dontRender = source.dontRender;
-		copy.reset = source.reset;
 		copy.extraData = source.extraData;
 
 		copy.setHidden(source.isHidden(), source.childBonesAreHiddenToo());
 		copy.setCubesHidden(source.cubesAreHidden());
-		copy.setScaleX(source.getScaleX());
-		copy.setScaleY(source.getScaleY());
-		copy.setScaleZ(source.getScaleZ());
-		copy.setPositionX(source.getPositionX());
-		copy.setPositionY(source.getPositionY());
-		copy.setPositionZ(source.getPositionZ());
-		copy.setRotationX(source.getRotationX());
-		copy.setRotationY(source.getRotationY());
-		copy.setRotationZ(source.getRotationZ());
-		copy.setPivotX(source.getPivotX());
-		copy.setPivotY(source.getPivotY());
-		copy.setPivotZ(source.getPivotZ());
+		copy.getScale().set(source.getScale());
+		copy.getPosition().set(source.getPosition());
+		copy.getRotation().set(source.getRotation());
+		copy.getPivot().set(source.getPivot());
 
 		copy.childCubes.addAll(source.childCubes);
 
@@ -63,12 +54,8 @@ public class GeoModel {
 		GeoLocator copy = new GeoLocator(parent, source.name);
 		copy.setHidden(source.isHidden(), source.childBonesAreHiddenToo());
 		copy.setCubesHidden(source.cubesAreHidden());
-		copy.setPositionX(source.getPositionX());
-		copy.setPositionY(source.getPositionY());
-		copy.setPositionZ(source.getPositionZ());
-		copy.setRotationX(source.getRotationX());
-		copy.setRotationY(source.getRotationY());
-		copy.setRotationZ(source.getRotationZ());
+		copy.getPosition().set(source.getPosition());
+		copy.getRotation().set(source.getRotation());
 		return copy;
 	}
 

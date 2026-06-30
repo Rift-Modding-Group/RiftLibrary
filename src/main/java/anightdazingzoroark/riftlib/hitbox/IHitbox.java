@@ -34,10 +34,10 @@ public interface IHitbox<T extends IMultiHitboxUser<?>> {
      * */
     default float[] getHitboxSize() {
         float locatorWidthDelta = Math.max(
-                this.getHitboxLocator().getParentBone().getScaleX(),
-                this.getHitboxLocator().getParentBone().getScaleZ()
+                this.getHitboxLocator().getParentBone().getScale().x,
+                this.getHitboxLocator().getParentBone().getScale().z
         );
-        float locatorHeightDelta = this.getHitboxLocator().getParentBone().getScaleY();
+        float locatorHeightDelta = this.getHitboxLocator().getParentBone().getScale().y;
         float finalWidth = this.getFixedSize()[0] * this.getParent().multiHitboxUserScale() * locatorWidthDelta;
         float finalHeight = this.getFixedSize()[1] * this.getParent().multiHitboxUserScale() * locatorHeightDelta;
 
@@ -55,7 +55,7 @@ public interface IHitbox<T extends IMultiHitboxUser<?>> {
         //correct the model space positions first
         Vec3d modelSpacePos = this.getHitboxLocator().getModelSpacePosition();
         float newHitboxX = -(float) modelSpacePos.x / 16f;
-        float newHitboxY = (float) modelSpacePos.y / 16f - (this.getFixedSize()[1] / 2f) - (this.getHitboxLocator().getParentBone().getScaleY() - 1) / 3f;
+        float newHitboxY = (float) modelSpacePos.y / 16f - (this.getFixedSize()[1] / 2f) - (this.getHitboxLocator().getParentBone().getScale().y - 1) / 3f;
         float newHitboxZ = -(float) modelSpacePos.z / 16f;
 
         //set initial entity offset from center

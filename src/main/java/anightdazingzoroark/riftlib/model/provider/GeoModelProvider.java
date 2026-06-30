@@ -2,7 +2,7 @@ package anightdazingzoroark.riftlib.model.provider;
 
 import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
 import net.minecraft.util.ResourceLocation;
-import anightdazingzoroark.riftlib.geo.render.GeoModel;
+import anightdazingzoroark.riftlib.geo.GeoModel;
 import anightdazingzoroark.riftlib.resource.client.RiftLibCacheClient;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 

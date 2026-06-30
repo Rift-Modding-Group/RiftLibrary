@@ -2,14 +2,14 @@ package anightdazingzoroark.riftlib.jsonParsing.constructor;
 
 import javax.vecmath.Vector3f;
 
-import anightdazingzoroark.riftlib.geo.render.GeoLocator;
+import anightdazingzoroark.riftlib.geo.GeoLocator;
 import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawGeoModel;
 import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawGeometryTree;
 
 import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawModelBoneGroup;
-import anightdazingzoroark.riftlib.geo.render.GeoBone;
-import anightdazingzoroark.riftlib.geo.render.GeoCube;
-import anightdazingzoroark.riftlib.geo.render.GeoModel;
+import anightdazingzoroark.riftlib.geo.GeoBone;
+import anightdazingzoroark.riftlib.geo.GeoCube;
+import anightdazingzoroark.riftlib.geo.GeoModel;
 import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawModelLocatorList;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 
@@ -39,13 +39,13 @@ public class GeoConstructor {
 		geoBone.parent = parent;
 		geoBone.setModelRendererName(rawBone.name);
 
-		geoBone.setRotationX((float) Math.toRadians(rotation.getX()));
-		geoBone.setRotationY((float) Math.toRadians(rotation.getY()));
-		geoBone.setRotationZ((float) Math.toRadians(rotation.getZ()));
+		geoBone.getRotation().set(
+				(float) Math.toRadians(rotation.getX()),
+				(float) Math.toRadians(rotation.getY()),
+				(float) Math.toRadians(rotation.getZ())
+		);
 
-		geoBone.rotationPointX = -pivot.getX();
-		geoBone.rotationPointY = pivot.getY();
-		geoBone.rotationPointZ = pivot.getZ();
+		geoBone.getPivot().set(-pivot.getX(), pivot.getY(), pivot.getZ());
 
 		//add cubes
 		if (rawBone.cubes != null && !rawBone.cubes.isEmpty()) {
@@ -64,13 +64,17 @@ public class GeoConstructor {
 			for (RawModelLocatorList.RawModelLocator rawLocator : rawBone.locators.list) {
                 GeoLocator toAdd = new GeoLocator(geoBone, rawLocator.name);
 
-                toAdd.setPositionX((float) -rawLocator.offset[0]);
-                toAdd.setPositionY((float) rawLocator.offset[1]);
-                toAdd.setPositionZ((float) rawLocator.offset[2]);
+				toAdd.getPosition().set(
+						(float) -rawLocator.offset[0],
+						(float) rawLocator.offset[1],
+						(float) rawLocator.offset[2]
+				);
 
-                toAdd.setRotationX((float) Math.toRadians(-rawLocator.rotation[0]));
-                toAdd.setRotationY((float) Math.toRadians(-rawLocator.rotation[1]));
-                toAdd.setRotationZ((float) Math.toRadians(rawLocator.rotation[2]));
+				toAdd.getRotation().set(
+						(float) Math.toRadians(-rawLocator.rotation[0]),
+						(float) Math.toRadians(-rawLocator.rotation[1]),
+						(float) Math.toRadians(rawLocator.rotation[2])
+				);
 
 				geoBone.childLocators.add(toAdd);
 			}

@@ -20,9 +20,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.core.processor.IBone;
 import anightdazingzoroark.riftlib.core.util.Color;
-import anightdazingzoroark.riftlib.geo.render.GeoModel;
+import anightdazingzoroark.riftlib.geo.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
-import anightdazingzoroark.riftlib.util.GeoUtils;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public abstract class GeoArmorRenderer<T extends RiftLibArmor> extends ModelBiped
@@ -91,12 +90,12 @@ public abstract class GeoArmorRenderer<T extends RiftLibArmor> extends ModelBipe
 		IBone leftArmBone = !this.leftArmBone.isEmpty() ? this.modelProvider.getBone(this.leftArmBone) : null;
 		if (this.swingProgress > 0.0F) {
             if (rightArmBone != null) {
-                rightArmBone.setScaleZ(1.25f);
-                rightArmBone.setScaleX(1.25f);
+                rightArmBone.getScale().z = 1.25f;
+                rightArmBone.getScale().x = 1.25f;
             }
             if (leftArmBone != null) {
-                leftArmBone.setScaleZ(1.3f);
-                leftArmBone.setScaleX(1.05f);
+                leftArmBone.getScale().z = 1.3f;
+                leftArmBone.getScale().x = 1.05f;
             }
 		}
 		if (this.isSneak) {
@@ -107,37 +106,37 @@ public abstract class GeoArmorRenderer<T extends RiftLibArmor> extends ModelBipe
 			IBone rightBootBone = !this.rightBootBone.isEmpty() ? this.modelProvider.getBone(this.rightBootBone) : null;
 			IBone leftBootBone = !this.leftBootBone.isEmpty() ? this.modelProvider.getBone(this.leftBootBone) : null;
 
-            if (headBone != null) headBone.setPositionY(headBone.getPositionY() - 3.5f);
+            if (headBone != null) headBone.getPosition().y = headBone.getPosition().y - 3.5f;
 
             if (bodyBone != null) {
-                bodyBone.setPositionZ(bodyBone.getPositionX() - 0.4f);
-                bodyBone.setPositionY(bodyBone.getPositionX() - 3.5f);
+                bodyBone.getPosition().z = bodyBone.getPosition().x - 0.4f;
+                bodyBone.getPosition().y = bodyBone.getPosition().x - 3.5f;
             }
 
             if (rightArmBone != null && bodyBone != null) {
-                rightArmBone.setPositionY(bodyBone.getPositionX() - 3);
-                rightArmBone.setPositionX(bodyBone.getPositionX() + 0.35f);
+                rightArmBone.getPosition().y = bodyBone.getPosition().x - 3f;
+                rightArmBone.getPosition().x = bodyBone.getPosition().x + 0.35f;
             }
 
             if (leftArmBone != null && bodyBone != null) {
-                leftArmBone.setPositionY(bodyBone.getPositionX() - 3);
-                leftArmBone.setPositionX(bodyBone.getPositionX() - 0.35f);
+                leftArmBone.getPosition().y = bodyBone.getPosition().x - 3f;
+                leftArmBone.getPosition().x = bodyBone.getPosition().x - 0.35f;
             }
 
             if (rightLegBone != null && bodyBone != null) {
-                rightLegBone.setPositionZ(bodyBone.getPositionX() + 4);
+                rightLegBone.getPosition().z = bodyBone.getPosition().x + 4f;
             }
 
             if (leftLegBone != null && bodyBone != null) {
-                leftLegBone.setPositionZ(bodyBone.getPositionX() + 4);
+                leftLegBone.getPosition().z = bodyBone.getPosition().x + 4f;
             }
 
             if (rightBootBone != null && bodyBone != null) {
-                rightBootBone.setPositionZ(bodyBone.getPositionX() + 4);
+                rightBootBone.getPosition().z = bodyBone.getPosition().x + 4f;
             }
 
             if (leftBootBone != null && bodyBone != null) {
-                leftBootBone.setPositionZ(bodyBone.getPositionX() + 4);
+                leftBootBone.getPosition().z = bodyBone.getPosition().x + 4f;
             }
 		}
 		Minecraft.getMinecraft().renderEngine.bindTexture(this.getTextureLocation(this.currentArmorItem));
@@ -168,7 +167,11 @@ public abstract class GeoArmorRenderer<T extends RiftLibArmor> extends ModelBipe
         if (bipedBone == null) RiftLib.LOGGER.warn("Biped bone to fit to cannot be null");
         if (boneName.isEmpty()) return;
         IBone boneToFit = this.modelProvider.getBone(boneName);
-        if (boneToFit != null) GeoUtils.copyRotations(bipedBone, boneToFit);
+        if (boneToFit != null) boneToFit.getRotation().set(
+                -bipedBone.rotateAngleX,
+                -bipedBone.rotateAngleY,
+                bipedBone.rotateAngleZ
+        );
     }
 
 	@Override

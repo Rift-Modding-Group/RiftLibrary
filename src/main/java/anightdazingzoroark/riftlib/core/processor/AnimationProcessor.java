@@ -131,27 +131,27 @@ public class AnimationProcessor {
 			float[] pos = boneAnimationValues.getPositions(bone.getName());
 			float[] scale = boneAnimationValues.getScales(bone.getName());
 
-			bone.setRotationX(rot[0] + initialSnapshot.rotationValueX);
-			bone.setRotationY(rot[1] + initialSnapshot.rotationValueY);
-			bone.setRotationZ(rot[2] + initialSnapshot.rotationValueZ);
+			bone.getRotation().set(
+					rot[0] + initialSnapshot.getRotation().x,
+					rot[1] + initialSnapshot.getRotation().y,
+					rot[2] + initialSnapshot.getRotation().z
+			);
 
-			bone.setPositionX(pos[0] + initialSnapshot.positionOffsetX);
-			bone.setPositionY(pos[1] + initialSnapshot.positionOffsetY);
-			bone.setPositionZ(pos[2] + initialSnapshot.positionOffsetZ);
+			bone.getPosition().set(
+					pos[0] + initialSnapshot.getPosition().x,
+					pos[1] + initialSnapshot.getPosition().y,
+					pos[2] + initialSnapshot.getPosition().z
+			);
 
-			bone.setScaleX(scale[0] * initialSnapshot.scaleValueX);
-			bone.setScaleY(scale[1] * initialSnapshot.scaleValueY);
-			bone.setScaleZ(scale[2] * initialSnapshot.scaleValueZ);
+			bone.getScale().set(
+					scale[0] * initialSnapshot.getScale().x,
+					scale[1] * initialSnapshot.getScale().y,
+					scale[2] * initialSnapshot.getScale().z
+			);
 
-			snapshot.rotationValueX = bone.getRotationX();
-			snapshot.rotationValueY = bone.getRotationY();
-			snapshot.rotationValueZ = bone.getRotationZ();
-			snapshot.positionOffsetX = bone.getPositionX();
-			snapshot.positionOffsetY = bone.getPositionY();
-			snapshot.positionOffsetZ = bone.getPositionZ();
-			snapshot.scaleValueX = bone.getScaleX();
-			snapshot.scaleValueY = bone.getScaleY();
-			snapshot.scaleValueZ = bone.getScaleZ();
+			snapshot.getRotation().set(bone.getRotation());
+			snapshot.getPosition().set(bone.getPosition());
+			snapshot.getScale().set(bone.getScale());
 
 			snapshot.isCurrentlyRunningRotationAnimation = true;
 			snapshot.isCurrentlyRunningPositionAnimation = true;
@@ -186,16 +186,16 @@ public class AnimationProcessor {
 
 				dBoneAnimationValues.addRotations(
 						model.getName(),
-						MathUtil.lerpValues(percentageReset, saveSnapshot.rotationValueX, initialSnapshot.rotationValueX),
-						MathUtil.lerpValues(percentageReset, saveSnapshot.rotationValueY, initialSnapshot.rotationValueY),
-						MathUtil.lerpValues(percentageReset, saveSnapshot.rotationValueZ, initialSnapshot.rotationValueZ)
+						MathUtil.lerpValues(percentageReset, saveSnapshot.getRotation().x, initialSnapshot.getRotation().x),
+						MathUtil.lerpValues(percentageReset, saveSnapshot.getRotation().y, initialSnapshot.getRotation().y),
+						MathUtil.lerpValues(percentageReset, saveSnapshot.getRotation().z, initialSnapshot.getRotation().z)
 				);
-				model.setRotationX(dBoneAnimationValues.getRotations(model.getName())[0]);
-				model.setRotationY(dBoneAnimationValues.getRotations(model.getName())[1]);
-				model.setRotationZ(dBoneAnimationValues.getRotations(model.getName())[2]);
-				saveSnapshot.rotationValueX = model.getRotationX();
-				saveSnapshot.rotationValueY = model.getRotationY();
-				saveSnapshot.rotationValueZ = model.getRotationZ();
+				model.getRotation().set(
+						dBoneAnimationValues.getRotations(model.getName())[0],
+						dBoneAnimationValues.getRotations(model.getName())[1],
+						dBoneAnimationValues.getRotations(model.getName())[2]
+				);
+				saveSnapshot.getRotation().set(model.getRotation());
 			}
 			if (!tracker.getValue().hasPositionChanged) {
 				if (saveSnapshot.isCurrentlyRunningPositionAnimation) {
@@ -207,16 +207,16 @@ public class AnimationProcessor {
 
 				dBoneAnimationValues.addPositions(
 						model.getName(),
-						MathUtil.lerpValues(percentageReset, saveSnapshot.positionOffsetX, initialSnapshot.positionOffsetX),
-						MathUtil.lerpValues(percentageReset, saveSnapshot.positionOffsetY, initialSnapshot.positionOffsetY),
-						MathUtil.lerpValues(percentageReset, saveSnapshot.positionOffsetZ, initialSnapshot.positionOffsetZ)
+						MathUtil.lerpValues(percentageReset, saveSnapshot.getPosition().x, initialSnapshot.getPosition().x),
+						MathUtil.lerpValues(percentageReset, saveSnapshot.getPosition().y, initialSnapshot.getPosition().y),
+						MathUtil.lerpValues(percentageReset, saveSnapshot.getPosition().z, initialSnapshot.getPosition().z)
 				);
-				model.setPositionX(dBoneAnimationValues.getPositions(model.getName())[0]);
-				model.setPositionY(dBoneAnimationValues.getPositions(model.getName())[1]);
-				model.setPositionZ(dBoneAnimationValues.getPositions(model.getName())[2]);
-				saveSnapshot.positionOffsetX = model.getPositionX();
-				saveSnapshot.positionOffsetY = model.getPositionY();
-				saveSnapshot.positionOffsetZ = model.getPositionZ();
+				model.getPosition().set(
+						dBoneAnimationValues.getPositions(model.getName())[0],
+						dBoneAnimationValues.getPositions(model.getName())[1],
+						dBoneAnimationValues.getPositions(model.getName())[2]
+				);
+				saveSnapshot.getPosition().set(model.getPosition());
 			}
 			if (!tracker.getValue().hasScaleChanged) {
 				if (saveSnapshot.isCurrentlyRunningScaleAnimation) {
@@ -226,12 +226,12 @@ public class AnimationProcessor {
 
 				double percentageReset = Math.min((seekTime - saveSnapshot.mostRecentResetScaleTick + 1D), 1);
 
-				model.setScaleX(MathUtil.lerpValues(percentageReset, saveSnapshot.scaleValueX, initialSnapshot.scaleValueX));
-				model.setScaleY(MathUtil.lerpValues(percentageReset, saveSnapshot.scaleValueY, initialSnapshot.scaleValueY));
-				model.setScaleZ(MathUtil.lerpValues(percentageReset, saveSnapshot.scaleValueZ, initialSnapshot.scaleValueZ));
-				saveSnapshot.scaleValueX = model.getScaleX();
-				saveSnapshot.scaleValueY = model.getScaleY();
-				saveSnapshot.scaleValueZ = model.getScaleZ();
+				model.getScale().set(
+						MathUtil.lerpValues(percentageReset, saveSnapshot.getScale().x, initialSnapshot.getScale().x),
+						MathUtil.lerpValues(percentageReset, saveSnapshot.getScale().y, initialSnapshot.getScale().y),
+						MathUtil.lerpValues(percentageReset, saveSnapshot.getScale().z, initialSnapshot.getScale().z)
+				);
+				saveSnapshot.getScale().set(model.getScale());
 			}
 		}
 		animationData.isFirstTick = false;

@@ -2,7 +2,6 @@ package anightdazingzoroark.riftlib.resource;
 
 import anightdazingzoroark.riftlib.animation.AnimationFile;
 import anightdazingzoroark.riftlib.geo.GeoModel;
-import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.jsonParsing.RiftLibLoader;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import net.minecraft.util.ResourceLocation;
@@ -27,6 +26,4 @@ public abstract class RiftLibResourceHolder {
     public abstract Map<ResourceLocation, AnimationFile> getAnimations();
 
     public abstract Map<ResourceLocation, GeoModel> getGeoModels();
-
-    public abstract Map<ResourceLocation, HitboxDefinitionList> getHitboxDefinitions();
 }

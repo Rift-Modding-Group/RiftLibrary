@@ -1,7 +1,6 @@
 package anightdazingzoroark.riftlib.hitbox;
 
 import anightdazingzoroark.riftlib.model.AnimatedBoundingBox;
-import anightdazingzoroark.riftlib.util.HitboxUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MultiPartEntityPart;
@@ -27,7 +26,7 @@ public class RiftLibCollisionHitbox<T extends IMultiHitboxUser<?>> extends Multi
 
     public RiftLibCollisionHitbox(T parent, AnimatedBoundingBox boundingBox) {
         super(
-                parent, HitboxUtils.locatorHitboxToHitbox(boundingBox.getName()),
+                parent, boundingBox.getName(),
                 boundingBox.getModelSpaceSize()[0] / 16f, boundingBox.getModelSpaceSize()[1] / 16f
         );
         this.boundingBox = boundingBox;

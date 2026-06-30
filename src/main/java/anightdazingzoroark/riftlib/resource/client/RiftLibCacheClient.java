@@ -13,7 +13,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import anightdazingzoroark.riftlib.animation.AnimationFile;
-import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.jsonParsing.RiftLibResourceReader;
 
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
@@ -39,8 +38,6 @@ public class RiftLibCacheClient extends RiftLibResourceHolder implements IResour
 	private Map<ResourceLocation, AnimationFile> animations = new HashMap<>();
 	@NotNull
 	private Map<ResourceLocation, GeoModel> geoModels = new HashMap<>();
-	@NotNull
-	private Map<ResourceLocation, HitboxDefinitionList> hitboxDefinitions = new HashMap<>();
     @NotNull
 	private Map<ResourceLocation, ParticleBuilder> particleBuilders = new HashMap<>();
 
@@ -53,7 +50,6 @@ public class RiftLibCacheClient extends RiftLibResourceHolder implements IResour
 	public void onResourceManagerReload(IResourceManager resourceManager) {
 		Map<ResourceLocation, AnimationFile> tempAnimations = new HashMap<>();
 		Map<ResourceLocation, GeoModel> tempModels = new HashMap<>();
-		Map<ResourceLocation, HitboxDefinitionList> tempHitboxes = new HashMap<>();
         Map<ResourceLocation, ParticleBuilder> tempParticleBuilders = new HashMap<>();
 		List<IResourcePack> packs = this.getPacks();
 		RiftLibResourceReader resourceReader = location -> resourceManager.getResource(location).getInputStream();
@@ -61,8 +57,7 @@ public class RiftLibCacheClient extends RiftLibResourceHolder implements IResour
 		if (packs == null) return;
 
 		for (IResourcePack pack : packs) {
-			for (ResourceLocation location : this.getLocations(pack, "animations",
-					fileName -> fileName.endsWith(".json"))) {
+			for (ResourceLocation location : this.getLocations(pack, "animations", fileName -> fileName.endsWith(".json"))) {
 				try {
 					tempAnimations.put(location, this.loader.loadAnimationFile(resourceReader, location));
 				}
@@ -83,17 +78,6 @@ public class RiftLibCacheClient extends RiftLibResourceHolder implements IResour
 				}
 			}
 
-			//load the hitbox files
-			for (ResourceLocation location : this.getLocations(pack, "hitboxes", filename -> filename.endsWith(".json"))) {
-				try {
-					tempHitboxes.put(location, this.loader.loadHitboxDefinitionList(resourceReader, location));
-				}
-				catch (Exception e) {
-					e.printStackTrace();
-					RiftLib.LOGGER.error("Error loading hitbox file \""+location+"\"!", e);
-				}
-			}
-
             //load the particle files
             for (ResourceLocation location : this.getLocations(pack, "particles", filename -> filename.endsWith(".json"))) {
                 try {
@@ -109,7 +93,6 @@ public class RiftLibCacheClient extends RiftLibResourceHolder implements IResour
 
 		this.animations = tempAnimations;
 		this.geoModels = tempModels;
-		this.hitboxDefinitions = tempHitboxes;
         this.particleBuilders = tempParticleBuilders;
 	}
 
@@ -127,14 +110,6 @@ public class RiftLibCacheClient extends RiftLibResourceHolder implements IResour
 			throw new RuntimeException("RiftLib was never initialized! Please read the documentation!");
 		}
 		return this.geoModels;
-	}
-
-	@Override
-	public Map<ResourceLocation, HitboxDefinitionList> getHitboxDefinitions() {
-		if (!RiftLib.isInitialized()) {
-			throw new RuntimeException("RiftLib was never initialized! Please read the documentation!");
-		}
-		return this.hitboxDefinitions;
 	}
 
 	//particle builders are only relevant on the client

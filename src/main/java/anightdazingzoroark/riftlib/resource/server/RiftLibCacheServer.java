@@ -3,7 +3,6 @@ package anightdazingzoroark.riftlib.resource.server;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.animation.AnimationFile;
 import anightdazingzoroark.riftlib.geo.GeoModel;
-import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.jsonParsing.RiftLibResourceReader;
 import anightdazingzoroark.riftlib.resource.RiftLibResourceHolder;
 import net.minecraft.util.ResourceLocation;
@@ -33,8 +32,6 @@ public class RiftLibCacheServer extends RiftLibResourceHolder {
     private Map<ResourceLocation, AnimationFile> animations = new HashMap<>();
     @NotNull
     private Map<ResourceLocation, GeoModel> geoModels = new HashMap<>();
-    @NotNull
-    private Map<ResourceLocation, HitboxDefinitionList> hitboxDefinitions = new HashMap<>();
 
     private final Map<ResourceLocation, ResourceOpener> resources = new HashMap<>();
 
@@ -65,7 +62,6 @@ public class RiftLibCacheServer extends RiftLibResourceHolder {
 
         Map<ResourceLocation, AnimationFile> tempAnimations = new HashMap<>();
         Map<ResourceLocation, GeoModel> tempModels = new HashMap<>();
-        Map<ResourceLocation, HitboxDefinitionList> tempHitboxes = new HashMap<>();
         RiftLibResourceReader resourceReader = location -> {
             ResourceOpener opener = this.resources.get(location);
             if (opener == null) throw new IOException("Unknown resource " + location);
@@ -91,19 +87,10 @@ public class RiftLibCacheServer extends RiftLibResourceHolder {
                     RiftLib.LOGGER.error("Error loading server model file \"" + location + "\"!", e);
                 }
             }
-            else if (path.startsWith("hitboxes/") && path.endsWith(".json")) {
-                try {
-                    tempHitboxes.put(location, this.loader.loadHitboxDefinitionList(resourceReader, location));
-                }
-                catch (Exception e) {
-                    RiftLib.LOGGER.error("Error loading server hitbox file \"" + location + "\"!", e);
-                }
-            }
         }
 
         this.animations = tempAnimations;
         this.geoModels = tempModels;
-        this.hitboxDefinitions = tempHitboxes;
     }
 
     private void collectFolderResources(File source) {
@@ -240,15 +227,6 @@ public class RiftLibCacheServer extends RiftLibResourceHolder {
         }
 
         return this.geoModels;
-    }
-
-    @Override
-    public Map<ResourceLocation, HitboxDefinitionList> getHitboxDefinitions() {
-        if (!RiftLib.isInitialized()) {
-            throw new RuntimeException("RiftLib was never initialized! Please read the documentation!");
-        }
-
-        return this.hitboxDefinitions;
     }
 
     @FunctionalInterface

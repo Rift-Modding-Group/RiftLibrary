@@ -2,15 +2,12 @@ package anightdazingzoroark.riftlib.jsonParsing;
 
 import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.animation.AnimationFile;
-import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.jsonParsing.constructor.AnimationConstructor;
-import anightdazingzoroark.riftlib.jsonParsing.constructor.HitboxConstructor;
 import anightdazingzoroark.riftlib.jsonParsing.constructor.ParticleConstructor;
 import anightdazingzoroark.riftlib.jsonParsing.raw.RawMolangValue;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationChannel;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationFile;
 import anightdazingzoroark.riftlib.jsonParsing.raw.geo.*;
-import anightdazingzoroark.riftlib.jsonParsing.raw.hitbox.RawHitboxDefinition;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticle;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.molang.MolangParser;
@@ -69,17 +66,6 @@ public class RiftLibLoader {
             }
 
             return animationFile;
-        }
-        catch (Exception e) {
-            RiftLib.LOGGER.error(String.format("Error parsing %S", location), e);
-            throw (new RuntimeException(e));
-        }
-    }
-
-    public HitboxDefinitionList loadHitboxDefinitionList(RiftLibResourceReader resourceReader, ResourceLocation location) {
-        try {
-            RawHitboxDefinition rawHitboxDefinition = this.gson.fromJson(getResourceAsString(location, resourceReader), RawHitboxDefinition.class);
-            return HitboxConstructor.createHitboxDefinitionList(rawHitboxDefinition);
         }
         catch (Exception e) {
             RiftLib.LOGGER.error(String.format("Error parsing %S", location), e);

@@ -48,7 +48,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     private final MolangParser parser;
     @NotNull
     private final MolangScope dataScope = new MolangScope();
-    private GeoModel currentModel;
+    protected GeoModel currentModel;
     public double tick;
     public boolean isFirstTick = true;
     public AnimationTicker clientTicker;

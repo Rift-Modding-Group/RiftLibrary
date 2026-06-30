@@ -7,20 +7,17 @@ import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
-import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
+import anightdazingzoroark.riftlib.hitbox.MultiHitboxList;
 import anightdazingzoroark.riftlib.ray.*;
 import anightdazingzoroark.riftlib.ray.rayShape.movement.RiftLibRayBoxMovementShape;
 import anightdazingzoroark.riftlib.ray.rayShape.impact.RiftLibRaySphereImpactShape;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosList;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.*;
 import net.minecraft.entity.passive.EntityCow;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
@@ -29,6 +26,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -36,15 +34,15 @@ import java.util.Map;
 public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IRayCreator<DragonEntity>, IMultiHitboxUser<DragonEntity>, IDynamicRideUser<DragonEntity> {
     private static final DataParameter<Boolean> BREATHING_FIRE = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
+    private final MultiHitboxList<DragonEntity> multiHitboxList;
     private final DynamicRidePosList ridePositions;
     private final Map<String, RiftLibRayBuilder> rayMap;
-    private HitboxDefinitionList hitboxDefinitionList;
-    private Entity[] hitboxes = {};
 
     public DragonEntity(World worldIn) {
         super(worldIn);
         this.setSize(4f, 4f);
         this.enablePersistence();
+        this.multiHitboxList = new MultiHitboxList<>(this, this.animationData);
         this.ridePositions = new DynamicRidePosList(this, this.animationData);
         this.rayMap = Map.of(
                 "breatheFire", new RiftLibRayBuilder()
@@ -130,8 +128,15 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
 
     //hitbox stuff starts here
     @Override
+    @NotNull
     public DragonEntity getMultiHitboxUser() {
         return this;
+    }
+
+    @Override
+    @NotNull
+    public MultiHitboxList<DragonEntity> getMultiHitboxList() {
+        return this.multiHitboxList;
     }
 
     @Override
@@ -141,27 +146,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
 
     @Override
     public Entity[] getParts() {
-        return this.hitboxes;
-    }
-
-    @Override
-    public void setParts(Entity[] hitboxes) {
-        this.hitboxes = hitboxes;
-    }
-
-    @Override
-    public HitboxDefinitionList getHitboxDefinitionList() {
-        return this.hitboxDefinitionList;
-    }
-
-    @Override
-    public void setHitboxDefinitionList(HitboxDefinitionList hitboxDefinitionList) {
-        this.hitboxDefinitionList = hitboxDefinitionList;
-    }
-
-    @Override
-    public World getWorld() {
-        return this.world;
+        return this.multiHitboxList.getHitboxesAsArray();
     }
     //hitbox stuff ends here
 

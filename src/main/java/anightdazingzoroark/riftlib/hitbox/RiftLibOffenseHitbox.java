@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.hitbox;
 
+import anightdazingzoroark.riftlib.model.AnimatedBoundingBox;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -21,17 +22,17 @@ public class RiftLibOffenseHitbox<T extends IMultiHitboxUser<?>> implements IHit
     @NotNull
     private final T parent;
     @NotNull
-    private final AnimatedLocator hitboxLocator;
+    private final AnimatedBoundingBox boundingBox;
     //these are the final definitive scales of the hitbox and will be used for such
     public final float fixedWidth;
     public final float fixedHeight;
     private final Set<Integer> alreadyHitEntities = new HashSet<>();
     private boolean isDead;
 
-    public RiftLibOffenseHitbox(int hitboxId, @NotNull T parent, @NotNull AnimatedLocator hitboxLocator, float width, float height) {
+    public RiftLibOffenseHitbox(int hitboxId, @NotNull T parent, @NotNull AnimatedBoundingBox boundingBox, float width, float height) {
         this.hitboxId = hitboxId;
         this.parent = parent;
-        this.hitboxLocator = hitboxLocator;
+        this.boundingBox = boundingBox;
         this.fixedWidth = width;
         this.fixedHeight = height;
     }
@@ -78,12 +79,7 @@ public class RiftLibOffenseHitbox<T extends IMultiHitboxUser<?>> implements IHit
 
     @Override
     @NonNull
-    public AnimatedLocator getHitboxLocator() {
-        return this.hitboxLocator;
-    }
-
-    @Override
-    public float[] getFixedSize() {
-        return new float[]{this.fixedWidth, this.fixedHeight};
+    public AnimatedBoundingBox getBoundingBox() {
+        return this.boundingBox;
     }
 }

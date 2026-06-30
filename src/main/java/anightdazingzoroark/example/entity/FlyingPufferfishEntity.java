@@ -7,6 +7,7 @@ import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.hitbox.HitboxDefinitionList;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
+import anightdazingzoroark.riftlib.hitbox.MultiHitboxList;
 import anightdazingzoroark.riftlib.ray.IRayCreator;
 import anightdazingzoroark.riftlib.ray.rayShape.impact.RiftLibRaySphereImpactShape;
 import anightdazingzoroark.riftlib.ray.RiftLibRay;
@@ -20,18 +21,21 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
 public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<AnimationDataEntity>, IMultiHitboxUser<FlyingPufferfishEntity>, IRayCreator<FlyingPufferfishEntity> {
+    @NotNull
+    private final MultiHitboxList<FlyingPufferfishEntity> multiHitboxList;
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
     private final Map<String, RiftLibRayBuilder> rayMap;
-    private HitboxDefinitionList hitboxDefinitionList;
     private Entity[] hitboxes = {};
 
     public FlyingPufferfishEntity(World worldIn) {
         super(worldIn);
         this.setSize(1f, 1f);
+        this.multiHitboxList = new MultiHitboxList<>(this, this.animationData);
         this.rayMap = Map.of(
                 "puffUp", new RiftLibRayBuilder()
                         .setImpactOnly()
@@ -50,8 +54,15 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
 
     //hitbox stuff starts here
     @Override
+    @NotNull
     public FlyingPufferfishEntity getMultiHitboxUser() {
         return this;
+    }
+
+    @Override
+    @NotNull
+    public MultiHitboxList<FlyingPufferfishEntity> getMultiHitboxList() {
+        return this.multiHitboxList;
     }
 
     @Override
@@ -61,27 +72,7 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
 
     @Override
     public Entity[] getParts() {
-        return this.hitboxes;
-    }
-
-    @Override
-    public void setParts(Entity[] hitboxes) {
-        this.hitboxes = hitboxes;
-    }
-
-    @Override
-    public HitboxDefinitionList getHitboxDefinitionList() {
-        return this.hitboxDefinitionList;
-    }
-
-    @Override
-    public void setHitboxDefinitionList(HitboxDefinitionList hitboxDefinitionList) {
-        this.hitboxDefinitionList = hitboxDefinitionList;
-    }
-
-    @Override
-    public World getWorld() {
-        return this.world;
+        return this.multiHitboxList.getHitboxesAsArray();
     }
     //hitbox stuff ends here
 

@@ -8,11 +8,8 @@ import anightdazingzoroark.example.client.renderer.entity.*;
 import anightdazingzoroark.example.client.renderer.tile.MerryGoRoundRenderer;
 import anightdazingzoroark.example.client.renderer.tile.SprinklerRenderer;
 import anightdazingzoroark.example.entity.*;
-import anightdazingzoroark.example.entity.hitboxLinker.DragonHitboxLinker;
-import anightdazingzoroark.example.entity.hitboxLinker.FlyingPufferfishHitboxLinker;
 import anightdazingzoroark.example.armor.GreenArmor;
 import anightdazingzoroark.example.armor.SatelliteDishHelmet;
-import anightdazingzoroark.riftlib.RiftLibLinkerRegistry;
 import anightdazingzoroark.riftlib.RiftLibMod;
 import anightdazingzoroark.riftlib.hitbox.RiftLibCollisionHitbox;
 import anightdazingzoroark.riftlib.hitbox.EntityHitboxRenderer;
@@ -53,10 +50,6 @@ public class ClientProxy extends ServerProxy {
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {
-            //linkers
-            RiftLibLinkerRegistry.registerEntityHitboxLinker(DragonEntity.class, new DragonHitboxLinker());
-            RiftLibLinkerRegistry.registerEntityHitboxLinker(FlyingPufferfishEntity.class, new FlyingPufferfishHitboxLinker());
-
             //entity renderers
             RenderingRegistry.registerEntityRenderingHandler(DragonEntity.class, DragonRenderer::new);
             RenderingRegistry.registerEntityRenderingHandler(FlyingPufferfishEntity.class, FlyingPufferfishRenderer::new);

@@ -3,6 +3,7 @@ package anightdazingzoroark.riftlib.hitbox;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class HitboxDefinitionList {
     public final List<HitboxDefinition> list = new ArrayList<>();
 

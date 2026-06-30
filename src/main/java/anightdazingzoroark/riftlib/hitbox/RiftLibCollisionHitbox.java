@@ -1,6 +1,6 @@
 package anightdazingzoroark.riftlib.hitbox;
 
-import anightdazingzoroark.riftlib.model.AnimatedLocator;
+import anightdazingzoroark.riftlib.model.AnimatedBoundingBox;
 import anightdazingzoroark.riftlib.util.HitboxUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -20,24 +20,17 @@ import java.util.List;
  * IMultiHitboxUser instances
  * */
 public class RiftLibCollisionHitbox<T extends IMultiHitboxUser<?>> extends MultiPartEntityPart implements IHitbox<T> {
-    private final float damageMultiplier;
-    //these are the final definitive scales of the hitbox and will be used for such
-    public final float fixedWidth;
-    public final float fixedHeight;
-    //the animated locator this hitbox is to be pegged to
-    private final AnimatedLocator hitboxLocator;
-    //others
-    public final boolean affectedByAnim;
+    @NotNull
+    private final AnimatedBoundingBox boundingBox;
     private boolean isDisabled;
     public final List<EntityHitboxDamageDefinition> damageDefinitions = new ArrayList<>();
 
-    public RiftLibCollisionHitbox(T parent, AnimatedLocator hitboxLocator, float damageMultiplier, float width, float height, boolean affectedByAnim) {
-        super(parent, HitboxUtils.locatorHitboxToHitbox(hitboxLocator.getName()), width, height);
-        this.hitboxLocator = hitboxLocator;
-        this.damageMultiplier = damageMultiplier;
-        this.fixedWidth = width;
-        this.fixedHeight = height;
-        this.affectedByAnim = affectedByAnim;
+    public RiftLibCollisionHitbox(T parent, AnimatedBoundingBox boundingBox) {
+        super(
+                parent, HitboxUtils.locatorHitboxToHitbox(boundingBox.getName()),
+                boundingBox.getModelSpaceSize()[0] / 16f, boundingBox.getModelSpaceSize()[1] / 16f
+        );
+        this.boundingBox = boundingBox;
         this.onAddedToWorld();
     }
 
@@ -45,6 +38,7 @@ public class RiftLibCollisionHitbox<T extends IMultiHitboxUser<?>> extends Multi
      * In order to forcibly sync the entityIds from server to client, this has to be done.
      * I fucking hate how hitboxes are dealt with in this version anyway.
      * */
+    @Deprecated //new system could remove need for this... i hope...
     public void syncEntityIdFromServer(int entityId) {
         if (this.getEntityId() == entityId) return;
 
@@ -158,13 +152,8 @@ public class RiftLibCollisionHitbox<T extends IMultiHitboxUser<?>> extends Multi
 
     @Override
     @NotNull
-    public AnimatedLocator getHitboxLocator() {
-        return this.hitboxLocator;
-    }
-
-    @Override
-    public float[] getFixedSize() {
-        return new float[]{this.fixedWidth, this.fixedHeight};
+    public AnimatedBoundingBox getBoundingBox() {
+        return this.boundingBox;
     }
 
     public void setDisabled(boolean value) {
@@ -175,10 +164,7 @@ public class RiftLibCollisionHitbox<T extends IMultiHitboxUser<?>> extends Multi
         return this.isDisabled;
     }
 
-    public float getDamageMultiplier() {
-        return this.damageMultiplier;
-    }
-
+    @Deprecated //this shall be replaced with molang queries for damage type and damage source
     public boolean damageSourceWithinDamageDefinitions(DamageSource damageSource) {
         for (EntityHitboxDamageDefinition damageDefinition : this.damageDefinitions) {
             if (damageDefinition.damageSource != null) {
@@ -200,6 +186,7 @@ public class RiftLibCollisionHitbox<T extends IMultiHitboxUser<?>> extends Multi
         return false;
     }
 
+    @Deprecated //same reason as above
     public float getDamageMultiplierForSource(DamageSource damageSource) {
         float toReturn = 1f;
         for (EntityHitboxDamageDefinition damageDefinition : this.damageDefinitions) {
@@ -240,6 +227,7 @@ public class RiftLibCollisionHitbox<T extends IMultiHitboxUser<?>> extends Multi
     //damageSource is an instance of the DamageSource object (arrow, cactus, etc)
     //damageType is one of the booleans associated with a DamageSource object (projectile, magic, etc)
     //if damageSource or damageType both not null, damageSource will be prioritized
+    @Deprecated //well
     public record EntityHitboxDamageDefinition(String damageSource, String damageType, float damageMultiplier) {
         @Override
         @NotNull

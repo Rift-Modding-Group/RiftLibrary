@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.hitbox;
 
+import anightdazingzoroark.riftlib.model.AnimatedBoundingBox;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
@@ -19,29 +20,19 @@ public interface IHitbox<T extends IMultiHitboxUser<?>> {
     T getParent();
 
     /**
-     * Return the locator this hitbox will be attached to
+     * Return the bounding box this hitbox is based on
      * */
     @NotNull
-    AnimatedLocator getHitboxLocator();
-
-    /**
-     * Return the fixed size of the hitbox. 0 is width, 1 is height
-     * */
-    float[] getFixedSize();
+    AnimatedBoundingBox getBoundingBox();
 
     /**
      * Return the width and height based on parent scale and fixed size
      * */
     default float[] getHitboxSize() {
-        float locatorWidthDelta = Math.max(
-                this.getHitboxLocator().getParentBone().getScale().x,
-                this.getHitboxLocator().getParentBone().getScale().z
-        );
-        float locatorHeightDelta = this.getHitboxLocator().getParentBone().getScale().y;
-        float finalWidth = this.getFixedSize()[0] * this.getParent().multiHitboxUserScale() * locatorWidthDelta;
-        float finalHeight = this.getFixedSize()[1] * this.getParent().multiHitboxUserScale() * locatorHeightDelta;
-
-        return new float[]{finalWidth, finalHeight};
+        return new float[]{
+                this.getParent().multiHitboxUserScale() * this.getBoundingBox().getModelSpaceSize()[0] / 16f,
+                this.getParent().multiHitboxUserScale() * this.getBoundingBox().getModelSpaceSize()[1] / 16f
+        };
     }
 
     /**
@@ -53,10 +44,10 @@ public interface IHitbox<T extends IMultiHitboxUser<?>> {
         EntityLivingBase parentEntityLiving = this.getParent().getMultiHitboxUser();
 
         //correct the model space positions first
-        Vec3d modelSpacePos = this.getHitboxLocator().getModelSpacePosition();
-        float newHitboxX = -(float) modelSpacePos.x / 16f;
-        float newHitboxY = (float) modelSpacePos.y / 16f - (this.getFixedSize()[1] / 2f) - (this.getHitboxLocator().getParentBone().getScale().y - 1) / 3f;
-        float newHitboxZ = -(float) modelSpacePos.z / 16f;
+        Vec3d modelSpacePos = this.getBoundingBox().getModelSpacePosition();
+        float newHitboxX = -(float) (modelSpacePos.x + this.getBoundingBox().getModelSpaceSize()[0] / 2f) / 16f;
+        float newHitboxY = (float) modelSpacePos.y / 16f;
+        float newHitboxZ = -(float) (modelSpacePos.z + this.getBoundingBox().getModelSpaceSize()[1] / 2f) / 16f;
 
         //set initial entity offset from center
         Vec3d posVec = new Vec3d(

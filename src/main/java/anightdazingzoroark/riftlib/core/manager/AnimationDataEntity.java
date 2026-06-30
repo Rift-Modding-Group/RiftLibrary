@@ -1,12 +1,20 @@
 package anightdazingzoroark.riftlib.core.manager;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.geo.GeoBoundingBox;
+import anightdazingzoroark.riftlib.geo.GeoModel;
+import anightdazingzoroark.riftlib.model.AnimatedBoundingBox;
 import anightdazingzoroark.riftlib.util.MolangUtils;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
 import org.jspecify.annotations.NonNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivingBase, AnimationDataEntity> {
+    private final List<AnimatedBoundingBox> animatedBoundingBoxes = new ArrayList<>();
+
     public AnimationDataEntity(EntityLivingBase holder) {
         super(holder, getAnimatable(holder));
     }
@@ -37,5 +45,25 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
     private static IAnimatable<AnimationDataEntity> getAnimatable(EntityLivingBase holder) {
         if (holder instanceof IAnimatable<?>) return (IAnimatable<AnimationDataEntity>) holder;
         throw new IllegalArgumentException("AnimationDataEntity holder must implement IAnimatable");
+    }
+
+    //-----animated bounding box definitions from here on out (only entities use hitboxes hence this lol)-----
+    public void createAnimatedBoundingBoxes(GeoModel model) {
+        //update animated locators based on the model
+        if (this.currentModel != model) {
+            this.animatedBoundingBoxes.clear();
+
+            List<GeoBoundingBox> boundingBoxList = model.getAllBoundingBoxes();
+            for (GeoBoundingBox boundingBox : boundingBoxList) {
+                if (boundingBox == null) continue;
+                this.animatedBoundingBoxes.add(new AnimatedBoundingBox(boundingBox));
+            }
+
+            this.currentModel = model;
+        }
+    }
+
+    public List<AnimatedBoundingBox> getAnimatedBoundingBoxes() {
+        return this.animatedBoundingBoxes;
     }
 }

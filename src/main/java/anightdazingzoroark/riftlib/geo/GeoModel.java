@@ -107,4 +107,14 @@ public class GeoModel {
 		}
 		return listToReturn;
 	}
+
+	public List<GeoBoundingBox> getAllBoundingBoxes() {
+		List<GeoBoundingBox> toReturn = new ArrayList<>();
+		for (GeoBone bone : this.getAllBones()) {
+			for (GeoBoundingBox boundingBox : bone.childBoundingBoxes) {
+				if (!toReturn.contains(boundingBox)) toReturn.add(boundingBox);
+			}
+		}
+		return toReturn;
+	}
 }

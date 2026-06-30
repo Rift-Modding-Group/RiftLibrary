@@ -56,9 +56,7 @@ public class RiftLibSyncHitboxEntityId extends RiftLibMessage<RiftLibSyncHitboxE
 
         multiHitboxUser.setHitboxes();
 
-        RiftLibCollisionHitbox<?> hitbox = multiHitboxUser.getHitboxByName(message.hitboxName);
-        if (hitbox == null) return;
-
+        RiftLibCollisionHitbox<?> hitbox = multiHitboxUser.getMultiHitboxList().getCollisionHitboxByName(message.hitboxName);
         hitbox.syncEntityIdFromServer(message.hitboxEntityId);
     }
 }

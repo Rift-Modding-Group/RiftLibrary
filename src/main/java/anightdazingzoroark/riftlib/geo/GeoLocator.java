@@ -10,8 +10,10 @@ import javax.vecmath.Vector3f;
  * GeoLocator is collected from raw model info and is just raw locator information.
  * */
 public class GeoLocator implements IBone {
+    @NotNull
     public final GeoBone parent;
-    public String name;
+    @NotNull
+    public final String name;
     private BoneSnapshot initialSnapshot;
     @NotNull
     private final Vector3f position = new Vector3f();
@@ -21,7 +23,7 @@ public class GeoLocator implements IBone {
     private boolean areCubesHidden;
     private boolean hideChildBonesToo;
 
-    public GeoLocator(GeoBone parent, String name) {
+    public GeoLocator(@NotNull GeoBone parent, @NotNull String name) {
         this.parent = parent;
         this.name = name;
     }
@@ -75,11 +77,6 @@ public class GeoLocator implements IBone {
     public void setHidden(boolean selfHidden, boolean skipChildRendering) {
         this.isHidden = selfHidden;
         this.hideChildBonesToo = skipChildRendering;
-    }
-
-    @Override
-    public void setModelRendererName(String modelRendererName) {
-        this.name = modelRendererName;
     }
 
     @Override

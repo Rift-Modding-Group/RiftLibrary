@@ -6,18 +6,22 @@ import java.util.List;
 import anightdazingzoroark.riftlib.core.processor.IBone;
 import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
+import javax.annotation.Nullable;
 import javax.vecmath.Vector3f;
 
 public class GeoBone implements IBone {
-	public GeoBone parent;
+	@Nullable
+	public final GeoBone parent;
+	@NotNull
+	private final String name;
 
 	public final List<GeoBone> childBones = new ArrayList<>();
 	public final List<GeoCube> childCubes = new ArrayList<>();
 	public final List<GeoLocator> childLocators = new ArrayList<>();
 	public final List<GeoBoundingBox> childBoundingBoxes = new ArrayList<>();
 
-	public String name;
 	private BoneSnapshot initialSnapshot;
 
 	public Boolean mirror;
@@ -36,11 +40,9 @@ public class GeoBone implements IBone {
 	@NotNull
 	private final Vector3f rotation = new Vector3f();
 
-	public Object extraData;
-
-	@Override
-	public void setModelRendererName(String modelRendererName) {
-		this.name = modelRendererName;
+	public GeoBone(@Nullable GeoBone parent, @NotNull String name) {
+		this.parent = parent;
+		this.name = name;
 	}
 
 	@Override
@@ -56,6 +58,7 @@ public class GeoBone implements IBone {
 	}
 
 	@Override
+	@NonNull
 	public String getName() {
 		return this.name;
 	}

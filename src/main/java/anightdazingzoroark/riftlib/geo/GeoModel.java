@@ -22,13 +22,11 @@ public class GeoModel {
 	}
 
 	private static GeoBone copyBone(GeoBone source, GeoBone parent) {
-		GeoBone copy = new GeoBone();
-		copy.parent = parent;
-		copy.name = source.name;
+		GeoBone copy = new GeoBone(parent, source.getName());
+
 		copy.mirror = source.mirror;
 		copy.inflate = source.inflate;
 		copy.dontRender = source.dontRender;
-		copy.extraData = source.extraData;
 
 		copy.setHidden(source.isHidden(), source.childBonesAreHiddenToo());
 		copy.setCubesHidden(source.cubesAreHidden());
@@ -70,11 +68,11 @@ public class GeoModel {
 	}
 
 	private GeoBone getBoneRecursively(String name, GeoBone bone) {
-		if (bone.name.equals(name)) {
+		if (bone.getName().equals(name)) {
 			return bone;
 		}
 		for (GeoBone childBone : bone.childBones) {
-			if (childBone.name.equals(name)) {
+			if (childBone.getName().equals(name)) {
 				return childBone;
 			}
 			GeoBone optionalBone = getBoneRecursively(name, childBone);

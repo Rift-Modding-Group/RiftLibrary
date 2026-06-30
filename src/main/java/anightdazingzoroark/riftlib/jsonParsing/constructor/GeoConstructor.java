@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.jsonParsing.constructor;
 
+import javax.annotation.Nullable;
 import javax.vecmath.Vector3f;
 
 import anightdazingzoroark.riftlib.core.ExpressionValue;
@@ -7,6 +8,7 @@ import anightdazingzoroark.riftlib.geo.*;
 import anightdazingzoroark.riftlib.jsonParsing.raw.geo.*;
 
 import anightdazingzoroark.riftlib.util.VectorUtils;
+import org.jetbrains.annotations.NotNull;
 
 public class GeoConstructor {
 	public static GeoModel constructGeoModel(RawGeometryTree geometryTree) {
@@ -18,10 +20,10 @@ public class GeoConstructor {
 		return model;
 	}
 
-	public static GeoBone constructBone(RawModelBoneGroup bone, RawGeoModel.RawModelDescription description, GeoBone parent) {
-		GeoBone geoBone = new GeoBone();
-
+	public static GeoBone constructBone(RawModelBoneGroup bone, RawGeoModel.RawModelDescription description, @Nullable GeoBone parent) {
 		RawGeoModel.RawModelBone rawBone = bone.selfBone;
+		GeoBone geoBone = new GeoBone(parent, rawBone.name);
+
 		Vector3f rotation = VectorUtils.convertDoubleToFloat(VectorUtils.fromArray(rawBone.rotation));
 		Vector3f pivot = VectorUtils.convertDoubleToFloat(VectorUtils.fromArray(rawBone.pivot));
 		rotation.x *= -1;
@@ -31,8 +33,6 @@ public class GeoConstructor {
 		//geoBone.dontRender = rawBone.getNeverRender();
 		//geoBone.reset = rawBone.getReset();
 		geoBone.inflate = rawBone.inflate;
-		geoBone.parent = parent;
-		geoBone.setModelRendererName(rawBone.name);
 
 		geoBone.getRotation().set(
 				(float) Math.toRadians(rotation.getX()),

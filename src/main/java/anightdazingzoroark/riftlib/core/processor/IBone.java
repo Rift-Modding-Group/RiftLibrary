@@ -30,8 +30,6 @@ public interface IBone {
 
 	void setHidden(boolean selfHidden, boolean skipChildRendering);
 
-	void setModelRendererName(String modelRendererName);
-
 	void saveInitialSnapshot();
 
 	BoneSnapshot getInitialSnapshot();

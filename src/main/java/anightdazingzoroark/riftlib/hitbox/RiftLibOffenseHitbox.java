@@ -18,23 +18,16 @@ import java.util.Set;
  * if they ever wanna deal with soulslike combat hitboxes
  * */
 public class RiftLibOffenseHitbox<T extends IMultiHitboxUser<?>> implements IHitbox<T> {
-    public final int hitboxId;
     @NotNull
     private final T parent;
     @NotNull
     private final AnimatedBoundingBox boundingBox;
-    //these are the final definitive scales of the hitbox and will be used for such
-    public final float fixedWidth;
-    public final float fixedHeight;
     private final Set<Integer> alreadyHitEntities = new HashSet<>();
     private boolean isDead;
 
-    public RiftLibOffenseHitbox(int hitboxId, @NotNull T parent, @NotNull AnimatedBoundingBox boundingBox, float width, float height) {
-        this.hitboxId = hitboxId;
+    public RiftLibOffenseHitbox(@NotNull T parent, @NotNull AnimatedBoundingBox boundingBox) {
         this.parent = parent;
         this.boundingBox = boundingBox;
-        this.fixedWidth = width;
-        this.fixedHeight = height;
     }
 
     /**

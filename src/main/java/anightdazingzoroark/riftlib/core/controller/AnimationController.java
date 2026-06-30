@@ -634,7 +634,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                                 AnimationPoint zPoint = rotationKeyFrames.getAnimationPointAtTick(data, transitionResolvedTick, Axis.Z);
 
                                 boneAnimationQueue.rotationXQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
-                                        boneSnapshot.getRotation().x - initialSnapshot.getRotation().z,
+                                        boneSnapshot.getRotation().x - initialSnapshot.getRotation().x,
                                         xPoint.animationStartValue));
                                 boneAnimationQueue.rotationYQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
                                         boneSnapshot.getRotation().y - initialSnapshot.getRotation().y,

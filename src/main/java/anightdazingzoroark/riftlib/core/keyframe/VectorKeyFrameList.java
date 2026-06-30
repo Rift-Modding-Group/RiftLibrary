@@ -1,15 +1,10 @@
 package anightdazingzoroark.riftlib.core.keyframe;
 
-import anightdazingzoroark.riftlib.core.ExpressionValue;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.core.util.Axis;
-import anightdazingzoroark.riftlib.molang.MolangParser;
-import anightdazingzoroark.riftlib.molang.MolangScope;
-import anightdazingzoroark.riftlib.util.MolangUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class VectorKeyFrameList {
     private final List<KeyFrame> keyFrames = new ArrayList<>();
@@ -52,17 +47,14 @@ public class VectorKeyFrameList {
         double endValue = currentFrame.getEndValue().getValueFromAxis(axis).get(animData);
 
         if (this.isRotation) {
-            if (currentFrame.getStartValue().getValueFromAxis(axis).isExpression()) {
-                startValue = Math.toRadians(startValue);
-                if (axis == Axis.X || axis == Axis.Y) {
-                    startValue *= -1;
-                }
+            startValue = Math.toRadians(startValue);
+            if (axis == Axis.X || axis == Axis.Y) {
+                startValue *= -1;
             }
-            if (currentFrame.getEndValue().getValueFromAxis(axis).isExpression()) {
-                endValue = Math.toRadians(endValue);
-                if (axis == Axis.X || axis == Axis.Y) {
-                    endValue *= -1;
-                }
+
+            endValue = Math.toRadians(endValue);
+            if (axis == Axis.X || axis == Axis.Y) {
+                endValue *= -1;
             }
         }
 

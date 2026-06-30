@@ -28,13 +28,6 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
     }
 
     /**
-     * Ticked in HitboxTicker every tick to update getMultiHitboxList()
-     * */
-    default void setHitboxes() {
-
-    }
-
-    /**
      * This is for dealing with damage multipliers from attacking at different parts
      * */
     @Override

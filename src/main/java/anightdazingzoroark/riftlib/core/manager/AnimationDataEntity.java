@@ -14,6 +14,7 @@ import java.util.List;
 
 public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivingBase, AnimationDataEntity> {
     private final List<AnimatedBoundingBox> animatedBoundingBoxes = new ArrayList<>();
+    private boolean boundingBoxesRecentlyUpdated;
 
     public AnimationDataEntity(EntityLivingBase holder) {
         super(holder, getAnimatable(holder));
@@ -60,10 +61,17 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
             }
 
             this.currentModel = model;
+            this.boundingBoxesRecentlyUpdated = true;
         }
     }
 
     public List<AnimatedBoundingBox> getAnimatedBoundingBoxes() {
         return this.animatedBoundingBoxes;
+    }
+
+    public boolean getBoundingBoxesRecentlyUpdated() {
+        boolean toReturn = this.boundingBoxesRecentlyUpdated;
+        this.boundingBoxesRecentlyUpdated = false;
+        return toReturn;
     }
 }

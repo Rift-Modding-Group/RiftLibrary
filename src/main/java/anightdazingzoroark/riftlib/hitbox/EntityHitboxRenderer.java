@@ -11,7 +11,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  * Make collision hitbox completely invisible
  * */
 @SideOnly(Side.CLIENT)
-public class EntityHitboxRenderer extends Render<RiftLibCollisionHitbox<?>> {
+public class EntityHitboxRenderer extends Render<RiftLibCollisionHitbox> {
     protected EntityHitboxRenderer(RenderManager renderManager) {
         super(renderManager);
     }
@@ -21,9 +21,9 @@ public class EntityHitboxRenderer extends Render<RiftLibCollisionHitbox<?>> {
         return null;
     }
 
-    public static class Factory implements IRenderFactory<RiftLibCollisionHitbox<?>> {
+    public static class Factory implements IRenderFactory<RiftLibCollisionHitbox> {
         @Override
-        public Render<? super RiftLibCollisionHitbox<?>> createRenderFor(RenderManager manager) {
+        public Render<? super RiftLibCollisionHitbox> createRenderFor(RenderManager manager) {
             return new EntityHitboxRenderer(manager);
         }
     }

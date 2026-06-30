@@ -14,13 +14,19 @@ public class BoneAnimationValuesList {
             float newZ = MathHelper.wrapDegrees(this.map.get(name).rotation[2] + z);
             BoneAnimationValues newValues = this.map.get(name);
             newValues.rotation = new float[]{newX, newY, newZ};
+            newValues.hasRotation = true;
             this.map.replace(name, newValues);
         }
         else {
             BoneAnimationValues newValues = new BoneAnimationValues();
             newValues.rotation = new float[]{x, y, z};
+            newValues.hasRotation = true;
             this.map.put(name, newValues);
         }
+    }
+
+    public boolean hasRotations(String name) {
+        return this.map.containsKey(name) && this.map.get(name).hasRotation;
     }
 
     public float[] getRotations(String name) {
@@ -39,13 +45,19 @@ public class BoneAnimationValuesList {
             float newZ = this.map.get(name).position[2] + z;
             BoneAnimationValues newValues = this.map.get(name);
             newValues.position = new float[]{newX, newY, newZ};
+            newValues.hasPosition = true;
             this.map.replace(name, newValues);
         }
         else {
             BoneAnimationValues newValues = new BoneAnimationValues();
             newValues.position = new float[]{x, y, z};
+            newValues.hasPosition = true;
             this.map.put(name, newValues);
         }
+    }
+
+    public boolean hasPositions(String name) {
+        return this.map.containsKey(name) && this.map.get(name).hasPosition;
     }
 
     public float[] getPositions(String name) {
@@ -60,13 +72,19 @@ public class BoneAnimationValuesList {
             float newZ = this.map.get(name).scale[2] + (z - 1f);
             BoneAnimationValues newValues = this.map.get(name);
             newValues.scale = new float[]{newX, newY, newZ};
+            newValues.hasScale = true;
             this.map.replace(name, newValues);
         }
         else {
             BoneAnimationValues newValues = new BoneAnimationValues();
             newValues.scale = new float[]{x, y, z};
+            newValues.hasScale = true;
             this.map.put(name, newValues);
         }
+    }
+
+    public boolean hasScales(String name) {
+        return this.map.containsKey(name) && this.map.get(name).hasScale;
     }
 
     public float[] getScales(String name) {
@@ -78,5 +96,8 @@ public class BoneAnimationValuesList {
         protected float[] rotation = {0f, 0f, 0f};
         protected float[] position = {0f, 0f, 0f};
         protected float[] scale = {1f, 1f, 1f};
+        protected boolean hasRotation;
+        protected boolean hasPosition;
+        protected boolean hasScale;
     }
 }

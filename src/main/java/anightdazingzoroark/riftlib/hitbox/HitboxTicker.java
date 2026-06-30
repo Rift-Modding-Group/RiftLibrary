@@ -1,9 +1,7 @@
 package anightdazingzoroark.riftlib.hitbox;
 
-import anightdazingzoroark.riftlib.internalMessage.RiftLibSyncHitboxEntityId;
-import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -11,138 +9,51 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * One issue I've had with the hitbox system in previous versions was how there's a good chance that
- * when an entity is removed from the world, so do its hitboxes, mainly from how hitboxes were ticked
+ * when an entity is removed from the world, its hitboxes persist, mainly from how hitboxes were ticked
  * from the entity. This should fix this by cleaning up orphaned hitboxes that couldn't be removed
  * when the parent was disappeared.
  * */
 public class HitboxTicker {
-    /**
-     * Handler for collision hitboxes
-     * */
-    private static class Collisions {
-        private final HashMap<Integer, List<RiftLibCollisionHitbox<?>>> hitboxMap = new HashMap<>();
+    private final List<IMultiHitboxUser<?>> hitboxUserList = new ArrayList<>();
 
-        /**
-         * This adds content to the hitbox map.
-         * */
-        private void manageLoadedUsersHitboxes(World world) {
-            List<Integer> hitboxUserIDs = new ArrayList<>();
-            //try initialize hitboxes first
-            for (Entity entity : world.getLoadedEntityList()) {
-                if (!(entity instanceof IMultiHitboxUser<?> multiHitboxUser)) continue;
+    private void updateTicker(World world) {
+        //step 1: add new ones from the world
+        world.getEntities(EntityLivingBase.class, entity -> entity instanceof IMultiHitboxUser<?>)
+                .forEach(entity -> {
+                    if (!this.hitboxUserList.contains(entity)) this.hitboxUserList.add((IMultiHitboxUser<?>) entity);
+                });
 
-                multiHitboxUser.setHitboxes();
-                if (entity.getParts() == null || entity.getParts().length == 0) continue;
-
-                //get and put loaded entity ids
-                hitboxUserIDs.add(entity.getEntityId());
-            }
-
-            //add hitboxes next
-            //iterate over every id to see if the entity is loaded
-            //if it is already in the map, add it
-            //otherwise ignore
-            for (int hitboxUserID : hitboxUserIDs) {
-                if (this.hitboxMap.containsKey(hitboxUserID)) continue;
-
-                Entity entity = world.getEntityByID(hitboxUserID);
-                List<RiftLibCollisionHitbox<?>> hitboxes = new ArrayList<>();
-                if (entity == null) continue;
-                for (Entity entityPart : entity.getParts()) {
-                    if (!(entityPart instanceof RiftLibCollisionHitbox<?> entityHitbox)) continue;
-                    hitboxes.add(entityHitbox);
-                }
-                this.hitboxMap.put(hitboxUserID, hitboxes);
-            }
+        //step 2: update all hitboxes and purge hitbox user list of dead entities
+        Iterator<IMultiHitboxUser<?>> hitboxUserIterator = this.hitboxUserList.iterator();
+        while (hitboxUserIterator.hasNext()) {
+            IMultiHitboxUser<?> multiHitboxUser = hitboxUserIterator.next();
+            multiHitboxUser.getMultiHitboxList().updateHitboxes();
+            if (!multiHitboxUser.getMultiHitboxUser().isEntityAlive()) hitboxUserIterator.remove();
         }
-
-        /**
-         * This updates all the hitboxes in the hitbox map.
-         * */
-        private void updateLoadedUsersHitboxes() {
-            for (Map.Entry<Integer, List<RiftLibCollisionHitbox<?>>> entry : this.hitboxMap.entrySet()) {
-                //update the hitboxes only
-                for (RiftLibCollisionHitbox<?> entityHitbox : entry.getValue()) {
-                    entityHitbox.onUpdate();
-                }
-            }
-        }
-
-        /**
-         * This forcibly syncs from server to all clients the entityIds of the hitboxes.
-         * */
-        private void updateTrackingClientsWithHitboxEntityIDs(World world) {
-            if (world.isRemote || ServerProxy.HITBOX_MESSAGE_WRAPPER == null) return;
-
-            for (Map.Entry<Integer, List<RiftLibCollisionHitbox<?>>> entry : this.hitboxMap.entrySet()) {
-                Entity entity = world.getEntityByID(entry.getKey());
-                if (entity == null) continue;
-
-                for (RiftLibCollisionHitbox<?> entityHitbox : entry.getValue()) {
-                    ServerProxy.HITBOX_MESSAGE_WRAPPER.sendToAllTracking(new RiftLibSyncHitboxEntityId(entity, entityHitbox), entity);
-                }
-            }
-        }
-
-        /**
-         * Clean up the map to remove dead hitboxes.
-         * */
-        private void cleanupLoadedUsersHitboxes() {
-            List<Integer> userIDsToRemove = new ArrayList<>();
-            outer: for (Map.Entry<Integer, List<RiftLibCollisionHitbox<?>>> entry : this.hitboxMap.entrySet()) {
-                for (RiftLibCollisionHitbox<?> entityHitbox : entry.getValue()) {
-                    //if the part exists, it might be because its parent still does too
-                    //so skip them
-                    if (entityHitbox.isAddedToWorld()) continue outer;
-                    userIDsToRemove.add(entry.getKey());
-                }
-            }
-
-            for (int hitboxUserID : userIDsToRemove) this.hitboxMap.remove(hitboxUserID);
-        }
-
-        private void clearMap() {
-            this.hitboxMap.clear();
-        }
-    }
-
-    /**
-     * Handler for offense hitboxes
-     * */
-    private static class Offenses {
-
     }
 
     /**
      * Events for server.
      * */
     public static class Server {
-        private final HitboxTicker.Collisions hitboxTicker;
-
-        public Server() {
-            this.hitboxTicker = new HitboxTicker.Collisions();
-        }
+        private final HitboxTicker ticker = new HitboxTicker();
 
         @SubscribeEvent
         public void tickHitboxes(TickEvent.WorldTickEvent event) {
             if (event.side.isClient()) return;
             if (event.phase != TickEvent.Phase.END) return;
-            this.hitboxTicker.manageLoadedUsersHitboxes(event.world);
-            this.hitboxTicker.updateLoadedUsersHitboxes();
-            this.hitboxTicker.updateTrackingClientsWithHitboxEntityIDs(event.world);
-            this.hitboxTicker.cleanupLoadedUsersHitboxes();
+
+            //iterate over entities to find hitbox users
+            this.ticker.updateTicker(event.world);
         }
 
         @SubscribeEvent
         public void onWorldUnload(WorldEvent.Unload event) {
-            this.hitboxTicker.clearMap();
+            this.ticker.hitboxUserList.clear();
         }
     }
 
@@ -150,11 +61,7 @@ public class HitboxTicker {
      * Events for client.
      * */
     public static class Client {
-        private final HitboxTicker.Collisions hitboxTicker;
-
-        public Client() {
-            this.hitboxTicker = new HitboxTicker.Collisions();
-        }
+        private final HitboxTicker ticker = new HitboxTicker();
 
         @SubscribeEvent
         @SideOnly(Side.CLIENT)
@@ -165,15 +72,14 @@ public class HitboxTicker {
             World world = Minecraft.getMinecraft().world;
             if (world == null) return;
 
-            this.hitboxTicker.manageLoadedUsersHitboxes(world);
-            this.hitboxTicker.updateLoadedUsersHitboxes();
-            this.hitboxTicker.cleanupLoadedUsersHitboxes();
+            //iterate over entities to find hitbox users
+            this.ticker.updateTicker(world);
         }
 
         @SubscribeEvent
         @SideOnly(Side.CLIENT)
         public void onWorldUnload(WorldEvent.Unload event) {
-            this.hitboxTicker.clearMap();
+            this.ticker.hitboxUserList.clear();
         }
     }
 }

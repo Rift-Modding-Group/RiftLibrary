@@ -127,39 +127,41 @@ public class AnimationProcessor {
 			DirtyTracker dirtyTracker = modelTracker.get(bone.getName());
 			if (dirtyTracker == null) continue;
 
-			float[] rot = boneAnimationValues.getRotations(bone.getName());
-			float[] pos = boneAnimationValues.getPositions(bone.getName());
-			float[] scale = boneAnimationValues.getScales(bone.getName());
+			if (boneAnimationValues.hasRotations(bone.getName())) {
+				float[] rot = boneAnimationValues.getRotations(bone.getName());
+				bone.getRotation().set(
+						rot[0] + initialSnapshot.getRotation().x,
+						rot[1] + initialSnapshot.getRotation().y,
+						rot[2] + initialSnapshot.getRotation().z
+				);
+				snapshot.getRotation().set(bone.getRotation());
+				snapshot.isCurrentlyRunningRotationAnimation = true;
+				dirtyTracker.hasRotationChanged = true;
+			}
 
-			bone.getRotation().set(
-					rot[0] + initialSnapshot.getRotation().x,
-					rot[1] + initialSnapshot.getRotation().y,
-					rot[2] + initialSnapshot.getRotation().z
-			);
+			if (boneAnimationValues.hasPositions(bone.getName())) {
+				float[] pos = boneAnimationValues.getPositions(bone.getName());
+				bone.getPosition().set(
+						pos[0] + initialSnapshot.getPosition().x,
+						pos[1] + initialSnapshot.getPosition().y,
+						pos[2] + initialSnapshot.getPosition().z
+				);
+				snapshot.getPosition().set(bone.getPosition());
+				snapshot.isCurrentlyRunningPositionAnimation = true;
+				dirtyTracker.hasPositionChanged = true;
+			}
 
-			bone.getPosition().set(
-					pos[0] + initialSnapshot.getPosition().x,
-					pos[1] + initialSnapshot.getPosition().y,
-					pos[2] + initialSnapshot.getPosition().z
-			);
-
-			bone.getScale().set(
-					scale[0] * initialSnapshot.getScale().x,
-					scale[1] * initialSnapshot.getScale().y,
-					scale[2] * initialSnapshot.getScale().z
-			);
-
-			snapshot.getRotation().set(bone.getRotation());
-			snapshot.getPosition().set(bone.getPosition());
-			snapshot.getScale().set(bone.getScale());
-
-			snapshot.isCurrentlyRunningRotationAnimation = true;
-			snapshot.isCurrentlyRunningPositionAnimation = true;
-			snapshot.isCurrentlyRunningScaleAnimation = true;
-
-			dirtyTracker.hasRotationChanged = true;
-			dirtyTracker.hasPositionChanged = true;
-			dirtyTracker.hasScaleChanged = true;
+			if (boneAnimationValues.hasScales(bone.getName())) {
+				float[] scale = boneAnimationValues.getScales(bone.getName());
+				bone.getScale().set(
+						scale[0] * initialSnapshot.getScale().x,
+						scale[1] * initialSnapshot.getScale().y,
+						scale[2] * initialSnapshot.getScale().z
+				);
+				snapshot.getScale().set(bone.getScale());
+				snapshot.isCurrentlyRunningScaleAnimation = true;
+				dirtyTracker.hasScaleChanged = true;
+			}
 		}
 
 		BoneAnimationValuesList dBoneAnimationValues = new BoneAnimationValuesList();

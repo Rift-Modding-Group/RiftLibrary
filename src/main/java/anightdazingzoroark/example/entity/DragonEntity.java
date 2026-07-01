@@ -9,6 +9,7 @@ import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.hitbox.MultiHitboxList;
+import anightdazingzoroark.riftlib.hitbox.RiftLibCollisionHitbox;
 import anightdazingzoroark.riftlib.ray.*;
 import anightdazingzoroark.riftlib.ray.rayShape.movement.RiftLibRayBoxMovementShape;
 import anightdazingzoroark.riftlib.ray.rayShape.impact.RiftLibRaySphereImpactShape;
@@ -142,6 +143,11 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     @Override
     public float multiHitboxUserScale() {
         return 3f;
+    }
+
+    @Override
+    public float hitboxDamageMultiplier(RiftLibCollisionHitbox<DragonEntity> collisionHitbox, DamageSource source) {
+        return collisionHitbox.hasHitboxTag("head") ? 5f : 1;
     }
 
     @Override

@@ -11,7 +11,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -22,7 +22,6 @@ public class RiftLibCollisionHitbox<T extends IMultiHitboxUser<?>> extends Multi
     @NotNull
     private final AnimatedBoundingBox boundingBox;
     private boolean isDisabled;
-    public final List<EntityHitboxDamageDefinition> damageDefinitions = new ArrayList<>();
 
     public RiftLibCollisionHitbox(T parent, AnimatedBoundingBox boundingBox) {
         super(
@@ -149,6 +148,10 @@ public class RiftLibCollisionHitbox<T extends IMultiHitboxUser<?>> extends Multi
         return false;
     }
 
+    public boolean hasHitboxTag(String name) {
+        return Arrays.asList(this.boundingBox.getTags()).contains(name);
+    }
+
     /**
      * Recommended instead of using the parent variable
      * */
@@ -171,77 +174,5 @@ public class RiftLibCollisionHitbox<T extends IMultiHitboxUser<?>> extends Multi
 
     public boolean isDisabled() {
         return this.isDisabled;
-    }
-
-    @Deprecated //this shall be replaced with molang queries for damage type and damage source
-    public boolean damageSourceWithinDamageDefinitions(DamageSource damageSource) {
-        for (EntityHitboxDamageDefinition damageDefinition : this.damageDefinitions) {
-            if (damageDefinition.damageSource != null) {
-                if (damageDefinition.damageSource.equals(damageSource.damageType)) return true;
-            }
-            else if (damageDefinition.damageType != null) {
-                switch (damageDefinition.damageType) {
-                    case "projectile":
-                        if (damageSource.isProjectile()) return true;
-                    case "magic":
-                        if (damageSource.isMagicDamage()) return true;
-                    case "fire":
-                        if (damageSource.isFireDamage()) return true;
-                    case "explosion":
-                        if (damageSource.isExplosion()) return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    @Deprecated //same reason as above
-    public float getDamageMultiplierForSource(DamageSource damageSource) {
-        float toReturn = 1f;
-        for (EntityHitboxDamageDefinition damageDefinition : this.damageDefinitions) {
-            if (damageDefinition.damageSource != null) {
-                if (damageDefinition.damageSource.equals(damageSource.damageType)) {
-                    toReturn *= damageDefinition.damageMultiplier;
-                }
-            }
-            else if (damageDefinition.damageType != null) {
-                switch (damageDefinition.damageType) {
-                    case "projectile":
-                        if (damageSource.isProjectile()) {
-                            toReturn *= damageDefinition.damageMultiplier;
-                            break;
-                        }
-                    case "magic":
-                        if (damageSource.isMagicDamage()) {
-                            toReturn *= damageDefinition.damageMultiplier;
-                            break;
-                        }
-                    case "fire":
-                        if (damageSource.isFireDamage()) {
-                            toReturn *= damageDefinition.damageMultiplier;
-                            break;
-                        }
-                    case "explosion":
-                        if (damageSource.isExplosion()) {
-                            toReturn *= damageDefinition.damageMultiplier;
-                            break;
-                        }
-                }
-            }
-        }
-        return toReturn;
-    }
-
-    //either one of damageSource or damageType must be null
-    //damageSource is an instance of the DamageSource object (arrow, cactus, etc)
-    //damageType is one of the booleans associated with a DamageSource object (projectile, magic, etc)
-    //if damageSource or damageType both not null, damageSource will be prioritized
-    @Deprecated //well
-    public record EntityHitboxDamageDefinition(String damageSource, String damageType, float damageMultiplier) {
-        @Override
-        @NotNull
-        public String toString() {
-            return "[source=" + this.damageSource + ", type=" + this.damageType + ", multiplier=" + this.damageMultiplier + "]";
-        }
     }
 }

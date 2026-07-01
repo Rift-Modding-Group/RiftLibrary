@@ -21,6 +21,13 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
     MultiHitboxList<T> getMultiHitboxList();
 
     /**
+     * Can be overriden to manage the damage multiplier of specific parts
+     * */
+    default float hitboxDamageMultiplier(RiftLibCollisionHitbox<T> collisionHitbox, DamageSource source) {
+        return 1f;
+    }
+
+    /**
      * Get the model scale of the user.
      * */
     default float multiHitboxUserScale() {
@@ -30,11 +37,12 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
     /**
      * This is for dealing with damage multipliers from attacking at different parts
      * */
+    @SuppressWarnings({"unchecked"})
     @Override
     default boolean attackEntityFromPart(MultiPartEntityPart part, DamageSource source, float damage) {
         RiftLibCollisionHitbox<?> hitbox = (RiftLibCollisionHitbox<?>) part;
         if (!hitbox.isDisabled()) {
-            damage *= (float) hitbox.getBoundingBox().getDamageMultiplier().get(this.getMultiHitboxUser().getAnimationData());
+            damage *= this.hitboxDamageMultiplier((RiftLibCollisionHitbox<T>) part, source);
 
             //as long as there is damage dealt, it will be applied
             if (damage > 0f) return this.getMultiHitboxUser().attackEntityFrom(source, damage);
@@ -44,7 +52,7 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
 
     /**
     * This makes it so that when HWYLA is installed, the info box directly shows info about the parent.
-    * Set this to false if you already have a different factory for hitboxes.
+    * Set this to false if you already have a different factory in mind for hitboxes.
      */
     default boolean hitboxUseHWYLA() {
         return true;

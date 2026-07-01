@@ -4,7 +4,9 @@ import anightdazingzoroark.riftlib.model.AnimatedBoundingBox;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 import org.lwjglx.util.vector.Quaternion;
@@ -45,11 +47,12 @@ public interface IHitbox<T extends IMultiHitboxUser<?>> {
 
         //correct the model space positions first
         Vec3d modelSpacePos = this.getBoundingBox().getModelSpacePosition();
-        float modelSpaceWidth = this.getBoundingBox().getModelSpaceSize()[0];
+        float[] modelSpaceSize = this.getBoundingBox().getModelSpaceSize();
+        float[] modelSpaceSizeUnscaled = this.getBoundingBox().getUnscaledModelSpaceSize();
 
-        float newHitboxX = (float) ((-modelSpacePos.x + modelSpaceWidth / 2f) / 16f);
-        float newHitboxY = (float) modelSpacePos.y / 16f;
-        float newHitboxZ = -(float) ((modelSpacePos.z + modelSpaceWidth / 2f) / 16f);
+        float newHitboxX = (float) ((-modelSpacePos.x + modelSpaceSizeUnscaled[0] / 2f) / 16f);
+        float newHitboxY = (float) ((modelSpacePos.y + modelSpaceSizeUnscaled[1] / 2f - modelSpaceSize[1] / 2f) / 16f);
+        float newHitboxZ = (float) (-(modelSpacePos.z + modelSpaceSizeUnscaled[0] / 2f) / 16f);
 
         //set initial entity offset from center
         Vec3d posVec = new Vec3d(

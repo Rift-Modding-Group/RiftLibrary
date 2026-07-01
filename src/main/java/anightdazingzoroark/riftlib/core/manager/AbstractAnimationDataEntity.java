@@ -52,9 +52,9 @@ public abstract class AbstractAnimationDataEntity<T extends Entity, D extends Ab
     protected void createMolangQueries() {
         super.createMolangQueries();
 
-        this.molangQueries.put("query.modified_distance_moved", () -> this.modifiedDistanceMoved);
-        this.molangQueries.put("query.distance_from_camera", () -> {
-            if (!this.getWorld().isRemote) return 0D;
+        this.registerMolangQuery("query.modified_distance_moved", (values, animData) -> this.modifiedDistanceMoved);
+        this.registerMolangQuery("query.distance_from_camera", (values, animData) -> {
+            if (this.getWorld() == null || !this.getWorld().isRemote) return 0D;
 
             Entity camera = Minecraft.getMinecraft().getRenderViewEntity();
             float partialTick = Minecraft.getMinecraft().getRenderPartialTicks();
@@ -73,22 +73,22 @@ public abstract class AbstractAnimationDataEntity<T extends Entity, D extends Ab
             );
             return entityCamera.add(ActiveRenderInfo.getCameraPosition()).distanceTo(entityPosition);
         });
-        this.molangQueries.put("query.is_on_ground", () -> {
+        this.registerMolangQuery("query.is_on_ground", (values, animData) -> {
             return MolangUtils.booleanToDouble(this.getHolder().onGround);
         });
-        this.molangQueries.put("query.is_in_water", () -> {
+        this.registerMolangQuery("query.is_in_water", (values, animData) -> {
             return MolangUtils.booleanToDouble(this.getHolder().isInWater());
         });
-        this.molangQueries.put("query.is_in_water_or_rain", () -> {
+        this.registerMolangQuery("query.is_in_water_or_rain", (values, animData) -> {
             return MolangUtils.booleanToDouble(this.getHolder().isWet());
         });
-        this.molangQueries.put("query.is_on_fire", () -> {
+        this.registerMolangQuery("query.is_on_fire", (values, animData) -> {
             return MolangUtils.booleanToDouble(this.getHolder().isBurning());
         });
-        this.molangQueries.put("query.ground_speed", this::getHorizontalSpeed);
-        this.molangQueries.put("query.vertical_speed", this::getVerticalSpeed);
-        this.molangQueries.put("query.yaw_speed", () -> {
-            if (!this.getWorld().isRemote) {
+        this.registerMolangQuery("query.ground_speed", (values, animData) -> this.getHorizontalSpeed());
+        this.registerMolangQuery("query.vertical_speed", (values, animData) -> this.getVerticalSpeed());
+        this.registerMolangQuery("query.yaw_speed", (values, animData) -> {
+            if (this.getWorld() == null || !this.getWorld().isRemote) {
                 return (double) (this.getHolder().rotationYaw - this.getHolder().prevRotationYaw);
             }
             float partialTick = Minecraft.getMinecraft().getRenderPartialTicks();
@@ -96,7 +96,7 @@ public abstract class AbstractAnimationDataEntity<T extends Entity, D extends Ab
             float prevEntityYaw = Interpolations.lerpYaw(this.getHolder().prevRotationYaw, this.getHolder().rotationYaw, partialTick - 0.1f);
             return (double) (currentEntityYaw - prevEntityYaw);
         });
-        this.molangQueries.put("query.is_riding", () -> {
+        this.registerMolangQuery("query.is_riding", (values, animData) -> {
             return MolangUtils.booleanToDouble(this.getHolder().isRiding());
         });
     }

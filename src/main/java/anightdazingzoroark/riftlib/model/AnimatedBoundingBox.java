@@ -54,6 +54,13 @@ public class AnimatedBoundingBox {
         };
     }
 
+    public float[] getUnscaledModelSpaceSize() {
+        return this.boundingBox.getSize();
+    }
+
+    /**
+     * Note that this isn't the centerpoint of
+     * */
     @NotNull
     public Vec3d getModelSpacePosition() {
         Vec3d boneDispOffset = this.getPositionOffsetFromBoneDisplacements();

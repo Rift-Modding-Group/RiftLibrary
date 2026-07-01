@@ -12,6 +12,8 @@ import anightdazingzoroark.riftlib.geo.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
+import anightdazingzoroark.riftlib.molang.math.IValue;
+import anightdazingzoroark.riftlib.molang.math.MolangFunction;
 import anightdazingzoroark.riftlib.resource.client.RiftLibCacheClient;
 import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
 import anightdazingzoroark.riftlib.util.MolangUtils;
@@ -27,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
@@ -41,7 +44,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     private final List<AnimatableValue> onUpdateAnimationValues = new ArrayList<>();
     private final Map<String, AnimatableRunValue> animationMessageEffects = new HashMap<>();
     private final Map<ResourceLocation, GeoModel> modelCopies = new HashMap<>();
-    protected final Map<String, Supplier<Double>> molangQueries = new HashMap<>();
+    protected final Map<String, MolangFunction> molangQueries = new HashMap<>();
     protected final List<AnimatedLocator> animatedLocators = new ArrayList<>();
     private int animatedLocatorTicker;
     @NotNull
@@ -269,36 +272,59 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
         this.dataScope.replaceValues(values);
     }
 
+    //-----molang query related stuff starts here-----
     /**
      * Each AnimationData class is to have their own molang queries in addition to the ones here shared amongst all
      * */
     protected void createMolangQueries() {
         //-----for data specifically-----
-        this.molangQueries.put("query.anim_time", () -> this.animTime);
-        this.molangQueries.put("query.delta_time", () -> this.deltaTime);
-        this.molangQueries.put("query.life_time", () -> this.lifeTime);
+        this.registerMolangQuery("query.anim_time", (values, animData) -> this.animTime);
+        this.registerMolangQuery("query.delta_time", (values, animData) -> this.deltaTime);
+        this.registerMolangQuery("query.life_time", (values, animData) -> this.lifeTime);
         //-----for world-----
-        this.molangQueries.put("query.actor_count", () -> {
+        this.registerMolangQuery("query.actor_count", (values, animData) -> {
             World world = this.getWorld();
             if (world == null) return 0D;
             return (double) world.getLoadedEntityList().size();
         });
-        this.molangQueries.put("query.time_of_day", () -> {
+        this.registerMolangQuery("query.time_of_day", (values, animData) -> {
             World world = this.getWorld();
             if (world == null) return 0D;
             return world.getTotalWorldTime() / 24000D;
         });
-        this.molangQueries.put("query.moon_phase", () -> {
+        this.registerMolangQuery("query.moon_phase", (values, animData) -> {
             World world = this.getWorld();
             if (world == null) return 0D;
             return (double) world.getMoonPhase();
         });
     }
 
-    @Nullable
-    public abstract World getWorld();
+    protected void registerMolangQuery(String name, BiFunction<IValue[], AbstractAnimationData<?, ?>, Double> operation) {
+        this.registerMolangQuery(name, 0, operation);
+    }
 
-    public Map<String, Supplier<Double>> getMolangQueries() {
+    /**
+     * Helper function to simplify creation of molang queries
+     * */
+    protected void registerMolangQuery(String name, int argCount, BiFunction<IValue[], AbstractAnimationData<?, ?>, Double> operation) {
+        this.molangQueries.put(name, new MolangFunction(name) {
+            @Override
+            public int requiredArgCount() {
+                return argCount;
+            }
+
+            @Override
+            public @NotNull BiFunction<IValue[], AbstractAnimationData<?, ?>, Double> operation() {
+                return operation;
+            }
+        });
+    }
+
+    public Map<String, MolangFunction> getMolangQueries() {
         return Map.copyOf(this.molangQueries);
     }
+    //-----molang query related stuff ends here-----
+
+    @Nullable
+    public abstract World getWorld();
 }

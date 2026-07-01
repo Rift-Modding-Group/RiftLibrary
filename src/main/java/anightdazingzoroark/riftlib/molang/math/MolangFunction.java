@@ -9,11 +9,11 @@ import java.util.function.BiFunction;
  * This reinterpreted function class is going to be more or less a template.
  * Its results are to be then put in an anonymous IValue instance.
  */
-public abstract class Function {
+public abstract class MolangFunction {
     @NotNull
     public final String name;
 
-    public Function(@NotNull String name) {
+    public MolangFunction(@NotNull String name) {
         this.name = name;
     }
 

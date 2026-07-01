@@ -29,7 +29,6 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
     private final MultiHitboxList<FlyingPufferfishEntity> multiHitboxList;
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
     private final Map<String, RiftLibRayBuilder> rayMap;
-    private Entity[] hitboxes = {};
 
     public FlyingPufferfishEntity(World worldIn) {
         super(worldIn);

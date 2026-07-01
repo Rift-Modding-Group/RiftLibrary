@@ -17,9 +17,11 @@
 					"cubes": [
 						{"origin": [-8, 0, -8], "size": [16, 16, 16], "uv": [0, 0]}
 					],
+					"locators": {
+						"rayCenter": [0, 8, 0]
+					},
 					"bounding_boxes": {
 						"body": {
-							"name": "body",
 							"origin": [-8, 0, -8],
 							"size": [16, 16],
 							"collision": true,

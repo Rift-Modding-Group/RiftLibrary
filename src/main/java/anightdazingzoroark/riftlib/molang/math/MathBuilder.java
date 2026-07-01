@@ -11,7 +11,7 @@ import java.util.function.BiFunction;
 
 public class MathBuilder {
     public final Map<String, Variable> variables = new HashMap<>();
-    public final Map<String, Function> functions = new HashMap<>();
+    public final Map<String, MolangFunction> functions = new HashMap<>();
 
     /**
      * In this constructor, all math related functions will be registered here
@@ -101,7 +101,7 @@ public class MathBuilder {
     }
 
     protected void registerFunction(String name, int argCount, BiFunction<IValue[], AbstractAnimationData<?, ?>, Double> operation) {
-        this.functions.put(name, new Function(name) {
+        this.functions.put(name, new MolangFunction(name) {
             @Override
             public int requiredArgCount() {
                 return argCount;
@@ -313,7 +313,7 @@ public class MathBuilder {
                     if ((this.isValueReturner(first) || first.equals("-")) && second instanceof List) {
                         //if this is a function with no args we're dealing with, return an exception
                         String funcName = (String) first;
-                        if (this.isFunctionNoArgs(funcName)) {
+                        if (this.isFunctionNoArgs(funcName, animationData)) {
                             throw new MolangException("Function "+funcName+" does not accept any arguments, yet it is treated as if it does!");
                         }
                         //normal function creation
@@ -433,51 +433,54 @@ public class MathBuilder {
             return new Negative(this.createFunction(first.substring(1), args, animationData));
         }
         else if (this.functions.containsKey(first)) {
-            List<IValue> values = new ArrayList<>();
-            List<Object> buffer = new ArrayList<>();
-
-            for (Object o : args) {
-                if (o.equals(",")) {
-                    values.add(this.parseSymbols(buffer, animationData));
-                    buffer.clear();
-                }
-                else buffer.add(o);
-            }
-
-            if (!buffer.isEmpty()) {
-                values.add(this.parseSymbols(buffer, animationData));
-            }
-
-            Function function = this.functions.get(first);
-            IValue[] argsArr = values.toArray(new IValue[0]);
-
-            //exception for unexpected argument counts
-            //note that a negative arg count for a function means it has no limit
-            if (argsArr.length < function.requiredArgCount() && function.requiredArgCount() >= 0) {
-                String message = String.format(
-                        "Function '%s' requires at least %s arguments. %s are given!",
-                        function.name, function.requiredArgCount(), argsArr.length
-                );
-                throw new MolangException(message);
-            }
-
-            return new IValue() {
-                @Override
-                public double get() {
-                    return function.operation().apply(argsArr, animationData);
-                }
-            };
+            return this.parseFunctionOrQuery(first, args, animationData, this.functions);
         }
         else if (animationData != null && animationData.getMolangQueries().containsKey(first)) {
-            return new IValue() {
-                @Override
-                public double get() {
-                    return animationData.getMolangQueries().get(first).get();
-                }
-            };
+            return this.parseFunctionOrQuery(first, args, animationData, animationData.getMolangQueries());
         }
 
         throw new MolangException("Function '" + first + "' couldn't be found!");
+    }
+
+    private IValue parseFunctionOrQuery(
+            String first, List<Object> args, @Nullable AbstractAnimationData<?, ?> animationData,
+            Map<String, MolangFunction> functionMapRef
+    ) throws MolangException {
+        List<IValue> values = new ArrayList<>();
+        List<Object> buffer = new ArrayList<>();
+
+        for (Object o : args) {
+            if (o.equals(",")) {
+                values.add(this.parseSymbols(buffer, animationData));
+                buffer.clear();
+            }
+            else buffer.add(o);
+        }
+
+        if (!buffer.isEmpty()) {
+            values.add(this.parseSymbols(buffer, animationData));
+        }
+
+        MolangFunction function = functionMapRef.get(first);
+        if (function == null) throw new MolangException("Function '" + first + "' couldn't be found!");
+        IValue[] argsArr = values.toArray(new IValue[0]);
+
+        //exception for unexpected argument counts
+        //note that a negative arg count for a function means it has no limit
+        if (argsArr.length < function.requiredArgCount() && function.requiredArgCount() >= 0) {
+            String message = String.format(
+                    "Function '%s' requires at least %s arguments. %s are given!",
+                    function.name, function.requiredArgCount(), argsArr.length
+            );
+            throw new MolangException(message);
+        }
+
+        return new IValue() {
+            @Override
+            public double get() {
+                return function.operation().apply(argsArr, animationData);
+            }
+        };
     }
 
     public IValue valueFromObject(Object object, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
@@ -497,7 +500,7 @@ public class MathBuilder {
                     return new Negative(this.valueFromObject(symbol, animationData));
                 }
                 //this is for functions that have no args. functions w no args have no parenthesis at all
-                else if (this.isFunctionNoArgs(symbol)) {
+                else if (this.isFunctionNoArgs(symbol, animationData)) {
                     return this.createFunction(symbol, List.of(), animationData);
                 }
                 //this is for good ol variables
@@ -656,9 +659,11 @@ public class MathBuilder {
         };
     }
 
-    protected boolean isFunctionNoArgs(String s) {
-        if (s.startsWith("query.")) return true;
-        for (Map.Entry<String, Function> functionEntry : this.functions.entrySet()) {
+    protected boolean isFunctionNoArgs(String s, AbstractAnimationData<?, ?> animationData) {
+        for (Map.Entry<String, MolangFunction> functionEntry : this.functions.entrySet()) {
+            if (functionEntry.getKey().equals(s) && functionEntry.getValue().requiredArgCount() <= 0) return true;
+        }
+        for (Map.Entry<String, MolangFunction> functionEntry : animationData.getMolangQueries().entrySet()) {
             if (functionEntry.getKey().equals(s) && functionEntry.getValue().requiredArgCount() <= 0) return true;
         }
         return false;

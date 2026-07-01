@@ -35,13 +35,14 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
     @Override
     protected void createMolangQueries() {
         super.createMolangQueries();
-        this.molangQueries.put("query.health", () -> {
+        //---normal stuff---
+        this.registerMolangQuery("query.health", (values, animData) -> {
             return (double) this.getHolder().getHealth();
         });
-        this.molangQueries.put("query.max_health", () -> {
+        this.registerMolangQuery("query.max_health", (values, animData) -> {
             return (double) this.getHolder().getMaxHealth();
         });
-        this.molangQueries.put("query.is_riding", () -> {
+        this.registerMolangQuery("query.is_riding", (values, animData) -> {
             return MolangUtils.booleanToDouble(this.getHolder().isRiding());
         });
     }

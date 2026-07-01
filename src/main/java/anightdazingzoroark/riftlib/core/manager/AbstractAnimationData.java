@@ -42,7 +42,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     private final Map<String, AnimatableRunValue> animationMessageEffects = new HashMap<>();
     private final Map<ResourceLocation, GeoModel> modelCopies = new HashMap<>();
     protected final Map<String, Supplier<Double>> molangQueries = new HashMap<>();
-    private final List<AnimatedLocator> animatedLocators = new ArrayList<>();
+    protected final List<AnimatedLocator> animatedLocators = new ArrayList<>();
     private int animatedLocatorTicker;
     @NotNull
     private final MolangParser parser;
@@ -108,8 +108,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     }
     //-----initialization methods end here-----
 
-    //-----animated locator stuff starts here-----
-    public void createAnimatedLocators(GeoModel model) {
+    public void createAnimatedObjects(GeoModel model) {
         //update animated locators based on the model
         if (this.currentModel != model) {
             this.animatedLocators.clear();
@@ -124,6 +123,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
         }
     }
 
+    //-----animated locator stuff starts here-----
     public void updateAnimatedLocators() {
         this.animatedLocatorTicker = 0;
         for (AnimatedLocator locator : this.animatedLocators) locator.setUpdated(true);

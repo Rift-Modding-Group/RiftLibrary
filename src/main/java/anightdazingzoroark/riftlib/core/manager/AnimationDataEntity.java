@@ -2,8 +2,11 @@ package anightdazingzoroark.riftlib.core.manager;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.geo.GeoBoundingBox;
+import anightdazingzoroark.riftlib.geo.GeoLocator;
 import anightdazingzoroark.riftlib.geo.GeoModel;
+import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.model.AnimatedBoundingBox;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.util.MolangUtils;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -48,23 +51,35 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
         throw new IllegalArgumentException("AnimationDataEntity holder must implement IAnimatable");
     }
 
-    //-----animated bounding box definitions from here on out (only entities use hitboxes hence this lol)-----
-    public void createAnimatedBoundingBoxes(GeoModel model) {
-        //update animated locators based on the model
+    //this override updates locators and bounding boxes
+    @Override
+    public void createAnimatedObjects(GeoModel model) {
         if (this.currentModel != model) {
+            this.animatedLocators.clear();
             this.animatedBoundingBoxes.clear();
 
-            List<GeoBoundingBox> boundingBoxList = model.getAllBoundingBoxes();
-            for (GeoBoundingBox boundingBox : boundingBoxList) {
-                if (boundingBox == null) continue;
-                this.animatedBoundingBoxes.add(new AnimatedBoundingBox(boundingBox));
+            //locators
+            List<GeoLocator> locatorList = model.getAllLocators();
+            for (GeoLocator locator : locatorList) {
+                if (locator == null) continue;
+                this.animatedLocators.add(new AnimatedLocator(locator, this));
+            }
+
+            //bounding boxes
+            if (this.getHolder() instanceof IMultiHitboxUser<?>) {
+                List<GeoBoundingBox> boundingBoxList = model.getAllBoundingBoxes();
+                for (GeoBoundingBox boundingBox : boundingBoxList) {
+                    if (boundingBox == null) continue;
+                    this.animatedBoundingBoxes.add(new AnimatedBoundingBox(boundingBox));
+                }
+                this.boundingBoxesRecentlyUpdated = true;
             }
 
             this.currentModel = model;
-            this.boundingBoxesRecentlyUpdated = true;
         }
     }
 
+    //-----animated bounding box definitions from here on out (only entities use hitboxes hence this lol)-----
     public List<AnimatedBoundingBox> getAnimatedBoundingBoxes() {
         return this.animatedBoundingBoxes;
     }

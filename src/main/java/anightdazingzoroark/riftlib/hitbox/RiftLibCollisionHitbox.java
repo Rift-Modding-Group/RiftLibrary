@@ -31,13 +31,23 @@ public class RiftLibCollisionHitbox<T extends IMultiHitboxUser<?>> extends Multi
         );
         this.boundingBox = boundingBox;
         this.onAddedToWorld();
+        this.registerEntityIdForServer();
     }
 
     /**
      * In order to forcibly sync the entityIds from server to client, this has to be done.
      * I fucking hate how hitboxes are dealt with in this version anyway.
      * */
-    @Deprecated //new system could remove need for this... i hope...
+    private void registerEntityIdForServer() {
+        if (this.world.isRemote) return;
+        if (this.world.getEntityByID(this.getEntityId()) == this) return;
+
+        this.world.entitiesById.addKey(this.getEntityId(), this);
+    }
+
+    /**
+     * Same reason as above
+     * */
     public void syncEntityIdFromServer(int entityId) {
         if (this.getEntityId() == entityId) return;
 

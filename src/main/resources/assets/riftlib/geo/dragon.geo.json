@@ -339,7 +339,7 @@
 							"tags": ["leg"],
 							"damage_multiplier": 1
 						},
-						"leftLeg1": {
+						"rightLeg1": {
 							"origin": [3.5, 0, 6.5],
 							"size": [3, 10],
 							"collision": true,

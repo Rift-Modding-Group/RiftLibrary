@@ -54,6 +54,8 @@ public class RawModelBoundingBoxList {
                 if (object.has("damage_multiplier")) {
                     rawBoundingBox.damageMultiplier = context.deserialize(object.get("damage_multiplier"), RawMolangValue.class);
                 }
+
+                toReturn.list.add(rawBoundingBox);
             }
 
             return toReturn;

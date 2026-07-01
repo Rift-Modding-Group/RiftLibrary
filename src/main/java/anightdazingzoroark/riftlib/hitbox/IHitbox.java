@@ -45,9 +45,11 @@ public interface IHitbox<T extends IMultiHitboxUser<?>> {
 
         //correct the model space positions first
         Vec3d modelSpacePos = this.getBoundingBox().getModelSpacePosition();
-        float newHitboxX = -(float) (modelSpacePos.x + this.getBoundingBox().getModelSpaceSize()[0] / 2f) / 16f;
+        float modelSpaceWidth = this.getBoundingBox().getModelSpaceSize()[0];
+
+        float newHitboxX = (float) ((-modelSpacePos.x + modelSpaceWidth / 2f) / 16f);
         float newHitboxY = (float) modelSpacePos.y / 16f;
-        float newHitboxZ = -(float) (modelSpacePos.z + this.getBoundingBox().getModelSpaceSize()[1] / 2f) / 16f;
+        float newHitboxZ = -(float) ((modelSpacePos.z + modelSpaceWidth / 2f) / 16f);
 
         //set initial entity offset from center
         Vec3d posVec = new Vec3d(

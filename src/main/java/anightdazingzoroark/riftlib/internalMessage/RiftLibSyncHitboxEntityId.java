@@ -53,8 +53,7 @@ public class RiftLibSyncHitboxEntityId extends RiftLibMessage<RiftLibSyncHitboxE
     public void executeOnClient(Minecraft client, RiftLibSyncHitboxEntityId message, EntityPlayer player, MessageContext messageContext) {
         Entity entity = player.world.getEntityByID(message.parentEntityId);
         if (!(entity instanceof IMultiHitboxUser<?> multiHitboxUser)) return;
-
-        //multiHitboxUser.setHitboxes();
+        if (!multiHitboxUser.getMultiHitboxList().hasCollisionHitboxes()) return;
 
         RiftLibCollisionHitbox<?> hitbox = multiHitboxUser.getMultiHitboxList().getCollisionHitboxByName(message.hitboxName);
         hitbox.syncEntityIdFromServer(message.hitboxEntityId);

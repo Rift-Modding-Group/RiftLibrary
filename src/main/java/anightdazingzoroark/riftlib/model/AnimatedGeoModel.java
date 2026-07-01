@@ -7,6 +7,8 @@ import anightdazingzoroark.riftlib.animation.AnimationFile;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 
+import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibTickClientFromServer;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraft.client.Minecraft;
@@ -53,7 +55,9 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		boolean hasServerModel = this.hasServerModel(entity) || animData.isServerSynced();
 		GeoModel model = this.getModel(entity);
 		List<IBone> modelRenderers = this.getModelRenderers(model);
-		if (hasServerModel) this.createAndUpdateAnimatedLocators(entity);
+		if (hasServerModel) {
+			this.createAndUpdateAnimatedLocators(entity);
+		}
 
 		//if there is no server model, the client will be the main authority in
 		//ticking animations.
@@ -162,7 +166,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 
 	public void createAndUpdateAnimatedLocators(T entity) {
 		AbstractAnimationData<?, ?> animData = entity.getAnimationData();
-		animData.createAnimatedLocators(this.getModel(entity));
+		animData.createAnimatedObjects(this.getModel(entity));
 		animData.updateAnimatedLocators();
 	}
 

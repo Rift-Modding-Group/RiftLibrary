@@ -41,6 +41,10 @@ public class GeoModel {
 			copy.childLocators.add(copyLocator(locator, copy));
 		}
 
+		for (GeoBoundingBox boundingBox : source.childBoundingBoxes) {
+			copy.childBoundingBoxes.add(copyBoundingBox(boundingBox, copy));
+		}
+
 		for (GeoBone child : source.childBones) {
 			copy.childBones.add(copyBone(child, copy));
 		}
@@ -54,6 +58,16 @@ public class GeoModel {
 		copy.setCubesHidden(source.cubesAreHidden());
 		copy.getPosition().set(source.getPosition());
 		copy.getRotation().set(source.getRotation());
+		return copy;
+	}
+
+	private static GeoBoundingBox copyBoundingBox(GeoBoundingBox source, GeoBone parent) {
+		GeoBoundingBox copy = new GeoBoundingBox(parent, source.name);
+		copy.getPosition().set(source.getPosition());
+		copy.setSize(source.getSize()[0], source.getSize()[1]);
+		copy.canCollide = source.canCollide;
+		copy.tags = source.tags;
+		copy.damageMultiplier = source.damageMultiplier;
 		return copy;
 	}
 

@@ -1,7 +1,9 @@
 package anightdazingzoroark.riftlib.hitbox;
 
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibSyncHitboxEntityId;
 import anightdazingzoroark.riftlib.model.AnimatedBoundingBox;
+import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraft.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,6 +36,10 @@ public class MultiHitboxList<T extends IMultiHitboxUser<?>> {
     public void updateHitboxes() {
         //-----reset if bounding box list on anim data got recently updated-----
         if (this.animData.getBoundingBoxesRecentlyUpdated()) {
+            for (RiftLibCollisionHitbox<T> collisionHitbox : this.collisionHitboxes.values()) {
+                this.multiHitboxUser.getWorld().removeEntityDangerously(collisionHitbox);
+            }
+            this.collisionHitboxes.clear();
             this.hitboxesByTag.clear();
         }
 
@@ -49,7 +55,17 @@ public class MultiHitboxList<T extends IMultiHitboxUser<?>> {
         }
 
         //-----tick all already existing hitboxes-----
-        for (RiftLibCollisionHitbox<T> collisionHitbox : this.collisionHitboxes.values()) collisionHitbox.onUpdate();
+        for (RiftLibCollisionHitbox<T> collisionHitbox : this.collisionHitboxes.values()) {
+            collisionHitbox.onUpdate();
+
+            //(server side only) sync serverside collision hitboxes to client
+            if (!this.multiHitboxUser.getWorld().isRemote) {
+                ServerProxy.HITBOX_MESSAGE_WRAPPER.sendToAllTracking(
+                        new RiftLibSyncHitboxEntityId(this.multiHitboxUser.getMultiHitboxUser(), collisionHitbox),
+                        this.multiHitboxUser.getMultiHitboxUser()
+                );
+            }
+        }
     }
 
     /**
@@ -66,6 +82,10 @@ public class MultiHitboxList<T extends IMultiHitboxUser<?>> {
             throw new IllegalArgumentException("Given name " + name + " does not correspond to any collision hitbox on this entity!");
         }
         return collisionHitbox;
+    }
+
+    public boolean hasCollisionHitboxes() {
+        return !this.collisionHitboxes.isEmpty();
     }
 
     @NotNull

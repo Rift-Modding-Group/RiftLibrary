@@ -1,6 +1,5 @@
 package anightdazingzoroark.riftlib.jsonParsing.raw.geo;
 
-import anightdazingzoroark.riftlib.jsonParsing.raw.RawMolangValue;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
@@ -17,7 +16,6 @@ public class RawModelBoundingBoxList {
         public double[] size = new double[]{1D, 1D};
         public boolean collision;
         public String[] tags;
-        public RawMolangValue damageMultiplier;
     }
 
     public static class Deserializer implements JsonDeserializer<RawModelBoundingBoxList> {
@@ -49,10 +47,6 @@ public class RawModelBoundingBoxList {
 
                 if (object.has("tags")) {
                     rawBoundingBox.tags = context.deserialize(object.get("tags"), String[].class);
-                }
-
-                if (object.has("damage_multiplier")) {
-                    rawBoundingBox.damageMultiplier = context.deserialize(object.get("damage_multiplier"), RawMolangValue.class);
                 }
 
                 toReturn.list.add(rawBoundingBox);

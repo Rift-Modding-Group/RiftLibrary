@@ -90,7 +90,6 @@ public class GeoConstructor {
 
 				toAdd.canCollide = rawBoundingBox.collision;
 				toAdd.tags = rawBoundingBox.tags;
-				if (rawBoundingBox.damageMultiplier != null) toAdd.damageMultiplier = new ExpressionValue(rawBoundingBox.damageMultiplier);
 
 				geoBone.childBoundingBoxes.add(toAdd);
 			}

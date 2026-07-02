@@ -36,29 +36,25 @@
 							"origin": [-3.75, 9, -15.25],
 							"size": [7.5, 10],
 							"collision": true,
-							"tags": ["body"],
-							"damage_multiplier": 1
+							"tags": ["body"]
 						},
 						"body1": {
 							"origin": [-3.75, 9, -10.75],
 							"size": [7.5, 10],
 							"collision": true,
-							"tags": ["body"],
-							"damage_multiplier": 1
+							"tags": ["body"]
 						},
 						"body2": {
 							"origin": [-3.75, 9, -6.25],
 							"size": [7.5, 10],
 							"collision": true,
-							"tags": ["body"],
-							"damage_multiplier": 1
+							"tags": ["body"]
 						},
 						"body3": {
 							"origin": [-4, 8, 1],
 							"size": [8, 11],
 							"collision": true,
-							"tags": ["body"],
-							"damage_multiplier": 1
+							"tags": ["body"]
 						}
 					}
 				},
@@ -116,15 +112,13 @@
 							"origin": [-2.75, 9.5, 7.75],
 							"size": [5.5, 9],
 							"collision": true,
-							"tags": ["tail"],
-							"damage_multiplier": 1
+							"tags": ["tail"]
 						},
 						"tail1": {
 							"origin": [-2.75, 9.5, 11.75],
 							"size": [5.5, 9],
 							"collision": true,
-							"tags": ["tail"],
-							"damage_multiplier": 1
+							"tags": ["tail"]
 						}
 					}
 				},
@@ -140,29 +134,25 @@
 							"origin": [-2.25, 11.25, 13.75],
 							"size": [4.5, 6.5],
 							"collision": true,
-							"tags": ["tail"],
-							"damage_multiplier": 1
+							"tags": ["tail"]
 						},
 						"tail3": {
 							"origin": [-2.25, 11.25, 24.75],
 							"size": [4.5, 6.5],
 							"collision": true,
-							"tags": ["tail"],
-							"damage_multiplier": 1
+							"tags": ["tail"]
 						},
 						"tail4": {
 							"origin": [-2.25, 11.25, 17.75],
 							"size": [4.5, 6.5],
 							"collision": true,
-							"tags": ["tail"],
-							"damage_multiplier": 1
+							"tags": ["tail"]
 						},
 						"tail5": {
 							"origin": [-2.25, 11.25, 20.75],
 							"size": [4.5, 6.5],
 							"collision": true,
-							"tags": ["tail"],
-							"damage_multiplier": 1
+							"tags": ["tail"]
 						}
 					}
 				},
@@ -178,29 +168,25 @@
 							"origin": [-2, 12.75, 26.75],
 							"size": [4, 4.5],
 							"collision": true,
-							"tags": ["tail"],
-							"damage_multiplier": 1
+							"tags": ["tail"]
 						},
 						"tail7": {
 							"origin": [-2, 12.75, 35.25],
 							"size": [4, 4.5],
 							"collision": true,
-							"tags": ["tail"],
-							"damage_multiplier": 1
+							"tags": ["tail"]
 						},
 						"tail8": {
 							"origin": [-2, 12.75, 29.75],
 							"size": [4, 4.5],
 							"collision": true,
-							"tags": ["tail"],
-							"damage_multiplier": 1
+							"tags": ["tail"]
 						},
 						"tail9": {
 							"origin": [-2, 12.75, 32.25],
 							"size": [4, 4.5],
 							"collision": true,
-							"tags": ["tail"],
-							"damage_multiplier": 1
+							"tags": ["tail"]
 						}
 					}
 				},
@@ -216,8 +202,7 @@
 							"origin": [-2.25, 10, -19.5],
 							"size": [4.5, 9],
 							"collision": true,
-							"tags": ["head"],
-							"damage_multiplier": 1
+							"tags": ["head"]
 						}
 					}
 				},
@@ -234,38 +219,33 @@
 							"origin": [-3.25, 11.75, -25.25],
 							"size": [6.5, 8.5],
 							"collision": true,
-							"tags": ["head"],
-							"damage_multiplier": 1
+							"tags": ["head"]
 						},
 						"head1": {
 							"origin": [-3.25, 11.75, -28.25],
 							"size": [6.5, 8.5],
 							"collision": true,
-							"tags": ["head"],
-							"damage_multiplier": 1
+							"tags": ["head"]
 						},
 						"head2": {
 							"origin": [-2.25, 12.25, -32.25],
 							"size": [4.5, 7.5],
 							"collision": true,
-							"tags": ["head"],
-							"damage_multiplier": 1
+							"tags": ["head"]
 						},
 						"head4": {
 							"name": "head4",
 							"origin": [-2.25, 12.25, -37.25],
 							"size": [4.5, 7.5],
 							"collision": true,
-							"tags": ["head"],
-							"damage_multiplier": 1
+							"tags": ["head"]
 						},
 						"head3": {
 							"name": "head3",
 							"origin": [-2.25, 12.25, -34.75],
 							"size": [4.5, 7.5],
 							"collision": true,
-							"tags": ["head"],
-							"damage_multiplier": 1
+							"tags": ["head"]
 						}
 					}
 				},
@@ -310,15 +290,13 @@
 							"origin": [-6.75, 6.75, 2.5],
 							"size": [5, 9.5],
 							"collision": true,
-							"tags": ["leg"],
-							"damage_multiplier": 1
+							"tags": ["leg"]
 						},
 						"leftLeg1": {
 							"origin": [-6.5, 0, 6.5],
 							"size": [3, 10],
 							"collision": true,
-							"tags": ["leg"],
-							"damage_multiplier": 1
+							"tags": ["leg"]
 						}
 					}
 				},
@@ -336,15 +314,13 @@
 							"origin": [1.75, 6.75, 2.5],
 							"size": [5, 9.5],
 							"collision": true,
-							"tags": ["leg"],
-							"damage_multiplier": 1
+							"tags": ["leg"]
 						},
 						"rightLeg1": {
 							"origin": [3.5, 0, 6.5],
 							"size": [3, 10],
 							"collision": true,
-							"tags": ["leg"],
-							"damage_multiplier": 1
+							"tags": ["leg"]
 						}
 					}
 				}

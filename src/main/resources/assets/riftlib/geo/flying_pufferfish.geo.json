@@ -24,8 +24,7 @@
 						"body": {
 							"origin": [-8, 0, -8],
 							"size": [16, 16],
-							"collision": true,
-							"damage_multiplier": 1
+							"collision": true
 						}
 					}
 				},

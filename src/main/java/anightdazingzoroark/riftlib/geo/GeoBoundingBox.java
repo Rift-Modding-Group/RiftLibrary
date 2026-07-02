@@ -17,7 +17,6 @@ public class GeoBoundingBox {
 
     public boolean canCollide;
     public String[] tags = {};
-    public ExpressionValue damageMultiplier = new ExpressionValue(1D);
 
     @NotNull
     private final Vector3f position = new Vector3f();

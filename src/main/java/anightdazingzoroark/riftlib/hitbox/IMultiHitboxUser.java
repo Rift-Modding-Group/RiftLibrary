@@ -43,9 +43,7 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
         RiftLibCollisionHitbox<?> hitbox = (RiftLibCollisionHitbox<?>) part;
         if (!hitbox.isDisabled()) {
             damage *= this.hitboxDamageMultiplier((RiftLibCollisionHitbox<T>) part, source);
-
-            //as long as there is damage dealt, it will be applied
-            if (damage > 0f) return this.getMultiHitboxUser().attackEntityFrom(source, damage);
+            return this.getMultiHitboxUser().attackEntityFrom(source, damage);
         }
         return false;
     }

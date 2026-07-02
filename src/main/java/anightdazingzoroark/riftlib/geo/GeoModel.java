@@ -67,7 +67,6 @@ public class GeoModel {
 		copy.setSize(source.getSize()[0], source.getSize()[1]);
 		copy.canCollide = source.canCollide;
 		copy.tags = source.tags;
-		copy.damageMultiplier = source.damageMultiplier;
 		return copy;
 	}
 

@@ -40,10 +40,6 @@ public class AnimatedBoundingBox {
         return this.boundingBox.tags;
     }
 
-    public ExpressionValue getDamageMultiplier() {
-        return this.boundingBox.damageMultiplier;
-    }
-
     public float[] getModelSpaceSize() {
         float parentHorizontalScale = Math.max(this.boundingBox.parent.getScale().x, this.boundingBox.parent.getScale().z);
         float parentVerticalScale = this.boundingBox.parent.getScale().y;

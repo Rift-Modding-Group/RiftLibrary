@@ -15,14 +15,18 @@ public class GeoConstructor {
 		GeoModel model = new GeoModel();
 		model.description = geometryTree.description;
 		for (RawModelBoneGroup rawBone : geometryTree.topLevelBones.values()) {
-			model.topLevelBones.add(constructBone(rawBone, geometryTree.description, null));
+			model.topLevelBones.add(constructBone(rawBone, geometryTree.description, model, null));
 		}
 		return model;
 	}
 
-	public static GeoBone constructBone(RawModelBoneGroup bone, RawGeoModel.RawModelDescription description, @Nullable GeoBone parent) {
+	public static GeoBone constructBone(
+			RawModelBoneGroup bone, RawGeoModel.RawModelDescription description,
+			@NotNull GeoModel model, @Nullable GeoBone parentBone
+	) {
 		RawGeoModel.RawModelBone rawBone = bone.selfBone;
-		GeoBone geoBone = new GeoBone(parent, rawBone.name);
+		GeoBone geoBone = new GeoBone(parentBone, rawBone.name);
+		model.allBones.add(geoBone);
 
 		Vector3f rotation = VectorUtils.convertDoubleToFloat(VectorUtils.fromArray(rawBone.rotation));
 		Vector3f pivot = VectorUtils.convertDoubleToFloat(VectorUtils.fromArray(rawBone.pivot));
@@ -30,8 +34,6 @@ public class GeoConstructor {
 		rotation.y *= -1;
 
 		geoBone.mirror = rawBone.mirror;
-		//geoBone.dontRender = rawBone.getNeverRender();
-		//geoBone.reset = rawBone.getReset();
 		geoBone.inflate = rawBone.inflate;
 
 		geoBone.getRotation().set(
@@ -59,6 +61,7 @@ public class GeoConstructor {
 			for (RawModelLocatorList.RawModelLocator rawLocator : rawBone.locators.list) {
                 GeoLocator toAdd = new GeoLocator(geoBone, rawLocator.name);
 
+				//---add to bone---
 				toAdd.getPosition().set(
 						(float) -rawLocator.offset[0],
 						(float) rawLocator.offset[1],
@@ -72,6 +75,9 @@ public class GeoConstructor {
 				);
 
 				geoBone.childLocators.add(toAdd);
+
+				//---add to locator list on model---
+				model.allLocators.add(toAdd);
 			}
 		}
 
@@ -80,6 +86,7 @@ public class GeoConstructor {
 			for (RawModelBoundingBoxList.RawBoundingBox rawBoundingBox : rawBone.boundingBoxes.list) {
 				GeoBoundingBox toAdd = new GeoBoundingBox(geoBone, rawBoundingBox.name);
 
+				//---add to bone---
 				toAdd.getPosition().set(
 						(float) -rawBoundingBox.origin[0],
 						(float) rawBoundingBox.origin[1],
@@ -92,12 +99,15 @@ public class GeoConstructor {
 				toAdd.tags = rawBoundingBox.tags;
 
 				geoBone.childBoundingBoxes.add(toAdd);
+
+				//---add to bounding box list on model---
+				model.allBoundingBoxes.add(toAdd);
 			}
 		}
 
 		//create bones
 		for (RawModelBoneGroup child : bone.children.values()) {
-			geoBone.childBones.add(constructBone(child, description, geoBone));
+			geoBone.childBones.add(constructBone(child, description, model, geoBone));
 		}
 
 		return geoBone;

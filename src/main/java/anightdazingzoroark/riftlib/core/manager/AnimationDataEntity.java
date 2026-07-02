@@ -60,16 +60,14 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
             this.animatedBoundingBoxes.clear();
 
             //locators
-            List<GeoLocator> locatorList = model.getAllLocators();
-            for (GeoLocator locator : locatorList) {
+            for (GeoLocator locator : model.allLocators) {
                 if (locator == null) continue;
                 this.animatedLocators.add(new AnimatedLocator(locator, this));
             }
 
             //bounding boxes
             if (this.getHolder() instanceof IMultiHitboxUser<?>) {
-                List<GeoBoundingBox> boundingBoxList = model.getAllBoundingBoxes();
-                for (GeoBoundingBox boundingBox : boundingBoxList) {
+                for (GeoBoundingBox boundingBox : model.allBoundingBoxes) {
                     if (boundingBox == null) continue;
                     this.animatedBoundingBoxes.add(new AnimatedBoundingBox(boundingBox));
                 }

@@ -116,8 +116,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
         if (this.currentModel != model) {
             this.animatedLocators.clear();
 
-            List<GeoLocator> locatorList = model.getAllLocators();
-            for (GeoLocator locator : locatorList) {
+            for (GeoLocator locator : model.allLocators) {
                 if (locator == null) continue;
                 this.animatedLocators.add(new AnimatedLocator(locator, this));
             }

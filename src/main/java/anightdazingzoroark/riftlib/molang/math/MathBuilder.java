@@ -659,12 +659,14 @@ public class MathBuilder {
         };
     }
 
-    protected boolean isFunctionNoArgs(String s, AbstractAnimationData<?, ?> animationData) {
+    protected boolean isFunctionNoArgs(String s, @Nullable AbstractAnimationData<?, ?> animationData) {
         for (Map.Entry<String, MolangFunction> functionEntry : this.functions.entrySet()) {
             if (functionEntry.getKey().equals(s) && functionEntry.getValue().requiredArgCount() <= 0) return true;
         }
-        for (Map.Entry<String, MolangFunction> functionEntry : animationData.getMolangQueries().entrySet()) {
-            if (functionEntry.getKey().equals(s) && functionEntry.getValue().requiredArgCount() <= 0) return true;
+        if (animationData != null) {
+            for (Map.Entry<String, MolangFunction> functionEntry : animationData.getMolangQueries().entrySet()) {
+                if (functionEntry.getKey().equals(s) && functionEntry.getValue().requiredArgCount() <= 0) return true;
+            }
         }
         return false;
     }

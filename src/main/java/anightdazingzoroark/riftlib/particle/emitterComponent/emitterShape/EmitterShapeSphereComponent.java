@@ -19,11 +19,11 @@ public class EmitterShapeSphereComponent extends RiftLibEmitterShapeComponent {
     public void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) {
         if (rawComponent.getValue().componentValues.containsKey("offset")) {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("offset");
-            this.offset = parseExpressionArray(parser, 3, componentValue);
+            this.offset = this.parseExpressionArray(parser, 3, componentValue);
         }
         if (rawComponent.getValue().componentValues.containsKey("radius")) {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("radius");
-            this.radius = parseExpression(parser, componentValue);
+            this.radius = this.parseExpression(parser, componentValue);
         }
         if (rawComponent.getValue().componentValues.containsKey("surface_only")) {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("surface_only");

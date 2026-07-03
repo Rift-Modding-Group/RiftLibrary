@@ -3,6 +3,7 @@ package anightdazingzoroark.riftlib.molang;
 import anightdazingzoroark.riftlib.core.AnimatableRunValue;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
+import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibApplyMessageEffect;
 import anightdazingzoroark.riftlib.molang.math.*;
 import anightdazingzoroark.riftlib.molang.expressions.MolangAssignment;
@@ -70,23 +71,29 @@ public class MolangParser extends MathBuilder {
 
             return MolangUtils.booleanToDouble(toReturn);
         });
-        this.registerFunction("function.create_offensive_hitbox", -1, (values, animData) -> {
+        this.registerFunction("function.create_offense_hitbox_by_name", 1, (values, animData) -> {
             if (animData == null || animData.getWorld() == null || animData.getWorld().isRemote) return 0D;
-
-            for (IValue value : values) {
-                String valueString = value.getString();
-            }
-
-            return 1D;
+            if (!(animData.getHolder() instanceof IMultiHitboxUser<?> multiHitboxUser)) return 0D;
+            String valueString = values[0].getString();
+            return MolangUtils.booleanToDouble(multiHitboxUser.getMultiHitboxList().createOffenseHitboxByName(valueString));
         });
-        this.registerFunction("function.destroy_offensive_hitbox", -1, (values, animData) -> {
+        this.registerFunction("function.destroy_offense_hitbox_by_name", -1, (values, animData) -> {
             if (animData == null || animData.getWorld() == null || animData.getWorld().isRemote) return 0D;
-
-            for (IValue value : values) {
-                String valueString = value.getString();
-            }
-
-            return 1D;
+            if (!(animData.getHolder() instanceof IMultiHitboxUser<?> multiHitboxUser)) return 0D;
+            String valueString = values[0].getString();
+            return MolangUtils.booleanToDouble(multiHitboxUser.getMultiHitboxList().removeOffenseHitboxByName(valueString));
+        });
+        this.registerFunction("function.create_offense_hitbox_by_tag", 1, (values, animData) -> {
+            if (animData == null || animData.getWorld() == null || animData.getWorld().isRemote) return 0D;
+            if (!(animData.getHolder() instanceof IMultiHitboxUser<?> multiHitboxUser)) return 0D;
+            String valueString = values[0].getString();
+            return MolangUtils.booleanToDouble(multiHitboxUser.getMultiHitboxList().createOffenseHitboxesByTag(valueString));
+        });
+        this.registerFunction("function.destroy_offense_hitbox_by_tag", 1, (values, animData) -> {
+            if (animData == null || animData.getWorld() == null || animData.getWorld().isRemote) return 0D;
+            if (!(animData.getHolder() instanceof IMultiHitboxUser<?> multiHitboxUser)) return 0D;
+            String valueString = values[0].getString();
+            return MolangUtils.booleanToDouble(multiHitboxUser.getMultiHitboxList().removeOffenseHitboxesByTag(valueString));
         });
     }
 

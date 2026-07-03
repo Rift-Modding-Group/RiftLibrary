@@ -2,8 +2,10 @@ package anightdazingzoroark.riftlib.hitbox;
 
 import anightdazingzoroark.riftlib.model.AnimatedBoundingBox;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
+import com.google.common.base.Predicate;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.MultiPartEntityPart;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
@@ -47,7 +49,17 @@ public class RiftLibOffenseHitbox<T extends IMultiHitboxUser<?>> implements IHit
 
         //-----check aabb collisions-----
         EntityLivingBase parentEntityLiving = this.getParent().getMultiHitboxUser();
-        List<Entity> candidates = this.getParent().getWorld().getEntitiesWithinAABBExcludingEntity(parentEntityLiving, hitboxAABB);
+        List<Entity> candidates = this.getParent().getWorld().getEntitiesWithinAABB(Entity.class, hitboxAABB, new Predicate<Entity>() {
+            @Override
+            public boolean apply(Entity input) {
+                return input.isEntityAlive() && input != parentEntityLiving && this.isHitboxOfParent(input);
+            }
+
+            private boolean isHitboxOfParent(Entity entity) {
+                if (!(entity instanceof MultiPartEntityPart multiPartEntityPart)) return true;
+                return multiPartEntityPart.parent != parentEntityLiving;
+            }
+        });
 
         //-----apply damage to hit entities-----
         for (Entity target : candidates) {

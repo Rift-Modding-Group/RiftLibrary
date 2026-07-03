@@ -7,10 +7,7 @@ import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraft.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -22,8 +19,9 @@ public class MultiHitboxList<T extends IMultiHitboxUser<?>> {
     @NotNull
     private final AnimationDataEntity animData;
     private final Map<String, RiftLibCollisionHitbox<T>> collisionHitboxes = new HashMap<>();
+    private final Map<String, List<RiftLibCollisionHitbox<T>>> collisionHitboxesByTag = new HashMap<>();
     private final Map<String, RiftLibOffenseHitbox<T>> offenseHitboxes = new HashMap<>();
-    private final Map<String, List<IHitbox<T>>> hitboxesByTag = new HashMap<>();
+    private final Map<String, List<RiftLibOffenseHitbox<T>>> offenseHitboxesByTag = new HashMap<>();
 
     public MultiHitboxList(@NotNull T multiHitboxUser, @NotNull AnimationDataEntity animData) {
         this.multiHitboxUser = multiHitboxUser;
@@ -40,7 +38,7 @@ public class MultiHitboxList<T extends IMultiHitboxUser<?>> {
                 this.multiHitboxUser.getWorld().removeEntityDangerously(collisionHitbox);
             }
             this.collisionHitboxes.clear();
-            this.hitboxesByTag.clear();
+            this.collisionHitboxesByTag.clear();
         }
 
         //-----create collision hitboxes from bounding boxes-----
@@ -50,11 +48,13 @@ public class MultiHitboxList<T extends IMultiHitboxUser<?>> {
                 RiftLibCollisionHitbox<T> toCreate = new RiftLibCollisionHitbox<>(this.multiHitboxUser, animatedBoundingBox);
 
                 this.collisionHitboxes.put(animatedBoundingBox.getName(), toCreate);
-                this.hitboxesByTag.computeIfAbsent(animatedBoundingBox.getName(), key -> new ArrayList<>()).add(toCreate);
+                for (String tag : animatedBoundingBox.getTags()) {
+                    this.collisionHitboxesByTag.computeIfAbsent(tag, key -> new ArrayList<>()).add(toCreate);
+                }
             }
         }
 
-        //-----tick all already existing hitboxes-----
+        //-----tick all already existing collision hitboxes-----
         for (RiftLibCollisionHitbox<T> collisionHitbox : this.collisionHitboxes.values()) {
             collisionHitbox.onUpdate();
 
@@ -65,6 +65,11 @@ public class MultiHitboxList<T extends IMultiHitboxUser<?>> {
                         this.multiHitboxUser.getMultiHitboxUser()
                 );
             }
+        }
+
+        //-----tick all already existing offense hitboxes-----
+        for (RiftLibOffenseHitbox<T> offenseHitbox : this.offenseHitboxes.values()) {
+            offenseHitbox.onUpdate();
         }
     }
 
@@ -88,18 +93,69 @@ public class MultiHitboxList<T extends IMultiHitboxUser<?>> {
         return !this.collisionHitboxes.isEmpty();
     }
 
+    public boolean hasCollisionHitboxByName(@NotNull String name) {
+        return this.collisionHitboxes.containsKey(name);
+    }
+
     @NotNull
     public List<RiftLibCollisionHitbox<T>> getCollisionHitboxesByTag(@NotNull String tagName) {
-        List<IHitbox<T>> hitboxList = this.hitboxesByTag.get(tagName);
+        List<RiftLibCollisionHitbox<T>> hitboxList = this.collisionHitboxesByTag.get(tagName);
         if (hitboxList == null) {
             throw new IllegalArgumentException("Given tag " + tagName + " does not correspond to any tags for collision collisionHitboxes on this entity!");
         }
-        return hitboxList.stream().filter(hitbox -> hitbox instanceof RiftLibCollisionHitbox<T>)
-                .map(new Function<IHitbox<T>, RiftLibCollisionHitbox<T>>() {
+        return hitboxList.stream().map(new Function<IHitbox<T>, RiftLibCollisionHitbox<T>>() {
                     @Override
                     public RiftLibCollisionHitbox<T> apply(IHitbox<T> tiHitbox) {
                         return (RiftLibCollisionHitbox<T>) tiHitbox;
                     }
                 }).toList();
+    }
+
+    public boolean createOffenseHitboxByName(@NotNull String name) {
+        for (AnimatedBoundingBox animatedBoundingBox : this.animData.getAnimatedBoundingBoxes()) {
+            if (!animatedBoundingBox.getName().equals(name)) continue;
+            this.createOffenseHitbox(animatedBoundingBox);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean createOffenseHitboxesByTag(@NotNull String tagName) {
+        if (!this.animData.getAnimatedBoundingBoxesByTag().containsKey(tagName)) return false;
+
+        List<AnimatedBoundingBox> animatedBoundingBoxes = this.animData.getAnimatedBoundingBoxesByTag().get(tagName);
+        for (AnimatedBoundingBox animatedBoundingBox : animatedBoundingBoxes) {
+            this.createOffenseHitbox(animatedBoundingBox);
+        }
+        return true;
+    }
+
+    private void createOffenseHitbox(@NotNull AnimatedBoundingBox animatedBoundingBox) {
+        RiftLibOffenseHitbox<T> offenseHitbox = new RiftLibOffenseHitbox<>(this.multiHitboxUser, animatedBoundingBox);
+        this.offenseHitboxes.put(animatedBoundingBox.getName(), offenseHitbox);
+        for (String tag : animatedBoundingBox.getTags()) {
+            this.offenseHitboxesByTag.computeIfAbsent(tag, key -> new ArrayList<>()).add(offenseHitbox);
+        }
+    }
+
+    public boolean removeOffenseHitboxByName(@NotNull String name) {
+        RiftLibOffenseHitbox<T> offenseHitbox = this.offenseHitboxes.remove(name);
+        if (offenseHitbox == null) return false;
+        offenseHitbox.kill();
+        for (List<RiftLibOffenseHitbox<T>> offenseHitboxList : this.offenseHitboxesByTag.values()) {
+            offenseHitboxList.remove(offenseHitbox);
+        }
+        return true;
+    }
+
+    public boolean removeOffenseHitboxesByTag(@NotNull String tagName) {
+        List<RiftLibOffenseHitbox<T>> offenseHitboxList = this.offenseHitboxesByTag.remove(tagName);
+        if (offenseHitboxList == null) return false;
+
+        for (RiftLibOffenseHitbox<T> offenseHitbox : offenseHitboxList) {
+            offenseHitbox.kill();
+            this.offenseHitboxes.remove(offenseHitbox.getBoundingBox().getName());
+        }
+        return true;
     }
 }

@@ -13,10 +13,13 @@ import net.minecraft.nbt.NBTTagCompound;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivingBase, AnimationDataEntity> {
     private final List<AnimatedBoundingBox> animatedBoundingBoxes = new ArrayList<>();
+    private final Map<String, List<AnimatedBoundingBox>> animatedBoundingBoxesByTag = new HashMap<>();
     private boolean boundingBoxesRecentlyUpdated;
 
     public AnimationDataEntity(EntityLivingBase holder) {
@@ -58,6 +61,7 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
         if (this.currentModel != model) {
             this.animatedLocators.clear();
             this.animatedBoundingBoxes.clear();
+            this.animatedBoundingBoxesByTag.clear();
 
             //locators
             for (GeoLocator locator : model.allLocators) {
@@ -69,7 +73,11 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
             if (this.getHolder() instanceof IMultiHitboxUser<?>) {
                 for (GeoBoundingBox boundingBox : model.allBoundingBoxes) {
                     if (boundingBox == null) continue;
-                    this.animatedBoundingBoxes.add(new AnimatedBoundingBox(boundingBox));
+                    AnimatedBoundingBox toAdd = new AnimatedBoundingBox(boundingBox);
+                    this.animatedBoundingBoxes.add(toAdd);
+                    for (String tag : toAdd.getTags()) {
+                        this.animatedBoundingBoxesByTag.computeIfAbsent(tag, key -> new ArrayList<>()).add(toAdd);
+                    }
                 }
                 this.boundingBoxesRecentlyUpdated = true;
             }
@@ -81,6 +89,10 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
     //-----animated bounding box definitions from here on out (only entities use hitboxes hence this lol)-----
     public List<AnimatedBoundingBox> getAnimatedBoundingBoxes() {
         return this.animatedBoundingBoxes;
+    }
+
+    public Map<String, List<AnimatedBoundingBox>> getAnimatedBoundingBoxesByTag() {
+        return this.animatedBoundingBoxesByTag;
     }
 
     public boolean getBoundingBoxesRecentlyUpdated() {

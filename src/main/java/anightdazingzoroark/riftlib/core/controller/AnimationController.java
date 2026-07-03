@@ -20,7 +20,6 @@ import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
 import anightdazingzoroark.riftlib.core.util.Axis;
 import anightdazingzoroark.riftlib.core.util.MathUtil;
 import anightdazingzoroark.riftlib.model.ServerModelRegistry;
-import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.util.MolangUtils;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
@@ -42,6 +41,7 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -402,10 +402,8 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
         return transitionLength;
     }
 
-    private void applyEffects(Collection<AnimatableValue> effects) {
-        for (AnimatableValue effect : effects) {
-            MolangUtils.parseValue(this.animatable, effect);
-        }
+    private void applyEffects(Collection<Consumer<D>> effects) {
+        for (Consumer<D> effect : effects) effect.accept(this.animatable.getAnimationData());
     }
 
     private void createInitialQueues(List<IBone> modelRendererList) {

@@ -227,7 +227,7 @@ public class AnimationProcessor {
 
 		//-----running custom instructions-----
 		for (EventKeyFrame.CustomInstructionKeyFrame customInstructionEvent : customInstructionEvents) {
-			if (runCustomInstructions) MolangUtils.parseValue(entity, customInstructionEvent.instruction);
+			if (runCustomInstructions) entity.getAnimationData().parseExpression(customInstructionEvent.instruction);
 		}
 
 		//-----client only stuff down here-----

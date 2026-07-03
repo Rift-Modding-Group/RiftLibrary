@@ -1,12 +1,12 @@
 package anightdazingzoroark.riftlib.core.controller;
 
-import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -22,8 +22,8 @@ public class AnimationControllerState<D extends AbstractAnimationData<?, D>> {
     private final LinkedHashMap<String, StateAnimation<D>> animations = new LinkedHashMap<>();
     //same here but for states
     private final LinkedHashMap<String, Function<D, Boolean>> stateTransitions = new LinkedHashMap<>();
-    private final List<AnimatableValue> onEntryAnimatableValues = new ArrayList<>();
-    private final List<AnimatableValue> onExitAnimatableValues = new ArrayList<>();
+    private final List<Consumer<D>> onEntryEffects = new ArrayList<>();
+    private final List<Consumer<D>> onExitEffects = new ArrayList<>();
 
     public AnimationControllerState(String name) {
         this(name, 0D);
@@ -76,25 +76,25 @@ public class AnimationControllerState<D extends AbstractAnimationData<?, D>> {
      * This is basically a MoLang expression or a message that will take effect when entering this state
      * It also takes effect when initializing in this state
      * */
-    public AnimationControllerState<D> addEntryEffect(AnimatableValue animatableValue) {
-        this.onEntryAnimatableValues.add(animatableValue);
+    public AnimationControllerState<D> addEntryEffect(Consumer<D> entryEffect) {
+        this.onEntryEffects.add(entryEffect);
         return this;
     }
 
-    public List<AnimatableValue> getEntryEffects() {
-        return this.onEntryAnimatableValues;
+    public List<Consumer<D>> getEntryEffects() {
+        return this.onEntryEffects;
     }
 
     /**
      * Same as addEntryEffect but for when exiting the state
      * */
-    public AnimationControllerState<D> addExitEffect(AnimatableValue animatableValue) {
-        this.onExitAnimatableValues.add(animatableValue);
+    public AnimationControllerState<D> addExitEffect(Consumer<D> entryEffect) {
+        this.onExitEffects.add(entryEffect);
         return this;
     }
 
-    public List<AnimatableValue> getExitEffects() {
-        return this.onExitAnimatableValues;
+    public List<Consumer<D>> getExitEffects() {
+        return this.onExitEffects;
     }
 
     public record StateAnimation<D extends AbstractAnimationData<?, D>> (String name, Function<D, Boolean> predicate) {}

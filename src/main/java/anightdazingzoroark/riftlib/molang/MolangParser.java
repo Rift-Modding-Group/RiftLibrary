@@ -38,38 +38,7 @@ public class MolangParser extends MathBuilder {
         this.registerFunction("function.send_message", 1, (values, animData) -> {
             if (animData == null) return 0D;
             String messageName = values[0].getString();
-
-            //check for presence of effect and world
-            AnimatableRunValue effect = animData.getAnimationMessageEffects().get(messageName);
-            World world = animData.getWorld();
-            if (effect == null || world == null) return 0D;
-
-            //define return value and side order
-            boolean toReturn = false;
-            Side[] sideOrder = effect.sideOrder();
-            if (sideOrder == null || sideOrder.length == 0) sideOrder = new Side[]{Side.CLIENT}; //client is presumed target if no side order is defined
-
-            //iterate over all side orders
-            for (Side side : sideOrder) {
-                if (side == Side.SERVER) {
-                    if (world.isRemote) {
-                        if (ServerProxy.MESSAGE_WRAPPER == null) continue;
-                        ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibApplyMessageEffect(animData, messageName));
-                    }
-                    else effect.runValue().run();
-                    toReturn = true;
-                }
-                else if (side == Side.CLIENT) {
-                    if (world.isRemote) effect.runValue().run();
-                    else {
-                        if (ServerProxy.MESSAGE_WRAPPER == null) continue;
-                        ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibApplyMessageEffect(animData, messageName));
-                    }
-                    toReturn = true;
-                }
-            }
-
-            return MolangUtils.booleanToDouble(toReturn);
+            return MolangUtils.booleanToDouble(animData.sendMessage(messageName));
         });
         this.registerFunction("function.create_offense_hitbox_by_name", 1, (values, animData) -> {
             if (animData == null || animData.getWorld() == null || animData.getWorld().isRemote) return 0D;

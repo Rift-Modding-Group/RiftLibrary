@@ -26,10 +26,10 @@ public class AlarmClockEntity extends EntityLiving implements IAnimatable<Animat
                         .addAnimation("animation.alarm_clock.hour_rotation")
         ));
 
-        animationData.addInitAnimationValue(new AnimatableValue("hour_rotation", MathUtils.randomInRange(0D, 360D)));
-        animationData.addInitAnimationValue(new AnimatableValue("minute_rotation = math.random(0, 360);"));
+        animationData.addInitAnimationValue("hour_rotation", MathUtils.randomInRange(0D, 360D));
+        animationData.addInitAnimationValue("minute_rotation", MathUtils.randomInRange(0D, 360D));
 
-        animationData.addOnUpdateAnimationValue(new AnimatableValue("minute_rotation = minute_rotation + 1;"));
+        animationData.addOnUpdateAnimationValue("minute_rotation", () -> animationData.getVariable("minute_rotation") + 1);
     }
 
     @Override

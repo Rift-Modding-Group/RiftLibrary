@@ -2,18 +2,19 @@ package anightdazingzoroark.riftlib.core.manager;
 
 import anightdazingzoroark.riftlib.animation.AnimationTicker;
 import anightdazingzoroark.riftlib.core.AnimatableRunValue;
-import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.processor.IBone;
 import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
 import anightdazingzoroark.riftlib.geo.GeoLocator;
 import anightdazingzoroark.riftlib.geo.GeoModel;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibApplyMessageEffect;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.molang.math.MolangFunction;
+import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import anightdazingzoroark.riftlib.resource.client.RiftLibCacheClient;
 import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
 import anightdazingzoroark.riftlib.util.MolangUtils;
@@ -21,6 +22,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.relauncher.Side;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -40,8 +43,8 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     private final T holder;
     private final Map<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection = new HashMap<>();
     private final Map<String, AnimationController<? extends IAnimatable<D>, D>> animationControllers = new HashMap<>();
-    private final List<AnimatableValue> initAnimationValues = new ArrayList<>();
-    private final List<AnimatableValue> onUpdateAnimationValues = new ArrayList<>();
+    private final Map<String, Double> initAnimationValues = new HashMap<>();
+    private final Map<String, Supplier<Double>> onUpdateAnimationValues = new HashMap<>();
     private final Map<String, AnimatableRunValue> animationMessageEffects = new HashMap<>();
     private final Map<ResourceLocation, GeoModel> modelCopies = new HashMap<>();
     protected final Map<String, MolangFunction> molangQueries = new HashMap<>();
@@ -91,16 +94,16 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
      * This only runs once and will run when this object just started rendering
      * This is meant for updating molang variables once.
      */
-    public void addInitAnimationValue(AnimatableValue animatableValue) {
-        this.initAnimationValues.add(animatableValue);
+    public void addInitAnimationValue(String name, double value) {
+        this.initAnimationValues.put(name, value);
     }
 
     /**
      * This runs as long as the holder gets rendered on client or ticked on server
      * This is meant for updating molang variables repeatedly
      */
-    public void addOnUpdateAnimationValue(AnimatableValue animatableValue) {
-        this.onUpdateAnimationValues.add(animatableValue);
+    public void addOnUpdateAnimationValue(String name, Supplier<Double> value) {
+        this.onUpdateAnimationValues.put(name, value);
     }
 
     /**
@@ -200,21 +203,89 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
 
     //-----anim variable related stuff starts here-----
     private void initAnimationVariables() {
-        for (AnimatableValue animatableValue : this.initAnimationValues) {
-            MolangUtils.parseValue(this, animatableValue);
+        for (Map.Entry<String, Double> animatableValue : this.initAnimationValues.entrySet()) {
+            this.setVariable(animatableValue.getKey(), animatableValue.getValue());
         }
     }
 
     public void updateAnimationVariables() {
-        for (AnimatableValue animatableValue : this.onUpdateAnimationValues) {
-            MolangUtils.parseValue(this, animatableValue);
+        for (Map.Entry<String, Supplier<Double>> animatableValue : this.onUpdateAnimationValues.entrySet()) {
+            this.setVariable(animatableValue.getKey(), animatableValue.getValue().get());
         }
     }
 
+    /**
+     * Set variable of course.
+     * */
+    public void setVariable(String variableName, double value) {
+        this.parser.withScope(this.dataScope, () -> parser.setVariable(variableName, value));
+    }
+
+    /**
+     * Get variable and return its value.
+     * */
     public double getVariable(String name) {
-        return MolangUtils.getVariable(this.parser, this.dataScope, name);
+        AtomicReference<Double> toReturn = new AtomicReference<>(0D);
+        this.parser.withScope(this.dataScope, () -> {
+            toReturn.set(parser.getVariable(name).get());
+        });
+        return toReturn.get();
+    }
+
+    /**
+     * Parse a molang expression from a string
+     * */
+    public void parseExpression(@NotNull String expression) {
+        this.parser.withScope(this.dataScope, () -> {
+            try {
+                this.parser.parseExpression(expression, this).get();
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
     //-----anim variable related stuff ends here-----
+
+    /**
+     * Helper for sending animation messages. Return value determines whether or not
+     * it was able to send a message.
+     * */
+    public boolean sendMessage(@NotNull String messageName) {
+        //ensure world exists
+        if (this.getWorld() == null) return false;
+
+        //get run value
+        AnimatableRunValue effect = this.animationMessageEffects.get(messageName);
+        if (effect == null) return false;
+
+        //define return value and side order
+        boolean toReturn = false;
+        Side[] sideOrder = effect.sideOrder();
+        if (sideOrder == null || sideOrder.length == 0) sideOrder = new Side[]{Side.CLIENT}; //client is presumed target if no side order is defined
+
+        //iterate over all side orders
+        for (Side side : sideOrder) {
+            if (side == Side.SERVER) {
+                if (this.getWorld().isRemote) {
+                    if (ServerProxy.MESSAGE_WRAPPER == null) continue;
+                    ServerProxy.MESSAGE_WRAPPER.sendToServer(new RiftLibApplyMessageEffect(this, messageName));
+                }
+                else effect.runValue().run();
+                toReturn = true;
+            }
+            else if (side == Side.CLIENT) {
+                if (this.getWorld().isRemote) effect.runValue().run();
+                else {
+                    if (ServerProxy.MESSAGE_WRAPPER == null) continue;
+                    ServerProxy.MESSAGE_WRAPPER.sendToAll(new RiftLibApplyMessageEffect(this, messageName));
+                }
+                toReturn = true;
+            }
+        }
+
+        return toReturn;
+    }
 
     @NotNull
     public MolangParser getParser() {

@@ -24,7 +24,13 @@
 						"body": {
 							"origin": [-8, 0, -8],
 							"size": [16, 16],
-							"collision": true
+							"collision": true,
+							"damage_multiplier": 1
+						},
+						"attack": {
+							"origin": [-16, 0, -16],
+							"size": [32, 16],
+							"collision": false
 						}
 					}
 				},

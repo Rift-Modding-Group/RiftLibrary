@@ -68,8 +68,10 @@ public class MultiHitboxList<T extends IMultiHitboxUser<?>> {
         }
 
         //-----tick all already existing offense hitboxes-----
-        for (RiftLibOffenseHitbox<T> offenseHitbox : this.offenseHitboxes.values()) {
-            offenseHitbox.onUpdate();
+        if (!this.multiHitboxUser.getWorld().isRemote) {
+            for (RiftLibOffenseHitbox<T> offenseHitbox : this.offenseHitboxes.values()) {
+                offenseHitbox.onUpdate();
+            }
         }
     }
 

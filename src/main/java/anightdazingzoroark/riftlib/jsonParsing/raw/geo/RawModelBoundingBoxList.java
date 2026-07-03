@@ -15,7 +15,7 @@ public class RawModelBoundingBoxList {
         public double[] origin = new double[]{0, 0, 0};
         public double[] size = new double[]{1D, 1D};
         public boolean collision;
-        public String[] tags;
+        public String[] tags = {};
     }
 
     public static class Deserializer implements JsonDeserializer<RawModelBoundingBoxList> {

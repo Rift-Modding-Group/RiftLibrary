@@ -28,12 +28,13 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
     @NotNull
     private final MultiHitboxList<FlyingPufferfishEntity> multiHitboxList;
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
-    private final Map<String, RiftLibRayBuilder> rayMap;
+    private final Map<String, RiftLibRayBuilder> rayMap = Map.of();
 
     public FlyingPufferfishEntity(World worldIn) {
         super(worldIn);
         this.setSize(1f, 1f);
         this.multiHitboxList = new MultiHitboxList<>(this, this.animationData);
+        /*
         this.rayMap = Map.of(
                 "puffUp", new RiftLibRayBuilder()
                         .setImpactOnly()
@@ -48,6 +49,13 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
                         })
                         .setOnlyOneSegment()
         );
+         */
+    }
+
+    @Override
+    public boolean attackEntityAsMob(Entity entityIn) {
+        this.setLastAttackedEntity(entityIn);
+        return entityIn.attackEntityFrom(DamageSource.causeMobDamage(this), 5f);
     }
 
     //hitbox stuff starts here

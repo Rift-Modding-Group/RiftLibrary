@@ -141,7 +141,8 @@
 				}
 			},
 			"timeline": {
-				"0.25": "function.send_message('puffUpRay')"
+				"0.25": "function.create_offense_hitbox_by_name('attack');",
+				"0.5": "function.destroy_offense_hitbox_by_tag('attack');"
 			}
 		}
 	}

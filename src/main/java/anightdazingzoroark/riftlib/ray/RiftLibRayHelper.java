@@ -41,6 +41,7 @@ public class RiftLibRayHelper {
 
         //ensure theres a server model
         ServerModelRegistry.requireServerModel(rayCreator.getRayCreator(), "rays");
+        ServerModelRegistry.prepareServerSyncedAnimationData(rayCreator.getRayCreator());
 
         //ensure theres a locator
         AnimatedLocator locator = rayCreator.getRayCreator().getAnimationData().getAnimatedLocator(locatorName);

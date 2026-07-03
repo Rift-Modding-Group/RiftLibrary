@@ -894,6 +894,15 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
 
         private double adjustTick(double tick) {
             if (this.shouldResetTick) {
+                if (this.animatable.getAnimationData().isServerSynced()
+                        && this.currentAnimation != null
+                        && this.currentAnimation.loop == LoopType.LOOP
+                ) {
+                    this.tickOffset = 0D;
+                    this.shouldResetTick = false;
+                    return this.animationSpeed * Math.max(tick, 0.0D);
+                }
+
                 this.tickOffset = tick;
                 this.shouldResetTick = false;
                 return 0;

@@ -55,9 +55,9 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		boolean hasServerModel = this.hasServerModel(entity) || animData.isServerSynced();
 		GeoModel model = this.getModel(entity);
 		List<IBone> modelRenderers = this.getModelRenderers(model);
-		if (hasServerModel) {
-			this.createAndUpdateAnimatedLocators(entity);
-		}
+		if (hasServerModel) this.createAndUpdateAnimatedLocators(entity);
+
+		if (this.hasServerModel(entity) && !animData.isServerSynced()) return;
 
 		//if there is no server model, the client will be the main authority in
 		//ticking animations.

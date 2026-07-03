@@ -40,6 +40,11 @@ public class AnimationProcessor {
 
 		//create anim values list to store the changes in
 		BoneAnimationValuesList boneAnimationValues = new BoneAnimationValuesList();
+		List<EventKeyFrame.CustomInstructionKeyFrame> customInstructionEvents = new ArrayList<>();
+		List<EventKeyFrame.ParticleEventKeyFrame> particleEvents = new ArrayList<>();
+		List<EventKeyFrame.SoundEventKeyFrame> soundEvents = new ArrayList<>();
+		boolean isServerSynced = animationData.isServerSynced() || ServerModelRegistry.hasServerModel(entity);
+		boolean runCustomInstructions = !runClientEffects || !isServerSynced;
 
 		//get changes from all anim controllers
 		for (AnimationController<?, ?> controller : animationData.getAnimationControllers().values()) {
@@ -89,29 +94,12 @@ public class AnimationProcessor {
 				}
 			}
 
-			//-----running custom instructions-----
-			boolean isServerSynced = animationData.isServerSynced() || ServerModelRegistry.hasServerModel(entity);
-			boolean runCustomInstructions = !runClientEffects || !isServerSynced;
-			for (EventKeyFrame.CustomInstructionKeyFrame customInstructionEvent : controller.drainCustomInstructionEvents()) {
-				if (runCustomInstructions) MolangUtils.parseValue(entity, customInstructionEvent.instruction);
-			}
+			customInstructionEvents.addAll(controller.drainCustomInstructionEvents());
 
 			//-----client only stuff down here-----
 			if (runClientEffects) {
-				//animation effects
-				for (EventKeyFrame.ParticleEventKeyFrame particleEvent : controller.drainParticleEvents()) {
-					AnimatedLocator locator = animationData.getAnimatedLocator(particleEvent.locator);
-					if (locator != null) {
-						ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(particleEvent.effect);
-						if (particleBuilder != null) locator.createParticleEmitter(particleBuilder);
-					}
-				}
-
-				//sound effects
-				for (EventKeyFrame.SoundEventKeyFrame soundEvent : controller.drainSoundEvents()) {
-					AnimatedLocator locator = animationData.getAnimatedLocator(soundEvent.locator);
-					if (locator != null) RiftLibSoundHelper.playSound(entity, locator, soundEvent.effect);
-				}
+				particleEvents.addAll(controller.drainParticleEvents());
+				soundEvents.addAll(controller.drainSoundEvents());
 			}
 			else {
 				controller.drainParticleEvents();
@@ -234,6 +222,29 @@ public class AnimationProcessor {
 						MathUtil.lerpValues(percentageReset, saveSnapshot.getScale().z, initialSnapshot.getScale().z)
 				);
 				saveSnapshot.getScale().set(model.getScale());
+			}
+		}
+
+		//-----running custom instructions-----
+		for (EventKeyFrame.CustomInstructionKeyFrame customInstructionEvent : customInstructionEvents) {
+			if (runCustomInstructions) MolangUtils.parseValue(entity, customInstructionEvent.instruction);
+		}
+
+		//-----client only stuff down here-----
+		if (runClientEffects) {
+			//animation effects
+			for (EventKeyFrame.ParticleEventKeyFrame particleEvent : particleEvents) {
+				AnimatedLocator locator = animationData.getAnimatedLocator(particleEvent.locator);
+				if (locator != null) {
+					ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(particleEvent.effect);
+					if (particleBuilder != null) locator.createParticleEmitter(particleBuilder);
+				}
+			}
+
+			//sound effects
+			for (EventKeyFrame.SoundEventKeyFrame soundEvent : soundEvents) {
+				AnimatedLocator locator = animationData.getAnimatedLocator(soundEvent.locator);
+				if (locator != null) RiftLibSoundHelper.playSound(entity, locator, soundEvent.effect);
 			}
 		}
 		animationData.isFirstTick = false;

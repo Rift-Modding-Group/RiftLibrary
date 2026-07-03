@@ -138,6 +138,7 @@ public class MultiHitboxList<T extends IMultiHitboxUser<?>> {
         for (String tag : animatedBoundingBox.getTags()) {
             this.offenseHitboxesByTag.computeIfAbsent(tag, key -> new ArrayList<>()).add(offenseHitbox);
         }
+        offenseHitbox.onUpdate();
     }
 
     public boolean removeOffenseHitboxByName(@NotNull String name) {

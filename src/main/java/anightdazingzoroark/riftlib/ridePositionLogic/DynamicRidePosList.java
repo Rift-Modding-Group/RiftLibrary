@@ -52,7 +52,7 @@ public class DynamicRidePosList {
         Set<String> existingPosNames = new HashSet<>();
 
         //---create map---
-        for (AnimatedLocator locator : this.animData.getAnimatedLocators()) {
+        for (AnimatedLocator locator : this.animData.getAnimatedLocators().values()) {
             //skip locators that cannot be used as rider positions
             if (!DynamicRidePosUtils.locatorCanBeRidePos(locator.getName())) continue;
 

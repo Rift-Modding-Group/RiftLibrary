@@ -12,13 +12,14 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
 import org.jspecify.annotations.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivingBase, AnimationDataEntity> {
-    private final List<AnimatedBoundingBox> animatedBoundingBoxes = new ArrayList<>();
+    private final Map<String, AnimatedBoundingBox> animatedBoundingBoxes = new HashMap<>();
     private final Map<String, List<AnimatedBoundingBox>> animatedBoundingBoxesByTag = new HashMap<>();
     private boolean boundingBoxesRecentlyUpdated;
 
@@ -50,6 +51,7 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
         });
     }
 
+    @SuppressWarnings("unchecked")
     private static IAnimatable<AnimationDataEntity> getAnimatable(EntityLivingBase holder) {
         if (holder instanceof IAnimatable<?>) return (IAnimatable<AnimationDataEntity>) holder;
         throw new IllegalArgumentException("AnimationDataEntity holder must implement IAnimatable");
@@ -66,7 +68,7 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
             //locators
             for (GeoLocator locator : model.allLocators) {
                 if (locator == null) continue;
-                this.animatedLocators.add(new AnimatedLocator(locator, this));
+                this.animatedLocators.put(locator.getName(), new AnimatedLocator(locator, this));
             }
 
             //bounding boxes
@@ -74,7 +76,7 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
                 for (GeoBoundingBox boundingBox : model.allBoundingBoxes) {
                     if (boundingBox == null) continue;
                     AnimatedBoundingBox toAdd = new AnimatedBoundingBox(boundingBox);
-                    this.animatedBoundingBoxes.add(toAdd);
+                    this.animatedBoundingBoxes.put(toAdd.getName(), toAdd);
                     for (String tag : toAdd.getTags()) {
                         this.animatedBoundingBoxesByTag.computeIfAbsent(tag, key -> new ArrayList<>()).add(toAdd);
                     }
@@ -87,7 +89,7 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
     }
 
     //-----animated bounding box definitions from here on out (only entities use hitboxes hence this lol)-----
-    public List<AnimatedBoundingBox> getAnimatedBoundingBoxes() {
+    public Map<String, AnimatedBoundingBox> getAnimatedBoundingBoxes() {
         return this.animatedBoundingBoxes;
     }
 

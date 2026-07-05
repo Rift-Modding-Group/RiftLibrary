@@ -20,6 +20,7 @@ import anightdazingzoroark.riftlib.core.util.Color;
 import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 import anightdazingzoroark.riftlib.util.MatrixStack;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface IGeoRenderer<T> {
@@ -126,7 +127,7 @@ public interface IGeoRenderer<T> {
     default void repositionAnimatedLocators(T animatable) {
         if (!(animatable instanceof IAnimatable<?> animatableObject)) return;
 
-        List<AnimatedLocator> animatedLocators = animatableObject.getAnimationData().getAnimatedLocators();
+        Collection<AnimatedLocator> animatedLocators = animatableObject.getAnimationData().getAnimatedLocators().values();
         for (AnimatedLocator animatedLocator : animatedLocators) {
             //update location based on animatedLocator if there is
             BufferUtils.createFloatBuffer(16);

@@ -42,7 +42,7 @@ public class MultiHitboxList<T extends IMultiHitboxUser<?>> {
         }
 
         //-----create collision hitboxes from bounding boxes-----
-        for (AnimatedBoundingBox animatedBoundingBox : this.animData.getAnimatedBoundingBoxes()) {
+        for (AnimatedBoundingBox animatedBoundingBox : this.animData.getAnimatedBoundingBoxes().values()) {
             if (!animatedBoundingBox.canDoCollisions()) continue;
             if (!this.collisionHitboxes.containsKey(animatedBoundingBox.getName())) {
                 RiftLibCollisionHitbox<T> toCreate = new RiftLibCollisionHitbox<>(this.multiHitboxUser, animatedBoundingBox);
@@ -114,7 +114,7 @@ public class MultiHitboxList<T extends IMultiHitboxUser<?>> {
     }
 
     public boolean createOffenseHitboxByName(@NotNull String name) {
-        for (AnimatedBoundingBox animatedBoundingBox : this.animData.getAnimatedBoundingBoxes()) {
+        for (AnimatedBoundingBox animatedBoundingBox : this.animData.getAnimatedBoundingBoxes().values()) {
             if (!animatedBoundingBox.getName().equals(name)) continue;
             this.createOffenseHitbox(animatedBoundingBox);
             return true;

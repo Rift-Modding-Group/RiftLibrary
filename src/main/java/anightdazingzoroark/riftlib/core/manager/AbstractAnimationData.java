@@ -48,7 +48,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     private final Map<String, AnimatableRunValue> animationMessageEffects = new HashMap<>();
     private final Map<ResourceLocation, GeoModel> modelCopies = new HashMap<>();
     protected final Map<String, MolangFunction> molangQueries = new HashMap<>();
-    protected final List<AnimatedLocator> animatedLocators = new ArrayList<>();
+    protected final Map<String, AnimatedLocator> animatedLocators = new HashMap<>();
     private int animatedLocatorTicker;
     @NotNull
     private final MolangParser parser;
@@ -121,7 +121,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
 
             for (GeoLocator locator : model.allLocators) {
                 if (locator == null) continue;
-                this.animatedLocators.add(new AnimatedLocator(locator, this));
+                this.animatedLocators.put(locator.getName(), new AnimatedLocator(locator, this));
             }
 
             this.currentModel = model;
@@ -131,7 +131,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     //-----animated locator stuff starts here-----
     public void updateAnimatedLocators() {
         this.animatedLocatorTicker = 0;
-        for (AnimatedLocator locator : this.animatedLocators) locator.setUpdated(true);
+        for (AnimatedLocator locator : this.animatedLocators.values()) locator.setUpdated(true);
     }
 
     public void tickAnimatedLocators() {
@@ -140,20 +140,17 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
             this.animatedLocatorTicker++;
         }
         else {
-            for (AnimatedLocator locator : this.animatedLocators) locator.setUpdated(false);
+            for (AnimatedLocator locator : this.animatedLocators.values()) locator.setUpdated(false);
             this.animatedLocatorTicker = 0;
         }
     }
 
-    public AnimatedLocator getAnimatedLocator(String name) {
-        for (AnimatedLocator animatedLocator : this.animatedLocators) {
-            if (animatedLocator == null) continue;
-            if (animatedLocator.getName() != null && animatedLocator.getName().equals(name)) return animatedLocator;
-        }
-        return null;
+    @Nullable
+    public AnimatedLocator getAnimatedLocator(@NotNull String name) {
+        return this.animatedLocators.get(name);
     }
 
-    public List<AnimatedLocator> getAnimatedLocators() {
+    public Map<String, AnimatedLocator> getAnimatedLocators() {
         return this.animatedLocators;
     }
 

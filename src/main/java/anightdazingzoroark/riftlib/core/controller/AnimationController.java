@@ -1,6 +1,5 @@
 package anightdazingzoroark.riftlib.core.controller;
 
-import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.AnimationState;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;

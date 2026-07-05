@@ -2,7 +2,6 @@ package anightdazingzoroark.example.entity;
 
 import anightdazingzoroark.example.entity.ai.DragonAttackAI;
 import anightdazingzoroark.riftlib.core.AnimatableRunValue;
-import anightdazingzoroark.riftlib.core.AnimatableValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;

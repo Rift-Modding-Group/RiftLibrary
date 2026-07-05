@@ -1,7 +1,9 @@
 package anightdazingzoroark.riftlib.geo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawGeoModel;
 
@@ -10,7 +12,7 @@ import javax.annotation.Nullable;
 public class GeoModel {
 	public RawGeoModel.RawModelDescription description;
 	public final List<GeoBone> topLevelBones = new ArrayList<>();
-	public final List<GeoBone> allBones = new ArrayList<>();
+	public final Map<String, GeoBone> allBones = new HashMap<>();
 	public final List<GeoLocator> allLocators = new ArrayList<>();
 	public final List<GeoBoundingBox> allBoundingBoxes = new ArrayList<>();
 
@@ -27,7 +29,7 @@ public class GeoModel {
 
 	private GeoBone copyBone(GeoModel copyModel, GeoBone sourceBone, @Nullable GeoBone copyParentBone) {
 		GeoBone copyBone = new GeoBone(copyParentBone, sourceBone.getName());
-		copyModel.allBones.add(copyBone);
+		copyModel.allBones.put(copyBone.getName(), copyBone);
 
 		copyBone.mirror = sourceBone.mirror;
 		copyBone.inflate = sourceBone.inflate;

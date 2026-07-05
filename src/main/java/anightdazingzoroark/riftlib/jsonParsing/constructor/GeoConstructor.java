@@ -26,7 +26,7 @@ public class GeoConstructor {
 	) {
 		RawGeoModel.RawModelBone rawBone = bone.selfBone;
 		GeoBone geoBone = new GeoBone(parentBone, rawBone.name);
-		model.allBones.add(geoBone);
+		model.allBones.put(geoBone.getName(), geoBone);
 
 		Vector3f rotation = VectorUtils.convertDoubleToFloat(VectorUtils.fromArray(rawBone.rotation));
 		Vector3f pivot = VectorUtils.convertDoubleToFloat(VectorUtils.fromArray(rawBone.pivot));

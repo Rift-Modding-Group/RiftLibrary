@@ -33,7 +33,7 @@ import java.util.Map;
 
 public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IRayCreator<DragonEntity>, IMultiHitboxUser<DragonEntity>, IDynamicRideUser<DragonEntity> {
     private static final DataParameter<Boolean> BREATHING_FIRE = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
-    private final AnimationDataEntity animationData = new AnimationDataEntity(this);
+    private final AnimationDataEntity animationData = new AnimationDataEntity(this, holder -> 3f);
     private final MultiHitboxList<DragonEntity> multiHitboxList;
     private final DynamicRidePosList ridePositions;
     private final Map<String, RiftLibRayBuilder> rayMap;

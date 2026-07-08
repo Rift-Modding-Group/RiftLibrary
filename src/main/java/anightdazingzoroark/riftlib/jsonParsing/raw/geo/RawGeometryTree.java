@@ -13,7 +13,7 @@ public class RawGeometryTree {
     public final RawGeoModel.RawModelDescription description;
 
     public RawGeometryTree(RawGeoModel model, ResourceLocation location) {
-        RawGeoModel.MinecraftGeometry geometry = model.geometry.get(0);
+        RawGeoModel.MinecraftGeometry geometry = model.geometry.getFirst();
 
         this.description = geometry.description;
 

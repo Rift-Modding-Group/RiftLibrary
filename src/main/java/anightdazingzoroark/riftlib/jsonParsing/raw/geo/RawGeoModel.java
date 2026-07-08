@@ -1,6 +1,5 @@
 package anightdazingzoroark.riftlib.jsonParsing.raw.geo;
 
-import anightdazingzoroark.riftlib.jsonParsing.raw.RawMolangValue;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;

@@ -55,7 +55,7 @@ public class AnimatedBoundingBox {
     }
 
     /**
-     * Note that this isn't the centerpoint of
+     * Note that this isn't the centerpoint, its a corner
      * */
     @NotNull
     public Vec3d getModelSpacePosition() {

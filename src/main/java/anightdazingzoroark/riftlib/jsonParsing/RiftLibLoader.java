@@ -75,8 +75,8 @@ public class RiftLibLoader {
 
     public ParticleBuilder loadParticle(MolangParser parser, RiftLibResourceReader resourceReader, ResourceLocation location) {
         try {
-            RawParticle rawParticle = this.gson.fromJson(getResourceAsString(location, resourceReader), RawParticle.class);
-            return ParticleConstructor.createParticleBuilder(location.getNamespace(), rawParticle, parser);
+            RawParticle rawParticle = this.gson.fromJson(this.getResourceAsString(location, resourceReader), RawParticle.class);
+            return ParticleConstructor.createParticleBuilder(rawParticle, parser);
         }
         catch (Exception e) {
             RiftLib.LOGGER.error(String.format("Error parsing %S", location), e);

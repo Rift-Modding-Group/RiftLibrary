@@ -2,7 +2,6 @@ package anightdazingzoroark.riftlib.jsonParsing.constructor;
 
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticle;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
-import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.ParticleMaterial;
@@ -13,15 +12,26 @@ import net.minecraft.util.ResourceLocation;
 import java.util.Map;
 
 public class ParticleConstructor {
-    public static ParticleBuilder createParticleBuilder(String namespace, RawParticle rawParticle, MolangParser parser) throws NumberFormatException, MolangException {
+    public static ParticleBuilder createParticleBuilder(RawParticle rawParticle, MolangParser parser) throws NumberFormatException {
         ParticleBuilder toReturn = new ParticleBuilder();
 
-        //get name
+        //---get name---
         toReturn.identifier = rawParticle.rawParticleEffect.description.identifier;
 
-        //get texture
+        //---get texture and namespace---
         String textureLocation = rawParticle.rawParticleEffect.description.basicRenderParameters.texture;
         if (!textureLocation.endsWith(".png")) textureLocation = textureLocation.concat(".png");
+
+        //get namespace
+        String namespace;
+        if (textureLocation.contains(":")) {
+            int colonIndex = textureLocation.indexOf(":");
+            namespace = textureLocation.substring(0, colonIndex);
+            textureLocation = textureLocation.substring(colonIndex + 1);
+        }
+        else namespace = "minecraft";
+
+        //set texture
         toReturn.texture = new ResourceLocation(namespace, textureLocation);
 
         //get material

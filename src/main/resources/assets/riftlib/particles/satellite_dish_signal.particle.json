@@ -5,7 +5,7 @@
       "identifier": "riftlib:satellite_dish_signal",
       "basic_render_parameters": {
         "material": "particles_alpha",
-        "texture": "textures/particle/satellite_signal"
+        "texture": "riftlib:textures/particle/satellite_signal"
       }
     },
     "components": {

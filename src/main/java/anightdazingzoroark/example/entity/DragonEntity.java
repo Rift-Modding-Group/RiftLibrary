@@ -10,7 +10,7 @@ import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.hitbox.MultiHitboxList;
 import anightdazingzoroark.riftlib.hitbox.RiftLibCollisionHitbox;
 import anightdazingzoroark.riftlib.ray.*;
-import anightdazingzoroark.riftlib.ray.rayShape.movement.RiftLibRayBoxMovementShape;
+import anightdazingzoroark.riftlib.ray.rayShape.motion.RiftLibRayBoxMotionShape;
 import anightdazingzoroark.riftlib.ray.rayShape.impact.RiftLibRaySphereImpactShape;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosList;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
@@ -49,7 +49,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
                         .setMotionThenImpact()
                         .setMotionSpeed(1D)
                         .setMaxMotionDistance(12D)
-                        .setMovementShape(() -> new RiftLibRayBoxMovementShape(
+                        .setMovementShape(() -> new RiftLibRayBoxMotionShape(
                                 0.1D, 4D,
                                 false, false
                         ))

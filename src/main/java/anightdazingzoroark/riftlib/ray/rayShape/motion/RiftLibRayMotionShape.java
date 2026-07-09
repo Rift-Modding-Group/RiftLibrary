@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.ray.rayShape.movement;
+package anightdazingzoroark.riftlib.ray.rayShape.motion;
 
 import anightdazingzoroark.riftlib.ray.RiftLibRay;
 import anightdazingzoroark.riftlib.ray.RiftLibRayBuilder;
@@ -10,10 +10,10 @@ import java.util.List;
 /**
  * Owns how moving ray segments are created.
  */
-public abstract class RiftLibRayMovementShape {
+public abstract class RiftLibRayMotionShape {
     private final double segmentLength;
 
-    protected RiftLibRayMovementShape(double segmentLength) {
+    protected RiftLibRayMotionShape(double segmentLength) {
         this.segmentLength = Math.max(0.001D, segmentLength);
     }
 

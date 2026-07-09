@@ -1,4 +1,4 @@
-package anightdazingzoroark.riftlib.ray.rayShape.movement;
+package anightdazingzoroark.riftlib.ray.rayShape.motion;
 
 import anightdazingzoroark.riftlib.ray.RiftLibRay;
 import anightdazingzoroark.riftlib.ray.RiftLibRayBuilder;
@@ -7,12 +7,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class RiftLibRayBoxMovementShape extends RiftLibRayMovementShape {
+public final class RiftLibRayBoxMotionShape extends RiftLibRayMotionShape {
     private final double width;
     private final boolean anchoredAtTop;
     private final boolean anchoredAtBottom;
 
-    public RiftLibRayBoxMovementShape(
+    public RiftLibRayBoxMotionShape(
             double segmentLength,
             double width,
             boolean anchoredAtTop,

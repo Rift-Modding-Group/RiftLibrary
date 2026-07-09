@@ -1,7 +1,7 @@
 package anightdazingzoroark.riftlib.ray;
 
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
-import anightdazingzoroark.riftlib.ray.rayShape.movement.RiftLibRayMovementShape;
+import anightdazingzoroark.riftlib.ray.rayShape.motion.RiftLibRayMotionShape;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.entity.Entity;
@@ -50,7 +50,7 @@ public class RiftLibRay {
 
     //shape for ray in motion
     @NotNull
-    private final RiftLibRayMovementShape movementShape;
+    private final RiftLibRayMotionShape movementShape;
 
     //flag to signal the start of the end of the ray
     private boolean isEnded;
@@ -112,7 +112,7 @@ public class RiftLibRay {
             }
 
             if (!this.isEnded && this.builder.getHasMotion() && this.canCreateMoreSegments()) {
-                for (RiftLibRayMovementShape.SegmentSeed seed : this.movementShape.createSegments(this.rayPose, this.builder)) {
+                for (RiftLibRayMotionShape.SegmentSeed seed : this.movementShape.createSegments(this.rayPose, this.builder)) {
                     if (!this.canCreateMoreSegments()) break;
                     this.raySegmentList.add(new RiftLibRaySegment(
                             this.rayCreator,

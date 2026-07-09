@@ -2,8 +2,8 @@ package anightdazingzoroark.riftlib.ray;
 
 import anightdazingzoroark.riftlib.ray.rayShape.impact.RiftLibImpactShape;
 import anightdazingzoroark.riftlib.ray.rayShape.impact.RiftLibRaySphereImpactShape;
-import anightdazingzoroark.riftlib.ray.rayShape.movement.RiftLibRayMovementShape;
-import anightdazingzoroark.riftlib.ray.rayShape.movement.RiftLibRayStraightMovementShape;
+import anightdazingzoroark.riftlib.ray.rayShape.motion.RiftLibRayMotionShape;
+import anightdazingzoroark.riftlib.ray.rayShape.motion.RiftLibRayStraightMotionShape;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,7 +23,7 @@ public class RiftLibRayBuilder {
     private boolean onlyOneSegment;
 
     @NotNull
-    private Supplier<RiftLibRayMovementShape> movementShape = () -> new RiftLibRayStraightMovementShape(1D);
+    private Supplier<RiftLibRayMotionShape> movementShape = () -> new RiftLibRayStraightMotionShape(1D);
     @NotNull
     private Supplier<RiftLibImpactShape> impactShape = RiftLibRaySphereImpactShape::new;
 
@@ -103,13 +103,13 @@ public class RiftLibRayBuilder {
      * Define shape when in motion
      * */
     @NotNull
-    public RiftLibRayBuilder setMovementShape(@NotNull Supplier<RiftLibRayMovementShape> movementShape) {
+    public RiftLibRayBuilder setMovementShape(@NotNull Supplier<RiftLibRayMotionShape> movementShape) {
         this.movementShape = movementShape;
         return this;
     }
 
     @NotNull
-    public Supplier<RiftLibRayMovementShape> getMovementShape() {
+    public Supplier<RiftLibRayMotionShape> getMovementShape() {
         return this.movementShape;
     }
 

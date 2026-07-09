@@ -2,8 +2,6 @@ package anightdazingzoroark.riftlib.command;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
-import anightdazingzoroark.riftlib.internalMessage.RiftLibShowBoundingBoxMessage;
-import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;

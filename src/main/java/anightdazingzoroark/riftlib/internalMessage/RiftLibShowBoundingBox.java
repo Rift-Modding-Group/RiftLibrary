@@ -11,14 +11,14 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class RiftLibShowBoundingBoxMessage extends RiftLibMessage<RiftLibShowBoundingBoxMessage> {
+public class RiftLibShowBoundingBox extends RiftLibMessage<RiftLibShowBoundingBox> {
     private int entityId;
     private String aabbName;
     private boolean add;
 
-    public RiftLibShowBoundingBoxMessage() {}
+    public RiftLibShowBoundingBox() {}
 
-    public RiftLibShowBoundingBoxMessage(Entity entity, String aabbName, boolean add) {
+    public RiftLibShowBoundingBox(Entity entity, String aabbName, boolean add) {
         this.entityId = entity.getEntityId();
         this.aabbName = aabbName;
         this.add = add;
@@ -39,16 +39,15 @@ public class RiftLibShowBoundingBoxMessage extends RiftLibMessage<RiftLibShowBou
     }
 
     @Override
-    public void executeOnServer(MinecraftServer server, RiftLibShowBoundingBoxMessage message, EntityPlayer player, MessageContext messageContext) {}
+    public void executeOnServer(MinecraftServer server, RiftLibShowBoundingBox message, EntityPlayer player, MessageContext messageContext) {}
 
     @Override
-    public void executeOnClient(Minecraft client, RiftLibShowBoundingBoxMessage message, EntityPlayer player, MessageContext messageContext) {
-        if (client.world == null) return;
+    public void executeOnClient(Minecraft client, RiftLibShowBoundingBox message, EntityPlayer player, MessageContext messageContext) {
         Entity entity = client.world.getEntityByID(message.entityId);
         if (!(entity instanceof IAnimatable<?> animatable && animatable.getAnimationData() instanceof AnimationDataEntity animData)) return;
 
         if (message.add) {
-            animData.defineWorldSpaceAABB(message.aabbName);
+            if (animData.getWorldSpaceAABB(message.aabbName) == null) animData.defineWorldSpaceAABB(message.aabbName);
             animData.displayWordSpaceBoundingBox(message.aabbName);
         }
         else {

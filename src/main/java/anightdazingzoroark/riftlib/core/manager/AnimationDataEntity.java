@@ -5,7 +5,8 @@ import anightdazingzoroark.riftlib.geo.GeoBoundingBox;
 import anightdazingzoroark.riftlib.geo.GeoLocator;
 import anightdazingzoroark.riftlib.geo.GeoModel;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
-import anightdazingzoroark.riftlib.internalMessage.RiftLibShowBoundingBoxMessage;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibClearBoundingBoxes;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibShowBoundingBox;
 import anightdazingzoroark.riftlib.model.AnimatedBoundingBox;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
@@ -152,6 +153,20 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
 
     //-----world space bounding box stuff starts here-----
     /**
+     * Simple helper to create or get a world-space AABB
+     * */
+    @Nullable
+    public AxisAlignedBB getOrCreateWorldSpaceAABB(@NotNull String aabbName) {
+        //find first
+        AxisAlignedBB toReturn = this.worldSpaceBoundingBoxes.get(aabbName);
+        if (toReturn != null) return toReturn;
+
+        //if it was null, create and try to return end result
+        this.defineWorldSpaceAABB(aabbName);
+        return this.worldSpaceBoundingBoxes.get(aabbName);
+    }
+
+    /**
      * Turn an animated bounding box into a world space AABB.
      * */
     public void defineWorldSpaceAABB(@NotNull String aabbName) {
@@ -166,7 +181,7 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
         if (axisAlignedBB == null) return;
         this.worldSpaceBoundingBoxes.put(aabbName, axisAlignedBB);
         if (displayDebug && !this.getHolder().world.isRemote) {
-            ServerProxy.MESSAGE_WRAPPER.sendToAllTracking(new RiftLibShowBoundingBoxMessage(this.getHolder(), aabbName, true), this.getHolder());
+            ServerProxy.MESSAGE_WRAPPER.sendToAllTracking(new RiftLibShowBoundingBox(this.getHolder(), aabbName, true), this.getHolder());
         }
     }
 
@@ -182,9 +197,8 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
 
     public void removeWorldSpaceAABB(@NotNull String aabbName) {
         this.worldSpaceBoundingBoxes.remove(aabbName);
-        this.displayedWorldSpaceBoundingBoxes.remove(aabbName);
         if (!this.getHolder().world.isRemote) {
-            ServerProxy.MESSAGE_WRAPPER.sendToAllTracking(new RiftLibShowBoundingBoxMessage(this.getHolder(), aabbName, false), this.getHolder());
+            ServerProxy.MESSAGE_WRAPPER.sendToAllTracking(new RiftLibShowBoundingBox(this.getHolder(), aabbName, false), this.getHolder());
         }
     }
 
@@ -240,5 +254,20 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
                 this.getHolder().posY + hitboxPos.y + height,
                 this.getHolder().posZ + hitboxPos.z + halfWidth
         );
+    }
+
+    /**
+     * For clearing all defined world space AABBs
+     * */
+    public void clearAllWorldSpaceAABBs() {
+        this.worldSpaceBoundingBoxes.clear();
+        if (!this.getHolder().world.isRemote) {
+            ServerProxy.MESSAGE_WRAPPER.sendToAllTracking(new RiftLibClearBoundingBoxes(this.getHolder()), this.getHolder());
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void clearAllDisplayedAABBs() {
+        this.displayedWorldSpaceBoundingBoxes.clear();
     }
 }

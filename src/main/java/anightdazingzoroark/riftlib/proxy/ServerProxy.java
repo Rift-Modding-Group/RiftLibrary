@@ -43,7 +43,8 @@ public class ServerProxy {
         MESSAGE_WRAPPER.registerMessage(RiftLibCreateParticle.class, RiftLibMessageSide.CLIENT);
         MESSAGE_WRAPPER.registerMessage(RiftLibPlaySoundForPlayer.class, RiftLibMessageSide.CLIENT);
         MESSAGE_WRAPPER.registerMessage(RiftLibApplyMessageEffect.class, RiftLibMessageSide.BOTH);
-        MESSAGE_WRAPPER.registerMessage(RiftLibShowBoundingBoxMessage.class, RiftLibMessageSide.CLIENT);
+        MESSAGE_WRAPPER.registerMessage(RiftLibShowBoundingBox.class, RiftLibMessageSide.CLIENT);
+        MESSAGE_WRAPPER.registerMessage(RiftLibClearBoundingBoxes.class, RiftLibMessageSide.CLIENT);
 
         HITBOX_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_hitbox");
         HITBOX_MESSAGE_WRAPPER.registerMessage(RiftLibSyncHitboxEntityId.class, RiftLibMessageSide.CLIENT);

@@ -31,9 +31,10 @@ public interface IHitbox<T extends IMultiHitboxUser<?>> {
      * Return the width and height based on parent scale and fixed size
      * */
     default float[] getHitboxSize() {
+        float parentScale = this.getParent().getMultiHitboxUser().getAnimationData().getScale();
         return new float[]{
-                this.getParent().multiHitboxUserScale() * this.getBoundingBox().getModelSpaceSize()[0] / 16f,
-                this.getParent().multiHitboxUserScale() * this.getBoundingBox().getModelSpaceSize()[1] / 16f
+                parentScale * this.getBoundingBox().getModelSpaceSize()[0] / 16f,
+                parentScale * this.getBoundingBox().getModelSpaceSize()[1] / 16f
         };
     }
 
@@ -44,6 +45,7 @@ public interface IHitbox<T extends IMultiHitboxUser<?>> {
     @NotNull
     default Vec3d getHitboxPosition() {
         EntityLivingBase parentEntityLiving = this.getParent().getMultiHitboxUser();
+        float parentScale = this.getParent().getMultiHitboxUser().getAnimationData().getScale();
 
         //correct the model space positions first
         Vec3d modelSpacePos = this.getBoundingBox().getModelSpacePosition();
@@ -55,11 +57,7 @@ public interface IHitbox<T extends IMultiHitboxUser<?>> {
         float newHitboxZ = (float) (-(modelSpacePos.z + modelSpaceSizeUnscaled[0] / 2f) / 16f);
 
         //set initial entity offset from center
-        Vec3d posVec = new Vec3d(
-                newHitboxX * this.getParent().multiHitboxUserScale(),
-                newHitboxY * this.getParent().multiHitboxUserScale(),
-                newHitboxZ * this.getParent().multiHitboxUserScale()
-        );
+        Vec3d posVec = new Vec3d(newHitboxX * parentScale, newHitboxY * parentScale, newHitboxZ * parentScale);
 
         //determine yaw
         double normalYawRadians = -Math.toRadians(parentEntityLiving.rotationYawHead);

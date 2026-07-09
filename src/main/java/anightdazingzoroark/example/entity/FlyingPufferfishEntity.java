@@ -27,7 +27,7 @@ import java.util.Map;
 public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<AnimationDataEntity>, IMultiHitboxUser<FlyingPufferfishEntity>, IRayCreator<FlyingPufferfishEntity> {
     @NotNull
     private final MultiHitboxList<FlyingPufferfishEntity> multiHitboxList;
-    private final AnimationDataEntity animationData = new AnimationDataEntity(this);
+    private final AnimationDataEntity animationData = new AnimationDataEntity(this, 2f);
     private final Map<String, RiftLibRayBuilder> rayMap = Map.of();
 
     public FlyingPufferfishEntity(World worldIn) {
@@ -72,22 +72,12 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
     }
 
     @Override
-    public float multiHitboxUserScale() {
-        return 2f;
-    }
-
-    @Override
     public Entity[] getParts() {
         return this.multiHitboxList.getHitboxesAsArray();
     }
     //hitbox stuff ends here
 
     //ray stuff starts here
-    @Override
-    public float rayCreatorScale() {
-        return 2f;
-    }
-
     @Override
     public FlyingPufferfishEntity getRayCreator() {
         return this;

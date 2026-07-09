@@ -118,11 +118,8 @@ public class DynamicRidePosList {
         );
 
         //change based on scale
-        posVec = new Vec3d(
-                posVec.x * this.dynamicRideUser.dynamicRiderUserScale(),
-                posVec.y * this.dynamicRideUser.dynamicRiderUserScale(),
-                posVec.z * this.dynamicRideUser.dynamicRiderUserScale()
-        );
+        float parentScale = this.animData.getScale();
+        posVec = new Vec3d(posVec.x * parentScale, posVec.y * parentScale, posVec.z * parentScale);
 
         //change based on yaw of ridden mob
         double yawRadians = -Math.toRadians(dynamicRideUser.rotationYaw);

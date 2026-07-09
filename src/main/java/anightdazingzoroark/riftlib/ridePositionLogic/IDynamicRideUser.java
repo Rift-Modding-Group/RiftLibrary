@@ -16,13 +16,6 @@ public interface IDynamicRideUser<T extends EntityLivingBase & IAnimatable<Anima
     T getDynamicRideUser();
 
     /**
-     * Get the model scale of the user.
-     * */
-    default float dynamicRiderUserScale() {
-        return 1f;
-    }
-
-    /**
      * The ride position list is very important, it uses the AnimatedLocators of an IAnimatable
      * to define where a rider will go to upon riding.
      * */

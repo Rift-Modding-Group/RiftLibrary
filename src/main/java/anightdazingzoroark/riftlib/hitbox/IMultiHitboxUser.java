@@ -28,13 +28,6 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
     }
 
     /**
-     * Get the model scale of the user.
-     * */
-    default float multiHitboxUserScale() {
-        return 1f;
-    }
-
-    /**
      * This is for dealing with damage multipliers from attacking at different parts
      * */
     @SuppressWarnings({"unchecked"})

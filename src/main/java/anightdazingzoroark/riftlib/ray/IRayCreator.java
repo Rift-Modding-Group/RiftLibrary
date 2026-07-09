@@ -10,10 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 public interface IRayCreator<T extends EntityLivingBase & IAnimatable<AnimationDataEntity>> {
-    default float rayCreatorScale() {
-        return 1f;
-    }
-
     T getRayCreator();
 
     /**

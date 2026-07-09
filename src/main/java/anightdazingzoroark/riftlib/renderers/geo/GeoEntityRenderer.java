@@ -91,7 +91,7 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 		}
 
         GlStateManager.pushMatrix();
-		float scaleValue = this.entityScale(entity);
+		float scaleValue = entity.getAnimationData().getScale();
 		GlStateManager.scale(scaleValue, scaleValue, scaleValue);
 		GlStateManager.translate(0, 0.01f, 0);
 		Minecraft.getMinecraft().renderEngine.bindTexture(getEntityTexture(entity));
@@ -179,13 +179,6 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 	@Override
 	public GeoModelProvider getGeoModelProvider() {
 		return this.modelProvider;
-	}
-
-	/**
-	 * This must be overriden to effectively rescale the entity's model
-	 */
-	protected float entityScale(A entityLiving) {
-		return 1f;
 	}
 
 	protected void applyRotations(A entityLiving, float rotationYaw, float partialTicks) {

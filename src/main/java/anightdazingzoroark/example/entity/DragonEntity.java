@@ -33,7 +33,7 @@ import java.util.Map;
 
 public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IRayCreator<DragonEntity>, IMultiHitboxUser<DragonEntity>, IDynamicRideUser<DragonEntity> {
     private static final DataParameter<Boolean> BREATHING_FIRE = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
-    private final AnimationDataEntity animationData = new AnimationDataEntity(this, holder -> 3f);
+    private final AnimationDataEntity animationData = new AnimationDataEntity(this, 3f);
     private final MultiHitboxList<DragonEntity> multiHitboxList;
     private final DynamicRidePosList ridePositions;
     private final Map<String, RiftLibRayBuilder> rayMap;
@@ -140,11 +140,6 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     }
 
     @Override
-    public float multiHitboxUserScale() {
-        return 3f;
-    }
-
-    @Override
     public float hitboxDamageMultiplier(RiftLibCollisionHitbox<DragonEntity> collisionHitbox, DamageSource source) {
         return collisionHitbox.hasHitboxTag("head") ? 5f : 1;
     }
@@ -159,11 +154,6 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     @Override
     public DynamicRidePosList ridePosList() {
         return this.ridePositions;
-    }
-
-    @Override
-    public float dynamicRiderUserScale() {
-        return 3f;
     }
 
     @Override
@@ -221,11 +211,6 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     //ride management stuff ends here
 
     //ray management stuff starts here
-    @Override
-    public float rayCreatorScale() {
-        return 3f;
-    }
-
     @Override
     public DragonEntity getRayCreator() {
         return this;

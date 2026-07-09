@@ -187,10 +187,11 @@ public class RiftLibRay {
         //---for origin---
         //set initial entity offset from center, in model space ofc
         Vec3d animatedLocatorPos = this.parentLocator.getModelSpacePosition();
+        float parentScale = this.rayCreator.getRayCreator().getAnimationData().getScale();
         Vec3d posVec = new Vec3d(
-                -animatedLocatorPos.x / 16f * this.rayCreator.rayCreatorScale(),
-                animatedLocatorPos.y / 16f * this.rayCreator.rayCreatorScale(),
-                -animatedLocatorPos.z / 16f * this.rayCreator.rayCreatorScale()
+                -animatedLocatorPos.x / 16f * parentScale,
+                animatedLocatorPos.y / 16f * parentScale,
+                -animatedLocatorPos.z / 16f * parentScale
         );
 
         //rotate the locator position only by the entity yaw; the locator's own rotation affects direction, not origin

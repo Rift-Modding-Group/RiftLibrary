@@ -11,14 +11,14 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class RiftLibShowBoundingBox extends RiftLibMessage<RiftLibShowBoundingBox> {
+public class RiftLibDebugBoundingBox extends RiftLibMessage<RiftLibDebugBoundingBox> {
     private int entityId;
     private String aabbName;
     private boolean add;
 
-    public RiftLibShowBoundingBox() {}
+    public RiftLibDebugBoundingBox() {}
 
-    public RiftLibShowBoundingBox(Entity entity, String aabbName, boolean add) {
+    public RiftLibDebugBoundingBox(Entity entity, String aabbName, boolean add) {
         this.entityId = entity.getEntityId();
         this.aabbName = aabbName;
         this.add = add;
@@ -39,20 +39,14 @@ public class RiftLibShowBoundingBox extends RiftLibMessage<RiftLibShowBoundingBo
     }
 
     @Override
-    public void executeOnServer(MinecraftServer server, RiftLibShowBoundingBox message, EntityPlayer player, MessageContext messageContext) {}
+    public void executeOnServer(MinecraftServer server, RiftLibDebugBoundingBox message, EntityPlayer player, MessageContext messageContext) {}
 
     @Override
-    public void executeOnClient(Minecraft client, RiftLibShowBoundingBox message, EntityPlayer player, MessageContext messageContext) {
+    public void executeOnClient(Minecraft client, RiftLibDebugBoundingBox message, EntityPlayer player, MessageContext messageContext) {
         Entity entity = client.world.getEntityByID(message.entityId);
         if (!(entity instanceof IAnimatable<?> animatable && animatable.getAnimationData() instanceof AnimationDataEntity animData)) return;
 
-        if (message.add) {
-            if (animData.getWorldSpaceAABB(message.aabbName) == null) animData.defineWorldSpaceAABB(message.aabbName);
-            animData.displayWordSpaceBoundingBox(message.aabbName);
-        }
-        else {
-            animData.removeWorldSpaceAABB(message.aabbName);
-            animData.hideWordSpaceBoundingBox(message.aabbName);
-        }
+        if (message.add) animData.createDebugAABB(message.aabbName);
+        else animData.removeDebugAABB(message.aabbName);
     }
 }

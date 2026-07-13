@@ -5,11 +5,8 @@ import anightdazingzoroark.riftlib.geo.GeoBoundingBox;
 import anightdazingzoroark.riftlib.geo.GeoLocator;
 import anightdazingzoroark.riftlib.geo.GeoModel;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
-import anightdazingzoroark.riftlib.internalMessage.RiftLibClearBoundingBoxes;
-import anightdazingzoroark.riftlib.internalMessage.RiftLibShowBoundingBox;
 import anightdazingzoroark.riftlib.model.AnimatedBoundingBox;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
-import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import anightdazingzoroark.riftlib.util.MolangUtils;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
@@ -24,13 +21,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjglx.util.vector.Quaternion;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivingBase, AnimationDataEntity> {
@@ -38,8 +29,8 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
     private final Function<EntityLivingBase, Float> holderScale;
     private final Map<String, AnimatedBoundingBox> animatedBoundingBoxes = new HashMap<>();
     private final Map<String, List<AnimatedBoundingBox>> animatedBoundingBoxesByTag = new HashMap<>();
-    private final Map<String, AxisAlignedBB> worldSpaceBoundingBoxes = new HashMap<>();
-    private final List<String> displayedWorldSpaceBoundingBoxes = new ArrayList<>(); //client only, meant for debugging
+    //client only, meant for debugging
+    private final Map<String, AxisAlignedBB> debugBoundingBoxes = new HashMap<>();
     private boolean boundingBoxesRecentlyUpdated;
 
     public AnimationDataEntity(EntityLivingBase holder) {
@@ -59,12 +50,13 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
     public void updateOnDataTick() {
         super.updateOnDataTick();
 
-        //update all world space bounding boxes
-        Set<String> aabbNames = new HashSet<>(this.worldSpaceBoundingBoxes.keySet());
-        aabbNames.addAll(this.displayedWorldSpaceBoundingBoxes);
-        for (String aabbName : aabbNames) {
-            AxisAlignedBB newAABB = this.createWorldSpaceAABB(aabbName);
-            if (newAABB != null) this.worldSpaceBoundingBoxes.put(aabbName, newAABB);
+        //update all debugged world space bounding boxes
+        if (this.getHolder().world.isRemote) {
+            Set<String> debugAABBSet = new HashSet<>(this.debugBoundingBoxes.keySet());
+            for (String debugAABB : debugAABBSet) {
+                AxisAlignedBB newAABB = this.getWorldSpaceAABB(debugAABB);
+                if (newAABB != null) this.debugBoundingBoxes.put(debugAABB, newAABB);
+            }
         }
     }
 
@@ -153,81 +145,10 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
 
     //-----world space bounding box stuff starts here-----
     /**
-     * Simple helper to create or get a world-space AABB
+     * Simple helper to create a world-space AABB
      * */
     @Nullable
-    public AxisAlignedBB getOrCreateWorldSpaceAABB(@NotNull String aabbName) {
-        //find first
-        AxisAlignedBB toReturn = this.worldSpaceBoundingBoxes.get(aabbName);
-        if (toReturn != null) return toReturn;
-
-        //if it was null, create and try to return end result
-        this.defineWorldSpaceAABB(aabbName);
-        return this.worldSpaceBoundingBoxes.get(aabbName);
-    }
-
-    /**
-     * Turn an animated bounding box into a world space AABB.
-     * */
-    public void defineWorldSpaceAABB(@NotNull String aabbName) {
-        this.defineWorldSpaceAABB(aabbName, false);
-    }
-
-    /**
-     * Turn an animated bounding box into a world space AABB, with debugging too.
-     * */
-    public void defineWorldSpaceAABB(@NotNull String aabbName, boolean displayDebug) {
-        AxisAlignedBB axisAlignedBB = this.createWorldSpaceAABB(aabbName);
-        if (axisAlignedBB == null) return;
-        this.worldSpaceBoundingBoxes.put(aabbName, axisAlignedBB);
-        if (displayDebug && !this.getHolder().world.isRemote) {
-            ServerProxy.MESSAGE_WRAPPER.sendToAllTracking(new RiftLibShowBoundingBox(this.getHolder(), aabbName, true), this.getHolder());
-        }
-    }
-
-    /**
-     * Client-only method whose only purpose is to display a bounding box
-     * */
-    @SideOnly(Side.CLIENT)
-    public void displayWordSpaceBoundingBox(@NotNull String aabbName) {
-        if (!this.displayedWorldSpaceBoundingBoxes.contains(aabbName) && this.worldSpaceBoundingBoxes.containsKey(aabbName)) {
-            this.displayedWorldSpaceBoundingBoxes.add(aabbName);
-        }
-    }
-
-    public void removeWorldSpaceAABB(@NotNull String aabbName) {
-        this.worldSpaceBoundingBoxes.remove(aabbName);
-        if (!this.getHolder().world.isRemote) {
-            ServerProxy.MESSAGE_WRAPPER.sendToAllTracking(new RiftLibShowBoundingBox(this.getHolder(), aabbName, false), this.getHolder());
-        }
-    }
-
-    @SideOnly(Side.CLIENT)
-    public void hideWordSpaceBoundingBox(@NotNull String aabbName) {
-        this.displayedWorldSpaceBoundingBoxes.remove(aabbName);
-    }
-
-    @Nullable
-    public AxisAlignedBB getWorldSpaceAABB(@NotNull String aabbName) {
-        return this.worldSpaceBoundingBoxes.get(aabbName);
-    }
-
-    public boolean hasDisplayedWorldSpaceAABBs() {
-        return !this.displayedWorldSpaceBoundingBoxes.isEmpty();
-    }
-
-    @NotNull
-    public Map<String, AxisAlignedBB> getDisplayedWorldSpaceAABBs() {
-        Map<String, AxisAlignedBB> toReturn = new LinkedHashMap<>();
-        for (String aabbName : this.displayedWorldSpaceBoundingBoxes) {
-            AxisAlignedBB aabb = this.worldSpaceBoundingBoxes.get(aabbName);
-            if (aabb != null) toReturn.put(aabbName, aabb);
-        }
-        return toReturn;
-    }
-
-    @Nullable
-    private AxisAlignedBB createWorldSpaceAABB(@NotNull String boundingBoxName) {
+    public AxisAlignedBB getWorldSpaceAABB(@NotNull String boundingBoxName) {
         AnimatedBoundingBox animatedBoundingBox = this.animatedBoundingBoxes.get(boundingBoxName);
         if (animatedBoundingBox == null) return null;
 
@@ -256,18 +177,25 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
         );
     }
 
-    /**
-     * For clearing all defined world space AABBs
-     * */
-    public void clearAllWorldSpaceAABBs() {
-        this.worldSpaceBoundingBoxes.clear();
-        if (!this.getHolder().world.isRemote) {
-            ServerProxy.MESSAGE_WRAPPER.sendToAllTracking(new RiftLibClearBoundingBoxes(this.getHolder()), this.getHolder());
-        }
+    @SideOnly(Side.CLIENT)
+    public void createDebugAABB(String name) {
+        AxisAlignedBB aabb = this.getWorldSpaceAABB(name);
+        if (aabb != null) this.debugBoundingBoxes.put(name, aabb);
     }
 
     @SideOnly(Side.CLIENT)
-    public void clearAllDisplayedAABBs() {
-        this.displayedWorldSpaceBoundingBoxes.clear();
+    public void removeDebugAABB(String name) {
+        this.debugBoundingBoxes.remove(name);
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Nullable
+    public AxisAlignedBB getDebugAABB(@NotNull String name) {
+        return this.debugBoundingBoxes.get(name);
+    }
+
+    @SideOnly(Side.CLIENT)
+    public Map<String, AxisAlignedBB> getDebugBoundingBoxes() {
+        return this.debugBoundingBoxes;
     }
 }

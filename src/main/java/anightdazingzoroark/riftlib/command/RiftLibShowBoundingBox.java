@@ -1,7 +1,10 @@
 package anightdazingzoroark.riftlib.command;
 
+import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibDebugBoundingBox;
+import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -39,8 +42,12 @@ public class RiftLibShowBoundingBox extends CommandBase {
             String boundingBoxName = args[2];
 
             //perform on server then client for each action
-            if (action.equals("show")) animData.defineWorldSpaceAABB(boundingBoxName, true);
-            else if (action.equals("hide")) animData.removeWorldSpaceAABB(boundingBoxName);
+            if (action.equals("show")) {
+                ServerProxy.MESSAGE_WRAPPER.sendToAllTracking(new RiftLibDebugBoundingBox(entity, boundingBoxName, true), entity);
+            }
+            else if (action.equals("hide")) {
+                ServerProxy.MESSAGE_WRAPPER.sendToAllTracking(new RiftLibDebugBoundingBox(entity, boundingBoxName, false), entity);
+            }
         }
     }
 }

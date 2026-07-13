@@ -43,7 +43,7 @@ public class WorldSpaceBoundingBoxRenderer {
             AnimationDataEntity animData = this.getAnimationData(entity);
             if (animData == null) continue;
 
-            for (AxisAlignedBB aabb : animData.getDisplayedWorldSpaceAABBs().values()) {
+            for (AxisAlignedBB aabb : animData.getDebugBoundingBoxes().values()) {
                 this.drawBoundingBox(aabb.offset(-viewerX, -viewerY, -viewerZ));
             }
         }
@@ -61,7 +61,7 @@ public class WorldSpaceBoundingBoxRenderer {
     private boolean hasAnyDisplayedAABB(Minecraft minecraft) {
         for (Entity entity : minecraft.world.loadedEntityList) {
             AnimationDataEntity animData = this.getAnimationData(entity);
-            if (animData != null && animData.hasDisplayedWorldSpaceAABBs()) return true;
+            if (animData != null && !animData.getDebugBoundingBoxes().isEmpty()) return true;
         }
         return false;
     }

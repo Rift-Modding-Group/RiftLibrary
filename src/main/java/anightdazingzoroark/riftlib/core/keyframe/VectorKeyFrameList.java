@@ -59,7 +59,7 @@ public class VectorKeyFrameList {
 
     private double convertRotationValueToRadians(ExpressionValue value, AbstractAnimationData<?, ?> animData, Axis axis) {
         double converted = Math.toRadians(value.get(animData));
-        if ((axis == Axis.X || axis == Axis.Y) && !value.isExpression()) {
+        if (axis == Axis.X || (axis == Axis.Y && !value.isExpression())) {
             converted *= -1;
         }
         return converted;

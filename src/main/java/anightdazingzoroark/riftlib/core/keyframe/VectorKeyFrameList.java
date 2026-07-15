@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.core.keyframe;
 
+import anightdazingzoroark.riftlib.core.ExpressionValue;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.core.util.Axis;
 
@@ -43,22 +44,25 @@ public class VectorKeyFrameList {
         KeyFrameLocation location = this.getCurrentKeyFrameLocation(tick);
         KeyFrame currentFrame = location.currentFrame;
 
-        double startValue = currentFrame.getStartValue().getValueFromAxis(axis).get(animData);
-        double endValue = currentFrame.getEndValue().getValueFromAxis(axis).get(animData);
+        ExpressionValue startExpressionValue = currentFrame.getStartValue().getValueFromAxis(axis);
+        ExpressionValue endExpressionValue = currentFrame.getEndValue().getValueFromAxis(axis);
 
-        if (this.isRotation) {
-            startValue = Math.toRadians(startValue);
-            if (axis == Axis.X || axis == Axis.Y) {
-                startValue *= -1;
-            }
-
-            endValue = Math.toRadians(endValue);
-            if (axis == Axis.X || axis == Axis.Y) {
-                endValue *= -1;
-            }
-        }
+        double startValue = this.isRotation
+                ? this.convertRotationValueToRadians(startExpressionValue, animData, axis)
+                : startExpressionValue.get(animData);
+        double endValue = this.isRotation
+                ? this.convertRotationValueToRadians(endExpressionValue, animData, axis)
+                : endExpressionValue.get(animData);
 
         return new AnimationPoint(currentFrame, location.currentTick, currentFrame.getLength(), startValue, endValue);
+    }
+
+    private double convertRotationValueToRadians(ExpressionValue value, AbstractAnimationData<?, ?> animData, Axis axis) {
+        double converted = Math.toRadians(value.get(animData));
+        if ((axis == Axis.X || axis == Axis.Y) && !value.isExpression()) {
+            converted *= -1;
+        }
+        return converted;
     }
 
     /**

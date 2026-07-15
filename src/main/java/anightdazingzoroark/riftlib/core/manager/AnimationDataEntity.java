@@ -154,15 +154,14 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
 
         Vec3d modelSpacePos = animatedBoundingBox.getModelSpacePosition();
         float[] modelSpaceSize = animatedBoundingBox.getModelSpaceSize();
-        float[] unscaledModelSpaceSize = animatedBoundingBox.getUnscaledModelSpaceSize();
         float scale = this.holderScale.apply(this.getHolder());
 
         double yaw = -Math.toRadians(this.getHolder().isBeingRidden() ? this.getHolder().rotationYaw : this.getHolder().rotationYawHead);
         Quaternion quaternion = QuaternionUtils.createXYZQuaternion(0D, yaw, 0D);
         Vec3d hitboxPos = VectorUtils.rotateVectorWithQuaternion(new Vec3d(
-                (-modelSpacePos.x + unscaledModelSpaceSize[0] / 2D) * scale / 16D,
-                (modelSpacePos.y + unscaledModelSpaceSize[1] / 2D - modelSpaceSize[1] / 2D) * scale / 16D,
-                -(modelSpacePos.z + unscaledModelSpaceSize[0] / 2D) * scale / 16D
+                -modelSpacePos.x * scale / 16D,
+                (modelSpacePos.y - modelSpaceSize[1] / 2D) * scale / 16D,
+                -modelSpacePos.z * scale / 16D
         ), quaternion);
 
         double halfWidth = modelSpaceSize[0] * scale / 32D;

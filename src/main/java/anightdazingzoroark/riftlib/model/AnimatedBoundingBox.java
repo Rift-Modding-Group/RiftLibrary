@@ -1,7 +1,5 @@
 package anightdazingzoroark.riftlib.model;
 
-import anightdazingzoroark.riftlib.core.ExpressionValue;
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.geo.GeoBone;
 import anightdazingzoroark.riftlib.geo.GeoBoundingBox;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
@@ -55,7 +53,7 @@ public class AnimatedBoundingBox {
     }
 
     /**
-     * Note that this isn't the centerpoint, its a corner
+     * Returns the model-space attachment point used by hitboxes.
      * */
     @NotNull
     public Vec3d getModelSpacePosition() {
@@ -126,10 +124,11 @@ public class AnimatedBoundingBox {
     }
 
     private Vec3d getBoundingBoxPosition() {
+        float[] size = this.getUnscaledModelSpaceSize();
         return new Vec3d(
-                this.boundingBox.getPosition().x,
-                this.boundingBox.getPosition().y,
-                this.boundingBox.getPosition().z
+                -this.boundingBox.getPosition().x + size[0] / 2D,
+                this.boundingBox.getPosition().y + size[1] / 2D,
+                this.boundingBox.getPosition().z + size[0] / 2D
         );
     }
 }

@@ -1,6 +1,5 @@
 package anightdazingzoroark.riftlib.particle;
 
-import anightdazingzoroark.riftlib.exceptions.ParticleException;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
@@ -136,7 +135,7 @@ public class RiftLibParticleEmitter {
 
         //emitter lifetime exception if it does not exist
         if (this.emitterLifetime == null) {
-            throw new ParticleException("No emitter lifetime component has been parsed! Please check the documentation!");
+            throw new IllegalStateException("No emitter lifetime component has been parsed! Please check the documentation!");
         }
 
         //set death based on expiry and if theres no particles left
@@ -159,7 +158,7 @@ public class RiftLibParticleEmitter {
 
         //emitter rate exception if it does not exist
         if (this.emitterRate == null) {
-            throw new ParticleException("No emitter rate component has been parsed! Please check the documentation!");
+            throw new IllegalStateException("No emitter rate component has been parsed! Please check the documentation!");
         }
 
         //create particles based on rate and ability to create them
@@ -198,7 +197,7 @@ public class RiftLibParticleEmitter {
 
         //emitter shape exception
         if (this.emitterShape == null) {
-            throw new ParticleException("No emitter shape component has been parsed! Please check the documentation!");
+            throw new IllegalStateException("No emitter shape component has been parsed! Please check the documentation!");
         }
 
         //molang side operations to pass to the particle go here

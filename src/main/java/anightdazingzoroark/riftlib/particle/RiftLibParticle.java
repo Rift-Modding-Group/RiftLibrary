@@ -1,6 +1,5 @@
 package anightdazingzoroark.riftlib.particle;
 
-import anightdazingzoroark.riftlib.exceptions.ParticleException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.molang.math.IValue;
@@ -141,7 +140,7 @@ public class RiftLibParticle {
 
             //update flipbook
             if (this.particleAppearance == null) {
-                throw new ParticleException("No minecraft:particle_appearance_billboard component has been parsed! Please check the documentation!");
+                throw new IllegalStateException("No minecraft:particle_appearance_billboard component has been parsed! Please check the documentation!");
             }
             this.particleAppearance.updateAppearance(this);
 
@@ -212,7 +211,7 @@ public class RiftLibParticle {
 
     public void renderParticle(BufferBuilder buffer, Entity cameraEntity, float partialTicks) {
         if (this.particleAppearance == null) {
-            throw new ParticleException("No minecraft:particle_appearance_billboard component has been parsed! Please check the documentation!");
+            throw new IllegalStateException("No minecraft:particle_appearance_billboard component has been parsed! Please check the documentation!");
         }
 
         this.molangParser.withScope(this.particleScope, () -> {
@@ -241,7 +240,7 @@ public class RiftLibParticle {
 
     private void emitQuad(BufferBuilder buffer, Vec3d pointOrigin, Vec3d pointOne, Vec3d pointTwo, Vec3d pointThree, Vec3d pointFour, float partialTicks) {
         if (this.particleAppearance == null) {
-            throw new ParticleException("No minecraft:particle_appearance_billboard component has been parsed! Please check the documentation!");
+            throw new IllegalStateException("No minecraft:particle_appearance_billboard component has been parsed! Please check the documentation!");
         }
 
         //lighting

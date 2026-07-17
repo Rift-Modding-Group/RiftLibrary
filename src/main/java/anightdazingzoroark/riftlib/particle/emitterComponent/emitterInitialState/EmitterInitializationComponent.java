@@ -1,8 +1,6 @@
 package anightdazingzoroark.riftlib.particle.emitterComponent.emitterInitialState;
 
-import anightdazingzoroark.riftlib.exceptions.ParticleException;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
-import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.expressions.MolangExpression;
 import anightdazingzoroark.riftlib.molang.expressions.MolangMultiStatement;
@@ -33,7 +31,7 @@ public class EmitterInitializationComponent extends RiftLibEmitterComponent {
                     throw new RuntimeException(e);
                 }
             }
-            else throw new ParticleException("'creation_expression' in 'minecraft:emitter_initialization' must be an expression!");
+            else throw new IllegalArgumentException("'creation_expression' in 'minecraft:emitter_initialization' must be an expression!");
         }
         if (rawComponent.getValue().componentValues.containsKey("per_update_expression")) {
             RawParticleComponent.ComponentValue componentValue = rawComponent.getValue().componentValues.get("per_update_expression");
@@ -49,7 +47,7 @@ public class EmitterInitializationComponent extends RiftLibEmitterComponent {
                     throw new RuntimeException(e);
                 }
             }
-            else throw new ParticleException("'creation_expression' in 'minecraft:emitter_initialization' must be an expression!");
+            else throw new IllegalArgumentException("'creation_expression' in 'minecraft:emitter_initialization' must be an expression!");
         }
     }
 

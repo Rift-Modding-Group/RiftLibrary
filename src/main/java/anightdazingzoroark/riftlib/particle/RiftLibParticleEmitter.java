@@ -49,6 +49,9 @@ public class RiftLibParticleEmitter {
     private boolean isDead;
     public RiftLibEmitterShapeComponent emitterShape;
     public RiftLibEmitterRateComponent emitterRate;
+    private int stateParticleControllerId = -1;
+    private int stateParticleIndex = -1;
+    private String stateParticleStateName;
 
     public final MolangScope emitterScope = new MolangScope();
 
@@ -269,6 +272,18 @@ public class RiftLibParticleEmitter {
 
     public boolean isDead() {
         return this.isDead && this.particles.isEmpty();
+    }
+
+    public void setStateParticleOwner(int controllerId, String stateName, int particleIndex) {
+        this.stateParticleControllerId = controllerId;
+        this.stateParticleStateName = stateName;
+        this.stateParticleIndex = particleIndex;
+    }
+
+    public boolean isStateParticleEmitter(int controllerId, String stateName, int particleIndex) {
+        return this.stateParticleControllerId == controllerId
+                && this.stateParticleIndex == particleIndex
+                && Objects.equals(this.stateParticleStateName, stateName);
     }
 
     public AnimatedLocator getLocator() {

@@ -1,6 +1,7 @@
 package anightdazingzoroark.riftlib.core.controller;
 
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -24,6 +25,7 @@ public class AnimationControllerState<D extends AbstractAnimationData<?, D>> {
     private final LinkedHashMap<String, Function<D, Boolean>> stateTransitions = new LinkedHashMap<>();
     private final List<Consumer<D>> onEntryEffects = new ArrayList<>();
     private final List<Consumer<D>> onExitEffects = new ArrayList<>();
+    private final List<StateParticle> particleEffects = new ArrayList<>();
 
     public AnimationControllerState(String name) {
         this(name, 0D);
@@ -97,5 +99,20 @@ public class AnimationControllerState<D extends AbstractAnimationData<?, D>> {
         return this.onExitEffects;
     }
 
-    public record StateAnimation<D extends AbstractAnimationData<?, D>> (String name, Function<D, Boolean> predicate) {}
+    /**
+     * Defines the particle to create when entering this state. This particle will
+     * be deleted when transitioning away from this state
+     * */
+    public AnimationControllerState<D> addParticleEffect(@NotNull String particleName, @NotNull String particleLocator) {
+        this.particleEffects.add(new StateParticle(particleName, particleLocator));
+        return this;
+    }
+
+    public List<StateParticle> getParticleEffects() {
+        return this.particleEffects;
+    }
+
+    public record StateAnimation<D extends AbstractAnimationData<?, D>> (@NotNull String name, @NotNull Function<D, Boolean> predicate) {}
+
+    public record StateParticle(@NotNull String particleName, @NotNull String particleLocator) {}
 }

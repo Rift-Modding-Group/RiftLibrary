@@ -53,10 +53,6 @@ public class AnimatedLocator {
         return this.locator.name;
     }
 
-    public GeoBone getParentBone() {
-        return this.locator.parent;
-    }
-
     //-----model space stuff starts here-----
     @NotNull
     public Vec3d getModelSpacePosition() {
@@ -210,8 +206,9 @@ public class AnimatedLocator {
         );
     }
 
-    public void createParticleEmitter(ParticleBuilder builder) {
+    public RiftLibParticleEmitter createParticleEmitter(ParticleBuilder builder) {
         RiftLibParticleEmitter emitterToAdd = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, this);
         ParticleTicker.EMITTER_LIST.add(emitterToAdd);
+        return emitterToAdd;
     }
 }

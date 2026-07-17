@@ -43,6 +43,7 @@ public class AnimationProcessor {
 		List<EventKeyFrame.CustomInstructionKeyFrame> customInstructionEvents = new ArrayList<>();
 		List<EventKeyFrame.ParticleEventKeyFrame> particleEvents = new ArrayList<>();
 		List<EventKeyFrame.SoundEventKeyFrame> soundEvents = new ArrayList<>();
+		List<Map.Entry<AnimationController<?, ?>, AnimationController.StateParticleEvent>> stateParticleEvents = new ArrayList<>();
 		boolean isServerSynced = animationData.isServerSynced() || ServerModelRegistry.hasServerModel(entity);
 		boolean runCustomInstructions = !runClientEffects || !isServerSynced;
 
@@ -98,10 +99,14 @@ public class AnimationProcessor {
 
 			//-----client only stuff down here-----
 			if (runClientEffects) {
+				for (AnimationController.StateParticleEvent stateParticleEvent : controller.drainStateParticleEvents()) {
+					stateParticleEvents.add(new AbstractMap.SimpleImmutableEntry<>(controller, stateParticleEvent));
+				}
 				particleEvents.addAll(controller.drainParticleEvents());
 				soundEvents.addAll(controller.drainSoundEvents());
 			}
 			else {
+				controller.drainStateParticleEvents();
 				controller.drainParticleEvents();
 				controller.drainSoundEvents();
 			}
@@ -232,6 +237,11 @@ public class AnimationProcessor {
 
 		//-----client only stuff down here-----
 		if (runClientEffects) {
+			//animation controller state particles
+			for (Map.Entry<AnimationController<?, ?>, AnimationController.StateParticleEvent> stateParticleEvent : stateParticleEvents) {
+				stateParticleEvent.getKey().applyStateParticleEvent(animationData, stateParticleEvent.getValue());
+			}
+
 			//animation effects
 			for (EventKeyFrame.ParticleEventKeyFrame particleEvent : particleEvents) {
 				AnimatedLocator locator = animationData.getAnimatedLocator(particleEvent.locator);

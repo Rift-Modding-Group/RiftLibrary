@@ -18,7 +18,12 @@ import anightdazingzoroark.riftlib.core.processor.IBone;
 import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
 import anightdazingzoroark.riftlib.core.util.Axis;
 import anightdazingzoroark.riftlib.core.util.MathUtil;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.model.ServerModelRegistry;
+import anightdazingzoroark.riftlib.particle.ParticleBuilder;
+import anightdazingzoroark.riftlib.particle.ParticleTicker;
+import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
+import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
 import anightdazingzoroark.riftlib.util.MolangUtils;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
@@ -40,6 +45,7 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -50,10 +56,12 @@ import java.util.stream.Collectors;
  * */
 public class AnimationController<A extends IAnimatable<D>, D extends AbstractAnimationData<?, D>> {
     static List<ModelFetcher<?>> modelFetchers = new ArrayList<>();
+    private static final AtomicInteger STATE_PARTICLE_CONTROLLER_ID = new AtomicInteger();
 
     private final A animatable;
     @NonNull
     private final String name;
+    private final int stateParticleControllerId = STATE_PARTICLE_CONTROLLER_ID.getAndIncrement();
     private final Map<String, AnimationControllerState<D>> animControllerStates = new LinkedHashMap<>();
     private final String initialState;
     private final Map<String, BoneAnimationQueue> boneAnimationQueues = new HashMap<>();
@@ -61,6 +69,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
     private final List<EventKeyFrame.ParticleEventKeyFrame> particleEvents = new ArrayList<>();
     private final List<EventKeyFrame.SoundEventKeyFrame> soundEvents = new ArrayList<>();
     private final List<EventKeyFrame.CustomInstructionKeyFrame> customInstructionEvents = new ArrayList<>();
+    private final List<StateParticleEvent> stateParticleEvents = new ArrayList<>();
 
     @NonNull
     public final EasingType easingType;
@@ -216,12 +225,15 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
         this.particleEvents.clear();
         this.soundEvents.clear();
         this.customInstructionEvents.clear();
+        this.stateParticleEvents.clear();
         this.createInitialQueues(modelRendererList);
 
         try {
             if (!this.initialized) {
                 this.currentState = this.initialState;
-                this.applyEffects(this.getCurrentControllerState().getEntryEffects());
+                AnimationControllerState<D> initialControllerState = this.getCurrentControllerState();
+                this.applyEffects(initialControllerState.getEntryEffects());
+                this.queueStateParticleEvents(initialControllerState, true);
                 this.initialized = true;
             }
 
@@ -365,6 +377,44 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
         return toReturn;
     }
 
+    public List<StateParticleEvent> drainStateParticleEvents() {
+        List<StateParticleEvent> toReturn = new ArrayList<>(this.stateParticleEvents);
+        this.stateParticleEvents.clear();
+        return toReturn;
+    }
+
+    public void applyStateParticleEvent(AbstractAnimationData<?, ?> animationData, StateParticleEvent stateParticleEvent) {
+        if (stateParticleEvent.createsParticle()) {
+            AnimatedLocator locator = animationData.getAnimatedLocator(stateParticleEvent.particleLocator());
+            if (locator == null) return;
+
+            ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(stateParticleEvent.particleName());
+            if (particleBuilder == null) return;
+
+            this.removeStateParticleEmitter(stateParticleEvent);
+            RiftLibParticleEmitter emitter = locator.createParticleEmitter(particleBuilder);
+            emitter.setStateParticleOwner(
+                    stateParticleEvent.controllerId(),
+                    stateParticleEvent.stateName(),
+                    stateParticleEvent.particleIndex()
+            );
+        }
+        else this.removeStateParticleEmitter(stateParticleEvent);
+    }
+
+    public void removeStateParticleEmitter(StateParticleEvent stateParticleEvent) {
+        for (RiftLibParticleEmitter emitter : ParticleTicker.EMITTER_LIST) {
+            if (emitter == null) continue;
+            if (emitter.isStateParticleEmitter(
+                    stateParticleEvent.controllerId(),
+                    stateParticleEvent.stateName(),
+                    stateParticleEvent.particleIndex()
+            )) {
+                emitter.killEmitter();
+            }
+        }
+    }
+
     private void syncActiveAnimationRuntimes(
             LinkedHashMap<String, AnimationControllerState.StateAnimation<D>> desiredAnimations,
             double transitionLength
@@ -393,9 +443,12 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             String nextStateName = transitionEntry.getKey();
             if (this.currentState.equals(nextStateName)) return transitionLength;
 
+            AnimationControllerState<D> nextControllerState = this.getState(nextStateName);
             this.applyEffects(currentControllerState.getExitEffects());
-            this.currentState = this.getState(nextStateName).name;
-            this.applyEffects(this.getCurrentControllerState().getEntryEffects());
+            this.queueStateParticleEvents(currentControllerState, false);
+            this.currentState = nextControllerState.name;
+            this.applyEffects(nextControllerState.getEntryEffects());
+            this.queueStateParticleEvents(nextControllerState, true);
             return transitionLength;
         }
         return transitionLength;
@@ -403,6 +456,22 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
 
     private void applyEffects(Collection<Consumer<D>> effects) {
         for (Consumer<D> effect : effects) effect.accept(this.animatable.getAnimationData());
+    }
+
+    private void queueStateParticleEvents(AnimationControllerState<D> state, boolean createsParticle) {
+        List<AnimationControllerState.StateParticle> particleEffects = state.getParticleEffects();
+        for (int i = 0; i < particleEffects.size(); i++) {
+            AnimationControllerState.StateParticle particle = particleEffects.get(i);
+            this.stateParticleEvents.add(new StateParticleEvent(
+                    this.stateParticleControllerId,
+                    this.name,
+                    state.name,
+                    i,
+                    particle.particleName(),
+                    particle.particleLocator(),
+                    createsParticle
+            ));
+        }
     }
 
     private void createInitialQueues(List<IBone> modelRendererList) {
@@ -414,6 +483,16 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
 
     @FunctionalInterface
     public interface ModelFetcher<T> extends Function<IAnimatable<?>, IAnimatableModel<T>> {}
+
+    public record StateParticleEvent(
+            int controllerId,
+            @NotNull String controllerName,
+            @NotNull String stateName,
+            int particleIndex,
+            @NotNull String particleName,
+            @NotNull String particleLocator,
+            boolean createsParticle
+    ) {}
 
     private static class SingleAnimationRuntime<A extends IAnimatable<D>, D extends AbstractAnimationData<?, D>> {
         private final Map<String, BoneAnimationQueue> boneAnimationQueues = new HashMap<>();

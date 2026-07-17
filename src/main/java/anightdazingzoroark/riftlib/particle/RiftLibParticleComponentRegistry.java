@@ -22,81 +22,74 @@ import anightdazingzoroark.riftlib.particle.particleComponent.particleMotion.Par
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class RiftLibParticleComponentRegistry {
-    private static final Map<String, Class<? extends RiftLibEmitterComponent>> emitterComponentMap = new HashMap<>();
-    private static final Map<String, Class<? extends RiftLibParticleComponent>> particleComponentMap = new HashMap<>();
+    private static final Map<String, Supplier<RiftLibEmitterComponent>> emitterComponentMap = new HashMap<>();
+    private static final Map<String, Supplier<RiftLibParticleComponent>> particleComponentMap = new HashMap<>();
 
     public static void initializeMap() {
         //-----initialize the emitter component map-----
-        emitterComponentMap.put("minecraft:emitter_rate_instant", EmitterInstantComponent.class);
-        emitterComponentMap.put("minecraft:emitter_rate_steady", EmitterSteadyComponent.class);
+        emitterComponentMap.put("minecraft:emitter_rate_instant", EmitterInstantComponent::new);
+        emitterComponentMap.put("minecraft:emitter_rate_steady", EmitterSteadyComponent::new);
 
-        emitterComponentMap.put("minecraft:emitter_shape_sphere", EmitterShapeSphereComponent.class);
-        emitterComponentMap.put("minecraft:emitter_shape_box", EmitterShapeBoxComponent.class);
-        emitterComponentMap.put("minecraft:emitter_shape_point", EmitterShapePointComponent.class);
-        emitterComponentMap.put("minecraft:emitter_shape_disc", EmitterShapeDiscComponent.class);
-        emitterComponentMap.put("minecraft:emitter_shape_custom", EmitterShapeCustomComponent.class);
+        emitterComponentMap.put("minecraft:emitter_shape_sphere", EmitterShapeSphereComponent::new);
+        emitterComponentMap.put("minecraft:emitter_shape_box", EmitterShapeBoxComponent::new);
+        emitterComponentMap.put("minecraft:emitter_shape_point", EmitterShapePointComponent::new);
+        emitterComponentMap.put("minecraft:emitter_shape_disc", EmitterShapeDiscComponent::new);
+        emitterComponentMap.put("minecraft:emitter_shape_custom", EmitterShapeCustomComponent::new);
 
-        emitterComponentMap.put("minecraft:emitter_initialization", EmitterInitializationComponent.class);
+        emitterComponentMap.put("minecraft:emitter_initialization", EmitterInitializationComponent::new);
 
-        emitterComponentMap.put("minecraft:emitter_lifetime_expression", EmitterLifetimeExpressionComponent.class);
-        emitterComponentMap.put("minecraft:emitter_lifetime_looping", EmitterLifetimeLoopingComponent.class);
-        emitterComponentMap.put("minecraft:emitter_lifetime_once", EmitterLifetimeOnceComponent.class);
+        emitterComponentMap.put("minecraft:emitter_lifetime_expression", EmitterLifetimeExpressionComponent::new);
+        emitterComponentMap.put("minecraft:emitter_lifetime_looping", EmitterLifetimeLoopingComponent::new);
+        emitterComponentMap.put("minecraft:emitter_lifetime_once", EmitterLifetimeOnceComponent::new);
 
         //-----initialize the particle component map-----
-        particleComponentMap.put("minecraft:particle_appearance_billboard", AppearanceBillboardComponent.class);
-        particleComponentMap.put("minecraft:particle_appearance_tinting", AppearanceTintingComponent.class);
-        particleComponentMap.put("minecraft:particle_appearance_lighting", AppearanceLightingComponent.class);
+        particleComponentMap.put("minecraft:particle_appearance_billboard", AppearanceBillboardComponent::new);
+        particleComponentMap.put("minecraft:particle_appearance_tinting", AppearanceTintingComponent::new);
+        particleComponentMap.put("minecraft:particle_appearance_lighting", AppearanceLightingComponent::new);
 
-        particleComponentMap.put("minecraft:particle_lifetime_expression", ParticleLifetimeExpressionComponent.class);
-        particleComponentMap.put("minecraft:particle_expire_if_in_blocks", ParticleExpireInBlockComponent.class);
-        particleComponentMap.put("minecraft:particle_expire_if_not_in_blocks", ParticleExpireNotInBlockComponent.class);
+        particleComponentMap.put("minecraft:particle_lifetime_expression", ParticleLifetimeExpressionComponent::new);
+        particleComponentMap.put("minecraft:particle_expire_if_in_blocks", ParticleExpireInBlockComponent::new);
+        particleComponentMap.put("minecraft:particle_expire_if_not_in_blocks", ParticleExpireNotInBlockComponent::new);
 
-        particleComponentMap.put("minecraft:particle_initial_speed", ParticleInitialSpeedComponent.class);
-        particleComponentMap.put("minecraft:particle_initial_spin", ParticleInitialSpinComponent.class);
+        particleComponentMap.put("minecraft:particle_initial_speed", ParticleInitialSpeedComponent::new);
+        particleComponentMap.put("minecraft:particle_initial_spin", ParticleInitialSpinComponent::new);
 
-        particleComponentMap.put("minecraft:particle_motion_dynamic", ParticleMotionDynamicComponent.class);
-        particleComponentMap.put("minecraft:particle_motion_collision", ParticleMotionCollisionComponent.class);
+        particleComponentMap.put("minecraft:particle_motion_dynamic", ParticleMotionDynamicComponent::new);
+        particleComponentMap.put("minecraft:particle_motion_collision", ParticleMotionCollisionComponent::new);
     }
 
     public static boolean isEmitterComponent(String id) {
-        for (Map.Entry<String, Class<? extends RiftLibEmitterComponent>> emitterComponent : emitterComponentMap.entrySet()) {
-            if (emitterComponent.getKey().equals(id)) return true;
+        for (String emitterComponent : emitterComponentMap.keySet()) {
+            if (emitterComponent.equals(id)) return true;
         }
         return false;
     }
 
     public static RiftLibEmitterComponent createEmitterComponent(String id) {
-        Class<? extends RiftLibEmitterComponent> clazz = emitterComponentMap.get(id);
-        if (clazz == null) return null;
-
         try {
-            return clazz.getDeclaredConstructor().newInstance();
+            return emitterComponentMap.get(id).get();
         }
         catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            throw new IllegalArgumentException("Invalid emitter component "+id+" provided!");
         }
     }
 
     public static boolean isParticleComponent(String id) {
-        for (Map.Entry<String, Class<? extends RiftLibParticleComponent>> emitterComponent : particleComponentMap.entrySet()) {
-            if (emitterComponent.getKey().equals(id)) return true;
+        for (String emitterComponent : particleComponentMap.keySet()) {
+            if (emitterComponent.equals(id)) return true;
         }
         return false;
     }
 
     public static RiftLibParticleComponent createParticleComponent(String id) {
-        Class<? extends RiftLibParticleComponent> clazz = particleComponentMap.get(id);
-        if (clazz == null) return null;
-
         try {
-            return clazz.getDeclaredConstructor().newInstance();
+            return particleComponentMap.get(id).get();
         }
         catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            throw new IllegalArgumentException("Invalid particle component "+id+" provided!");
         }
     }
 }

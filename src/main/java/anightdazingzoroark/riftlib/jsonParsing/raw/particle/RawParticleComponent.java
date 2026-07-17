@@ -29,19 +29,13 @@ public class RawParticleComponent {
         //for debugging lol
         @Override
         public String toString() {
-            switch (this.valueType) {
-                case NUMBER:
-                    return this.number.toString();
-                case STRING:
-                    return this.string;
-                case BOOLEAN:
-                    return this.bool.toString();
-                case ARRAY:
-                    return this.array.toString();
-                case OBJECT:
-                    return this.object.toString();
-            }
-            return "NULL";
+            return switch (this.valueType) {
+                case NUMBER -> this.number.toString();
+                case STRING -> this.string;
+                case BOOLEAN -> this.bool.toString();
+                case ARRAY -> this.array.toString();
+                case OBJECT -> this.object.toString();
+            };
         }
     }
 

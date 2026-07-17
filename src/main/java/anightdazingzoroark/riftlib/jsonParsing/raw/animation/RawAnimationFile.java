@@ -10,7 +10,7 @@ public class RawAnimationFile {
 
     public static class RawAnimation {
         @SerializedName("loop")
-        public Boolean loop;
+        public RawLoopType loop;
 
         @SerializedName("animation_length")
         public Double animationLength;

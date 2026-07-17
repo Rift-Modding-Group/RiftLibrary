@@ -186,6 +186,10 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
         return this.name;
     }
 
+    public int getStateParticleControllerId() {
+        return this.stateParticleControllerId;
+    }
+
     @NotNull
     public String getCurrentState() {
         return this.currentState;
@@ -446,6 +450,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             AnimationControllerState<D> nextControllerState = this.getState(nextStateName);
             this.applyEffects(currentControllerState.getExitEffects());
             this.queueStateParticleEvents(currentControllerState, false);
+            this.stateParticleEvents.add(new StateParticleEvent(this.stateParticleControllerId, this.name, currentControllerState.name, -1, "", "", false));
             this.currentState = nextControllerState.name;
             this.applyEffects(nextControllerState.getEntryEffects());
             this.queueStateParticleEvents(nextControllerState, true);

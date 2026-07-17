@@ -7,6 +7,7 @@ import anightdazingzoroark.riftlib.jsonParsing.constructor.ParticleConstructor;
 import anightdazingzoroark.riftlib.jsonParsing.raw.RawMolangValue;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationChannel;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationFile;
+import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawLoopType;
 import anightdazingzoroark.riftlib.jsonParsing.raw.geo.*;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticle;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
@@ -33,6 +34,7 @@ public class RiftLibLoader {
             .registerTypeAdapter(RawParticleComponent.class, new RawParticleComponent.Deserializer())
             .registerTypeAdapter(RawModelLocatorList.class, new RawModelLocatorList.Deserialize())
             .registerTypeAdapter(RawModelBoundingBoxList.class, new RawModelBoundingBoxList.Deserializer())
+            .registerTypeAdapter(RawLoopType.class, new RawLoopType.Deserializer())
             .create();
 
 	public GeoModel loadGeoModel(RiftLibResourceReader resourceReader, ResourceLocation location) {

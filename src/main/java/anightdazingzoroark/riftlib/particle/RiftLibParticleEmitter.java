@@ -282,7 +282,7 @@ public class RiftLibParticleEmitter {
 
     public boolean isStateParticleEmitter(int controllerId, String stateName, int particleIndex) {
         return this.stateParticleControllerId == controllerId
-                && this.stateParticleIndex == particleIndex
+                && (particleIndex < 0 || this.stateParticleIndex == particleIndex)
                 && Objects.equals(this.stateParticleStateName, stateName);
     }
 

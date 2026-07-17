@@ -5,9 +5,9 @@ import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.core.builder.LoopType;
 import anightdazingzoroark.riftlib.core.easing.EasingType;
 import anightdazingzoroark.riftlib.core.keyframe.*;
-import anightdazingzoroark.riftlib.jsonParsing.raw.RawMolangValue;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationChannel;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationFile;
+import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawLoopType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ public class AnimationConstructor {
 
         //set anim info
         toReturn.animationName = rawAnimation.getKey();
-        toReturn.loop = rawAnimation.getValue().loop == Boolean.TRUE ? LoopType.LOOP : LoopType.PLAY_ONCE;
+        toReturn.loop = loopTypeFromRaw(rawAnimation.getValue().loop);
         toReturn.animationLength = rawAnimation.getValue().animationLength != null ? rawAnimation.getValue().animationLength * 20 : null; //if length is null, it will be calculated later based on the provided info
         toReturn.animTimeUpdateExpression = rawAnimation.getValue().animTimeUpdate; //if null, it just use default update method
 
@@ -104,6 +104,13 @@ public class AnimationConstructor {
         if (toReturn.animationLength == null) toReturn.animationLength = calculateLength(toReturn.boneAnimations);
 
         return toReturn;
+    }
+
+    private static LoopType loopTypeFromRaw(RawLoopType rawLoopType) {
+        if (rawLoopType == null) return LoopType.PLAY_ONCE;
+        else if (rawLoopType.holdOnLastFrame) return LoopType.HOLD_ON_LAST_FRAME;
+        else if (rawLoopType.loop) return LoopType.LOOP;
+        else return LoopType.PLAY_ONCE;
     }
 
     private static double calculateLength(List<BoneAnimation> boneAnimations) {

@@ -9,6 +9,7 @@ import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.model.ServerModelRegistry;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
+import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundHelper;
 import anightdazingzoroark.riftlib.util.MolangUtils;
@@ -41,7 +42,7 @@ public class AnimationProcessor {
 		//create anim values list to store the changes in
 		BoneAnimationValuesList boneAnimationValues = new BoneAnimationValuesList();
 		List<EventKeyFrame.CustomInstructionKeyFrame> customInstructionEvents = new ArrayList<>();
-		List<EventKeyFrame.ParticleEventKeyFrame> particleEvents = new ArrayList<>();
+		List<Map.Entry<AnimationController<?, ?>, EventKeyFrame.ParticleEventKeyFrame>> particleEvents = new ArrayList<>();
 		List<EventKeyFrame.SoundEventKeyFrame> soundEvents = new ArrayList<>();
 		List<Map.Entry<AnimationController<?, ?>, AnimationController.StateParticleEvent>> stateParticleEvents = new ArrayList<>();
 		boolean isServerSynced = animationData.isServerSynced() || ServerModelRegistry.hasServerModel(entity);
@@ -102,7 +103,9 @@ public class AnimationProcessor {
 				for (AnimationController.StateParticleEvent stateParticleEvent : controller.drainStateParticleEvents()) {
 					stateParticleEvents.add(new AbstractMap.SimpleImmutableEntry<>(controller, stateParticleEvent));
 				}
-				particleEvents.addAll(controller.drainParticleEvents());
+				for (EventKeyFrame.ParticleEventKeyFrame particleEvent : controller.drainParticleEvents()) {
+					particleEvents.add(new AbstractMap.SimpleImmutableEntry<>(controller, particleEvent));
+				}
 				soundEvents.addAll(controller.drainSoundEvents());
 			}
 			else {
@@ -243,11 +246,19 @@ public class AnimationProcessor {
 			}
 
 			//animation effects
-			for (EventKeyFrame.ParticleEventKeyFrame particleEvent : particleEvents) {
+			for (Map.Entry<AnimationController<?, ?>, EventKeyFrame.ParticleEventKeyFrame> particleEventEntry : particleEvents) {
+				EventKeyFrame.ParticleEventKeyFrame particleEvent = particleEventEntry.getValue();
 				AnimatedLocator locator = animationData.getAnimatedLocator(particleEvent.locator);
 				if (locator != null) {
 					ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(particleEvent.effect);
-					if (particleBuilder != null) locator.createParticleEmitter(particleBuilder);
+					if (particleBuilder != null) {
+						RiftLibParticleEmitter emitter = locator.createParticleEmitter(particleBuilder);
+						emitter.setStateParticleOwner(
+								particleEventEntry.getKey().getStateParticleControllerId(),
+								particleEventEntry.getKey().getCurrentState(),
+								-1
+						);
+					}
 				}
 			}
 

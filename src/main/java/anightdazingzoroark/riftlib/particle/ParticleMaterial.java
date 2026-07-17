@@ -1,6 +1,5 @@
 package anightdazingzoroark.riftlib.particle;
 
-import anightdazingzoroark.riftlib.exceptions.InvalidMaterialException;
 import net.minecraft.client.renderer.GlStateManager;
 import org.lwjgl.opengl.GL11;
 
@@ -73,7 +72,7 @@ public enum ParticleMaterial {
             case "particles_alpha" -> ALPHA;
             case "particles_blend" -> BLEND;
             case "particles_opaque" -> OPAQUE;
-            default -> throw new InvalidMaterialException(value, "Invalid particle material");
+            default -> throw new IllegalArgumentException("Invalid particle material "+value);
         };
     }
 }

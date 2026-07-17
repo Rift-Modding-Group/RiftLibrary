@@ -1,9 +1,7 @@
 package anightdazingzoroark.riftlib.particle.particleComponent.particleAppearance;
 
 import anightdazingzoroark.riftlib.RiftLib;
-import anightdazingzoroark.riftlib.exceptions.InvalidValueException;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
-import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.Constant;
 import anightdazingzoroark.riftlib.molang.math.IValue;
@@ -27,11 +25,11 @@ public class AppearanceTintingComponent extends RiftLibParticleComponent {
             //have to do bit manipulation to get rgb and colorAlpha
             if (componentValue.valueType == RawParticleComponent.ComponentValueType.STRING) {
                 String colorAsString = componentValue.string;
-                if (colorAsString.charAt(0) != '#') throw new InvalidValueException("String does not correspond to a color value!");
+                if (colorAsString.charAt(0) != '#') throw new IllegalArgumentException("String does not correspond to a color value!");
                 colorAsString = colorAsString.substring(1);
 
                 //check string length
-                if (colorAsString.length() < 6 || colorAsString.length() == 7 || colorAsString.length() > 8) throw new InvalidValueException("String does not correspond to a color value!");
+                if (colorAsString.length() < 6 || colorAsString.length() == 7 || colorAsString.length() > 8) throw new IllegalArgumentException("String does not correspond to a color value!");
 
                 //turn the string into a hex number
                 int stringAsHex = Integer.parseInt(colorAsString, 16);
@@ -52,8 +50,8 @@ public class AppearanceTintingComponent extends RiftLibParticleComponent {
             //if its an array, each value in the array will correspond to a color
             else if (componentValue.valueType == RawParticleComponent.ComponentValueType.ARRAY) {
                 //check length first
-                if (componentValue.array.size() < 3) throw new InvalidValueException("Insufficient size for color array");
-                if (componentValue.array.size() > 4) throw new InvalidValueException("Size exceeded for color array");
+                if (componentValue.array.size() < 3) throw new IllegalArgumentException("Insufficient size for color array");
+                if (componentValue.array.size() > 4) throw new IllegalArgumentException("Size exceeded for color array");
 
                 this.red = this.parseExpression(parser, componentValue.array.get(0));
                 this.green = this.parseExpression(parser, componentValue.array.get(1));

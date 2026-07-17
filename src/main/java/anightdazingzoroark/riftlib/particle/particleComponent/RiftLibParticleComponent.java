@@ -1,7 +1,6 @@
 package anightdazingzoroark.riftlib.particle.particleComponent;
 
 import anightdazingzoroark.riftlib.core.ConstantValue;
-import anightdazingzoroark.riftlib.exceptions.InvalidValueException;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
@@ -49,20 +48,20 @@ public abstract class RiftLibParticleComponent {
 
     protected IValue[] parseExpressionArray(MolangParser parser, int intendedSize, RawParticleComponent.ComponentValue componentValue, boolean floatOnly) {
         if (componentValue.valueType == RawParticleComponent.ComponentValueType.ARRAY) {
-            if (componentValue.array.size() != intendedSize) throw new InvalidValueException("Invalid array length!");
+            if (componentValue.array.size() != intendedSize) throw new IllegalArgumentException("Invalid array length!");
 
             IValue[] toReturn = new IValue[componentValue.array.size()];
             for (int i = 0; i < toReturn.length; i++) {
                 RawParticleComponent.ComponentValue value = componentValue.array.get(i);
                 if (floatOnly) {
                     //this assumes that the value was a string, in this case return an exception
-                    if (value.string != null) throw new InvalidValueException("Expected float but got string!");
+                    if (value.string != null) throw new IllegalArgumentException("Expected float but got string!");
                     else toReturn[i] = this.parseExpression(parser, value);
                 }
                 else toReturn[i] = this.parseExpression(parser, value);
             }
             return toReturn;
         }
-        else throw new InvalidValueException("Component was not an array!");
+        else throw new IllegalArgumentException("Component was not an array!");
     }
 }

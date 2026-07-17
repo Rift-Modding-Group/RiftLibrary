@@ -1,6 +1,5 @@
 package anightdazingzoroark.riftlib.particle.emitterComponent.emitterShape;
 
-import anightdazingzoroark.riftlib.exceptions.InvalidValueException;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
@@ -61,7 +60,7 @@ public class EmitterShapeDiscComponent extends RiftLibEmitterShapeComponent {
                 if (componentValue.string.equals("inwards") || componentValue.string.equals("outwards")) {
                     this.particleDirection = componentValue.string;
                 }
-                else throw new InvalidValueException("Invalid value "+componentValue.string+" for direction!");
+                else throw new IllegalArgumentException("Invalid value "+componentValue.string+" for direction!");
             }
             //custom direction
             else if (componentValue.valueType == RawParticleComponent.ComponentValueType.ARRAY) {

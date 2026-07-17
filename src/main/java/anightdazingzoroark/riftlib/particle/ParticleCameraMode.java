@@ -1,22 +1,15 @@
 package anightdazingzoroark.riftlib.particle;
 
 import anightdazingzoroark.riftlib.RiftLib;
-import anightdazingzoroark.riftlib.exceptions.InvalidValueException;
 import anightdazingzoroark.riftlib.util.QuadFunction;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import org.apache.commons.io.function.IOQuadFunction;
-import org.apache.commons.lang3.function.TriFunction;
-import org.apache.logging.log4j.Level;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 public enum ParticleCameraMode {
     ROTATE_XYZ((scaleX, scaleY, partialTicks,rotation) -> {
@@ -267,7 +260,7 @@ public enum ParticleCameraMode {
                 RiftLib.LOGGER.warn("Unsupported particle camera mode, defaulting to rotate_xyz");
                 yield ROTATE_XYZ;
             }
-            default -> throw new InvalidValueException("Invalid particle camera mode");
+            default -> throw new IllegalArgumentException("Invalid particle camera mode");
         };
     }
 

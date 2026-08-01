@@ -8,6 +8,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class AnimationDataItemStack extends AbstractAnimationData<AnimatedItemStackHolder, AnimationDataItemStack> {
     public AnimationDataItemStack(AnimatedItemStackHolder holder) {
@@ -40,6 +41,7 @@ public class AnimationDataItemStack extends AbstractAnimationData<AnimatedItemSt
     }
 
     //get the player holding the itemstack. null if its not held
+    @Nullable
     public EntityPlayer getPlayerHolder() {
         ItemStack stack = this.getHolder().getStack();
         if (stack.isEmpty()) return null;
@@ -56,6 +58,7 @@ public class AnimationDataItemStack extends AbstractAnimationData<AnimatedItemSt
         return null;
     }
 
+    @Nullable
     public EnumHand getPlayerHolderHand() {
         ItemStack stack = this.getHolder().getStack();
         if (stack.isEmpty()) return null;

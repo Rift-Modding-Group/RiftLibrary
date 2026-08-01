@@ -10,6 +10,7 @@ import anightdazingzoroark.riftlib.util.ParticleUtils;
 import net.minecraft.client.renderer.RenderHelper;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
+import org.lwjglx.util.vector.Quaternion;
 
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -146,6 +147,13 @@ public interface IGeoRenderer<T> {
 
             Matrix4f cur2 = ParticleUtils.getCurrentRotation(curRot, ParticleUtils.getCurrentMatrix());
 
+            //apply rotations
+            Quaternion renderRotation = MatrixUtils.extractRotationQuaternion(cur2);
+            Quaternion locatorRotation = animatedLocator.getModelSpaceYXZQuaternion();
+            Quaternion worldRotation = new Quaternion();
+            Quaternion.mul(renderRotation, locatorRotation, worldRotation);
+            Quaternion.normalise(worldRotation, worldRotation);
+
             MATRIX_STACK.push();
             MATRIX_STACK.getModelMatrix().mul(new Matrix4f(
                     cur2.m00, cur2.m01, cur2.m02,0,
@@ -161,15 +169,7 @@ public interface IGeoRenderer<T> {
             Matrix4f full = MATRIX_STACK.getModelMatrix();
 
             //set final rotations
-            animatedLocator.setWorldSpaceYXZQuaternion(
-                    MatrixUtils.matrixToQuaternion(
-                            new Matrix3f(
-                                    full.m00, full.m01, full.m02,
-                                    full.m10, full.m11, full.m12,
-                                    full.m20, full.m21, full.m22
-                            )
-                    )
-            );
+            animatedLocator.setWorldSpaceYXZQuaternion(worldRotation);
 
             //set final world position
             newPosX += full.m03;

@@ -220,6 +220,17 @@ public class MatrixUtils {
         return new Quaternion(qx, qy, qz, qw);
     }
 
+    /**
+     * get rotations from a transformation matrix and turn them into a quaternion
+     * quaternions are love, quaternions are life
+     * */
+    public static Quaternion extractRotationQuaternion(Matrix4f transformation) {
+        Matrix3f rotation = extractTransformations(null, transformation, MatrixMajor.COLUMN).getRotation3f();
+        Quaternion quaternion = matrixToQuaternion(rotation);
+        Quaternion.normalise(quaternion, quaternion);
+        return quaternion;
+    }
+
     public static Matrix3f quaternionToMatrix(Quaternion quaternion) {
         float xx = quaternion.x * quaternion.x;
         float yy = quaternion.y * quaternion.y;

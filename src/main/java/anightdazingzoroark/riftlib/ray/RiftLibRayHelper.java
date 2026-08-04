@@ -14,17 +14,15 @@ import java.util.List;
  * */
 public class RiftLibRayHelper {
     /**
-     * Creates a ray on both sides, takes into account if called from client or server too.
+     * Creates a ray. Meant for use on server only.
      * */
     public static void createRay(IRayCreator<?> rayCreator, String rayName, String locatorName) {
-        if (rayCreator.getRayCreator().world.isRemote) {
-            createRayOnSide(rayCreator, rayName, locatorName);
-            ServerProxy.RAY_MESSAGE_WRAPPER.sendToServer(new RiftLibCreateOrDestroyRay(true, rayCreator, rayName, locatorName));
-        }
-        else {
-            ServerProxy.RAY_MESSAGE_WRAPPER.sendToAll(new RiftLibCreateOrDestroyRay(true, rayCreator, rayName, locatorName));
-            createRayOnSide(rayCreator, rayName, locatorName);
-        }
+        if (rayCreator.getRayCreator().world.isRemote) return;
+        ServerProxy.RAY_MESSAGE_WRAPPER.sendToAllTracking(
+                new RiftLibCreateOrDestroyRay(true, rayCreator, rayName, locatorName),
+                rayCreator.getRayCreator()
+        );
+        createRayOnSide(rayCreator, rayName, locatorName);
     }
 
     /**
@@ -56,17 +54,15 @@ public class RiftLibRayHelper {
     }
 
     /**
-     * Works on both sides, kills a ray.
+     * Kills a ray.  Meant for use on server only.
      * */
     public static void killRay(IRayCreator<?> rayCreator, @NotNull String rayName) {
-        if (rayCreator.getRayCreator().world.isRemote) {
-            killRayOnSide(rayCreator, rayName);
-            ServerProxy.RAY_MESSAGE_WRAPPER.sendToServer(new RiftLibCreateOrDestroyRay(false, rayCreator, rayName, ""));
-        }
-        else {
-            ServerProxy.RAY_MESSAGE_WRAPPER.sendToAll(new RiftLibCreateOrDestroyRay(false, rayCreator, rayName, ""));
-            killRayOnSide(rayCreator, rayName);
-        }
+        if (rayCreator.getRayCreator().world.isRemote) return;
+        ServerProxy.RAY_MESSAGE_WRAPPER.sendToAllTracking(
+                new RiftLibCreateOrDestroyRay(false, rayCreator, rayName, ""),
+                rayCreator.getRayCreator()
+        );
+        killRayOnSide(rayCreator, rayName);
     }
 
     /**

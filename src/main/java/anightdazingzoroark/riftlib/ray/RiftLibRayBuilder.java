@@ -29,6 +29,7 @@ public class RiftLibRayBuilder {
 
     private double motionSpeed = 1D;
     private double maxMotionDistance = 16D;
+    private int impactCreationInterval = 1;
 
     @NotNull
     private BiFunction<IRayCreator<?>, BlockPos, Boolean> blockBreakCheck = (rayCreator, pos) -> false;
@@ -58,8 +59,9 @@ public class RiftLibRayBuilder {
     }
 
     /**
-     * Use this to make the ray only have an impact
-     * */
+     * Use this to make the ray create impacts without moving. The ray creates
+     * impacts until it is ended unless {@link #setOnlyOneSegment()} is used.
+     */
     @NotNull
     public RiftLibRayBuilder setImpactOnly() {
         this.setMotionDefinedFlag();
@@ -154,8 +156,26 @@ public class RiftLibRayBuilder {
     }
 
     /**
-     * Make it so the ray makes only one segment
-     * */
+     * Define the number of ticks between impacts created by an impact-only ray.
+     * An interval of {@code 1} creates an impact every tick.
+     */
+    @NotNull
+    public RiftLibRayBuilder setImpactCreationInterval(int impactCreationInterval) {
+        if (impactCreationInterval < 1) {
+            throw new IllegalArgumentException("Impact creation interval must be at least 1 tick!");
+        }
+        this.impactCreationInterval = impactCreationInterval;
+        return this;
+    }
+
+    public int getImpactCreationInterval() {
+        return this.impactCreationInterval;
+    }
+
+    /**
+     * Make it so the ray makes only one segment. For an impact-only ray, this
+     * creates one impact and then ends the ray after that impact finishes.
+     */
     @NotNull
     public RiftLibRayBuilder setOnlyOneSegment() {
         this.onlyOneSegment = true;

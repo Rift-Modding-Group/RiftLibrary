@@ -47,6 +47,8 @@ public class RiftLibRay {
 
     //how many segments have ever been created; used only for the onlyOneSegment flag
     private int segmentsCreated;
+    //ticks until the next impact; a negative value cancels further creation
+    private int impactCreationDelay;
 
     //shape for ray in motion
     @NotNull
@@ -94,7 +96,8 @@ public class RiftLibRay {
 
         //-----create ray segments-----
         if (this.rayPose != null) {
-            if (!this.isEnded && this.builder.getStartsWithImpact() && this.segmentsCreated == 0) {
+            //---exclusively for impact only rays---
+            if (this.builder.getStartsWithImpact() && this.canCreateMoreSegments() && this.impactCreationDelay == 0) {
                 this.raySegmentList.add(new RiftLibRaySegment(
                         this.rayCreator,
                         this.rayPose.origin(),
@@ -105,12 +108,16 @@ public class RiftLibRay {
                         this.builder
                 ));
                 this.segmentsCreated++;
+                this.impactCreationDelay = this.builder.getImpactCreationInterval();
             }
+            if (this.impactCreationDelay > 0) this.impactCreationDelay--;
 
+            //---update existing ray segments---
             for (RiftLibRaySegment raySegment : this.raySegmentList) {
                 raySegment.tick(this.rayPose, hitBlocks, hitEntities);
             }
 
+            //---create new segments---
             if (!this.isEnded && this.builder.getHasMotion() && this.canCreateMoreSegments()) {
                 for (RiftLibRayMotionShape.SegmentSeed seed : this.movementShape.createSegments(this.rayPose, this.builder)) {
                     if (!this.canCreateMoreSegments()) break;
@@ -139,8 +146,7 @@ public class RiftLibRay {
 
         //-----remove segments after callers had a tick to consume their final state-----
         this.raySegmentList.removeIf(RiftLibRaySegment::isDead);
-        if (this.raySegmentList.isEmpty()
-                && (this.builder.getStartsWithImpact() || this.builder.getOnlyOneSegment())) {
+        if (this.raySegmentList.isEmpty() && this.builder.getOnlyOneSegment()) {
             this.endRay();
         }
 
@@ -157,6 +163,7 @@ public class RiftLibRay {
      * Use this to end this ray to make it fade out.
      */
     public void endRay() {
+        this.impactCreationDelay = -1;
         this.isEnded = true;
     }
 

@@ -28,13 +28,12 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
     @NotNull
     private final MultiHitboxList<FlyingPufferfishEntity> multiHitboxList;
     private final AnimationDataEntity animationData = new AnimationDataEntity(this, 2f);
-    private final Map<String, RiftLibRayBuilder> rayMap = Map.of();
+    private final Map<String, RiftLibRayBuilder> rayMap;
 
     public FlyingPufferfishEntity(World worldIn) {
         super(worldIn);
         this.setSize(1f, 1f);
         this.multiHitboxList = new MultiHitboxList<>(this, this.animationData);
-        /*
         this.rayMap = Map.of(
                 "puffUp", new RiftLibRayBuilder()
                         .setImpactOnly()
@@ -47,9 +46,8 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
                             float hardness = blockState.getBlockHardness(world, blockPos);
                             return hardness <= 1f && hardness >= 0f;
                         })
-                        .setOnlyOneSegment()
+                        .setImpactCreationInterval(1)
         );
-         */
     }
 
     @Override
@@ -105,8 +103,11 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
                         .addAnimation("animation.flying_pufferfish.inflate_loop")
         ));
 
-        animationData.addAnimationMessageEffect("puffUpRay", new AnimatableRunValue(
+        animationData.addAnimationMessageEffect("startPuffUpRay", new AnimatableRunValue(
                 () -> RiftLibRayHelper.createRay(this, "puffUp", "rayCenter"), Side.SERVER
+        ));
+        animationData.addAnimationMessageEffect("endPuffUpRay", new AnimatableRunValue(
+                () -> RiftLibRayHelper.killRay(this, "puffUp"), Side.SERVER
         ));
     }
 

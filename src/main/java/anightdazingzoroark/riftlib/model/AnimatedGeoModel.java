@@ -232,7 +232,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		List<IBone> modelRenderers = new ArrayList<>();
 		if (model == null) return modelRenderers;
 
-		for (GeoBone bone : model.topLevelBones) {
+		for (GeoBone bone : model.getTopLevelBones()) {
 			this.collectModelRenderers(bone, modelRenderers);
 		}
 		return modelRenderers;

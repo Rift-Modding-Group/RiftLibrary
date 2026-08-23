@@ -39,7 +39,7 @@ public interface IGeoRenderer<T> {
 		builder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
 
 		// Render all top level bones
-		for (GeoBone group : model.topLevelBones) {
+		for (GeoBone group : model.getTopLevelBones()) {
 			this.renderRecursively(builder, group, red, green, blue, alpha);
 		}
 

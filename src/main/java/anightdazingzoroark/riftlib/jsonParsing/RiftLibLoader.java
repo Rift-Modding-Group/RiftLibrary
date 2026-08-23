@@ -17,7 +17,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.RiftLib;
-import anightdazingzoroark.riftlib.jsonParsing.constructor.GeoConstructor;
 import anightdazingzoroark.riftlib.geo.GeoModel;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
@@ -39,8 +38,6 @@ public class RiftLibLoader {
             .registerTypeAdapter(RawLoopType.class, new RawLoopType.Deserializer())
             .create();
     @NotNull
-    private final GeoConstructor geoConstructor = new GeoConstructor(); //create models
-    @NotNull
     private final AnimationConstructor animationConstructor = new AnimationConstructor(); //create animations
     @NotNull
     private final ParticleConstructor particleConstructor = new ParticleConstructor(); //create particles
@@ -48,16 +45,32 @@ public class RiftLibLoader {
     @NotNull
 	public GeoModel loadGeoModel(RiftLibResourceReader resourceReader, ResourceLocation location) {
 		try {
-			// Deserialize from json into basic json objects, bones are still stored as a
-			// flat list
+			//Deserialize from json into basic json objects, bones are still stored as a flat list
 			RawGeoModel rawModel = this.gson.fromJson(this.getResourceAsString(location, resourceReader), RawGeoModel.class);;
 
-			// Parse the flat list of bones into a raw hierarchical tree of "BoneGroup"s
+            //Get and validate the description
+            RawGeoModel.RawModelDescription modelDescription = rawModel.geometry.getFirst().description; //is temporary, will acknowledge multiple models soon
+            if (modelDescription.identifier == null) {
+                throw new IllegalStateException(location + " has no identifier!");
+            }
+            if (modelDescription.texture_width == null || modelDescription.texture_height == null) {
+                throw new IllegalStateException(location + " has no texture size set!");
+            }
+            if (modelDescription.visible_bounds_width == null || modelDescription.visible_bounds_height == null) {
+                throw new IllegalStateException(location + " has no visible bounds size set!");
+            }
+            if (modelDescription.visible_bounds_offset == null) {
+                throw new IllegalStateException(location + " has no visible bounds offset!");
+            }
+            if (modelDescription.visible_bounds_offset.length != 3) {
+                throw new IllegalStateException("Visible bounds offset in " + location + " must have 3 values!");
+            }
+
+			//Parse the flat list of bones into a raw hierarchical tree of "BoneGroup"s
 			RawGeometryTree rawGeometryTree = new RawGeometryTree(rawModel, location);
 
-			// Build the quads and cubes from the raw tree into a built and ready to be
-			// rendered GeoModel
-			return this.geoConstructor.constructGeoModel(rawGeometryTree);
+			//Build the quads and cubes from the raw tree into a built and ready to be rendered GeoModel
+			return new GeoModel(modelDescription, rawGeometryTree);
 		}
         catch (Exception e) {
 			RiftLib.LOGGER.error(String.format("Error parsing %S", location), e);

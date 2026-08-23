@@ -5,79 +5,173 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawGeoModel;
+import anightdazingzoroark.riftlib.jsonParsing.raw.geo.*;
+import anightdazingzoroark.riftlib.util.VectorUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+import javax.vecmath.Vector3f;
 
+/**
+ * Immutable class containing info for a parsed model
+ * */
 public class GeoModel {
-	public RawGeoModel.RawModelDescription description;
-	public final List<GeoBone> topLevelBones = new ArrayList<>();
-	public final Map<String, GeoBone> allBones = new HashMap<>();
-	public final List<GeoLocator> allLocators = new ArrayList<>();
-	public final List<GeoBoundingBox> allBoundingBoxes = new ArrayList<>();
+	@NotNull
+	public final RawGeoModel.RawModelDescription description;
+	@NotNull
+	private final RawGeometryTree geometryTree;
 
+	@NotNull
+	private final List<GeoBone> topLevelBones = new ArrayList<>();
+	@NotNull
+	private final Map<String, GeoBone> allBones = new HashMap<>();
+	@NotNull
+	private final List<GeoLocator> allLocators = new ArrayList<>();
+	@NotNull
+	private final List<GeoBoundingBox> allBoundingBoxes = new ArrayList<>();
+
+	public GeoModel(@NotNull RawGeoModel.RawModelDescription modelDescription, @NotNull RawGeometryTree geometryTree) {
+		this.description = modelDescription;
+		this.geometryTree = geometryTree; //preserved for copying
+
+		//define other lists and maps
+		for (RawModelBoneGroup rawBone : geometryTree.topLevelBones.values()) {
+			this.topLevelBones.add(this.constructBone(rawBone, null));
+		}
+	}
+
+	//-----part creation operations-----
+	@NotNull
+	private GeoBone constructBone(@NotNull RawModelBoneGroup bone, @Nullable GeoBone parentBone) {
+		RawGeoModel.RawModelBone rawBone = bone.selfBone;
+		GeoBone geoBone = new GeoBone(parentBone, rawBone.name);
+		this.allBones.put(geoBone.getName(), geoBone);
+
+		Vector3f rotation = VectorUtils.convertDoubleToFloat(VectorUtils.fromArray(rawBone.rotation));
+		Vector3f pivot = VectorUtils.convertDoubleToFloat(VectorUtils.fromArray(rawBone.pivot));
+		rotation.x *= -1;
+		rotation.y *= -1;
+
+		geoBone.mirror = rawBone.mirror;
+		geoBone.inflate = rawBone.inflate;
+
+		geoBone.getRotation().set(
+				(float) Math.toRadians(rotation.getX()),
+				(float) Math.toRadians(rotation.getY()),
+				(float) Math.toRadians(rotation.getZ())
+		);
+
+		geoBone.getPivot().set(-pivot.getX(), pivot.getY(), pivot.getZ());
+
+		//add cubes
+		if (rawBone.cubes != null && !rawBone.cubes.isEmpty()) {
+			for (RawGeoModel.RawModelCube cube : rawBone.cubes) {
+				geoBone.childCubes.add(new GeoCube(
+						cube, this.description,
+						geoBone.inflate == null ? null : geoBone.inflate / 16D,
+						geoBone.mirror
+				));
+			}
+		}
+
+		//add locators
+		if (rawBone.locators != null && !rawBone.locators.list.isEmpty()) {
+			for (RawModelLocatorList.RawModelLocator rawLocator : rawBone.locators.list) {
+				GeoLocator toAdd = new GeoLocator(geoBone, rawLocator.name);
+
+				//---add to bone---
+				toAdd.getPosition().set(
+						(float) -rawLocator.offset[0],
+						(float) rawLocator.offset[1],
+						(float) rawLocator.offset[2]
+				);
+
+				toAdd.getRotation().set(
+						(float) Math.toRadians(-rawLocator.rotation[0]),
+						(float) Math.toRadians(-rawLocator.rotation[1]),
+						(float) Math.toRadians(rawLocator.rotation[2])
+				);
+
+				geoBone.childLocators.add(toAdd);
+
+				//---add to locator list on model---
+				this.allLocators.add(toAdd);
+			}
+		}
+
+		//add bounding boxes
+		if (rawBone.boundingBoxes != null && !rawBone.boundingBoxes.list.isEmpty()) {
+			for (RawModelBoundingBoxList.RawBoundingBox rawBoundingBox : rawBone.boundingBoxes.list) {
+				GeoBoundingBox toAdd = new GeoBoundingBox(geoBone, rawBoundingBox.name);
+
+				//---add to bone---
+				toAdd.getPosition().set(
+						(float) -rawBoundingBox.origin[0],
+						(float) rawBoundingBox.origin[1],
+						(float) rawBoundingBox.origin[2]
+				);
+
+				toAdd.setSize((float) rawBoundingBox.size[0], (float) rawBoundingBox.size[1]);
+
+				toAdd.canCollide = rawBoundingBox.collision;
+				toAdd.tags = rawBoundingBox.tags;
+
+				geoBone.childBoundingBoxes.add(toAdd);
+
+				//---add to bounding box list on model---
+				this.allBoundingBoxes.add(toAdd);
+			}
+		}
+
+		//create bones
+		for (RawModelBoneGroup child : bone.children.values()) {
+			geoBone.childBones.add(this.constructBone(child, geoBone));
+		}
+
+		return geoBone;
+	}
+
+	//-----getters-----
+	@NotNull
+	public String getIdentifier() {
+		return this.description.identifier;
+	}
+
+	public int[] getTextureSize() {
+		return new int[]{this.description.texture_width, this.description.texture_height};
+	}
+
+	public double[] getVisibleBoundsSize() {
+		return new double[]{this.description.visible_bounds_width, this.description.visible_bounds_height};
+	}
+
+	public double[] getVisibleBoundsOffset() {
+		return this.description.visible_bounds_offset.clone();
+	}
+
+	@NotNull
+	public List<GeoBone> getTopLevelBones() {
+		return List.copyOf(this.topLevelBones);
+	}
+
+	@NotNull
+	public Map<String, GeoBone> getAllBones() {
+		return Map.copyOf(this.allBones);
+	}
+
+	@NotNull
+	public List<GeoLocator> getAllLocators() {
+		return List.copyOf(this.allLocators);
+	}
+
+	@NotNull
+	public List<GeoBoundingBox> getAllBoundingBoxes() {
+		return List.copyOf(this.allBoundingBoxes);
+	}
+
+	//-----other operations-----
+	@NotNull
 	public GeoModel copy() {
-		GeoModel copyModel = new GeoModel();
-		copyModel.description = this.description;
-
-		for (GeoBone bone : this.topLevelBones) {
-			copyModel.topLevelBones.add(this.copyBone(copyModel, bone, null));
-		}
-
-		return copyModel;
-	}
-
-	private GeoBone copyBone(GeoModel copyModel, GeoBone sourceBone, @Nullable GeoBone copyParentBone) {
-		GeoBone copyBone = new GeoBone(copyParentBone, sourceBone.getName());
-		copyModel.allBones.put(copyBone.getName(), copyBone);
-
-		copyBone.mirror = sourceBone.mirror;
-		copyBone.inflate = sourceBone.inflate;
-		copyBone.dontRender = sourceBone.dontRender;
-
-		copyBone.setHidden(sourceBone.isHidden(), sourceBone.childBonesAreHiddenToo());
-		copyBone.setCubesHidden(sourceBone.cubesAreHidden());
-		copyBone.getScale().set(sourceBone.getScale());
-		copyBone.getPosition().set(sourceBone.getPosition());
-		copyBone.getRotation().set(sourceBone.getRotation());
-		copyBone.getPivot().set(sourceBone.getPivot());
-
-		copyBone.childCubes.addAll(sourceBone.childCubes);
-
-		for (GeoLocator locator : sourceBone.childLocators) {
-			GeoLocator copyLocator = this.copyLocator(locator, copyBone);
-			copyBone.childLocators.add(copyLocator);
-			copyModel.allLocators.add(copyLocator);
-		}
-
-		for (GeoBoundingBox boundingBox : sourceBone.childBoundingBoxes) {
-			GeoBoundingBox copyBoundingBox = this.copyBoundingBox(boundingBox, copyBone);
-			copyBone.childBoundingBoxes.add(copyBoundingBox);
-			copyModel.allBoundingBoxes.add(copyBoundingBox);
-		}
-
-		for (GeoBone child : sourceBone.childBones) {
-			copyBone.childBones.add(this.copyBone(copyModel, child, copyBone));
-		}
-
-		return copyBone;
-	}
-
-	private GeoLocator copyLocator(GeoLocator source, GeoBone parent) {
-		GeoLocator copy = new GeoLocator(parent, source.name);
-		copy.setHidden(source.isHidden(), source.childBonesAreHiddenToo());
-		copy.setCubesHidden(source.cubesAreHidden());
-		copy.getPosition().set(source.getPosition());
-		copy.getRotation().set(source.getRotation());
-		return copy;
-	}
-
-	private GeoBoundingBox copyBoundingBox(GeoBoundingBox source, GeoBone parent) {
-		GeoBoundingBox copy = new GeoBoundingBox(parent, source.name);
-		copy.getPosition().set(source.getPosition());
-		copy.setSize(source.getSize()[0], source.getSize()[1]);
-		copy.canCollide = source.canCollide;
-		copy.tags = source.tags;
-		return copy;
+		return new GeoModel(this.description, this.geometryTree);
 	}
 }

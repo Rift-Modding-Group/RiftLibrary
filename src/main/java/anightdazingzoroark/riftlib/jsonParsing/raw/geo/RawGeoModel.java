@@ -2,6 +2,7 @@ package anightdazingzoroark.riftlib.jsonParsing.raw.geo;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RawGeoModel {
@@ -10,10 +11,10 @@ public class RawGeoModel {
 
     public static class MinecraftGeometry {
         @SerializedName("description")
-        public RawModelDescription description;
+        public RawModelDescription description = new RawModelDescription(); //so that it may never start out as null
 
         @SerializedName("bones")
-        public List<RawModelBone> bones;
+        public List<RawModelBone> bones = new ArrayList<>(); //same here
     }
 
     public static class RawModelDescription {

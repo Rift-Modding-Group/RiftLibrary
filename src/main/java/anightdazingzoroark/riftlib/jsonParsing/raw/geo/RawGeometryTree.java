@@ -12,27 +12,21 @@ import java.util.stream.Collectors;
 public class RawGeometryTree {
     @NotNull
     public final HashMap<String, RawModelBoneGroup> topLevelBones = new HashMap<>();
-    @NotNull
-    public final RawGeoModel.RawModelDescription description;
 
-    public RawGeometryTree(RawGeoModel model, ResourceLocation location) {
-        RawGeoModel.MinecraftGeometry geometry = model.geometry.getFirst();
-
-        this.description = geometry.description;
-
+    public RawGeometryTree(@NotNull RawGeoModel.MinecraftGeometry geometry, @NotNull ResourceLocation location) {
         List<RawGeoModel.RawModelBone> rawBones = new ArrayList<>(geometry.bones);
         int index = rawBones.size() - 1;
         int loopsWithoutChange = 0;
         while (true) {
             loopsWithoutChange++;
             if (loopsWithoutChange > 10000) {
-                RiftLib.LOGGER.warn("Some rawBones in " + location.toString() + " do not have existing parents: ");
+                RiftLib.LOGGER.warn("Some rawBones in " + location + " do not have existing parents: ");
                 RiftLib.LOGGER.warn(rawBones.stream().map(b -> b.name).collect(Collectors.joining(", ")));
                 break;
             }
 
             RawGeoModel.RawModelBone rawBone = rawBones.get(index);
-            if (!this.hasParent(rawBone)) {
+            if (rawBone.parent == null) {
                 this.topLevelBones.put(rawBone.name, new RawModelBoneGroup(rawBone));
                 rawBones.remove(rawBone);
                 loopsWithoutChange = 0;
@@ -68,9 +62,5 @@ public class RawGeometryTree {
             flatList.put(child.selfBone.name, child);
             this.traverse(flatList, child);
         }
-    }
-
-    public boolean hasParent(RawGeoModel.RawModelBone bone) {
-        return bone.parent != null;
     }
 }

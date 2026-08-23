@@ -46,10 +46,13 @@ public class RiftLibLoader {
 	public GeoModel loadGeoModel(RiftLibResourceReader resourceReader, ResourceLocation location) {
 		try {
 			//Deserialize from json into basic json objects, bones are still stored as a flat list
-			RawGeoModel rawModel = this.gson.fromJson(this.getResourceAsString(location, resourceReader), RawGeoModel.class);;
+			RawGeoModel rawModel = this.gson.fromJson(this.getResourceAsString(location, resourceReader), RawGeoModel.class);
+
+            //first model in array is to be used, note that this is temporary
+            RawGeoModel.MinecraftGeometry geometry = rawModel.geometry.getFirst();
 
             //Get and validate the description
-            RawGeoModel.RawModelDescription modelDescription = rawModel.geometry.getFirst().description; //is temporary, will acknowledge multiple models soon
+            RawGeoModel.RawModelDescription modelDescription = geometry.description; //is temporary, will acknowledge multiple models soon
             if (modelDescription.identifier == null) {
                 throw new IllegalStateException(location + " has no identifier!");
             }
@@ -67,7 +70,7 @@ public class RiftLibLoader {
             }
 
 			//Parse the flat list of bones into a raw hierarchical tree of "BoneGroup"s
-			RawGeometryTree rawGeometryTree = new RawGeometryTree(rawModel, location);
+			RawGeometryTree rawGeometryTree = new RawGeometryTree(geometry, location);
 
 			//Build the quads and cubes from the raw tree into a built and ready to be rendered GeoModel
 			return new GeoModel(modelDescription, rawGeometryTree);

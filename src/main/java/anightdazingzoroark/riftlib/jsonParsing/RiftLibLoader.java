@@ -20,6 +20,7 @@ import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.jsonParsing.constructor.GeoConstructor;
 import anightdazingzoroark.riftlib.geo.GeoModel;
 import org.apache.commons.io.IOUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -27,6 +28,7 @@ import java.nio.charset.Charset;
 import java.util.Map;
 
 public class RiftLibLoader {
+    @NotNull
     private final Gson gson = new GsonBuilder()
             .registerTypeAdapter(RawMolangValue.class, new RawMolangValue.Deserializer())
             .registerTypeAdapter(RawUVUnion.class, new RawUVUnion.Deserializer())
@@ -36,19 +38,26 @@ public class RiftLibLoader {
             .registerTypeAdapter(RawModelBoundingBoxList.class, new RawModelBoundingBoxList.Deserializer())
             .registerTypeAdapter(RawLoopType.class, new RawLoopType.Deserializer())
             .create();
+    @NotNull
+    private final GeoConstructor geoConstructor = new GeoConstructor(); //create models
+    @NotNull
+    private final AnimationConstructor animationConstructor = new AnimationConstructor(); //create animations
+    @NotNull
+    private final ParticleConstructor particleConstructor = new ParticleConstructor(); //create particles
 
+    @NotNull
 	public GeoModel loadGeoModel(RiftLibResourceReader resourceReader, ResourceLocation location) {
 		try {
 			// Deserialize from json into basic json objects, bones are still stored as a
 			// flat list
-			RawGeoModel rawModel = this.gson.fromJson(getResourceAsString(location, resourceReader), RawGeoModel.class);;
+			RawGeoModel rawModel = this.gson.fromJson(this.getResourceAsString(location, resourceReader), RawGeoModel.class);;
 
 			// Parse the flat list of bones into a raw hierarchical tree of "BoneGroup"s
 			RawGeometryTree rawGeometryTree = new RawGeometryTree(rawModel, location);
 
 			// Build the quads and cubes from the raw tree into a built and ready to be
 			// rendered GeoModel
-			return GeoConstructor.constructGeoModel(rawGeometryTree);
+			return this.geoConstructor.constructGeoModel(rawGeometryTree);
 		}
         catch (Exception e) {
 			RiftLib.LOGGER.error(String.format("Error parsing %S", location), e);
@@ -56,14 +65,15 @@ public class RiftLibLoader {
 		}
 	}
 
+    @NotNull
     public AnimationFile loadAnimationFile(RiftLibResourceReader resourceReader, ResourceLocation location) {
         try {
             AnimationFile animationFile = new AnimationFile();
 
-            RawAnimationFile rawAnimationFile = this.gson.fromJson(getResourceAsString(location, resourceReader), RawAnimationFile.class);
+            RawAnimationFile rawAnimationFile = this.gson.fromJson(this.getResourceAsString(location, resourceReader), RawAnimationFile.class);
             Map<String, RawAnimationFile.RawAnimation> rawAnimationMap = rawAnimationFile.rawAnimations;
             for (Map.Entry<String, RawAnimationFile.RawAnimation> rawAnimation : rawAnimationMap.entrySet()) {
-                Animation animation = AnimationConstructor.getAnimationFromRawAnimationEntry(rawAnimation);
+                Animation animation = this.animationConstructor.getAnimationFromRawAnimationEntry(rawAnimation);
                 animationFile.putAnimation(rawAnimation.getKey(), animation);
             }
 
@@ -75,10 +85,11 @@ public class RiftLibLoader {
         }
     }
 
+    @NotNull
     public ParticleBuilder loadParticle(MolangParser parser, RiftLibResourceReader resourceReader, ResourceLocation location) {
         try {
             RawParticle rawParticle = this.gson.fromJson(this.getResourceAsString(location, resourceReader), RawParticle.class);
-            return ParticleConstructor.createParticleBuilder(rawParticle, parser);
+            return this.particleConstructor.createParticleBuilder(rawParticle, parser);
         }
         catch (Exception e) {
             RiftLib.LOGGER.error(String.format("Error parsing %S", location), e);
@@ -86,6 +97,7 @@ public class RiftLibLoader {
         }
     }
 
+    @NotNull
     private String getResourceAsString(ResourceLocation location, RiftLibResourceReader resourceReader) {
         try (InputStream inputStream = resourceReader.open(location)) {
             return IOUtils.toString(inputStream, Charset.defaultCharset());

@@ -11,7 +11,7 @@ import anightdazingzoroark.riftlib.util.VectorUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class GeoConstructor {
-	public static GeoModel constructGeoModel(RawGeometryTree geometryTree) {
+	public GeoModel constructGeoModel(RawGeometryTree geometryTree) {
 		GeoModel model = new GeoModel();
 		model.description = geometryTree.description;
 		for (RawModelBoneGroup rawBone : geometryTree.topLevelBones.values()) {
@@ -20,7 +20,7 @@ public class GeoConstructor {
 		return model;
 	}
 
-	public static GeoBone constructBone(
+	public GeoBone constructBone(
 			RawModelBoneGroup bone, RawGeoModel.RawModelDescription description,
 			@NotNull GeoModel model, @Nullable GeoBone parentBone
 	) {

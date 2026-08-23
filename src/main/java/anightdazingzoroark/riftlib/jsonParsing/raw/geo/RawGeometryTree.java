@@ -2,6 +2,7 @@ package anightdazingzoroark.riftlib.jsonParsing.raw.geo;
 
 import anightdazingzoroark.riftlib.RiftLib;
 import net.minecraft.util.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,7 +10,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class RawGeometryTree {
+    @NotNull
     public final HashMap<String, RawModelBoneGroup> topLevelBones = new HashMap<>();
+    @NotNull
     public final RawGeoModel.RawModelDescription description;
 
     public RawGeometryTree(RawGeoModel model, ResourceLocation location) {

@@ -8,11 +8,13 @@ import anightdazingzoroark.riftlib.particle.ParticleMaterial;
 import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleComponentRegistry;
 import net.minecraft.util.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
 public class ParticleConstructor {
-    public static ParticleBuilder createParticleBuilder(RawParticle rawParticle, MolangParser parser) throws NumberFormatException {
+    @NotNull
+    public ParticleBuilder createParticleBuilder(RawParticle rawParticle, MolangParser parser) throws NumberFormatException {
         ParticleBuilder toReturn = new ParticleBuilder();
 
         //---get name---

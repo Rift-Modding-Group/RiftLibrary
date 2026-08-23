@@ -8,13 +8,15 @@ import anightdazingzoroark.riftlib.core.keyframe.*;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationChannel;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawAnimationFile;
 import anightdazingzoroark.riftlib.jsonParsing.raw.animation.RawLoopType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class AnimationConstructor {
-    public static Animation getAnimationFromRawAnimationEntry(Map.Entry<String, RawAnimationFile.RawAnimation> rawAnimation) {
+    public Animation getAnimationFromRawAnimationEntry(Map.Entry<String, RawAnimationFile.RawAnimation> rawAnimation) {
         Animation toReturn = new Animation();
 
         //set anim info
@@ -106,14 +108,15 @@ public class AnimationConstructor {
         return toReturn;
     }
 
-    private static LoopType loopTypeFromRaw(RawLoopType rawLoopType) {
+    @NotNull
+    private LoopType loopTypeFromRaw(@Nullable RawLoopType rawLoopType) {
         if (rawLoopType == null) return LoopType.PLAY_ONCE;
         else if (rawLoopType.holdOnLastFrame) return LoopType.HOLD_ON_LAST_FRAME;
         else if (rawLoopType.loop) return LoopType.LOOP;
         else return LoopType.PLAY_ONCE;
     }
 
-    private static double calculateLength(List<BoneAnimation> boneAnimations) {
+    private double calculateLength(List<BoneAnimation> boneAnimations) {
         double longestLength = 0;
         for (BoneAnimation animation : boneAnimations) {
             double rotationKeyframeTime = animation.rotationKeyFrames.getLastKeyframeTime();
@@ -124,13 +127,13 @@ public class AnimationConstructor {
         return longestLength == 0 ? Double.MAX_VALUE : longestLength;
     }
 
-    private static double maxAll(double... values) {
+    private double maxAll(double... values) {
         double max = 0;
         for (double value : values) max = Math.max(value, max);
         return max;
     }
 
-    private static VectorKeyFrameList convertRawChannelToFrameList(RawAnimationChannel rawAnimationChannel, boolean isRotation) throws NumberFormatException {
+    private VectorKeyFrameList convertRawChannelToFrameList(RawAnimationChannel rawAnimationChannel, boolean isRotation) throws NumberFormatException {
         VectorKeyFrameList toReturn = new VectorKeyFrameList(isRotation);
         ExpressionValue previousXValue = null;
         ExpressionValue previousYValue = null;
@@ -202,7 +205,7 @@ public class AnimationConstructor {
         return toReturn;
     }
 
-    private static List<Double> convertEasingArgsToList(double[] easingArgsArray) {
+    private List<Double> convertEasingArgsToList(double[] easingArgsArray) {
         List<Double> toReturn = new ArrayList<>();
         for (double v : easingArgsArray) toReturn.add(v);
         return toReturn;

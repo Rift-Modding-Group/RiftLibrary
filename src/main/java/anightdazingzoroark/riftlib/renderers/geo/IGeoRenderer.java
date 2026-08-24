@@ -85,7 +85,7 @@ public interface IGeoRenderer<T> {
 		MATRIX_STACK.moveBackFromPivot(cube);
 
 		for (GeoQuad quad : cube.getGeoQuads()) {
-			Vector3f normal = new Vector3f(quad.normal.getX(), quad.normal.getY(), quad.normal.getZ());
+			Vector3f normal = new Vector3f(quad.getNormal().getX(), quad.getNormal().getY(), quad.getNormal().getZ());
 
 			MATRIX_STACK.getNormalMatrix().transform(normal);
 
@@ -102,9 +102,8 @@ public interface IGeoRenderer<T> {
 				normal.z *= -1;
 			}
 
-			for (GeoVertex vertex : quad.vertices) {
-				Vector4f vector4f = new Vector4f(vertex.position.getX(), vertex.position.getY(), vertex.position.getZ(),
-						1.0F);
+			for (GeoVertex vertex : quad.geoVertices()) {
+				Vector4f vector4f = new Vector4f(vertex.position.getX(), vertex.position.getY(), vertex.position.getZ(), 1f);
 
 				MATRIX_STACK.getModelMatrix().transform(vector4f);
 

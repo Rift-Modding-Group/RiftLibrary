@@ -22,14 +22,14 @@ public class GeoVertex {
 		return new GeoVertex(this.position, texU, texV);
 	}
 
-	public GeoVertex setTextureUV(double[] array) {
-		Validate.validIndex(ArrayUtils.toObject(array), 1);
-		return new GeoVertex(this.position, (float) array[0], (float) array[1]);
-	}
-
 	public GeoVertex(Vector3f posIn, float texU, float texV) {
 		this.position = posIn;
 		this.textureU = texU;
 		this.textureV = texV;
+	}
+
+	public GeoVertex setTextureUV(double[] array) {
+		Validate.validIndex(ArrayUtils.toObject(array), 1);
+		return new GeoVertex(this.position, (float) array[0], (float) array[1]);
 	}
 }

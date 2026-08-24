@@ -2,15 +2,14 @@ package anightdazingzoroark.riftlib.geo;
 
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3i;
+import org.jetbrains.annotations.NotNull;
 
 public class GeoQuad {
-	public GeoVertex[] vertices;
-	public final Vec3i normal;
-	public EnumFacing direction;
+	private final GeoVertex[] vertices;
+	@NotNull
+	private final Vec3i normal;
 
-	public GeoQuad(GeoVertex[] verticesIn, float u1, float v1, float uSize, float vSize, float texWidth,
-			float texHeight, Boolean mirrorIn, EnumFacing directionIn) {
-		this.direction = directionIn;
+	public GeoQuad(GeoVertex[] verticesIn, int[] uvCoords, int[] uvSize, float texWidth, float texHeight, Boolean mirrorIn, @NotNull EnumFacing directionIn) {
 		this.vertices = verticesIn;
 
 		/*
@@ -20,8 +19,11 @@ public class GeoQuad {
 		 * ends v2 is the vertical distance from the v1 to where the uv region ends
 		 */
 
-		float u2 = u1 + uSize;
-		float v2 = v1 + vSize;
+		//define uv sizes
+		float u1 = uvCoords[0];
+		float v1 = uvCoords[1];
+		float u2 = u1 + uvSize[0];
+		float v2 = v1 + uvSize[1];
 
 		// Normalize the coordinates to be relative (between 0 and 1)
 		u1 /= texWidth;
@@ -37,15 +39,16 @@ public class GeoQuad {
 		// Sets the new normalized texture coordinates of each vertex using the
 		// positions described above
 		if (mirrorIn != null && mirrorIn) {
-			vertices[0] = verticesIn[0].setTextureUV(u1, v1); // Top left corner
-			vertices[1] = verticesIn[1].setTextureUV(u2, v1); // Top right corner
-			vertices[2] = verticesIn[2].setTextureUV(u2, v2); // Bottom left corner
-			vertices[3] = verticesIn[3].setTextureUV(u1, v2); // Bottom right corner
-		} else {
-			vertices[0] = verticesIn[0].setTextureUV(u2, v1); // Top left corner
-			vertices[1] = verticesIn[1].setTextureUV(u1, v1); // Top right corner
-			vertices[2] = verticesIn[2].setTextureUV(u1, v2); // Bottom left corner
-			vertices[3] = verticesIn[3].setTextureUV(u2, v2); // Bottom right corner
+			this.vertices[0] = verticesIn[0].setTextureUV(u1, v1); // Top left corner
+			this.vertices[1] = verticesIn[1].setTextureUV(u2, v1); // Top right corner
+			this.vertices[2] = verticesIn[2].setTextureUV(u2, v2); // Bottom left corner
+			this.vertices[3] = verticesIn[3].setTextureUV(u1, v2); // Bottom right corner
+		}
+		else {
+			this.vertices[0] = verticesIn[0].setTextureUV(u2, v1); // Top left corner
+			this.vertices[1] = verticesIn[1].setTextureUV(u1, v1); // Top right corner
+			this.vertices[2] = verticesIn[2].setTextureUV(u1, v2); // Bottom left corner
+			this.vertices[3] = verticesIn[3].setTextureUV(u2, v2); // Bottom right corner
 		}
 
 		// only god knows what this does, but eliot told me it generates a normal vector
@@ -54,9 +57,13 @@ public class GeoQuad {
 		this.normal = directionIn.getDirectionVec();
 	}
 
-	public GeoQuad(GeoVertex[] verticesIn, int[] uvCoords, int[] uvSize, float texWidth, float texHeight,
-			Boolean mirrorIn, EnumFacing directionIn) {
-		this(verticesIn, (float) uvCoords[0], (float) uvCoords[1], (float) uvSize[0], (float) uvSize[1], texWidth,
-				texHeight, mirrorIn, directionIn);
+	//-----getters-----
+	public GeoVertex[] geoVertices() {
+		return this.vertices;
+	}
+
+	@NotNull
+	public Vec3i getNormal() {
+		return this.normal;
 	}
 }

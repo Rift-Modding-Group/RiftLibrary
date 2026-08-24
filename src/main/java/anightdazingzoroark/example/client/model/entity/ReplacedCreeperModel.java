@@ -21,8 +21,8 @@ public class ReplacedCreeperModel extends AnimatedGeoModel {
 	}
 
 	@Override
-	public ResourceLocation getTextureLocation(Object object) {
-		return new ResourceLocation(RiftLib.ModID, "textures/model/entity/creeper.png");
+	public String getTextureLocation(Object object) {
+		return "model/entity/creeper.png";
 	}
 
 	@Override

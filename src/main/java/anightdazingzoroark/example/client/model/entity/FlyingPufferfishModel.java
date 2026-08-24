@@ -21,8 +21,8 @@ public class FlyingPufferfishModel extends AnimatedGeoModel<FlyingPufferfishEnti
     }
 
     @Override
-    public ResourceLocation getTextureLocation(FlyingPufferfishEntity object) {
-        return new ResourceLocation(RiftLib.ModID, "textures/model/entity/flying_pufferfish.png");
+    public String getTextureLocation(FlyingPufferfishEntity object) {
+        return "model/entity/flying_pufferfish.png";
     }
 
     @Override

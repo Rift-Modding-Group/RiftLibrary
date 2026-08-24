@@ -1,7 +1,6 @@
 package anightdazingzoroark.riftlib.model.provider;
 
 import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
-import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.geo.GeoModel;
 import anightdazingzoroark.riftlib.resource.client.RiftLibCacheClient;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -23,5 +22,5 @@ public abstract class GeoModelProvider<T> {
 
 	public abstract String getModelIdentifier(T object);
 
-	public abstract ResourceLocation getTextureLocation(T object);
+	public abstract String getTextureLocation(T object);
 }

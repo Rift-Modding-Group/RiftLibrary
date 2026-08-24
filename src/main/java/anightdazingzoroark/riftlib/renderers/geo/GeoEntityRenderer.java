@@ -209,11 +209,6 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 		return 90f;
 	}
 
-	@Override
-	public ResourceLocation getTextureLocation(A instance) {
-		return this.modelProvider.getTextureLocation(instance);
-	}
-
 	public final boolean addLayer(GeoLayerRenderer<A> layer) {
 		return this.layerRenderers.add(layer);
 	}

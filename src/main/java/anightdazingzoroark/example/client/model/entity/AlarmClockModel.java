@@ -21,8 +21,8 @@ public class AlarmClockModel extends AnimatedGeoModel<AlarmClockEntity> {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(AlarmClockEntity object) {
-        return new ResourceLocation(RiftLib.ModID, "textures/model/entity/alarm_clock.png");
+    public String getTextureLocation(AlarmClockEntity object) {
+        return "model/entity/alarm_clock.png";
     }
 
     @Override

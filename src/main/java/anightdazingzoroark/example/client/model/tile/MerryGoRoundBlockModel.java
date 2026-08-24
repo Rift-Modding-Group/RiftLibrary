@@ -21,8 +21,8 @@ public class MerryGoRoundBlockModel extends AnimatedGeoModel<MerryGoRoundTileEnt
     }
 
     @Override
-    public ResourceLocation getTextureLocation(MerryGoRoundTileEntity object) {
-        return new ResourceLocation(RiftLib.ModID, "textures/block/merry_go_round.png");
+    public String getTextureLocation(MerryGoRoundTileEntity object) {
+        return "block/merry_go_round.png";
     }
 
     @Override

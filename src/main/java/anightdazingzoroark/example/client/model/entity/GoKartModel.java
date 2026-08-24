@@ -21,8 +21,8 @@ public class GoKartModel extends AnimatedGeoModel<GoKartEntity> {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(GoKartEntity object) {
-        return new ResourceLocation(RiftLib.ModID, "textures/model/entity/go_kart.png");
+    public String getTextureLocation(GoKartEntity object) {
+        return "model/entity/go_kart.png";
     }
 
     @Override

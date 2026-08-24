@@ -115,9 +115,4 @@ public abstract class GeoTileEntityRenderer<A extends TileEntity & IAnimatable<A
 			return EnumFacing.NORTH;
 		}
 	}
-
-	@Override
-	public ResourceLocation getTextureLocation(A instance) {
-		return this.modelProvider.getTextureLocation(instance);
-	}
 }

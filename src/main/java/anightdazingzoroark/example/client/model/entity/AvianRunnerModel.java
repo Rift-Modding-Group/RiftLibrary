@@ -21,8 +21,8 @@ public class AvianRunnerModel extends AnimatedGeoModel<AvianRunnerEntity> {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(AvianRunnerEntity object) {
-        return new ResourceLocation(RiftLib.ModID, "textures/model/entity/avian_runner.png");
+    public String getTextureLocation(AvianRunnerEntity object) {
+        return "model/entity/avian_runner.png";
     }
 
     @Override

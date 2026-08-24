@@ -21,8 +21,8 @@ public class SprinklerBlockModel extends AnimatedGeoModel<SprinklerTileEntity> {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(SprinklerTileEntity object) {
-        return new ResourceLocation(RiftLib.ModID, "textures/block/sprinkler.png");
+    public String getTextureLocation(SprinklerTileEntity object) {
+        return "block/sprinkler.png";
     }
 
     @Override

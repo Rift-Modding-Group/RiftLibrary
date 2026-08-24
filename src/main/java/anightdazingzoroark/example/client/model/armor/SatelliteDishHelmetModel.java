@@ -21,8 +21,8 @@ public class SatelliteDishHelmetModel extends AnimatedGeoModel<SatelliteDishHelm
     }
 
     @Override
-    public ResourceLocation getTextureLocation(SatelliteDishHelmet object) {
-        return new ResourceLocation(RiftLib.ModID, "textures/armor/satellite_dish_helmet.png");
+    public String getTextureLocation(SatelliteDishHelmet object) {
+        return "armor/satellite_dish_helmet.png";
     }
 
     @Override

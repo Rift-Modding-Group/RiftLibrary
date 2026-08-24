@@ -21,8 +21,8 @@ public class FireworkStickModel extends AnimatedGeoModel<AnimatedFireworkStickIt
     }
 
     @Override
-    public ResourceLocation getTextureLocation(AnimatedFireworkStickItem object) {
-        return new ResourceLocation(RiftLib.ModID, "textures/item/firework_stick.png");
+    public String getTextureLocation(AnimatedFireworkStickItem object) {
+        return "item/firework_stick.png";
     }
 
     @Override

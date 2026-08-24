@@ -87,9 +87,4 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile> extends Render<T
 	protected float projectileScale() {
 		return 1f;
 	}
-
-	@Override
-	public ResourceLocation getTextureLocation(T instance) {
-		return this.modelProvider.getTextureLocation(instance);
-	}
 }

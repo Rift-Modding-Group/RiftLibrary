@@ -131,9 +131,4 @@ public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder> extends
 		);
 		GlStateManager.popMatrix();
 	}
-
-	@Override
-	public ResourceLocation getTextureLocation(T instance) {
-		return this.modelProvider.getTextureLocation(instance);
-	}
 }

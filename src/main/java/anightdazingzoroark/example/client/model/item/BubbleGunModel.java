@@ -21,8 +21,8 @@ public class BubbleGunModel extends AnimatedGeoModel<AnimatedBubbleGunItem> {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(AnimatedBubbleGunItem object) {
-        return new ResourceLocation(RiftLib.ModID, "textures/item/bubble_gun.png");
+    public String getTextureLocation(AnimatedBubbleGunItem object) {
+        return "item/bubble_gun.png";
     }
 
     @Override

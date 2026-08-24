@@ -116,7 +116,9 @@ public interface IGeoRenderer<T> {
 	@SuppressWarnings("rawtypes")
 	GeoModelProvider getGeoModelProvider();
 
-	ResourceLocation getTextureLocation(T instance);
+	default ResourceLocation getTextureLocation(T instance) {
+		return new ResourceLocation(this.getGeoModelProvider().getModId(), "textures/"+this.getGeoModelProvider().getTextureLocation(instance));
+	}
 
 	default void renderEarly(T animatable, float ticks, float red, float green, float blue, float partialTicks) {}
 

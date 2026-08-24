@@ -21,8 +21,8 @@ public class BombProjectileModel extends AnimatedGeoModel<BombProjectile> {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(BombProjectile object) {
-        return new ResourceLocation(RiftLib.ModID, "textures/model/entity/bomb.png");
+    public String getTextureLocation(BombProjectile object) {
+        return "model/entity/bomb.png";
     }
 
     @Override

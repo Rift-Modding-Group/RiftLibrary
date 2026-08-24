@@ -21,8 +21,8 @@ public class SprinklerItemModel extends AnimatedGeoModel<AnimatedSimpleItemStack
     }
 
     @Override
-    public ResourceLocation getTextureLocation(AnimatedSimpleItemStack animatable) {
-        return new ResourceLocation(RiftLib.ModID, "textures/block/sprinkler.png");
+    public String getTextureLocation(AnimatedSimpleItemStack animatable) {
+        return "block/sprinkler.png";
     }
 
     @Override

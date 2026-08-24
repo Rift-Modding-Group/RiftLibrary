@@ -21,8 +21,8 @@ public class GreenArmorModel extends AnimatedGeoModel<GreenArmor> {
 	}
 
 	@Override
-	public ResourceLocation getTextureLocation(GreenArmor object) {
-		return new ResourceLocation(RiftLib.ModID, "textures/item/green_armor.png");
+	public String getTextureLocation(GreenArmor object) {
+		return "item/green_armor.png";
 	}
 
 	@Override

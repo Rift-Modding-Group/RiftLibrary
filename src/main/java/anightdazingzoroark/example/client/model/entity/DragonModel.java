@@ -21,8 +21,8 @@ public class DragonModel extends AnimatedGeoModel<DragonEntity> {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(DragonEntity object) {
-        return new ResourceLocation(RiftLib.ModID, "textures/model/entity/dragon.png");
+    public String getTextureLocation(DragonEntity object) {
+        return "model/entity/dragon.png";
     }
 
     @Override

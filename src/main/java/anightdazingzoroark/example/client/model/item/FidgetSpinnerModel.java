@@ -21,8 +21,8 @@ public class FidgetSpinnerModel extends AnimatedGeoModel<AnimatedFidgetSpinnerIt
     }
 
     @Override
-    public ResourceLocation getTextureLocation(AnimatedFidgetSpinnerItem object) {
-        return new ResourceLocation(RiftLib.ModID, "textures/item/fidget_spinner.png");
+    public String getTextureLocation(AnimatedFidgetSpinnerItem object) {
+        return "item/fidget_spinner.png";
     }
 
     @Override

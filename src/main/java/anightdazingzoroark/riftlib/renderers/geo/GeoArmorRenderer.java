@@ -179,11 +179,6 @@ public abstract class GeoArmorRenderer<T extends RiftLibArmor> extends ModelBipe
 		return this.modelProvider;
 	}
 
-	@Override
-	public ResourceLocation getTextureLocation(T instance) {
-		return this.modelProvider.getTextureLocation(instance);
-	}
-
 	public ResourceLocation getArmorTexture(ItemStack stack) {
 		return this.getTextureLocation((T) stack.getItem());
 	}

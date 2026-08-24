@@ -120,7 +120,6 @@ public class RiftLibCacheServer extends RiftLibResourceHolder {
         for (File domain : domains) {
             this.collectFolderResources(domain, "animations", fileName -> fileName.endsWith(".json"));
             this.collectFolderResources(domain, "geo", fileName -> fileName.endsWith(".json"));
-            this.collectFolderResources(domain, "hitboxes", fileName -> fileName.endsWith(".json"));
         }
     }
 
@@ -194,7 +193,6 @@ public class RiftLibCacheServer extends RiftLibResourceHolder {
 
                 this.collectZipResource(source, entry.getName(), "animations", fileName -> fileName.endsWith(".json"));
                 this.collectZipResource(source, entry.getName(), "geo", fileName -> fileName.endsWith(".json"));
-                this.collectZipResource(source, entry.getName(), "hitboxes", fileName -> fileName.endsWith(".json"));
             }
         }
         catch (IOException e) {

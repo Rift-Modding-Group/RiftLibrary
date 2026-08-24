@@ -5,249 +5,169 @@ import javax.vecmath.Vector3f;
 
 import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawFaceUVUser;
 import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawGeoModel;
-import anightdazingzoroark.riftlib.jsonParsing.raw.geo.RawUVUnion;
 import net.minecraft.util.EnumFacing;
 import anightdazingzoroark.riftlib.util.VectorUtils;
+import org.jetbrains.annotations.NotNull;
 
 public class GeoCube {
-	public GeoQuad[] quads = new GeoQuad[6];
-	public Vector3f pivot;
-	public Vector3f rotation;
-	public Vector3f size = new Vector3f();
+	private final GeoQuad[] quads; //length of 6 as geocubes represent rectangular prisms/cubes
+    @NotNull
+    private final Vector3f size;
+    @NotNull
+	private final Vector3f pivot;
+    @NotNull
+	private final Vector3f rotation;
 	public double inflate;
 	public Boolean mirror;
 
-    public GeoCube(RawGeoModel.RawModelCube cube, RawGeoModel.RawModelDescription description, Double boneInflate, Boolean mirror) {
-        if (cube.size.length >= 3) this.size.set((float) cube.size[0], (float) cube.size[1], (float) cube.size[2]);
-
-        RawUVUnion uvUnion = cube.uv;
-        RawFaceUVUser faces = uvUnion.faceUV;
-        boolean isBoxUV = uvUnion.isBoxUV();
+    public GeoCube(@NotNull RawGeoModel.RawModelCube cube, @NotNull RawGeoModel.RawModelDescription description, double boneInflate, boolean mirror) {
+        this.size = VectorUtils.convertDoubleToFloat(VectorUtils.fromArray(cube.size));
         this.mirror = cube.mirror;
-        this.inflate = cube.inflate == null ? (boneInflate == null ? 0 : boneInflate) : cube.inflate / 16;;
-
-        float textureHeight = description.texture_height;
-        float textureWidth = description.texture_width;
-
-        Vector3d size = VectorUtils.fromArray(cube.size);
-        Vector3d origin = VectorUtils.fromArray(cube.origin);
-        origin = new Vector3d(-(origin.x + size.x) / 16, origin.y / 16, origin.z / 16);
-
-        size.x *= 0.0625f;
-        size.y *= 0.0625f;
-        size.z *= 0.0625f;
-
-        Vector3f rotation = VectorUtils.convertDoubleToFloat(VectorUtils.fromArray(cube.rotation));
-        rotation.x *= -1;
-        rotation.y *= -1;
-
-        rotation.setX((float) Math.toRadians(rotation.getX()));
-        rotation.setY((float) Math.toRadians(rotation.getY()));
-        rotation.setZ((float) Math.toRadians(rotation.getZ()));
+        this.inflate = cube.inflate == null ? boneInflate : cube.inflate / 16;;
 
         Vector3f pivot = VectorUtils.convertDoubleToFloat(VectorUtils.fromArray(cube.pivot));
         pivot.x *= -1;
-
         this.pivot = pivot;
+
+        Vector3f rotation = VectorUtils.convertDoubleToFloat(VectorUtils.fromArray(cube.rotation));
+        rotation.setX((float) Math.toRadians(-rotation.getX()));
+        rotation.setY((float) Math.toRadians(-rotation.getY()));
+        rotation.setZ((float) Math.toRadians(rotation.getZ()));
         this.rotation = rotation;
 
+        GeoVertex[] vertices = this.createVertices(cube);
+        this.quads = cube.uv.isBoxUV()
+                ? this.createBoxUVQuads(cube, description, vertices)
+                : this.createFaceUVQuads(cube, description, vertices, mirror);
+    }
 
+    //-----quad creation operations-----
+    private GeoVertex[] createVertices(@NotNull RawGeoModel.RawModelCube cube) {
+        Vector3d size = VectorUtils.fromArray(cube.size);
+        Vector3d origin = VectorUtils.fromArray(cube.origin);
 
-        GeoVertex P1 = new GeoVertex(origin.x - this.inflate, origin.y - this.inflate, origin.z - this.inflate);
-        GeoVertex P2 = new GeoVertex(origin.x - this.inflate, origin.y - this.inflate,
-                origin.z + size.z + this.inflate);
-        GeoVertex P3 = new GeoVertex(origin.x - this.inflate, origin.y + size.y + this.inflate,
-                origin.z - this.inflate);
-        GeoVertex P4 = new GeoVertex(origin.x - this.inflate, origin.y + size.y + this.inflate,
-                origin.z + size.z + this.inflate);
-        GeoVertex P5 = new GeoVertex(origin.x + size.x + this.inflate, origin.y - this.inflate,
-                origin.z - this.inflate);
-        GeoVertex P6 = new GeoVertex(origin.x + size.x + this.inflate, origin.y - this.inflate,
-                origin.z + size.z + this.inflate);
-        GeoVertex P7 = new GeoVertex(origin.x + size.x + this.inflate, origin.y + size.y + this.inflate,
-                origin.z - this.inflate);
-        GeoVertex P8 = new GeoVertex(origin.x + size.x + this.inflate, origin.y + size.y + this.inflate,
-                origin.z + size.z + this.inflate);
+        origin = new Vector3d(-(origin.x + size.x) / 16, origin.y / 16, origin.z / 16);
+        size.scale(0.0625f);
 
-        GeoQuad quadWest;
-        GeoQuad quadEast;
-        GeoQuad quadNorth;
-        GeoQuad quadSouth;
-        GeoQuad quadUp;
-        GeoQuad quadDown;
+        double x1 = origin.x - this.inflate;
+        double y1 = origin.y - this.inflate;
+        double z1 = origin.z - this.inflate;
 
-        if (!isBoxUV) {
-            RawFaceUVUser.RawUVFace west = faces.westUV;
-            RawFaceUVUser.RawUVFace east = faces.eastUV;
-            RawFaceUVUser.RawUVFace north = faces.northUV;
-            RawFaceUVUser.RawUVFace south = faces.southUV;
-            RawFaceUVUser.RawUVFace up = faces.upUV;
-            RawFaceUVUser.RawUVFace down = faces.downUV;
-            // Pass in vertices starting from the top right corner, then going
-            // counter-clockwise
-            quadWest = west == null ? null
-                    : new GeoQuad(
-                            new GeoVertex[] { P4, P3, P1, P2 },
-                            west.uv, west.uv_size, textureWidth,
-                            textureHeight, cube.mirror, EnumFacing.WEST
-                    );
-            quadEast = east == null ? null
-                    : new GeoQuad(
-                            new GeoVertex[] { P7, P8, P6, P5 },
-                            east.uv, east.uv_size, textureWidth,
-                            textureHeight, cube.mirror, EnumFacing.EAST
-                    );
-            quadNorth = north == null ? null
-                    : new GeoQuad(
-                            new GeoVertex[] { P3, P7, P5, P1 },
-                            north.uv, north.uv_size, textureWidth,
-                            textureHeight, cube.mirror, EnumFacing.NORTH
-                    );
-            quadSouth = south == null ? null
-                    : new GeoQuad(
-                            new GeoVertex[] { P8, P4, P2, P6 },
-                            south.uv, south.uv_size, textureWidth,
-                            textureHeight, cube.mirror, EnumFacing.SOUTH
-                    );
-            quadUp = up == null ? null
-                    : new GeoQuad(
-                            new GeoVertex[] { P4, P8, P7, P3 },
-                            up.uv, up.uv_size, textureWidth,
-                            textureHeight, cube.mirror, EnumFacing.UP
-                    );
-            quadDown = down == null ? null
-                    : new GeoQuad(
-                            new GeoVertex[] { P1, P5, P6, P2 },
-                            down.uv, down.uv_size, textureWidth,
-                            textureHeight, cube.mirror, EnumFacing.DOWN
-                    );
+        double x2 = origin.x + size.x + this.inflate;
+        double y2 = origin.y + size.y + this.inflate;
+        double z2 = origin.z + size.z + this.inflate;
 
-            if (cube.mirror || mirror) {
-                quadWest = west == null ? null
-                        : new GeoQuad(
-                                new GeoVertex[] { P7, P8, P6, P5 },
-                                west.uv, west.uv_size, textureWidth,
-                                textureHeight, cube.mirror, EnumFacing.WEST
-                        );
-                quadEast = east == null ? null
-                        : new GeoQuad(
-                                new GeoVertex[] { P4, P3, P1, P2 },
-                                east.uv, east.uv_size, textureWidth,
-                                textureHeight, cube.mirror, EnumFacing.EAST
-                        );
-                quadNorth = north == null ? null
-                        : new GeoQuad(
-                                new GeoVertex[] { P3, P7, P5, P1 },
-                                north.uv, north.uv_size, textureWidth,
-                                textureHeight, cube.mirror, EnumFacing.NORTH
-                        );
-                quadSouth = south == null ? null
-                        : new GeoQuad(
-                                new GeoVertex[] { P8, P4, P2, P6 },
-                                south.uv, south.uv_size, textureWidth,
-                                textureHeight, cube.mirror, EnumFacing.SOUTH
-                        );
-                quadUp = up == null ? null
-                        : new GeoQuad(
-                                new GeoVertex[] { P1, P5, P6, P2 },
-                                up.uv, up.uv_size, textureWidth,
-                                textureHeight, cube.mirror, EnumFacing.UP
-                        );
-                quadDown = down == null ? null
-                        : new GeoQuad(
-                                new GeoVertex[] { P4, P8, P7, P3 },
-                                down.uv, down.uv_size, textureWidth,
-                                textureHeight, cube.mirror, EnumFacing.DOWN
-                        );
-            }
+        return new GeoVertex[] {
+                new GeoVertex(x1, y1, z1), // P1
+                new GeoVertex(x1, y1, z2), // P2
+                new GeoVertex(x1, y2, z1), // P3
+                new GeoVertex(x1, y2, z2), // P4
+                new GeoVertex(x2, y1, z1), // P5
+                new GeoVertex(x2, y1, z2), // P6
+                new GeoVertex(x2, y2, z1), // P7
+                new GeoVertex(x2, y2, z2)  // P8
+        };
+    }
+
+    private GeoVertex[] vertices(GeoVertex[] v, int a, int b, int c, int d) {
+        return new GeoVertex[] {v[a], v[b], v[c], v[d]};
+    }
+
+    //---face uv quads---
+    private GeoQuad[] createFaceUVQuads(@NotNull RawGeoModel.RawModelCube cube, @NotNull RawGeoModel.RawModelDescription description, GeoVertex[] v, boolean boneMirror) {
+        RawFaceUVUser faces = cube.uv.faceUV;
+
+        float textureWidth = description.texture_width;
+        float textureHeight = description.texture_height;
+
+        if (Boolean.TRUE.equals(this.mirror) || boneMirror) {
+            return new GeoQuad[] {
+                    this.face(faces.westUV,  this.vertices(v, 6, 7, 5, 4), textureWidth, textureHeight, EnumFacing.WEST),
+                    this.face(faces.eastUV,  this.vertices(v, 3, 2, 0, 1), textureWidth, textureHeight, EnumFacing.EAST),
+                    this.face(faces.northUV, this.vertices(v, 2, 6, 4, 0), textureWidth, textureHeight, EnumFacing.NORTH),
+                    this.face(faces.southUV, this.vertices(v, 7, 3, 1, 5), textureWidth, textureHeight, EnumFacing.SOUTH),
+                    this.face(faces.upUV,    this.vertices(v, 0, 4, 5, 1), textureWidth, textureHeight, EnumFacing.UP),
+                    this.face(faces.downUV,  this.vertices(v, 3, 7, 6, 2), textureWidth, textureHeight, EnumFacing.DOWN)
+            };
         }
         else {
-            int[] UV = cube.uv.boxUV;
-            Vector3d UVSize = VectorUtils.fromArray(cube.size);
-            UVSize = new Vector3d(Math.floor(UVSize.x), Math.floor(UVSize.y), Math.floor(UVSize.z));
-
-            quadWest = new GeoQuad(
-                            new GeoVertex[] { P4, P3, P1, P2 },
-                            new int[] { (int) (UV[0] + UVSize.z + UVSize.x), (int) (UV[1] + UVSize.z) },
-                            new int[] { (int) UVSize.z, (int) UVSize.y },
-                            textureWidth, textureHeight, cube.mirror, EnumFacing.WEST
-            );
-            quadEast = new GeoQuad(
-                            new GeoVertex[] { P7, P8, P6, P5 },
-                            new int[] { (int) UV[0], (int) (UV[1] + UVSize.z) },
-                            new int[] { (int) UVSize.z, (int) UVSize.y },
-                            textureWidth, textureHeight, cube.mirror, EnumFacing.EAST
-            );
-            quadNorth = new GeoQuad(
-                            new GeoVertex[] { P3, P7, P5, P1 },
-                            new int[] { (int) (UV[0] + UVSize.z), (int) (UV[1] + UVSize.z) },
-                            new int[] { (int) UVSize.x, (int) UVSize.y },
-                            textureWidth, textureHeight, cube.mirror, EnumFacing.NORTH
-            );
-            quadSouth = new GeoQuad(
-                            new GeoVertex[] { P8, P4, P2, P6 },
-                            new int[] { (int) (UV[0] + UVSize.z + UVSize.x + UVSize.z), (int) (UV[1] + UVSize.z) },
-                            new int[] { (int) UVSize.x, (int) UVSize.y },
-                            textureWidth, textureHeight, cube.mirror, EnumFacing.SOUTH
-            );
-            quadUp = new GeoQuad(
-                            new GeoVertex[] { P4, P8, P7, P3 },
-                            new int[] { (int) (UV[0] + UVSize.z), (int) UV[1] },
-                            new int[] { (int) UVSize.x, (int) UVSize.z },
-                            textureWidth, textureHeight, cube.mirror, EnumFacing.UP
-            );
-            quadDown = new GeoQuad(
-                            new GeoVertex[] { P2, P6, P5, P1 },
-                            new int[] { (int) (UV[0] + UVSize.z + UVSize.x), (int) UV[1] },
-                            new int[] { (int) UVSize.x, (int) UVSize.z },
-                            textureWidth, textureHeight, cube.mirror, EnumFacing.DOWN
-            );
-
-            if (cube.mirror == Boolean.TRUE) {
-                quadWest = new GeoQuad(
-                            new GeoVertex[] { P7, P8, P6, P5 },
-                            new int[] { (int) (UV[0] + UVSize.z + UVSize.x), (int) (UV[1] + UVSize.z) },
-                            new int[] { (int) UVSize.z, (int) UVSize.y },
-                            textureWidth, textureHeight, cube.mirror, EnumFacing.WEST
-                );
-                quadEast = new GeoQuad(
-                            new GeoVertex[] { P4, P3, P1, P2 },
-                            new int[] { (int) UV[0], (int) (UV[1] + UVSize.z) },
-                            new int[] { (int) UVSize.z, (int) UVSize.y },
-                            textureWidth, textureHeight, cube.mirror, EnumFacing.EAST
-                );
-                quadNorth = new GeoQuad(
-                            new GeoVertex[] { P3, P7, P5, P1 },
-                            new int[] { (int) (UV[0] + UVSize.z), (int) (UV[1] + UVSize.z) },
-                            new int[] { (int) UVSize.x, (int) UVSize.y },
-                            textureWidth, textureHeight, cube.mirror, EnumFacing.NORTH
-                );
-                quadSouth = new GeoQuad(
-                            new GeoVertex[] { P8, P4, P2, P6 },
-                            new int[] { (int) (UV[0] + UVSize.z + UVSize.x + UVSize.z), (int) (UV[1] + UVSize.z) },
-                            new int[] { (int) UVSize.x, (int) UVSize.y },
-                            textureWidth, textureHeight, cube.mirror, EnumFacing.SOUTH
-                );
-                quadUp = new GeoQuad(
-                            new GeoVertex[] { P4, P8, P7, P3 },
-                            new int[] { (int) (UV[0] + UVSize.z), (int) UV[1] },
-                            new int[] { (int) UVSize.x, (int) UVSize.z },
-                            textureWidth, textureHeight, cube.mirror, EnumFacing.UP
-                );
-                quadDown = new GeoQuad(
-                            new GeoVertex[] { P1, P5, P6, P2 },
-                            new int[] { (int) (UV[0] + UVSize.z + UVSize.x), (int) (UV[1] + UVSize.z) },
-                            new int[] { (int) UVSize.x, (int) (-UVSize.z) },
-                            textureWidth, textureHeight, cube.mirror, EnumFacing.DOWN
-                );
-            }
+            return new GeoQuad[] {
+                    this.face(faces.westUV,  this.vertices(v, 3, 2, 0, 1), textureWidth, textureHeight, EnumFacing.WEST),
+                    this.face(faces.eastUV,  this.vertices(v, 6, 7, 5, 4), textureWidth, textureHeight, EnumFacing.EAST),
+                    this.face(faces.northUV, this.vertices(v, 2, 6, 4, 0), textureWidth, textureHeight, EnumFacing.NORTH),
+                    this.face(faces.southUV, this.vertices(v, 7, 3, 1, 5), textureWidth, textureHeight, EnumFacing.SOUTH),
+                    this.face(faces.upUV,    this.vertices(v, 3, 7, 6, 2), textureWidth, textureHeight, EnumFacing.UP),
+                    this.face(faces.downUV,  this.vertices(v, 0, 4, 5, 1), textureWidth, textureHeight, EnumFacing.DOWN)
+            };
         }
+    }
 
-        this.quads[0] = quadWest;
-        this.quads[1] = quadEast;
-        this.quads[2] = quadNorth;
-        this.quads[3] = quadSouth;
-        this.quads[4] = quadUp;
-        this.quads[5] = quadDown;
+    @NotNull
+    private GeoQuad face(@NotNull RawFaceUVUser.RawUVFace face, GeoVertex[] vertices, float textureWidth, float textureHeight, EnumFacing facing) {
+        return new GeoQuad(vertices, face.uv, face.uv_size, textureWidth, textureHeight, this.mirror, facing);
+    }
+
+    //---box uv quads---
+    private GeoQuad[] createBoxUVQuads(@NotNull RawGeoModel.RawModelCube cube, @NotNull RawGeoModel.RawModelDescription description, GeoVertex[] v) {
+        int[] uv = cube.uv.boxUV;
+
+        Vector3d s = VectorUtils.fromArray(cube.size);
+        double x = Math.floor(s.x);
+        double y = Math.floor(s.y);
+        double z = Math.floor(s.z);
+
+        float textureWidth = description.texture_width;
+        float textureHeight = description.texture_height;
+
+        if (Boolean.TRUE.equals(this.mirror)) {
+            return new GeoQuad[] {
+                    this.box(this.vertices(v, 6, 7, 5, 4), uv[0] + z + x, uv[1] + z, z, y, textureWidth, textureHeight, EnumFacing.WEST),
+                    this.box(this.vertices(v, 3, 2, 0, 1), uv[0], uv[1] + z, z, y, textureWidth, textureHeight, EnumFacing.EAST),
+                    this.box(this.vertices(v, 2, 6, 4, 0), uv[0] + z, uv[1] + z, x, y, textureWidth, textureHeight, EnumFacing.NORTH),
+                    this.box(this.vertices(v, 7, 3, 1, 5), uv[0] + z + x + z, uv[1] + z, x, y, textureWidth, textureHeight, EnumFacing.SOUTH),
+                    this.box(this.vertices(v, 3, 7, 6, 2), uv[0] + z, uv[1],     x, z, textureWidth, textureHeight, EnumFacing.UP),
+                    this.box(this.vertices(v, 0, 4, 5, 1), uv[0] + z + x, uv[1] + z, x, -z, textureWidth, textureHeight, EnumFacing.DOWN)
+            };
+        }
+        else {
+            return new GeoQuad[] {
+                    this.box(this.vertices(v, 3, 2, 0, 1), uv[0] + z + x,     uv[1] + z, z, y, textureWidth, textureHeight, EnumFacing.WEST),
+                    this.box(this.vertices(v, 6, 7, 5, 4), uv[0],             uv[1] + z, z, y, textureWidth, textureHeight, EnumFacing.EAST),
+                    this.box(this.vertices(v, 2, 6, 4, 0), uv[0] + z,         uv[1] + z, x, y, textureWidth, textureHeight, EnumFacing.NORTH),
+                    this.box(this.vertices(v, 7, 3, 1, 5), uv[0] + z + x + z, uv[1] + z, x, y, textureWidth, textureHeight, EnumFacing.SOUTH),
+                    this.box(this.vertices(v, 3, 7, 6, 2), uv[0] + z,         uv[1],     x, z, textureWidth, textureHeight, EnumFacing.UP),
+                    this.box(this.vertices(v, 1, 5, 4, 0), uv[0] + z + x,     uv[1],     x, z, textureWidth, textureHeight, EnumFacing.DOWN)
+            };
+        }
+    }
+
+    @NotNull
+    private GeoQuad box(GeoVertex[] vertices, double u, double v, double width, double height, float textureWidth, float textureHeight, EnumFacing facing) {
+        return new GeoQuad(
+                vertices,
+                new int[]{(int) u, (int) v},
+                new int[]{(int) width, (int) height},
+                textureWidth, textureHeight, this.mirror, facing
+        );
+    }
+
+    //-----getters-----
+    public GeoQuad[] getGeoQuads() {
+        return this.quads.clone();
+    }
+
+    @NotNull
+    public Vector3f getPivot() {
+        return this.pivot;
+    }
+
+    @NotNull
+    public Vector3f getRotation() {
+        return this.rotation;
+    }
+
+    @NotNull
+    public Vector3f getSize() {
+        return this.size;
     }
 }

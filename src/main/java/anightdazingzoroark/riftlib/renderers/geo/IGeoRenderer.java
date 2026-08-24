@@ -84,7 +84,7 @@ public interface IGeoRenderer<T> {
 		MATRIX_STACK.rotate(cube);
 		MATRIX_STACK.moveBackFromPivot(cube);
 
-		for (GeoQuad quad : cube.quads) {
+		for (GeoQuad quad : cube.getGeoQuads()) {
 			Vector3f normal = new Vector3f(quad.normal.getX(), quad.normal.getY(), quad.normal.getZ());
 
 			MATRIX_STACK.getNormalMatrix().transform(normal);
@@ -92,13 +92,13 @@ public interface IGeoRenderer<T> {
 			/*
 			 * Fix shading dark shading for flat cubes + compatibility wish Optifine shaders
 			 */
-			if ((cube.size.y == 0 || cube.size.z == 0) && normal.getX() < 0) {
+			if ((cube.getSize().y == 0 || cube.getSize().z == 0) && normal.getX() < 0) {
 				normal.x *= -1;
 			}
-			if ((cube.size.x == 0 || cube.size.z == 0) && normal.getY() < 0) {
+			if ((cube.getSize().x == 0 || cube.getSize().z == 0) && normal.getY() < 0) {
 				normal.y *= -1;
 			}
-			if ((cube.size.x == 0 || cube.size.y == 0) && normal.getZ() < 0) {
+			if ((cube.getSize().x == 0 || cube.getSize().y == 0) && normal.getZ() < 0) {
 				normal.z *= -1;
 			}
 

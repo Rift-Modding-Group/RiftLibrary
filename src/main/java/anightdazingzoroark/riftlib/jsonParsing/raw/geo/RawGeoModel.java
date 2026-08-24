@@ -68,7 +68,7 @@ public class RawGeoModel {
 
     public static class RawModelCube {
         @SerializedName("origin")
-        public double[] origin;
+        public double[] origin = new double[]{};
 
         @SerializedName("pivot")
         public double[] pivot = new double[]{0, 0, 0};

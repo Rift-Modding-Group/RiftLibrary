@@ -66,11 +66,7 @@ public class GeoModel {
 		//add cubes
 		if (rawBone.cubes != null && !rawBone.cubes.isEmpty()) {
 			for (RawGeoModel.RawModelCube cube : rawBone.cubes) {
-				geoBone.childCubes.add(new GeoCube(
-						cube, this.description,
-						geoBone.inflate == null ? null : geoBone.inflate / 16D,
-						geoBone.mirror
-				));
+				geoBone.childCubes.add(this.constructCube(geoBone, cube));
 			}
 		}
 
@@ -129,6 +125,13 @@ public class GeoModel {
 		}
 
 		return geoBone;
+	}
+
+	@NotNull
+	private GeoCube constructCube(@NotNull GeoBone geoBone, @NotNull RawGeoModel.RawModelCube cube) {
+		double inflate = geoBone.inflate == null ? 0 : geoBone.inflate / 16D;
+		boolean mirror = geoBone.mirror == Boolean.TRUE;
+		return new GeoCube(cube, this.description, inflate, mirror);
 	}
 
 	//-----getters-----

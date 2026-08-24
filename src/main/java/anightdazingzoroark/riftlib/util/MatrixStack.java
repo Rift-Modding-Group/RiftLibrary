@@ -72,12 +72,12 @@ public class MatrixStack {
 	}
 
 	public void moveToPivot(GeoCube cube) {
-		Vector3f pivot = cube.pivot;
+		Vector3f pivot = cube.getPivot();
 		this.translate(pivot.getX() / 16, pivot.getY() / 16, pivot.getZ() / 16);
 	}
 
 	public void moveBackFromPivot(GeoCube cube) {
-		Vector3f pivot = cube.pivot;
+		Vector3f pivot = cube.getPivot();
 		this.translate(-pivot.getX() / 16, -pivot.getY() / 16, -pivot.getZ() / 16);
 	}
 
@@ -172,7 +172,7 @@ public class MatrixStack {
 	}
 
     public void rotate(GeoCube bone) {
-        Vector3f rotation = bone.rotation;
+        Vector3f rotation = bone.getRotation();
         Matrix4f matrix4f = new Matrix4f();
         Matrix3f matrix3f = new Matrix3f();
 

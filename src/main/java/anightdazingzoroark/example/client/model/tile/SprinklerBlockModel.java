@@ -6,6 +6,8 @@ import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class SprinklerBlockModel extends AnimatedGeoModel<SprinklerTileEntity> {
     @Override
     @NotNull
@@ -24,7 +26,14 @@ public class SprinklerBlockModel extends AnimatedGeoModel<SprinklerTileEntity> {
     }
 
     @Override
-    public ResourceLocation getAnimationFileLocation(SprinklerTileEntity animatable) {
-        return new ResourceLocation(RiftLib.ModID, "animations/sprinkler.animation.json");
+    @NotNull
+    public List<String> getAnimationIdentifiers(SprinklerTileEntity animatable) {
+        return List.of(
+                "animation.sprinkler.spinning",
+                "animation.sprinkler.hose_water_zero",
+                "animation.sprinkler.hose_water_one",
+                "animation.sprinkler.hose_water_two",
+                "animation.sprinkler.hose_water_three"
+        );
     }
 }

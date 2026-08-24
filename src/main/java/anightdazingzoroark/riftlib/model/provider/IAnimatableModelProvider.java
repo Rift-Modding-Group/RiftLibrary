@@ -1,6 +1,8 @@
 package anightdazingzoroark.riftlib.model.provider;
 
-import net.minecraft.util.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 public interface IAnimatableModelProvider<E> {
 	/**
@@ -9,5 +11,6 @@ public interface IAnimatableModelProvider<E> {
 	 *
 	 * @return the animation file location
 	 */
-	ResourceLocation getAnimationFileLocation(E animatable);
+	@NotNull
+	List<String> getAnimationIdentifiers(E animatable);
 }

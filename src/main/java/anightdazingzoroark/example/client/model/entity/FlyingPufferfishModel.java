@@ -6,6 +6,8 @@ import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class FlyingPufferfishModel extends AnimatedGeoModel<FlyingPufferfishEntity> {
     @Override
     @NotNull
@@ -24,7 +26,8 @@ public class FlyingPufferfishModel extends AnimatedGeoModel<FlyingPufferfishEnti
     }
 
     @Override
-    public ResourceLocation getAnimationFileLocation(FlyingPufferfishEntity animatable) {
-        return new ResourceLocation(RiftLib.ModID, "animations/flying_pufferfish.animation.json");
+    @NotNull
+    public List<String> getAnimationIdentifiers(FlyingPufferfishEntity animatable) {
+        return List.of("animation.flying_pufferfish.fly", "animation.flying_pufferfish.inflate_loop");
     }
 }

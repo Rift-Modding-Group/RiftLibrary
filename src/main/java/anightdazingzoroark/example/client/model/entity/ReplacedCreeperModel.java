@@ -5,6 +5,8 @@ import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 @SuppressWarnings("rawtypes")
 public class ReplacedCreeperModel extends AnimatedGeoModel {
 	@Override
@@ -24,7 +26,8 @@ public class ReplacedCreeperModel extends AnimatedGeoModel {
 	}
 
 	@Override
-	public ResourceLocation getAnimationFileLocation(Object animatable) {
-		return new ResourceLocation(RiftLib.ModID, "animations/creeper.animation.json");
+	@NotNull
+	public List<String> getAnimationIdentifiers(Object animatable) {
+		return List.of("creeper_idle", "creeper_walk", "creeper_explode");
 	}
 }

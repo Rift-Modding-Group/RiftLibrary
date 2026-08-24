@@ -4,13 +4,16 @@ import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.core.processor.AnimationProcessor;
 import anightdazingzoroark.riftlib.core.processor.IBone;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface IAnimatableModel<E> {
 	void setClientAnimations(E entity);
 
 	AnimationProcessor getAnimationProcessor();
 
-	Animation getAnimations(String name, IAnimatable<?> animatable);
+	@Nullable
+	Animation getAnimations(@NotNull String name, IAnimatable<?> animatable);
 
 	/**
 	 * Gets a bone by name.

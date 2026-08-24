@@ -6,6 +6,8 @@ import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class AvianRunnerModel extends AnimatedGeoModel<AvianRunnerEntity> {
     @Override
     @NotNull
@@ -24,7 +26,8 @@ public class AvianRunnerModel extends AnimatedGeoModel<AvianRunnerEntity> {
     }
 
     @Override
-    public ResourceLocation getAnimationFileLocation(AvianRunnerEntity animatable) {
-        return new ResourceLocation(RiftLib.ModID, "animations/avian_runner.animation.json");
+    @NotNull
+    public List<String> getAnimationIdentifiers(AvianRunnerEntity animatable) {
+        return List.of("animation.avian_runner.run", "animation.avian_runner.run_no_math");
     }
 }

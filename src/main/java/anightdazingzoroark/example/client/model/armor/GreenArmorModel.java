@@ -6,6 +6,8 @@ import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class GreenArmorModel extends AnimatedGeoModel<GreenArmor> {
 	@Override
 	@NotNull
@@ -24,7 +26,8 @@ public class GreenArmorModel extends AnimatedGeoModel<GreenArmor> {
 	}
 
 	@Override
-	public ResourceLocation getAnimationFileLocation(GreenArmor animatable) {
-        return null;
+	@NotNull
+	public List<String> getAnimationIdentifiers(GreenArmor animatable) {
+        return List.of();
 	}
 }

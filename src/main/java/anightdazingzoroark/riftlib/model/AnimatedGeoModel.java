@@ -3,21 +3,18 @@ package anightdazingzoroark.riftlib.model;
 import java.util.*;
 
 import anightdazingzoroark.riftlib.RiftLib;
-import anightdazingzoroark.riftlib.animation.AnimationFile;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 
 import anightdazingzoroark.riftlib.internalMessage.RiftLibTickClientFromServer;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import anightdazingzoroark.riftlib.animation.AnimationTicker;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
 import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.core.processor.AnimationProcessor;
 import anightdazingzoroark.riftlib.core.processor.IBone;
-import anightdazingzoroark.riftlib.exceptions.GeoModelException;
 import anightdazingzoroark.riftlib.geo.GeoBone;
 import anightdazingzoroark.riftlib.geo.GeoLocator;
 import anightdazingzoroark.riftlib.geo.GeoModel;
@@ -29,6 +26,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings({"unchecked" })
 public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoModelProvider<T> implements IAnimatableModel<T>, IAnimatableModelProvider<T> {
@@ -201,10 +199,14 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 	}
 
 	@Override
-	public Animation getAnimations(String name, IAnimatable<?> animatable) {
-		Map<ResourceLocation, AnimationFile> animations = FMLCommonHandler.instance().getSide().isClient() ?
-				RiftLibCacheClient.getInstance().getAnimations() : RiftLibCacheServer.getInstance().getAnimations();
-		return animations.get(this.getAnimationFileLocation((T) animatable)).getAnimation(name);
+	@Nullable
+	public Animation getAnimations(@NotNull String name, IAnimatable<?> animatable) {
+		Map<String, Animation> animations = FMLCommonHandler.instance().getSide().isClient() ?
+				RiftLibCacheClient.getInstance().getAnimations().get(this.getModId()) : RiftLibCacheServer.getInstance().getAnimations().get(this.getModId());
+
+		//getAnimationIdentifiers is a validity check of sorts
+		if (this.getAnimationIdentifiers((T) animatable).contains(name)) return animations.get(name);
+		return null;
 	}
 
 	@Override

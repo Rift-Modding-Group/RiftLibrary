@@ -12,7 +12,7 @@ import java.util.function.Predicate;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import anightdazingzoroark.riftlib.animation.AnimationFile;
+import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.jsonParsing.RiftLibResourceReader;
 
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
@@ -35,7 +35,7 @@ import org.jetbrains.annotations.NotNull;
 public class RiftLibCacheClient extends RiftLibResourceHolder implements IResourceManagerReloadListener {
 	private static RiftLibCacheClient INSTANCE;
 	@NotNull
-	private Map<ResourceLocation, AnimationFile> animations = new HashMap<>();
+	private Map<String, Map<String, Animation>> animations = new HashMap<>();
 	@NotNull
 	private Map<String, Map<String, GeoModel>> geoModels = new HashMap<>();
     @NotNull
@@ -48,7 +48,7 @@ public class RiftLibCacheClient extends RiftLibResourceHolder implements IResour
 
 	@Override
 	public void onResourceManagerReload(IResourceManager resourceManager) {
-		Map<ResourceLocation, AnimationFile> tempAnimations = new HashMap<>();
+		Map<String, Map<String, Animation>> tempAnimations = new HashMap<>();
 		Map<String, Map<String, GeoModel>> tempModels = new HashMap<>();
         Map<ResourceLocation, ParticleBuilder> tempParticleBuilders = new HashMap<>();
 		List<IResourcePack> packs = this.getPacks();
@@ -58,8 +58,24 @@ public class RiftLibCacheClient extends RiftLibResourceHolder implements IResour
 
 		for (IResourcePack pack : packs) {
 			for (ResourceLocation location : this.getLocations(pack, "animations", fileName -> fileName.endsWith(".json"))) {
+				String modId = location.getNamespace();
+
 				try {
-					tempAnimations.put(location, this.loader.loadAnimationFile(resourceReader, location));
+					//load
+					Map<String, Animation> animations = this.loader.loadAnimationFile(resourceReader, location);
+
+					//merge w already existing animations
+					Map<String, Animation> modAnims = tempAnimations.computeIfAbsent(modId, key -> new HashMap<>());
+					for (Map.Entry<String, Animation> entry : animations.entrySet()) {
+						Animation previous = modAnims.put(entry.getKey(), entry.getValue());
+
+						if (previous != null) {
+							RiftLib.LOGGER.warn(
+									"Duplicate Animation identifier \"{}\" for mod \"{}\" while loading {}",
+									entry.getKey(), modId, location
+							);
+						}
+					}
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -112,11 +128,11 @@ public class RiftLibCacheClient extends RiftLibResourceHolder implements IResour
 	}
 
 	@Override
-	public Map<ResourceLocation, AnimationFile> getAnimations() {
+	public Map<String, Map<String, Animation>> getAnimations() {
 		if (!RiftLib.isInitialized()) {
 			throw new RuntimeException("RiftLib was never initialized! Please read the documentation!");
 		}
-		return this.animations;
+		return Map.copyOf(this.animations);
 	}
 
 	@Override

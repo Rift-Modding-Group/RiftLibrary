@@ -6,6 +6,8 @@ import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class SprinklerItemModel extends AnimatedGeoModel<AnimatedSimpleItemStack> {
     @Override
     @NotNull
@@ -24,7 +26,8 @@ public class SprinklerItemModel extends AnimatedGeoModel<AnimatedSimpleItemStack
     }
 
     @Override
-    public ResourceLocation getAnimationFileLocation(AnimatedSimpleItemStack animatable) {
-        return null;
+    @NotNull
+    public List<String> getAnimationIdentifiers(AnimatedSimpleItemStack animatable) {
+        return List.of();
     }
 }

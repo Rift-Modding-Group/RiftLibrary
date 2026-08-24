@@ -6,6 +6,8 @@ import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class GoKartModel extends AnimatedGeoModel<GoKartEntity> {
     @Override
     @NotNull
@@ -24,7 +26,8 @@ public class GoKartModel extends AnimatedGeoModel<GoKartEntity> {
     }
 
     @Override
-    public ResourceLocation getAnimationFileLocation(GoKartEntity animatable) {
-        return new ResourceLocation(RiftLib.ModID, "animations/go_kart.animation.json");
+    @NotNull
+    public List<String> getAnimationIdentifiers(GoKartEntity animatable) {
+        return List.of("animation.go_kart.move");
     }
 }

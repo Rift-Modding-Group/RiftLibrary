@@ -1,7 +1,6 @@
 package anightdazingzoroark.riftlib.jsonParsing;
 
 import anightdazingzoroark.riftlib.core.builder.Animation;
-import anightdazingzoroark.riftlib.animation.AnimationFile;
 import anightdazingzoroark.riftlib.jsonParsing.constructor.AnimationConstructor;
 import anightdazingzoroark.riftlib.jsonParsing.constructor.ParticleConstructor;
 import anightdazingzoroark.riftlib.jsonParsing.raw.RawMolangValue;
@@ -25,7 +24,6 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class RiftLibLoader {
@@ -87,18 +85,20 @@ public class RiftLibLoader {
 	}
 
     @NotNull
-    public AnimationFile loadAnimationFile(RiftLibResourceReader resourceReader, ResourceLocation location) {
+    public Map<String, Animation> loadAnimationFile(RiftLibResourceReader resourceReader, ResourceLocation location) {
         try {
-            AnimationFile animationFile = new AnimationFile();
+            Map<String, Animation> toReturn = new HashMap<>();
 
+            //Deserialize from json into basic json objects
             RawAnimationFile rawAnimationFile = this.gson.fromJson(this.getResourceAsString(location, resourceReader), RawAnimationFile.class);
-            Map<String, RawAnimationFile.RawAnimation> rawAnimationMap = rawAnimationFile.rawAnimations;
-            for (Map.Entry<String, RawAnimationFile.RawAnimation> rawAnimation : rawAnimationMap.entrySet()) {
+
+            //evaluate over each anim
+            for (Map.Entry<String, RawAnimationFile.RawAnimation> rawAnimation : rawAnimationFile.rawAnimations.entrySet()) {
                 Animation animation = this.animationConstructor.getAnimationFromRawAnimationEntry(rawAnimation);
-                animationFile.putAnimation(rawAnimation.getKey(), animation);
+                toReturn.put(rawAnimation.getKey(), animation);
             }
 
-            return animationFile;
+            return toReturn;
         }
         catch (Exception e) {
             RiftLib.LOGGER.error(String.format("Error parsing %S", location), e);

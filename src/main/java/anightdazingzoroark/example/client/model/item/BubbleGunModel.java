@@ -6,6 +6,8 @@ import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class BubbleGunModel extends AnimatedGeoModel<AnimatedBubbleGunItem> {
     @Override
     @NotNull
@@ -24,7 +26,8 @@ public class BubbleGunModel extends AnimatedGeoModel<AnimatedBubbleGunItem> {
     }
 
     @Override
-    public ResourceLocation getAnimationFileLocation(AnimatedBubbleGunItem animatable) {
-        return new ResourceLocation(RiftLib.ModID, "animations/bubble_gun.animation.json");
+    @NotNull
+    public List<String> getAnimationIdentifiers(AnimatedBubbleGunItem animatable) {
+        return List.of("animation.bubble_gun.blow_bubbles");
     }
 }

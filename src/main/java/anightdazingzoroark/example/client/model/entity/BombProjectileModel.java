@@ -6,6 +6,8 @@ import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class BombProjectileModel extends AnimatedGeoModel<BombProjectile> {
     @Override
     @NotNull
@@ -24,7 +26,8 @@ public class BombProjectileModel extends AnimatedGeoModel<BombProjectile> {
     }
 
     @Override
-    public ResourceLocation getAnimationFileLocation(BombProjectile animatable) {
-        return new ResourceLocation(RiftLib.ModID, "animations/bomb.animation.json");
+    @NotNull
+    public List<String> getAnimationIdentifiers(BombProjectile animatable) {
+        return List.of("animation.bomb.flame_particles", "animation.bomb.sounds");
     }
 }

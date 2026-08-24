@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 public class AnimationConstructor {
+    @NotNull
     public Animation getAnimationFromRawAnimationEntry(Map.Entry<String, RawAnimationFile.RawAnimation> rawAnimation) {
         Animation toReturn = new Animation();
 

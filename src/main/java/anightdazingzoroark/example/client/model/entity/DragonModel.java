@@ -6,6 +6,8 @@ import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class DragonModel extends AnimatedGeoModel<DragonEntity> {
     @Override
     @NotNull
@@ -24,7 +26,13 @@ public class DragonModel extends AnimatedGeoModel<DragonEntity> {
     }
 
     @Override
-    public ResourceLocation getAnimationFileLocation(DragonEntity animatable) {
-        return new ResourceLocation(RiftLib.ModID, "animations/dragon.animation.json");
+    @NotNull
+    public List<String> getAnimationIdentifiers(DragonEntity animatable) {
+        return List.of(
+                "animation.dragon.flying", "animation.dragon.attack_while_flying",
+                "animation.dragon.land_pose", "animation.dragon.walking",
+                "animation.dragon.fly_pose", "animation.dragon.breathe_fire_while_flying",
+                "animation.dragon.test"
+        );
     }
 }

@@ -6,6 +6,8 @@ import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class SatelliteDishHelmetModel extends AnimatedGeoModel<SatelliteDishHelmet> {
     @Override
     @NotNull
@@ -24,7 +26,8 @@ public class SatelliteDishHelmetModel extends AnimatedGeoModel<SatelliteDishHelm
     }
 
     @Override
-    public ResourceLocation getAnimationFileLocation(SatelliteDishHelmet animatable) {
-        return new ResourceLocation(RiftLib.ModID, "animations/satellite_dish_helmet.animation.json");
+    @NotNull
+    public List<String> getAnimationIdentifiers(SatelliteDishHelmet animatable) {
+        return List.of("animation.satellite_dish_helmet.spin", "animation.satellite_dish_helmet.signal");
     }
 }

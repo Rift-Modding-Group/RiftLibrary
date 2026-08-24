@@ -6,6 +6,8 @@ import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class FidgetSpinnerModel extends AnimatedGeoModel<AnimatedFidgetSpinnerItem> {
     @Override
     @NotNull
@@ -24,7 +26,8 @@ public class FidgetSpinnerModel extends AnimatedGeoModel<AnimatedFidgetSpinnerIt
     }
 
     @Override
-    public ResourceLocation getAnimationFileLocation(AnimatedFidgetSpinnerItem animatable) {
-        return new ResourceLocation(RiftLib.ModID, "animations/fidget_spinner.animation.json");
+    @NotNull
+    public List<String> getAnimationIdentifiers(AnimatedFidgetSpinnerItem animatable) {
+        return List.of("animation.fidget_spinner.spin");
     }
 }

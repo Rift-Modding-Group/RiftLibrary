@@ -6,6 +6,8 @@ import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class MerryGoRoundBlockModel extends AnimatedGeoModel<MerryGoRoundTileEntity> {
     @Override
     @NotNull
@@ -24,7 +26,8 @@ public class MerryGoRoundBlockModel extends AnimatedGeoModel<MerryGoRoundTileEnt
     }
 
     @Override
-    public ResourceLocation getAnimationFileLocation(MerryGoRoundTileEntity animatable) {
-        return new ResourceLocation(RiftLib.ModID, "animations/merry_go_round.animation.json");
+    @NotNull
+    public List<String> getAnimationIdentifiers(MerryGoRoundTileEntity animatable) {
+        return List.of("animation.merry_go_round.rotate");
     }
 }

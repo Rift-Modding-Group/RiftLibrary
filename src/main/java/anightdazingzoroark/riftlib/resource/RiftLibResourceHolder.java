@@ -1,10 +1,9 @@
 package anightdazingzoroark.riftlib.resource;
 
-import anightdazingzoroark.riftlib.animation.AnimationFile;
+import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.geo.GeoModel;
 import anightdazingzoroark.riftlib.jsonParsing.RiftLibLoader;
 import anightdazingzoroark.riftlib.molang.MolangParser;
-import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -23,10 +22,13 @@ public abstract class RiftLibResourceHolder {
         this.loader = new RiftLibLoader();
     }
 
-    public abstract Map<ResourceLocation, AnimationFile> getAnimations();
+    /**
+     * animations are stored per mod id in cache, then by identifier
+     * */
+    public abstract Map<String, Map<String, Animation>> getAnimations();
 
     /**
-     * models are stored per mod id in cache, then by identifier
+     * same here
      * */
     public abstract Map<String, Map<String, GeoModel>> getGeoModels();
 }

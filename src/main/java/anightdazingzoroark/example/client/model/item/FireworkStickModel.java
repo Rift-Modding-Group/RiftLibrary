@@ -6,6 +6,8 @@ import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class FireworkStickModel extends AnimatedGeoModel<AnimatedFireworkStickItem> {
     @Override
     @NotNull
@@ -24,7 +26,8 @@ public class FireworkStickModel extends AnimatedGeoModel<AnimatedFireworkStickIt
     }
 
     @Override
-    public ResourceLocation getAnimationFileLocation(AnimatedFireworkStickItem animatable) {
-        return new ResourceLocation(RiftLib.ModID, "animations/firework_stick.animation.json");
+    @NotNull
+    public List<String> getAnimationIdentifiers(AnimatedFireworkStickItem animatable) {
+        return List.of("animation.firework_stick.create_sparks");
     }
 }

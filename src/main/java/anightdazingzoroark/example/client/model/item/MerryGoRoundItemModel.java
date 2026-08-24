@@ -4,11 +4,18 @@ import anightdazingzoroark.example.animateditem.AnimatedSimpleItemStack;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 public class MerryGoRoundItemModel extends AnimatedGeoModel<AnimatedSimpleItemStack> {
     @Override
-    public ResourceLocation getModelLocation(AnimatedSimpleItemStack animatable) {
-        return new ResourceLocation(RiftLib.ModID, "geo/merry_go_round.geo.json");
+    @NotNull
+    public String getModId() {
+        return RiftLib.ModID;
+    }
+
+    @Override
+    public String getModelIdentifier(AnimatedSimpleItemStack animatable) {
+        return "geometry.merry_go_round";
     }
 
     @Override

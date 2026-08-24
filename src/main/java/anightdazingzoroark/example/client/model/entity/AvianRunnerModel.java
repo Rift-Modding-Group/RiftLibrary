@@ -4,11 +4,18 @@ import anightdazingzoroark.example.entity.AvianRunnerEntity;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 public class AvianRunnerModel extends AnimatedGeoModel<AvianRunnerEntity> {
     @Override
-    public ResourceLocation getModelLocation(AvianRunnerEntity object) {
-        return new ResourceLocation(RiftLib.ModID, "geo/avian_runner.geo.json");
+    @NotNull
+    public String getModId() {
+        return RiftLib.ModID;
+    }
+
+    @Override
+    public String getModelIdentifier(AvianRunnerEntity object) {
+        return "geometry.avian_runner";
     }
 
     @Override

@@ -4,11 +4,18 @@ import anightdazingzoroark.example.entity.GoKartEntity;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 public class GoKartModel extends AnimatedGeoModel<GoKartEntity> {
     @Override
-    public ResourceLocation getModelLocation(GoKartEntity object) {
-        return new ResourceLocation(RiftLib.ModID, "geo/go_kart.geo.json");
+    @NotNull
+    public String getModId() {
+        return RiftLib.ModID;
+    }
+
+    @Override
+    public String getModelIdentifier(GoKartEntity object) {
+        return "geometry.go_kart";
     }
 
     @Override

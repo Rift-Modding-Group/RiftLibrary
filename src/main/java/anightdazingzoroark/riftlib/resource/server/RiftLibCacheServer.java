@@ -31,7 +31,7 @@ public class RiftLibCacheServer extends RiftLibResourceHolder {
     @NotNull
     private Map<ResourceLocation, AnimationFile> animations = new HashMap<>();
     @NotNull
-    private Map<ResourceLocation, GeoModel> geoModels = new HashMap<>();
+    private Map<String, Map<String, GeoModel>> geoModels = new HashMap<>();
 
     private final Map<ResourceLocation, ResourceOpener> resources = new HashMap<>();
 
@@ -61,7 +61,7 @@ public class RiftLibCacheServer extends RiftLibResourceHolder {
         }
 
         Map<ResourceLocation, AnimationFile> tempAnimations = new HashMap<>();
-        Map<ResourceLocation, GeoModel> tempModels = new HashMap<>();
+        Map<String, Map<String, GeoModel>> tempModels = new HashMap<>();
         RiftLibResourceReader resourceReader = location -> {
             ResourceOpener opener = this.resources.get(location);
             if (opener == null) throw new IOException("Unknown resource " + location);
@@ -70,6 +70,7 @@ public class RiftLibCacheServer extends RiftLibResourceHolder {
 
         for (ResourceLocation location : this.resources.keySet()) {
             String path = location.getPath();
+            String modId = location.getNamespace();
 
             if (path.startsWith("animations/") && path.endsWith(".json")) {
                 try {
@@ -81,7 +82,21 @@ public class RiftLibCacheServer extends RiftLibResourceHolder {
             }
             else if (path.startsWith("geo/") && path.endsWith(".json")) {
                 try {
-                    tempModels.put(location, this.loader.loadGeoModel(resourceReader, location));
+                    //load
+                    Map<String, GeoModel> models = this.loader.loadGeoModels(resourceReader, location);
+
+                    //merge with already existing models
+                    Map<String, GeoModel> modModels = tempModels.computeIfAbsent(modId, key -> new HashMap<>());
+                    for (Map.Entry<String, GeoModel> entry : models.entrySet()) {
+                        GeoModel previous = modModels.put(entry.getKey(), entry.getValue());
+
+                        if (previous != null) {
+                            RiftLib.LOGGER.warn(
+                                    "Duplicate GeoModel identifier \"{}\" for mod \"{}\" while loading {}",
+                                    entry.getKey(), modId, location
+                            );
+                        }
+                    }
                 }
                 catch (Exception e) {
                     RiftLib.LOGGER.error("Error loading server model file \"" + location + "\"!", e);
@@ -221,12 +236,12 @@ public class RiftLibCacheServer extends RiftLibResourceHolder {
     }
 
     @Override
-    public Map<ResourceLocation, GeoModel> getGeoModels() {
+    public Map<String, Map<String, GeoModel>> getGeoModels() {
         if (!RiftLib.isInitialized()) {
             throw new RuntimeException("RiftLib was never initialized! Please read the documentation!");
         }
 
-        return this.geoModels;
+        return Map.copyOf(this.geoModels);
     }
 
     @FunctionalInterface

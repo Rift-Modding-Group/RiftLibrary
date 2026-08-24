@@ -4,11 +4,18 @@ import anightdazingzoroark.example.animateditem.AnimatedFireworkStickItem;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 public class FireworkStickModel extends AnimatedGeoModel<AnimatedFireworkStickItem> {
     @Override
-    public ResourceLocation getModelLocation(AnimatedFireworkStickItem object) {
-        return new ResourceLocation(RiftLib.ModID, "geo/firework_stick.geo.json");
+    @NotNull
+    public String getModId() {
+        return RiftLib.ModID;
+    }
+
+    @Override
+    public String getModelIdentifier(AnimatedFireworkStickItem object) {
+        return "geometry.firework_stick";
     }
 
     @Override

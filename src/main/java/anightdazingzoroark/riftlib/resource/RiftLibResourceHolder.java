@@ -25,5 +25,8 @@ public abstract class RiftLibResourceHolder {
 
     public abstract Map<ResourceLocation, AnimationFile> getAnimations();
 
-    public abstract Map<ResourceLocation, GeoModel> getGeoModels();
+    /**
+     * models are stored per mod id in cache, then by identifier
+     * */
+    public abstract Map<String, Map<String, GeoModel>> getGeoModels();
 }

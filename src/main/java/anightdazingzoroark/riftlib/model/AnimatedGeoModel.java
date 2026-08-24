@@ -7,8 +7,6 @@ import anightdazingzoroark.riftlib.animation.AnimationFile;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
-import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibTickClientFromServer;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraft.client.Minecraft;
@@ -30,6 +28,7 @@ import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings({"unchecked" })
 public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoModelProvider<T> implements IAnimatableModel<T>, IAnimatableModelProvider<T> {
@@ -133,7 +132,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		animData.setServerSynced(true);
 
 		//model is set here
-		GeoModel model = this.getServerSyncedModel(animData, this.getModelLocation(entity));
+		GeoModel model = this.getServerSyncedModel(animData, this.getModelIdentifier(entity));
 		if (model != this.currentModel) this.setCurrentModel(model);
 		List<IBone> modelRenderers = this.getModelRenderers(model);
 
@@ -172,19 +171,19 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 
 	public GeoModel getModel(T object) {
 		AbstractAnimationData<?, ?> animData = object.getAnimationData();
-		ResourceLocation location = this.getModelLocation(object);
+		String identifier = this.getModelIdentifier(object);
 		if (ServerModelRegistry.hasServerModel(object) || animData.isServerSynced()) {
-			GeoModel model = this.getServerSyncedModel(animData, location);
+			GeoModel model = this.getServerSyncedModel(animData, identifier);
 			if (model != this.currentModel) this.setCurrentModel(model);
 			return model;
 		}
-		return this.getModel(location);
+		return this.getModel(identifier);
 	}
 
 	@Override
-	public GeoModel getModel(ResourceLocation location) {
-		GeoModel model = super.getModel(location);
-		if (model == null) throw new GeoModelException(location, "Could not find model.");
+	public GeoModel getModel(@NotNull String identifier) {
+		GeoModel model = super.getModel(identifier);
+		if (model == null) throw new IllegalCallerException("Could not find model of identifier "+identifier);
 
 		//change current model
 		if (model != this.currentModel) this.setCurrentModel(model);
@@ -192,10 +191,10 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		return model;
 	}
 
-	private GeoModel getServerSyncedModel(AbstractAnimationData<?, ?> animData, ResourceLocation location) {
-		return animData.getOrCreateModelCopy(location, () -> {
-			GeoModel sharedModel = super.getModel(location);
-			if (sharedModel == null) throw new GeoModelException(location, "Could not find model.");
+	private GeoModel getServerSyncedModel(AbstractAnimationData<?, ?> animData, String identifier) {
+		return animData.getOrCreateModelCopy(identifier, () -> {
+			GeoModel sharedModel = super.getModel(identifier);
+			if (sharedModel == null) throw new IllegalCallerException("Could not find model of identifier "+identifier);
 
 			return sharedModel.copy();
 		});

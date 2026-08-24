@@ -46,7 +46,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     private final Map<String, Double> initAnimationValues = new HashMap<>();
     private final Map<String, Supplier<Double>> onUpdateAnimationValues = new HashMap<>();
     private final Map<String, AnimatableRunValue> animationMessageEffects = new HashMap<>();
-    private final Map<ResourceLocation, GeoModel> modelCopies = new HashMap<>();
+    private final Map<String, GeoModel> modelCopies = new HashMap<>();
     protected final Map<String, MolangFunction> molangQueries = new HashMap<>();
     protected final Map<String, AnimatedLocator> animatedLocators = new HashMap<>();
     private int animatedLocatorTicker;
@@ -154,12 +154,12 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
         return this.animatedLocators;
     }
 
-    public GeoModel getOrCreateModelCopy(ResourceLocation location, Supplier<GeoModel> modelSupplier) {
-        GeoModel model = this.modelCopies.get(location);
+    public GeoModel getOrCreateModelCopy(String identifier, Supplier<GeoModel> modelSupplier) {
+        GeoModel model = this.modelCopies.get(identifier);
         if (model != null) return model;
 
         model = modelSupplier.get();
-        this.modelCopies.put(location, model);
+        this.modelCopies.put(identifier, model);
         return model;
     }
     //-----animated locator stuff ends here-----

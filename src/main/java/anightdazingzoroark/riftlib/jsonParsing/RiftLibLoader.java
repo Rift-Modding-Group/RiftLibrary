@@ -24,6 +24,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class RiftLibLoader {
@@ -43,37 +45,40 @@ public class RiftLibLoader {
     private final ParticleConstructor particleConstructor = new ParticleConstructor(); //create particles
 
     @NotNull
-	public GeoModel loadGeoModel(RiftLibResourceReader resourceReader, ResourceLocation location) {
+	public Map<String, GeoModel> loadGeoModels(RiftLibResourceReader resourceReader, ResourceLocation location) {
 		try {
+            Map<String, GeoModel> toReturn = new HashMap<>();
+
 			//Deserialize from json into basic json objects, bones are still stored as a flat list
 			RawGeoModel rawModel = this.gson.fromJson(this.getResourceAsString(location, resourceReader), RawGeoModel.class);
 
-            //first model in array is to be used, note that this is temporary
-            RawGeoModel.MinecraftGeometry geometry = rawModel.geometry.getFirst();
+            //evaluate over each geometry
+            for (RawGeoModel.MinecraftGeometry geometry : rawModel.geometry) {
+                //Get and validate the description
+                RawGeoModel.RawModelDescription modelDescription = geometry.description; //is temporary, will acknowledge multiple models soon
+                if (modelDescription.identifier == null) {
+                    throw new IllegalStateException(location + " has no identifier!");
+                }
+                if (modelDescription.texture_width == null || modelDescription.texture_height == null) {
+                    throw new IllegalStateException(location + " has no texture size set!");
+                }
+                if (modelDescription.visible_bounds_width == null || modelDescription.visible_bounds_height == null) {
+                    throw new IllegalStateException(location + " has no visible bounds size set!");
+                }
+                if (modelDescription.visible_bounds_offset == null) {
+                    throw new IllegalStateException(location + " has no visible bounds offset!");
+                }
+                if (modelDescription.visible_bounds_offset.length != 3) {
+                    throw new IllegalStateException("Visible bounds offset in " + location + " must have 3 values!");
+                }
 
-            //Get and validate the description
-            RawGeoModel.RawModelDescription modelDescription = geometry.description; //is temporary, will acknowledge multiple models soon
-            if (modelDescription.identifier == null) {
-                throw new IllegalStateException(location + " has no identifier!");
-            }
-            if (modelDescription.texture_width == null || modelDescription.texture_height == null) {
-                throw new IllegalStateException(location + " has no texture size set!");
-            }
-            if (modelDescription.visible_bounds_width == null || modelDescription.visible_bounds_height == null) {
-                throw new IllegalStateException(location + " has no visible bounds size set!");
-            }
-            if (modelDescription.visible_bounds_offset == null) {
-                throw new IllegalStateException(location + " has no visible bounds offset!");
-            }
-            if (modelDescription.visible_bounds_offset.length != 3) {
-                throw new IllegalStateException("Visible bounds offset in " + location + " must have 3 values!");
-            }
+                //Parse the flat list of bones into a raw hierarchical tree of "BoneGroup"s
+                RawGeometryTree rawGeometryTree = new RawGeometryTree(geometry, location);
 
-			//Parse the flat list of bones into a raw hierarchical tree of "BoneGroup"s
-			RawGeometryTree rawGeometryTree = new RawGeometryTree(geometry, location);
-
-			//Build the quads and cubes from the raw tree into a built and ready to be rendered GeoModel
-			return new GeoModel(modelDescription, rawGeometryTree);
+                //Build the quads and cubes from the raw tree into a built and ready to be rendered GeoModel
+                toReturn.put(modelDescription.identifier, new GeoModel(modelDescription, rawGeometryTree));
+            }
+            return toReturn;
 		}
         catch (Exception e) {
 			RiftLib.LOGGER.error(String.format("Error parsing %S", location), e);

@@ -37,7 +37,7 @@ public class RiftLibCacheClient extends RiftLibResourceHolder implements IResour
 	@NotNull
 	private Map<ResourceLocation, AnimationFile> animations = new HashMap<>();
 	@NotNull
-	private Map<ResourceLocation, GeoModel> geoModels = new HashMap<>();
+	private Map<String, Map<String, GeoModel>> geoModels = new HashMap<>();
     @NotNull
 	private Map<ResourceLocation, ParticleBuilder> particleBuilders = new HashMap<>();
 
@@ -49,7 +49,7 @@ public class RiftLibCacheClient extends RiftLibResourceHolder implements IResour
 	@Override
 	public void onResourceManagerReload(IResourceManager resourceManager) {
 		Map<ResourceLocation, AnimationFile> tempAnimations = new HashMap<>();
-		Map<ResourceLocation, GeoModel> tempModels = new HashMap<>();
+		Map<String, Map<String, GeoModel>> tempModels = new HashMap<>();
         Map<ResourceLocation, ParticleBuilder> tempParticleBuilders = new HashMap<>();
 		List<IResourcePack> packs = this.getPacks();
 		RiftLibResourceReader resourceReader = location -> resourceManager.getResource(location).getInputStream();
@@ -67,10 +67,25 @@ public class RiftLibCacheClient extends RiftLibResourceHolder implements IResour
 				}
 			}
 
-			//this must be where the model files are being loaded
+			//this is where the files are parsed
 			for (ResourceLocation location : this.getLocations(pack, "geo", fileName -> fileName.endsWith(".json"))) {
+				String modId = location.getNamespace();
 				try {
-					tempModels.put(location, this.loader.loadGeoModel(resourceReader, location));
+					//load
+					Map<String, GeoModel> models = this.loader.loadGeoModels(resourceReader, location);
+
+					//merge with already existing models
+					Map<String, GeoModel> modModels = tempModels.computeIfAbsent(modId, key -> new HashMap<>());
+					for (Map.Entry<String, GeoModel> entry : models.entrySet()) {
+						GeoModel previous = modModels.put(entry.getKey(), entry.getValue());
+
+						if (previous != null) {
+							RiftLib.LOGGER.warn(
+									"Duplicate GeoModel identifier \"{}\" for mod \"{}\" while loading {}",
+									entry.getKey(), modId, location
+							);
+						}
+					}
 				}
 				catch (Exception e) {
 					e.printStackTrace();
@@ -105,11 +120,11 @@ public class RiftLibCacheClient extends RiftLibResourceHolder implements IResour
 	}
 
 	@Override
-	public Map<ResourceLocation, GeoModel> getGeoModels() {
+	public Map<String, Map<String, GeoModel>> getGeoModels() {
 		if (!RiftLib.isInitialized()) {
 			throw new RuntimeException("RiftLib was never initialized! Please read the documentation!");
 		}
-		return this.geoModels;
+		return Map.copyOf(this.geoModels);
 	}
 
 	//particle builders are only relevant on the client

@@ -7,14 +7,14 @@ import java.util.List;
 
 public class RawGeoModel {
     @SerializedName("riftlibrary:geometry")
-    public List<MinecraftGeometry> geometry;
+    public List<MinecraftGeometry> geometry = List.of();
 
     public static class MinecraftGeometry {
         @SerializedName("description")
         public RawModelDescription description = new RawModelDescription(); //so that it may never start out as null
 
         @SerializedName("bones")
-        public List<RawModelBone> bones = new ArrayList<>(); //same here
+        public List<RawModelBone> bones = List.of(); //same here
     }
 
     public static class RawModelDescription {

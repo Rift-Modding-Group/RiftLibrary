@@ -4,11 +4,18 @@ import anightdazingzoroark.example.animateditem.AnimatedBubbleGunItem;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 public class BubbleGunModel extends AnimatedGeoModel<AnimatedBubbleGunItem> {
     @Override
-    public ResourceLocation getModelLocation(AnimatedBubbleGunItem object) {
-        return new ResourceLocation(RiftLib.ModID, "geo/bubble_gun.geo.json");
+    @NotNull
+    public String getModId() {
+        return RiftLib.ModID;
+    }
+
+    @Override
+    public String getModelIdentifier(AnimatedBubbleGunItem object) {
+        return "geometry.bubble_gun";
     }
 
     @Override

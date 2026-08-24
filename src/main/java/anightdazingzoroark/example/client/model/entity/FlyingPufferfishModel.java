@@ -4,11 +4,18 @@ import anightdazingzoroark.example.entity.FlyingPufferfishEntity;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 public class FlyingPufferfishModel extends AnimatedGeoModel<FlyingPufferfishEntity> {
     @Override
-    public ResourceLocation getModelLocation(FlyingPufferfishEntity object) {
-        return new ResourceLocation(RiftLib.ModID, "geo/flying_pufferfish.geo.json");
+    @NotNull
+    public String getModId() {
+        return RiftLib.ModID;
+    }
+
+    @Override
+    public String getModelIdentifier(FlyingPufferfishEntity object) {
+        return "geometry.flying_pufferfish";
     }
 
     @Override

@@ -4,11 +4,18 @@ import anightdazingzoroark.example.animateditem.AnimatedFidgetSpinnerItem;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 public class FidgetSpinnerModel extends AnimatedGeoModel<AnimatedFidgetSpinnerItem> {
     @Override
-    public ResourceLocation getModelLocation(AnimatedFidgetSpinnerItem object) {
-        return new ResourceLocation(RiftLib.ModID, "geo/fidget_spinner.geo.json");
+    @NotNull
+    public String getModId() {
+        return RiftLib.ModID;
+    }
+
+    @Override
+    public String getModelIdentifier(AnimatedFidgetSpinnerItem object) {
+        return "geometry.fidget_spinner";
     }
 
     @Override

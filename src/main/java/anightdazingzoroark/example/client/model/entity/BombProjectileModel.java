@@ -4,11 +4,18 @@ import anightdazingzoroark.example.entity.BombProjectile;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import net.minecraft.util.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 public class BombProjectileModel extends AnimatedGeoModel<BombProjectile> {
     @Override
-    public ResourceLocation getModelLocation(BombProjectile object) {
-        return new ResourceLocation(RiftLib.ModID, "geo/bomb.geo.json");
+    @NotNull
+    public String getModId() {
+        return RiftLib.ModID;
+    }
+
+    @Override
+    public String getModelIdentifier(BombProjectile object) {
+        return "geometry.bomb";
     }
 
     @Override

@@ -3,7 +3,7 @@
 	"riftlibrary:geometry": [
 		{
 			"description": {
-				"identifier": "geometry.unknown",
+				"identifier": "geometry.firework_stick",
 				"texture_width": 32,
 				"texture_height": 32,
 				"visible_bounds_width": 2,

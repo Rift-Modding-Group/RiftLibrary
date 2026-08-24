@@ -4,11 +4,18 @@ import anightdazingzoroark.example.armor.GreenArmor;
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
+import org.jetbrains.annotations.NotNull;
 
 public class GreenArmorModel extends AnimatedGeoModel<GreenArmor> {
 	@Override
-	public ResourceLocation getModelLocation(GreenArmor object) {
-		return new ResourceLocation(RiftLib.ModID, "geo/green_armor.geo.json");
+	@NotNull
+	public String getModId() {
+		return RiftLib.ModID;
+	}
+
+	@Override
+	public String getModelIdentifier(GreenArmor object) {
+		return "geometry.green_armor";
 	}
 
 	@Override

@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /**
  * mostly for armor rendering
  */
-@Mixin(value = ForgeHooksClient.class, remap = false)
+@Mixin(value = ForgeHooksClient.class)
 public abstract class ForgeHooksClientMixin {
     @Inject(method = "getArmorModel", at = @At("HEAD"), cancellable = true)
     private static void getArmorModel(EntityLivingBase wearer, ItemStack stack, EntityEquipmentSlot slot, ModelBiped defaultArmor, CallbackInfoReturnable<ModelBiped> callback) {

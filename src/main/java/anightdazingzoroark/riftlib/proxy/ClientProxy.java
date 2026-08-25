@@ -8,7 +8,7 @@ import anightdazingzoroark.example.client.renderer.entity.*;
 import anightdazingzoroark.example.client.renderer.tile.MerryGoRoundRenderer;
 import anightdazingzoroark.example.client.renderer.tile.SprinklerRenderer;
 import anightdazingzoroark.example.entity.*;
-import anightdazingzoroark.riftlib.RiftLib;
+import anightdazingzoroark.example.registry.ItemRegistry;
 import anightdazingzoroark.riftlib.RiftLibMod;
 import anightdazingzoroark.riftlib.hitbox.RiftLibCollisionHitbox;
 import anightdazingzoroark.riftlib.hitbox.EntityHitboxRenderer;
@@ -26,7 +26,6 @@ import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosTicker;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffect;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffectRegistry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
@@ -60,14 +59,6 @@ public class ClientProxy extends ServerProxy {
             RenderingRegistry.registerEntityRenderingHandler(GoKartEntity.class, GoKartRenderer::new);
             RenderingRegistry.registerEntityRenderingHandler(AvianRunnerEntity.class, AvianRunnerRenderer::new);
 
-            //armor renderers
-            GreenArmorRenderer greenArmorRenderer = new GreenArmorRenderer();
-            GeoArmorRenderer.registerArmorRenderer(new ResourceLocation(RiftLib.ModID, "green_helmet"), greenArmorRenderer);
-            GeoArmorRenderer.registerArmorRenderer(new ResourceLocation(RiftLib.ModID, "green_chest"), greenArmorRenderer);
-            GeoArmorRenderer.registerArmorRenderer(new ResourceLocation(RiftLib.ModID, "green_leggings"), greenArmorRenderer);
-            GeoArmorRenderer.registerArmorRenderer(new ResourceLocation(RiftLib.ModID, "green_boots"), greenArmorRenderer);
-            GeoArmorRenderer.registerArmorRenderer(new ResourceLocation(RiftLib.ModID, "satellite_dish_helmet"), new SatelliteDishHelmetRenderer());
-
             //block renderers
             ClientRegistry.bindTileEntitySpecialRenderer(MerryGoRoundTileEntity.class, new MerryGoRoundRenderer());
             ClientRegistry.bindTileEntitySpecialRenderer(SprinklerTileEntity.class, new SprinklerRenderer());
@@ -84,6 +75,16 @@ public class ClientProxy extends ServerProxy {
     @Override
     public void init(FMLInitializationEvent e) {
         super.init(e);
+
+        //these will only happen in a deobfuscated environment
+        if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {
+            GreenArmorRenderer greenArmorRenderer = new GreenArmorRenderer();
+            GeoArmorRenderer.registerArmorRenderer(ItemRegistry.GREEN_HEAD, greenArmorRenderer);
+            GeoArmorRenderer.registerArmorRenderer(ItemRegistry.GREEN_CHEST, greenArmorRenderer);
+            GeoArmorRenderer.registerArmorRenderer(ItemRegistry.GREEN_LEGGINGS, greenArmorRenderer);
+            GeoArmorRenderer.registerArmorRenderer(ItemRegistry.GREEN_BOOTS, greenArmorRenderer);
+            GeoArmorRenderer.registerArmorRenderer(ItemRegistry.SATELLITE_DISH_HELMET, new SatelliteDishHelmetRenderer());
+        }
     }
 
     @SideOnly(Side.CLIENT)

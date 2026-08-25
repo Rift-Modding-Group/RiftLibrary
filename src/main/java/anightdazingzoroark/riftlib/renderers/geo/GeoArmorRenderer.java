@@ -19,6 +19,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -35,7 +36,7 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
 	private static final long HOLDER_CACHE_CLEANUP_INTERVAL_MS = 1000L;
 	private static final int HOLDER_CACHE_MAX_SIZE = 256;
 
-	private static final Map<ResourceLocation, GeoArmorRenderer<?>> renderers = new ConcurrentHashMap<>();
+	private static final Map<Item, GeoArmorRenderer<?>> renderers = new ConcurrentHashMap<>();
 
 	static {
 		AnimationController.addModelFetcher((IAnimatable<?> object) -> {
@@ -61,14 +62,13 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
     private String leftBootBone = "";
 
     //-----static registry stuff-----
-	public static void registerArmorRenderer(ResourceLocation armorId, GeoArmorRenderer<?> renderer) {
-		renderers.put(armorId, renderer);
+	public static void registerArmorRenderer(Item armorItem, GeoArmorRenderer<?> renderer) {
+		renderers.put(armorItem, renderer);
 	}
 
     @Nullable
 	public static GeoArmorRenderer<?> getRenderer(ItemArmor item) {
-		ResourceLocation armorId = item.getRegistryName();
-		return armorId == null ? null : renderers.get(armorId);
+		return renderers.get(item);
 	}
 
     //-----for all renderers-----

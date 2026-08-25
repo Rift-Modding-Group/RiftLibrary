@@ -7,6 +7,7 @@ import anightdazingzoroark.riftlib.projectile.RiftLibProjectile;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 public class BombProjectile extends RiftLibProjectile {
     public BombProjectile(World worldIn) {
@@ -27,7 +28,7 @@ public class BombProjectile extends RiftLibProjectile {
     }
 
     @Override
-    public void projectileEntityEffects(EntityLivingBase entityLivingBase) {
+    public void projectileEntityEffects(@Nullable EntityLivingBase entityLivingBase) {
         this.world.createExplosion(this, this.posX, this.posY, this.posZ, 4f, true);
     }
 

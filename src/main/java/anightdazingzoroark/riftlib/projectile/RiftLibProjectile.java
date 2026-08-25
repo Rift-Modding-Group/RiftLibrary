@@ -15,6 +15,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class RiftLibProjectile extends EntityArrow implements IAnimatable<AnimationDataProjectile> {
     private final AnimationDataProjectile data = new AnimationDataProjectile(this);
@@ -42,18 +44,14 @@ public abstract class RiftLibProjectile extends EntityArrow implements IAnimatab
                 double damage = this.getDamage() + this.getDamageMultiplierFromVelocity();
                 if (this.getIsCritical()) damage += this.getDamageBonusFromCrit(damage);
 
-                DamageSource damagesource = DamageSource.causeArrowDamage(this, this);
-                if (this.shootingEntity != null) damagesource = DamageSource.causeArrowDamage(this, this.shootingEntity);
-
-                if (entity instanceof MultiPartEntityPart && ((MultiPartEntityPart) entity).parent instanceof EntityLivingBase) {
-                    EntityLivingBase parent = (EntityLivingBase)(((MultiPartEntityPart) entity).parent);
+                if (entity instanceof MultiPartEntityPart multiPartEntityPart && multiPartEntityPart.parent instanceof EntityLivingBase parent) {
                     this.projectileEntityEffects(parent);
                 }
                 else if (entity instanceof EntityLivingBase entitylivingbase) {
                     this.projectileEntityEffects(entitylivingbase);
                 }
 
-                if (entity.attackEntityFrom(damagesource, (float) damage)) {
+                if (entity.attackEntityFrom(this.getDamageSource(), (float) damage)) {
                     this.playSound(this.getOnProjectileHitSound(), 1f, 1f / (this.rand.nextFloat() * 0.2f + 0.9f));
                     if (this.canSelfDestroyUponHit()) this.setDead();
                 }
@@ -92,7 +90,7 @@ public abstract class RiftLibProjectile extends EntityArrow implements IAnimatab
         else super.onHit(raytraceResultIn);
     }
 
-    private boolean checkHitEntityShooterNotEqual(Entity target) {
+    private boolean checkHitEntityShooterNotEqual(@Nullable Entity target) {
         //if theres no shooter or target, cannot continue
         if (this.shootingEntity == null || target == null) return false;
 
@@ -109,7 +107,13 @@ public abstract class RiftLibProjectile extends EntityArrow implements IAnimatab
         return !this.shootingEntity.isPassenger(target);
     }
 
-    public abstract void projectileEntityEffects(EntityLivingBase entityLivingBase);
+    @Override
+    protected ItemStack getArrowStack() {
+        return null;
+    }
+
+    //-----overridable stuff-----
+    public abstract void projectileEntityEffects(@Nullable EntityLivingBase entityLivingBase);
 
     public boolean canSelfDestroyUponHit() {
         return true;
@@ -117,6 +121,17 @@ public abstract class RiftLibProjectile extends EntityArrow implements IAnimatab
 
     public boolean canRotateVertically() {
         return true;
+    }
+
+    /**
+     * Get the damage source associated with the damage done by this entity
+     * upon hitting the target
+     * */
+    @NotNull
+    public DamageSource getDamageSource() {
+        DamageSource toReturn = DamageSource.causeArrowDamage(this, this);
+        if (this.shootingEntity != null) toReturn = DamageSource.causeArrowDamage(this, this.shootingEntity);
+        return toReturn;
     }
 
     public abstract double getDamage();
@@ -135,9 +150,4 @@ public abstract class RiftLibProjectile extends EntityArrow implements IAnimatab
     }
 
     public abstract SoundEvent getOnProjectileHitSound();
-
-    @Override
-    protected ItemStack getArrowStack() {
-        return null;
-    }
 }

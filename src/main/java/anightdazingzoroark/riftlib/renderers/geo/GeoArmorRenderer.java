@@ -28,6 +28,7 @@ import anightdazingzoroark.riftlib.core.util.Color;
 import anightdazingzoroark.riftlib.geo.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -51,14 +52,23 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
 	private T currentArmorHolder;
 	private EntityLivingBase entityLiving;
 
+    @NotNull
 	private String headBone = "";
+    @NotNull
     private String bodyBone = "";
+    @NotNull
     private String rightArmBone = "";
+    @NotNull
     private String leftArmBone = "";
+    @NotNull
     private String hipsBone = "";
+    @NotNull
     private String rightLegBone = "";
+    @NotNull
     private String leftLegBone = "";
+    @NotNull
     private String rightBootBone = "";
+    @NotNull
     private String leftBootBone = "";
 
     //-----static registry stuff-----
@@ -85,8 +95,7 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
 	}
 
 	@Override
-	public void render(Entity entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw,
-			float headPitch, float scale) {
+	public void render(Entity entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale) {
 		this.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale, entityIn);
 		this.render(ageInTicks);
 	}
@@ -116,7 +125,8 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
 		}
 		if (this.isSneak) {
 			IBone headBone = !this.headBone.isEmpty() ? this.modelProvider.getBone(this.headBone) : null;
-			IBone bodyBone = !this.bodyBone.isEmpty() ? this.modelProvider.getBone(this.bodyBone) : null;
+            IBone bodyBone = !this.bodyBone.isEmpty() ? this.modelProvider.getBone(this.bodyBone) : null;
+            IBone hipsBone = !this.hipsBone.isEmpty() ? this.modelProvider.getBone(this.hipsBone) : null;
 			IBone rightLegBone = !this.rightLegBone.isEmpty() ? this.modelProvider.getBone(this.rightLegBone) : null;
 			IBone leftLegBone = !this.leftLegBone.isEmpty() ? this.modelProvider.getBone(this.leftLegBone) : null;
 			IBone rightBootBone = !this.rightBootBone.isEmpty() ? this.modelProvider.getBone(this.rightBootBone) : null;
@@ -127,6 +137,11 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
             if (bodyBone != null) {
                 bodyBone.getPosition().z = bodyBone.getPosition().x - 0.4f;
                 bodyBone.getPosition().y = bodyBone.getPosition().x - 3.5f;
+            }
+
+            if (hipsBone != null) {
+                hipsBone.getPosition().z = hipsBone.getPosition().x - 0.4f;
+                hipsBone.getPosition().y = hipsBone.getPosition().x - 3.5f;
             }
 
             if (rightArmBone != null && bodyBone != null) {

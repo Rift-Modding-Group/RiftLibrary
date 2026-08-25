@@ -1,7 +1,5 @@
 package anightdazingzoroark.example;
 
-import anightdazingzoroark.example.armor.GreenArmor;
-import anightdazingzoroark.example.armor.SatelliteDishHelmet;
 import anightdazingzoroark.example.block.MerryGoRoundBlock;
 import anightdazingzoroark.example.block.SprinklerBlock;
 import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
@@ -124,20 +122,36 @@ public class CommonListener {
 		);
 
 		ItemRegistry.GREEN_HEAD = registerItem(
-				new GreenArmor(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.HEAD), "green_helmet");
+				createArmorItem(EntityEquipmentSlot.HEAD),
+				"green_helmet"
+		);
 		ItemRegistry.GREEN_CHEST = registerItem(
-				new GreenArmor(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.CHEST), "green_chest");
+				createArmorItem(EntityEquipmentSlot.CHEST),
+				"green_chest"
+		);
 		ItemRegistry.GREEN_LEGGINGS = registerItem(
-				new GreenArmor(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.LEGS), "green_leggings");
+				createArmorItem(EntityEquipmentSlot.LEGS),
+				"green_leggings"
+		);
 		ItemRegistry.GREEN_BOOTS = registerItem(
-				new GreenArmor(ItemArmor.ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.FEET), "green_boots");
+				createArmorItem(EntityEquipmentSlot.FEET),
+				"green_boots"
+		);
 
         ItemRegistry.SATELLITE_DISH_HELMET = registerItem(
-                new SatelliteDishHelmet(ItemArmor.ArmorMaterial.DIAMOND, 0), "satellite_dish_helmet"
+				createArmorItem(EntityEquipmentSlot.HEAD),
+				"satellite_dish_helmet"
         );
 
         ItemRegistry.MERRY_GO_ROUND = registerItem(new ItemBlock(BlockRegistry.MERRY_GO_ROUND_BLOCK), "merry_go_round");
         ItemRegistry.SPRINKLER = registerItem(new ItemBlock(BlockRegistry.SPRINKLER_BLOCK), "sprinkler");
+	}
+
+	//helper for makin example armor items
+	private static ItemArmor createArmorItem(EntityEquipmentSlot slot) {
+		ItemArmor armor = new ItemArmor(ItemArmor.ArmorMaterial.DIAMOND, 0, slot);
+		armor.setCreativeTab(RiftLibMod.getRiftlibItemGroup());
+		return armor;
 	}
 
 	public static <T extends Item> T registerItem(T item, String name) {

@@ -8,15 +8,19 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-//cleaning up all itemrenderers happens here
+//cleaning up all stack-backed renderer holder caches happens here
 public class GeoItemRendererTicker {
 	public static final Set<GeoItemRenderer<?>> ITEM_RENDERERS = Collections.newSetFromMap(new WeakHashMap<>());
+	public static final Set<GeoArmorRenderer<?>> ARMOR_RENDERERS = Collections.newSetFromMap(new WeakHashMap<>());
 
 	@SubscribeEvent
 	public void onClientTick(TickEvent.ClientTickEvent event) {
 		if (event.phase != TickEvent.Phase.END) return;
 		long now = Minecraft.getSystemTime();
 		for (GeoItemRenderer<?> renderer : ITEM_RENDERERS) {
+			renderer.cleanupHolderCache(now);
+		}
+		for (GeoArmorRenderer<?> renderer : ARMOR_RENDERERS) {
 			renderer.cleanupHolderCache(now);
 		}
 	}

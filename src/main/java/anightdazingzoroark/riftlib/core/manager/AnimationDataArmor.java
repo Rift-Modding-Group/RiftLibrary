@@ -1,6 +1,6 @@
 package anightdazingzoroark.riftlib.core.manager;
 
-import anightdazingzoroark.riftlib.armor.RiftLibArmor;
+import anightdazingzoroark.riftlib.armor.AnimatedArmorHolder;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
@@ -8,14 +8,14 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
-public class AnimationDataArmor extends AbstractAnimationData<RiftLibArmor, AnimationDataArmor> {
+public class AnimationDataArmor extends AbstractAnimationData<AnimatedArmorHolder, AnimationDataArmor> {
     private EntityLivingBase wearer;
     @NotNull
     private ItemStack stack = ItemStack.EMPTY;
     private EntityEquipmentSlot slot;
 
-    public AnimationDataArmor(RiftLibArmor armor) {
-        super(armor, armor);
+    public AnimationDataArmor(AnimatedArmorHolder holder) {
+        super(holder, holder);
     }
 
     @Override
@@ -54,12 +54,20 @@ public class AnimationDataArmor extends AbstractAnimationData<RiftLibArmor, Anim
                 && ItemStack.areItemStackTagsEqual(equipped, this.stack);
     }
 
+    public int getCurrentDurability() {
+        return this.stack.getMaxDamage() - this.stack.getItemDamage();
+    }
+
+    public int getMaxDurability() {
+        return this.stack.getMaxDamage();
+    }
 
     @Override
     public @NotNull NBTTagCompound getNBT() {
         NBTTagCompound toReturn = super.getNBT();
         toReturn.setString("AnimationTargetType", "Armor");
-        toReturn.setString("ArmorClass", this.getHolder().getClass().getName());
+        toReturn.setString("HolderClass", this.getHolder().getClass().getName());
+        toReturn.setString("ArmorClass", this.stack.getItem().getClass().getName());
         toReturn.setInteger("WearerID", this.wearer != null ? this.wearer.getEntityId() : -1);
         toReturn.setInteger("ArmorSlot", this.slot != null ? this.slot.ordinal() : -1);
         toReturn.setTag("Stack", this.stack.writeToNBT(new NBTTagCompound()));

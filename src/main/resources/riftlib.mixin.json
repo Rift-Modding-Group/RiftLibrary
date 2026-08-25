@@ -3,7 +3,9 @@
   "package": "anightdazingzoroark.riftlib.mixin",
   "compatibilityLevel": "JAVA_8",
   "target": "@env(DEFAULT)",
-  "client": [],
+  "client": [
+    "ForgeHooksClientMixin"
+  ],
   "mixins": [
     "RenderItemMixin"
   ],

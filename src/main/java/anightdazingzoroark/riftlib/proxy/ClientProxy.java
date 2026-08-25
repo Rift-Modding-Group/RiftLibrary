@@ -8,8 +8,7 @@ import anightdazingzoroark.example.client.renderer.entity.*;
 import anightdazingzoroark.example.client.renderer.tile.MerryGoRoundRenderer;
 import anightdazingzoroark.example.client.renderer.tile.SprinklerRenderer;
 import anightdazingzoroark.example.entity.*;
-import anightdazingzoroark.example.armor.GreenArmor;
-import anightdazingzoroark.example.armor.SatelliteDishHelmet;
+import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.RiftLibMod;
 import anightdazingzoroark.riftlib.hitbox.RiftLibCollisionHitbox;
 import anightdazingzoroark.riftlib.hitbox.EntityHitboxRenderer;
@@ -27,6 +26,7 @@ import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosTicker;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffect;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffectRegistry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
@@ -60,9 +60,13 @@ public class ClientProxy extends ServerProxy {
             RenderingRegistry.registerEntityRenderingHandler(GoKartEntity.class, GoKartRenderer::new);
             RenderingRegistry.registerEntityRenderingHandler(AvianRunnerEntity.class, AvianRunnerRenderer::new);
 
-            //armor renderer
-            GeoArmorRenderer.registerArmorRenderer(GreenArmor.class, new GreenArmorRenderer());
-            GeoArmorRenderer.registerArmorRenderer(SatelliteDishHelmet.class, new SatelliteDishHelmetRenderer());
+            //armor renderers
+            GreenArmorRenderer greenArmorRenderer = new GreenArmorRenderer();
+            GeoArmorRenderer.registerArmorRenderer(new ResourceLocation(RiftLib.ModID, "green_helmet"), greenArmorRenderer);
+            GeoArmorRenderer.registerArmorRenderer(new ResourceLocation(RiftLib.ModID, "green_chest"), greenArmorRenderer);
+            GeoArmorRenderer.registerArmorRenderer(new ResourceLocation(RiftLib.ModID, "green_leggings"), greenArmorRenderer);
+            GeoArmorRenderer.registerArmorRenderer(new ResourceLocation(RiftLib.ModID, "green_boots"), greenArmorRenderer);
+            GeoArmorRenderer.registerArmorRenderer(new ResourceLocation(RiftLib.ModID, "satellite_dish_helmet"), new SatelliteDishHelmetRenderer());
 
             //block renderers
             ClientRegistry.bindTileEntitySpecialRenderer(MerryGoRoundTileEntity.class, new MerryGoRoundRenderer());

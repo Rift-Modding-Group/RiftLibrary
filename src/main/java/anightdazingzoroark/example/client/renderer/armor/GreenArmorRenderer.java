@@ -1,12 +1,12 @@
 package anightdazingzoroark.example.client.renderer.armor;
 
-import anightdazingzoroark.example.armor.GreenArmor;
+import anightdazingzoroark.example.armor.AnimatedGreenArmorHolder;
 import anightdazingzoroark.example.client.model.armor.GreenArmorModel;
 import anightdazingzoroark.riftlib.renderers.geo.GeoArmorRenderer;
 
-public class GreenArmorRenderer extends GeoArmorRenderer<GreenArmor> {
+public class GreenArmorRenderer extends GeoArmorRenderer<AnimatedGreenArmorHolder> {
 	public GreenArmorRenderer() {
-		super(new GreenArmorModel());
+		super(new GreenArmorModel(), AnimatedGreenArmorHolder::new);
 		this.setHeadBone("head");
 		this.setBodyBone("body");
 		this.setRightArmBone("rightArm");

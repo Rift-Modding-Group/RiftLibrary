@@ -27,7 +27,7 @@ public class AnimationDataResolver {
             case "Entity" -> resolveEntity(world, nbtTagCompound.getInteger("EntityID"));
             case "Projectile" -> resolveEntity(world, nbtTagCompound.getInteger("ProjectileID"));
             case "TileEntity" -> resolveTileEntity(world, nbtTagCompound.getIntArray("TileEntityPos"));
-            case "Armor" -> resolveArmor(world, nbtTagCompound);
+            //case "Armor" -> resolveArmor(world, nbtTagCompound);
             //case "ItemStack" -> resolveItemStack(world, nbtTagCompound);
             default -> null;
         };
@@ -44,25 +44,6 @@ public class AnimationDataResolver {
 
         TileEntity tileEntity = world.getTileEntity(new BlockPos(posData[0], posData[1], posData[2]));
         if (!(tileEntity instanceof IAnimatable<?> animatable)) return null;
-        return animatable.getAnimationData();
-    }
-
-    private static AbstractAnimationData<?, ?> resolveArmor(@NotNull World world, @NotNull NBTTagCompound nbtTagCompound) {
-        int wearerID = nbtTagCompound.getInteger("WearerID");
-        int armorSlotIndex = nbtTagCompound.getInteger("ArmorSlot");
-        if (wearerID < 0 || armorSlotIndex < 0 || armorSlotIndex >= EntityEquipmentSlot.values().length) return null;
-
-        Entity wearer = world.getEntityByID(wearerID);
-        if (!(wearer instanceof EntityPlayer playerWearer)) return null;
-
-        EntityEquipmentSlot armorSlot = EntityEquipmentSlot.values()[armorSlotIndex];
-        ItemStack serverStack = playerWearer.getItemStackFromSlot(armorSlot);
-        if (serverStack.isEmpty()) return null;
-
-        ItemStack expectedStack = new ItemStack(nbtTagCompound.getCompoundTag("Stack"));
-        if (!isSameStack(serverStack, expectedStack)) return null;
-
-        if (!(serverStack.getItem() instanceof IAnimatable<?> animatable)) return null;
         return animatable.getAnimationData();
     }
 
@@ -100,7 +81,6 @@ public class AnimationDataResolver {
             return null;
         }
     }
-     */
 
     private static boolean isSameStack(ItemStack first, ItemStack second) {
         return !first.isEmpty()
@@ -108,4 +88,5 @@ public class AnimationDataResolver {
                 && ItemStack.areItemsEqual(first, second)
                 && ItemStack.areItemStackTagsEqual(first, second);
     }
+     */
 }

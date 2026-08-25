@@ -1,23 +1,19 @@
 package anightdazingzoroark.example.armor;
 
-import anightdazingzoroark.riftlib.RiftLibMod;
+import anightdazingzoroark.riftlib.armor.AnimatedArmorHolder;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataArmor;
-import anightdazingzoroark.riftlib.armor.RiftLibArmor;
-import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.ItemStack;
 
-import java.util.List;
-
-public class SatelliteDishHelmet extends RiftLibArmor {
-    public SatelliteDishHelmet(ArmorMaterial materialIn, int renderIndexIn) {
-        super(materialIn, renderIndexIn, EntityEquipmentSlot.HEAD);
-        this.setCreativeTab(RiftLibMod.getRiftlibItemGroup());
+public class AnimatedSatelliteDishHelmetHolder extends AnimatedArmorHolder {
+    public AnimatedSatelliteDishHelmetHolder(ItemStack stack) {
+        super(stack);
     }
 
     @Override
     public void initializeAnimationData(AnimationDataArmor animationData) {
-        animationData.addAnimationController(new AnimationController<SatelliteDishHelmet, AnimationDataArmor>(
+        animationData.addAnimationController(new AnimationController<AnimatedSatelliteDishHelmetHolder, AnimationDataArmor>(
                 this, "satelliteDish", "default",
                 new AnimationControllerState<AnimationDataArmor>("default")
                         .addAnimation("animation.satellite_dish_helmet.spin")

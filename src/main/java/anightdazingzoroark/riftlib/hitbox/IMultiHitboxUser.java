@@ -45,6 +45,7 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
     * This makes it so that when HWYLA is installed, the info box directly shows info about the parent.
     * Set this to false if you already have a different factory in mind for hitboxes.
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     default boolean hitboxUseHWYLA() {
         return true;
     }

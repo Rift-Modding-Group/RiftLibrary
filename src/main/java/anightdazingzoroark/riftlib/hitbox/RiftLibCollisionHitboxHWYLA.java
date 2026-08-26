@@ -1,22 +1,16 @@
 package anightdazingzoroark.riftlib.hitbox;
 
 import anightdazingzoroark.riftlib.RiftLib;
-import com.google.common.base.Strings;
+import mcp.mobius.waila.addons.core.HUDHandlerEntities;
 import mcp.mobius.waila.api.*;
-import mcp.mobius.waila.config.FormattingConfig;
-import mcp.mobius.waila.utils.ModIdentification;
+import mcp.mobius.waila.api.impl.ModuleRegistrar;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.translation.I18n;
-import net.minecraftforge.fml.common.ModContainer;
-import net.minecraftforge.fml.common.registry.EntityEntry;
-import net.minecraftforge.fml.common.registry.EntityRegistry;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.List;
-
-import static mcp.mobius.waila.api.SpecialChars.getRenderString;
 
 /**
  * The default HWYLA factory for RiftLibCollisionHitbox instances
@@ -32,65 +26,88 @@ public class RiftLibCollisionHitboxHWYLA implements IWailaPlugin {
     }
 
     private static class EntityHitboxProvider implements IWailaEntityProvider {
-        private int nhearts = 20;
-        private final float maxhpfortext = 40f;
+        @NotNull
+        private final HUDHandlerEntities defaultHandler = new HUDHandlerEntities();
 
         @Nonnull
         @Override
         public List<String> getWailaHead(Entity entity, List<String> currenttip, IWailaEntityAccessor accessor, IWailaConfigHandler config) {
             RiftLibCollisionHitbox<?> hitbox = (RiftLibCollisionHitbox<?>) entity;
-            if (hitbox.getParent().hitboxUseHWYLA()) {
+            if (!hitbox.getParent().hitboxUseHWYLA()) return currenttip;
+
+            //get parents provider list
+            EntityLivingBase parent = hitbox.getParent().getMultiHitboxUser();
+            List<IWailaEntityProvider> parentEntityProviderList = ModuleRegistrar.instance().headEntityProviders.get(parent.getClass());
+
+            //no provider list, use default handler and parent
+            if (parentEntityProviderList == null) {
                 currenttip.clear();
-                EntityLivingBase parent = hitbox.getParent().getMultiHitboxUser();
-                if (parent != null) {
-                    String entityName = TextFormatting.WHITE + parent.getName();
-                    currenttip.add(entityName);
-                }
+                return this.defaultHandler.getWailaHead(parent, currenttip, accessor, config);
             }
-            return currenttip;
+
+            //new string list from parent, assumes parent has waila factory
+            List<String> toReturn = new ArrayList<>();
+            for (IWailaEntityProvider entityProvider : parentEntityProviderList) {
+                toReturn = entityProvider.getWailaHead(entity, toReturn, accessor, config);
+            }
+
+            //if toReturn is still empty, default factory
+            if (toReturn.isEmpty()) return this.defaultHandler.getWailaHead(parent, toReturn, accessor, config);
+            return toReturn;
         }
 
         @Nonnull
         @Override
         public List<String> getWailaBody(Entity entity, List<String> currenttip, IWailaEntityAccessor accessor, IWailaConfigHandler config) {
             RiftLibCollisionHitbox<?> hitbox = (RiftLibCollisionHitbox<?>) entity;
-            if (hitbox.getParent().hitboxUseHWYLA()) {
-                currenttip.clear();
-                EntityLivingBase parent = hitbox.getParent().getMultiHitboxUser();
-                if (parent != null && config.getConfig("general.showhp")) {
-                    this.nhearts = this.nhearts <= 0 ? 20 : this.nhearts;
-                    float health = parent.getHealth() / 2.0f;
-                    float maxhp = parent.getMaxHealth() / 2.0f;
+            if (!hitbox.getParent().hitboxUseHWYLA()) return currenttip;
 
-                    if (parent.getMaxHealth() > this.maxhpfortext) {
-                        currenttip.add(String.format(I18n.translateToLocal("hud.msg.health") + ": %.0f / %.0f", parent.getHealth(), parent.getMaxHealth()));
-                    }
-                    else currenttip.add(getRenderString("waila.health", String.valueOf(nhearts), String.valueOf(health), String.valueOf(maxhp)));
-                }
+            //get parents provider list
+            EntityLivingBase parent = hitbox.getParent().getMultiHitboxUser();
+            List<IWailaEntityProvider> parentEntityProviderList = ModuleRegistrar.instance().headEntityProviders.get(parent.getClass());
+
+            //no provider list, use default handler and parent
+            if (parentEntityProviderList == null) {
+                currenttip.clear();
+                return this.defaultHandler.getWailaBody(parent, currenttip, accessor, config);
             }
-            return currenttip;
+
+            //new string list from parent, assumes parent has waila factory
+            List<String> toReturn = new ArrayList<>();
+            for (IWailaEntityProvider entityProvider : parentEntityProviderList) {
+                toReturn = entityProvider.getWailaBody(entity, toReturn, accessor, config);
+            }
+
+            //if toReturn is still empty, default factory
+            if (toReturn.isEmpty()) return this.defaultHandler.getWailaBody(parent, toReturn, accessor, config);
+            return toReturn;
         }
 
         @Nonnull
         @Override
         public List<String> getWailaTail(Entity entity, List<String> currenttip, IWailaEntityAccessor accessor, IWailaConfigHandler config) {
             RiftLibCollisionHitbox<?> hitbox = (RiftLibCollisionHitbox<?>) entity;
-            if (hitbox.getParent().hitboxUseHWYLA()) {
+            if (!hitbox.getParent().hitboxUseHWYLA()) return currenttip;
+
+            //get parents provider list
+            EntityLivingBase parent = hitbox.getParent().getMultiHitboxUser();
+            List<IWailaEntityProvider> parentEntityProviderList = ModuleRegistrar.instance().headEntityProviders.get(parent.getClass());
+
+            //no provider list, use default handler and parent
+            if (parentEntityProviderList == null) {
                 currenttip.clear();
-                EntityLivingBase parent = hitbox.getParent().getMultiHitboxUser();
-                if (!Strings.isNullOrEmpty(FormattingConfig.modNameFormat) && !Strings.isNullOrEmpty(getEntityMod(parent)))
-                    currenttip.add(String.format(FormattingConfig.modNameFormat, getEntityMod(parent)));
+                return this.defaultHandler.getWailaTail(parent, currenttip, accessor, config);
             }
 
-            return currenttip;
-        }
+            //new string list from parent, assumes parent has waila factory
+            List<String> toReturn = new ArrayList<>();
+            for (IWailaEntityProvider entityProvider : parentEntityProviderList) {
+                toReturn = entityProvider.getWailaTail(entity, toReturn, accessor, config);
+            }
 
-        private String getEntityMod(Entity entity) {
-            EntityEntry entityEntry = EntityRegistry.getEntry(entity.getClass());
-            if (entityEntry == null) return "Unknown";
-
-            ModContainer container = ModIdentification.findModContainer(entityEntry.getRegistryName().getNamespace());
-            return container.getName();
+            //if toReturn is still empty, default factory
+            if (toReturn.isEmpty()) return this.defaultHandler.getWailaTail(parent, toReturn, accessor, config);
+            return toReturn;
         }
     }
 }

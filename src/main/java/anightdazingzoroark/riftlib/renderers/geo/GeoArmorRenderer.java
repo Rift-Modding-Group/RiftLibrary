@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import anightdazingzoroark.riftlib.RiftLib;
@@ -25,6 +26,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.core.processor.IBone;
 import anightdazingzoroark.riftlib.core.util.Color;
+import anightdazingzoroark.riftlib.geo.GeoBone;
 import anightdazingzoroark.riftlib.geo.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -132,42 +134,42 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
 			IBone rightBootBone = !this.rightBootBone.isEmpty() ? this.modelProvider.getBone(this.rightBootBone) : null;
 			IBone leftBootBone = !this.leftBootBone.isEmpty() ? this.modelProvider.getBone(this.leftBootBone) : null;
 
-            if (headBone != null) headBone.getPosition().y = headBone.getPosition().y - 3.5f;
+			this.transformBoneAndChildren(headBone, bone ->
+					bone.getPosition().y = bone.getPosition().y - 3.5f
+            );
+
+            this.transformBoneAndChildren(bodyBone, bone -> {
+                bone.getPosition().z = bone.getPosition().x - 0.4f;
+                bone.getPosition().y = bone.getPosition().x - 3.5f;
+            });
+
+            this.transformBoneAndChildren(hipsBone, bone -> {
+                bone.getPosition().z = bone.getPosition().x - 0.4f;
+                bone.getPosition().y = bone.getPosition().x - 3.5f;
+            });
 
             if (bodyBone != null) {
-                bodyBone.getPosition().z = bodyBone.getPosition().x - 0.4f;
-                bodyBone.getPosition().y = bodyBone.getPosition().x - 3.5f;
-            }
+                this.transformBoneAndChildren(rightArmBone, bone -> {
+                    bone.getPosition().y = bodyBone.getPosition().x - 3f;
+                    bone.getPosition().x = bodyBone.getPosition().x + 0.35f;
+                });
 
-            if (hipsBone != null) {
-                hipsBone.getPosition().z = hipsBone.getPosition().x - 0.4f;
-                hipsBone.getPosition().y = hipsBone.getPosition().x - 3.5f;
-            }
+                this.transformBoneAndChildren(leftArmBone, bone -> {
+                    bone.getPosition().y = bodyBone.getPosition().x - 3f;
+                    bone.getPosition().x = bodyBone.getPosition().x - 0.35f;
+                });
 
-            if (rightArmBone != null && bodyBone != null) {
-                rightArmBone.getPosition().y = bodyBone.getPosition().x - 3f;
-                rightArmBone.getPosition().x = bodyBone.getPosition().x + 0.35f;
-            }
-
-            if (leftArmBone != null && bodyBone != null) {
-                leftArmBone.getPosition().y = bodyBone.getPosition().x - 3f;
-                leftArmBone.getPosition().x = bodyBone.getPosition().x - 0.35f;
-            }
-
-            if (rightLegBone != null && bodyBone != null) {
-                rightLegBone.getPosition().z = bodyBone.getPosition().x + 4f;
-            }
-
-            if (leftLegBone != null && bodyBone != null) {
-                leftLegBone.getPosition().z = bodyBone.getPosition().x + 4f;
-            }
-
-            if (rightBootBone != null && bodyBone != null) {
-                rightBootBone.getPosition().z = bodyBone.getPosition().x + 4f;
-            }
-
-            if (leftBootBone != null && bodyBone != null) {
-                leftBootBone.getPosition().z = bodyBone.getPosition().x + 4f;
+                this.transformBoneAndChildren(rightLegBone, bone ->
+                        bone.getPosition().z = bodyBone.getPosition().x + 4f);
+                this.transformBoneAndChildren(leftLegBone, bone ->
+                        bone.getPosition().z = bodyBone.getPosition().x + 4f
+                );
+                this.transformBoneAndChildren(rightBootBone, bone ->
+                        bone.getPosition().z = bodyBone.getPosition().x + 4f
+                );
+                this.transformBoneAndChildren(leftBootBone, bone ->
+                        bone.getPosition().z = bodyBone.getPosition().x + 4f
+                );
             }
 		}
 		Minecraft.getMinecraft().renderEngine.bindTexture(this.getTextureLocation(this.currentArmorHolder));
@@ -193,6 +195,23 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
         this.tryFitBoneToBiped(this.bipedRightLeg, this.rightBootBone);
         this.tryFitBoneToBiped(this.bipedLeftLeg, this.leftBootBone);
 	}
+
+    private void transformBoneAndChildren(@Nullable IBone bone, Consumer<IBone> transformation) {
+        if (bone == null) return;
+
+        float originalX = bone.getPosition().x;
+        float originalY = bone.getPosition().y;
+        transformation.accept(bone);
+
+        if (bone instanceof GeoBone geoBone) {
+            float childXCompensation = originalX - bone.getPosition().x;
+            float childYCompensation = (originalY - bone.getPosition().y) * -0.25f;
+            for (GeoBone childBone : geoBone.childBones) {
+                childBone.getPosition().x += childXCompensation;
+                childBone.getPosition().y += childYCompensation;
+            }
+        }
+    }
 
     private void tryFitBoneToBiped(ModelRenderer bipedBone, String boneName) {
         if (bipedBone == null) RiftLib.LOGGER.warn("Biped bone to fit to cannot be null");

@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.hitbox;
 
+import anightdazingzoroark.example.entity.DragonEntity;
 import anightdazingzoroark.riftlib.RiftLib;
 import mcp.mobius.waila.addons.core.HUDHandlerEntities;
 import mcp.mobius.waila.api.*;
@@ -11,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The default HWYLA factory for RiftLibCollisionHitbox instances
@@ -37,23 +39,25 @@ public class RiftLibCollisionHitboxHWYLA implements IWailaPlugin {
 
             //get parents provider list
             EntityLivingBase parent = hitbox.getParent().getMultiHitboxUser();
-            List<IWailaEntityProvider> parentEntityProviderList = ModuleRegistrar.instance().headEntityProviders.get(parent.getClass());
+            Map<Integer, List<IWailaEntityProvider>> providerGroups = ModuleRegistrar.instance().getHeadEntityProviders(parent);
 
             //no provider list, use default handler and parent
-            if (parentEntityProviderList == null) {
+            if (providerGroups == null) {
                 currenttip.clear();
                 return this.defaultHandler.getWailaHead(parent, currenttip, accessor, config);
             }
 
             //new string list from parent, assumes parent has waila factory
-            List<String> toReturn = new ArrayList<>();
-            for (IWailaEntityProvider entityProvider : parentEntityProviderList) {
-                toReturn = entityProvider.getWailaHead(entity, toReturn, accessor, config);
+            List<String> result = new ArrayList<>();
+            for (List<IWailaEntityProvider> providers : providerGroups.values()) {
+                for (IWailaEntityProvider provider : providers) {
+                    result = provider.getWailaHead(parent, result, accessor, config);
+                }
             }
 
-            //if toReturn is still empty, default factory
-            if (toReturn.isEmpty()) return this.defaultHandler.getWailaHead(parent, toReturn, accessor, config);
-            return toReturn;
+            currenttip.clear();
+            currenttip.addAll(result);
+            return currenttip;
         }
 
         @Nonnull
@@ -64,23 +68,25 @@ public class RiftLibCollisionHitboxHWYLA implements IWailaPlugin {
 
             //get parents provider list
             EntityLivingBase parent = hitbox.getParent().getMultiHitboxUser();
-            List<IWailaEntityProvider> parentEntityProviderList = ModuleRegistrar.instance().headEntityProviders.get(parent.getClass());
+            Map<Integer, List<IWailaEntityProvider>> providerGroups = ModuleRegistrar.instance().getBodyEntityProviders(parent);
 
             //no provider list, use default handler and parent
-            if (parentEntityProviderList == null) {
+            if (providerGroups == null) {
                 currenttip.clear();
                 return this.defaultHandler.getWailaBody(parent, currenttip, accessor, config);
             }
 
             //new string list from parent, assumes parent has waila factory
-            List<String> toReturn = new ArrayList<>();
-            for (IWailaEntityProvider entityProvider : parentEntityProviderList) {
-                toReturn = entityProvider.getWailaBody(entity, toReturn, accessor, config);
+            List<String> result = new ArrayList<>();
+            for (List<IWailaEntityProvider> providers : providerGroups.values()) {
+                for (IWailaEntityProvider provider : providers) {
+                    result = provider.getWailaBody(parent, result, accessor, config);
+                }
             }
 
-            //if toReturn is still empty, default factory
-            if (toReturn.isEmpty()) return this.defaultHandler.getWailaBody(parent, toReturn, accessor, config);
-            return toReturn;
+            currenttip.clear();
+            currenttip.addAll(result);
+            return currenttip;
         }
 
         @Nonnull
@@ -91,23 +97,25 @@ public class RiftLibCollisionHitboxHWYLA implements IWailaPlugin {
 
             //get parents provider list
             EntityLivingBase parent = hitbox.getParent().getMultiHitboxUser();
-            List<IWailaEntityProvider> parentEntityProviderList = ModuleRegistrar.instance().headEntityProviders.get(parent.getClass());
+            Map<Integer, List<IWailaEntityProvider>> providerGroups = ModuleRegistrar.instance().getTailEntityProviders(parent);
 
             //no provider list, use default handler and parent
-            if (parentEntityProviderList == null) {
+            if (providerGroups == null) {
                 currenttip.clear();
                 return this.defaultHandler.getWailaTail(parent, currenttip, accessor, config);
             }
 
             //new string list from parent, assumes parent has waila factory
-            List<String> toReturn = new ArrayList<>();
-            for (IWailaEntityProvider entityProvider : parentEntityProviderList) {
-                toReturn = entityProvider.getWailaTail(entity, toReturn, accessor, config);
+            List<String> result = new ArrayList<>();
+            for (List<IWailaEntityProvider> providers : providerGroups.values()) {
+                for (IWailaEntityProvider provider : providers) {
+                    result = provider.getWailaTail(parent, result, accessor, config);
+                }
             }
 
-            //if toReturn is still empty, default factory
-            if (toReturn.isEmpty()) return this.defaultHandler.getWailaTail(parent, toReturn, accessor, config);
-            return toReturn;
+            currenttip.clear();
+            currenttip.addAll(result);
+            return currenttip;
         }
     }
 }

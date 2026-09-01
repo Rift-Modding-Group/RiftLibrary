@@ -24,10 +24,4 @@ public class FireworkStickModel extends AnimatedGeoModel<AnimatedFireworkStickIt
     public String getTextureLocation(AnimatedFireworkStickItem object) {
         return "item/firework_stick.png";
     }
-
-    @Override
-    @NotNull
-    public List<String> getAnimationIdentifiers(AnimatedFireworkStickItem animatable) {
-        return List.of("animation.firework_stick.create_sparks");
-    }
 }

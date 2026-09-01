@@ -24,10 +24,4 @@ public class GoKartModel extends AnimatedGeoModel<GoKartEntity> {
     public String getTextureLocation(GoKartEntity object) {
         return "model/entity/go_kart.png";
     }
-
-    @Override
-    @NotNull
-    public List<String> getAnimationIdentifiers(GoKartEntity animatable) {
-        return List.of("animation.go_kart.move");
-    }
 }

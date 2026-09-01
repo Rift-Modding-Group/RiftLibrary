@@ -24,10 +24,4 @@ public class SprinklerItemModel extends AnimatedGeoModel<AnimatedSimpleItemStack
     public String getTextureLocation(AnimatedSimpleItemStack animatable) {
         return "block/sprinkler.png";
     }
-
-    @Override
-    @NotNull
-    public List<String> getAnimationIdentifiers(AnimatedSimpleItemStack animatable) {
-        return List.of();
-    }
 }

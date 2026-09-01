@@ -24,15 +24,4 @@ public class DragonModel extends AnimatedGeoModel<DragonEntity> {
     public String getTextureLocation(DragonEntity object) {
         return "model/entity/dragon.png";
     }
-
-    @Override
-    @NotNull
-    public List<String> getAnimationIdentifiers(DragonEntity animatable) {
-        return List.of(
-                "animation.dragon.flying", "animation.dragon.attack_while_flying",
-                "animation.dragon.land_pose", "animation.dragon.walking",
-                "animation.dragon.fly_pose", "animation.dragon.breathe_fire_while_flying",
-                "animation.dragon.test"
-        );
-    }
 }

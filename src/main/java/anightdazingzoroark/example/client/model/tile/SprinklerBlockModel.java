@@ -24,16 +24,4 @@ public class SprinklerBlockModel extends AnimatedGeoModel<SprinklerTileEntity> {
     public String getTextureLocation(SprinklerTileEntity object) {
         return "block/sprinkler.png";
     }
-
-    @Override
-    @NotNull
-    public List<String> getAnimationIdentifiers(SprinklerTileEntity animatable) {
-        return List.of(
-                "animation.sprinkler.spinning",
-                "animation.sprinkler.hose_water_zero",
-                "animation.sprinkler.hose_water_one",
-                "animation.sprinkler.hose_water_two",
-                "animation.sprinkler.hose_water_three"
-        );
-    }
 }

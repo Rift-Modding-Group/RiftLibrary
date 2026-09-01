@@ -23,10 +23,4 @@ public class SatelliteDishHelmetModel extends AnimatedGeoModel<AnimatedSatellite
     public String getTextureLocation(AnimatedSatelliteDishHelmetHolder object) {
         return "armor/satellite_dish_helmet.png";
     }
-
-    @Override
-    @NotNull
-    public List<String> getAnimationIdentifiers(AnimatedSatelliteDishHelmetHolder animatable) {
-        return List.of("animation.satellite_dish_helmet.spin", "animation.satellite_dish_helmet.signal");
-    }
 }

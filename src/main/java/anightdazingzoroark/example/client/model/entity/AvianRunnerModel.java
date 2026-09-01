@@ -24,10 +24,4 @@ public class AvianRunnerModel extends AnimatedGeoModel<AvianRunnerEntity> {
     public String getTextureLocation(AvianRunnerEntity object) {
         return "model/entity/avian_runner.png";
     }
-
-    @Override
-    @NotNull
-    public List<String> getAnimationIdentifiers(AvianRunnerEntity animatable) {
-        return List.of("animation.avian_runner.run", "animation.avian_runner.run_no_math");
-    }
 }

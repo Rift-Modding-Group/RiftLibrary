@@ -24,10 +24,4 @@ public class FlyingPufferfishModel extends AnimatedGeoModel<FlyingPufferfishEnti
     public String getTextureLocation(FlyingPufferfishEntity object) {
         return "model/entity/flying_pufferfish.png";
     }
-
-    @Override
-    @NotNull
-    public List<String> getAnimationIdentifiers(FlyingPufferfishEntity animatable) {
-        return List.of("animation.flying_pufferfish.fly", "animation.flying_pufferfish.inflate_loop");
-    }
 }

@@ -24,10 +24,4 @@ public class FidgetSpinnerModel extends AnimatedGeoModel<AnimatedFidgetSpinnerIt
     public String getTextureLocation(AnimatedFidgetSpinnerItem object) {
         return "item/fidget_spinner.png";
     }
-
-    @Override
-    @NotNull
-    public List<String> getAnimationIdentifiers(AnimatedFidgetSpinnerItem animatable) {
-        return List.of("animation.fidget_spinner.spin");
-    }
 }

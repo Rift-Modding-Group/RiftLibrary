@@ -24,10 +24,4 @@ public class ReplacedCreeperModel extends AnimatedGeoModel {
 	public String getTextureLocation(Object object) {
 		return "model/entity/creeper.png";
 	}
-
-	@Override
-	@NotNull
-	public List<String> getAnimationIdentifiers(Object animatable) {
-		return List.of("creeper_idle", "creeper_walk", "creeper_explode");
-	}
 }

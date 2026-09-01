@@ -23,10 +23,4 @@ public class GreenArmorModel extends AnimatedGeoModel<AnimatedGreenArmorHolder> 
 	public String getTextureLocation(AnimatedGreenArmorHolder object) {
 		return "item/green_armor.png";
 	}
-
-	@Override
-	@NotNull
-	public List<String> getAnimationIdentifiers(AnimatedGreenArmorHolder animatable) {
-        return List.of();
-	}
 }

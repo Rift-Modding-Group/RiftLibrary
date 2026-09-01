@@ -24,10 +24,4 @@ public class MerryGoRoundBlockModel extends AnimatedGeoModel<MerryGoRoundTileEnt
     public String getTextureLocation(MerryGoRoundTileEntity object) {
         return "block/merry_go_round.png";
     }
-
-    @Override
-    @NotNull
-    public List<String> getAnimationIdentifiers(MerryGoRoundTileEntity animatable) {
-        return List.of("animation.merry_go_round.rotate");
-    }
 }

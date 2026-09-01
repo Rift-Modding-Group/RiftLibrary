@@ -24,10 +24,4 @@ public class BubbleGunModel extends AnimatedGeoModel<AnimatedBubbleGunItem> {
     public String getTextureLocation(AnimatedBubbleGunItem object) {
         return "item/bubble_gun.png";
     }
-
-    @Override
-    @NotNull
-    public List<String> getAnimationIdentifiers(AnimatedBubbleGunItem animatable) {
-        return List.of("animation.bubble_gun.blow_bubbles");
-    }
 }

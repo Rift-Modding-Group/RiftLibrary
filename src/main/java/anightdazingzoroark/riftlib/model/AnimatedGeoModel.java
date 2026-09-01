@@ -19,7 +19,6 @@ import anightdazingzoroark.riftlib.geo.GeoBone;
 import anightdazingzoroark.riftlib.geo.GeoLocator;
 import anightdazingzoroark.riftlib.geo.GeoModel;
 import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
-import anightdazingzoroark.riftlib.model.provider.IAnimatableModelProvider;
 import anightdazingzoroark.riftlib.resource.client.RiftLibCacheClient;
 import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -29,7 +28,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings({"unchecked" })
-public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoModelProvider<T> implements IAnimatableModel<T>, IAnimatableModelProvider<T> {
+public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoModelProvider<T> implements IAnimatableModel<T> {
 	private static final long MAX_SERVER_SYNC_PREDICTION_TICKS = 3L;
 	private final AnimationProcessor animationProcessor;
 	//only relevant for server side models
@@ -203,10 +202,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 	public Animation getAnimations(@NotNull String name, IAnimatable<?> animatable) {
 		Map<String, Animation> animations = FMLCommonHandler.instance().getSide().isClient() ?
 				RiftLibCacheClient.getInstance().getAnimations().get(this.getModId()) : RiftLibCacheServer.getInstance().getAnimations().get(this.getModId());
-
-		//getAnimationIdentifiers is a validity check of sorts
-		if (this.getAnimationIdentifiers((T) animatable).contains(name)) return animations.get(name);
-		return null;
+		return animations.get(name);
 	}
 
 	@Override

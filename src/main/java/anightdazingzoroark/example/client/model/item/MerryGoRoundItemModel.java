@@ -24,10 +24,4 @@ public class MerryGoRoundItemModel extends AnimatedGeoModel<AnimatedSimpleItemSt
     public String getTextureLocation(AnimatedSimpleItemStack animatable) {
         return "block/merry_go_round.png";
     }
-
-    @Override
-    @NotNull
-    public List<String> getAnimationIdentifiers(AnimatedSimpleItemStack animatable) {
-        return List.of();
-    }
 }

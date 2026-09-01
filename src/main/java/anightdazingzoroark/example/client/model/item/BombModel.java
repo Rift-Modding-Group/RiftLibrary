@@ -24,10 +24,4 @@ public class BombModel extends AnimatedGeoModel<AnimatedBombItem> {
     public String getTextureLocation(AnimatedBombItem object) {
         return "model/entity/bomb.png";
     }
-
-    @Override
-    @NotNull
-    public List<String> getAnimationIdentifiers(AnimatedBombItem animatable) {
-        return List.of();
-    }
 }

@@ -24,10 +24,4 @@ public class AlarmClockModel extends AnimatedGeoModel<AlarmClockEntity> {
     public String getTextureLocation(AlarmClockEntity object) {
         return "model/entity/alarm_clock.png";
     }
-
-    @Override
-    @NotNull
-    public List<String> getAnimationIdentifiers(AlarmClockEntity animatable) {
-        return List.of("animation.alarm_clock.hour_rotation");
-    }
 }

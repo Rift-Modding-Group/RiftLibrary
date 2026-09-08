@@ -20,7 +20,9 @@ public abstract class GeoModelProvider<T> {
 	@NotNull
 	public abstract String getModId();
 
+	@NotNull
 	public abstract String getModelIdentifier(T object);
 
+	@NotNull
 	public abstract String getTextureLocation(T object);
 }

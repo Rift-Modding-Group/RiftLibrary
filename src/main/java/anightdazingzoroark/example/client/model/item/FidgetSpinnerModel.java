@@ -3,10 +3,7 @@ package anightdazingzoroark.example.client.model.item;
 import anightdazingzoroark.example.animateditem.AnimatedFidgetSpinnerItem;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
-import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 public class FidgetSpinnerModel extends AnimatedGeoModel<AnimatedFidgetSpinnerItem> {
     @Override
@@ -16,11 +13,13 @@ public class FidgetSpinnerModel extends AnimatedGeoModel<AnimatedFidgetSpinnerIt
     }
 
     @Override
+    @NotNull
     public String getModelIdentifier(AnimatedFidgetSpinnerItem object) {
         return "geometry.fidget_spinner";
     }
 
     @Override
+    @NotNull
     public String getTextureLocation(AnimatedFidgetSpinnerItem object) {
         return "item/fidget_spinner.png";
     }

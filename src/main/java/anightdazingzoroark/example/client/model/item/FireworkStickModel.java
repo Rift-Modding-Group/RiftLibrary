@@ -3,10 +3,7 @@ package anightdazingzoroark.example.client.model.item;
 import anightdazingzoroark.example.animateditem.AnimatedFireworkStickItem;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
-import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 public class FireworkStickModel extends AnimatedGeoModel<AnimatedFireworkStickItem> {
     @Override
@@ -16,11 +13,13 @@ public class FireworkStickModel extends AnimatedGeoModel<AnimatedFireworkStickIt
     }
 
     @Override
+    @NotNull
     public String getModelIdentifier(AnimatedFireworkStickItem object) {
         return "geometry.firework_stick";
     }
 
     @Override
+    @NotNull
     public String getTextureLocation(AnimatedFireworkStickItem object) {
         return "item/firework_stick.png";
     }

@@ -5,8 +5,6 @@ import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public class SatelliteDishHelmetModel extends AnimatedGeoModel<AnimatedSatelliteDishHelmetHolder> {
     @Override
     @NotNull
@@ -15,11 +13,13 @@ public class SatelliteDishHelmetModel extends AnimatedGeoModel<AnimatedSatellite
     }
 
     @Override
+    @NotNull
     public String getModelIdentifier(AnimatedSatelliteDishHelmetHolder object) {
         return "geometry.satellite_dish_helmet";
     }
 
     @Override
+    @NotNull
     public String getTextureLocation(AnimatedSatelliteDishHelmetHolder object) {
         return "armor/satellite_dish_helmet.png";
     }

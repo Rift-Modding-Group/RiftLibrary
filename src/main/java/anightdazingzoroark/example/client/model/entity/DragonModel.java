@@ -3,10 +3,7 @@ package anightdazingzoroark.example.client.model.entity;
 import anightdazingzoroark.example.entity.DragonEntity;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
-import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 public class DragonModel extends AnimatedGeoModel<DragonEntity> {
     @Override
@@ -16,11 +13,13 @@ public class DragonModel extends AnimatedGeoModel<DragonEntity> {
     }
 
     @Override
+    @NotNull
     public String getModelIdentifier(DragonEntity object) {
         return "geometry.dragon";
     }
 
     @Override
+    @NotNull
     public String getTextureLocation(DragonEntity object) {
         return "model/entity/dragon.png";
     }

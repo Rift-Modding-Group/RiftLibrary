@@ -5,14 +5,15 @@ import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataTileEntity;
 import net.minecraft.tileentity.TileEntity;
-
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 public class SprinklerTileEntity extends TileEntity implements IAnimatable<AnimationDataTileEntity> {
+    @NotNull
     private final AnimationDataTileEntity animationData = new AnimationDataTileEntity(this);
 
     @Override
-    public void initializeAnimationData(AnimationDataTileEntity animationData) {
+    public void initializeAnimationData(@NonNull AnimationDataTileEntity animationData) {
         animationData.addAnimationController(new AnimationController<SprinklerTileEntity, AnimationDataTileEntity>(
                 this, "sprinkler", "default",
                 new AnimationControllerState<AnimationDataTileEntity>("default")
@@ -25,6 +26,7 @@ public class SprinklerTileEntity extends TileEntity implements IAnimatable<Anima
     }
 
     @Override
+    @NotNull
     public AnimationDataTileEntity getAnimationData() {
         return this.animationData;
     }

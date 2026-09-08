@@ -21,12 +21,14 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
 
 public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<AnimationDataEntity>, IMultiHitboxUser<FlyingPufferfishEntity>, IRayCreator<FlyingPufferfishEntity> {
     @NotNull
     private final MultiHitboxList<FlyingPufferfishEntity> multiHitboxList;
+    @NotNull
     private final AnimationDataEntity animationData = new AnimationDataEntity(this, 2f);
     private final Map<String, RiftLibRayBuilder> rayMap;
 
@@ -96,7 +98,7 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
     //ray stuff ends here
 
     @Override
-    public void initializeAnimationData(AnimationDataEntity animationData) {
+    public void initializeAnimationData(@NonNull AnimationDataEntity animationData) {
         animationData.addAnimationController(new AnimationController<FlyingPufferfishEntity, AnimationDataEntity>(
                 this, "puff", "default",
                 new AnimationControllerState<AnimationDataEntity>("default")
@@ -112,6 +114,7 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
     }
 
     @Override
+    @NotNull
     public AnimationDataEntity getAnimationData() {
         return this.animationData;
     }

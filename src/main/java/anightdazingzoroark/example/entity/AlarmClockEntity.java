@@ -7,6 +7,8 @@ import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
 import anightdazingzoroark.riftlib.util.MathUtils;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 public class AlarmClockEntity extends EntityLiving implements IAnimatable<AnimationDataEntity> {
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
@@ -16,7 +18,7 @@ public class AlarmClockEntity extends EntityLiving implements IAnimatable<Animat
     }
 
     @Override
-    public void initializeAnimationData(AnimationDataEntity animationData) {
+    public void initializeAnimationData(@NonNull AnimationDataEntity animationData) {
         animationData.addAnimationController(new AnimationController<AlarmClockEntity, AnimationDataEntity>(
                 this, "clock", "default",
                 new AnimationControllerState<AnimationDataEntity>("default")
@@ -30,6 +32,7 @@ public class AlarmClockEntity extends EntityLiving implements IAnimatable<Animat
     }
 
     @Override
+    @NotNull
     public AnimationDataEntity getAnimationData() {
         return this.animationData;
     }

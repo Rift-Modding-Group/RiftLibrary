@@ -5,6 +5,7 @@ import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataArmor;
 import net.minecraft.item.ItemStack;
+import org.jspecify.annotations.NonNull;
 
 public class AnimatedSatelliteDishHelmetHolder extends AnimatedArmorHolder {
     public AnimatedSatelliteDishHelmetHolder(ItemStack stack) {
@@ -12,7 +13,7 @@ public class AnimatedSatelliteDishHelmetHolder extends AnimatedArmorHolder {
     }
 
     @Override
-    public void initializeAnimationData(AnimationDataArmor animationData) {
+    public void initializeAnimationData(@NonNull AnimationDataArmor animationData) {
         animationData.addAnimationController(new AnimationController<AnimatedSatelliteDishHelmetHolder, AnimationDataArmor>(
                 this, "satelliteDish", "default",
                 new AnimationControllerState<AnimationDataArmor>("default")

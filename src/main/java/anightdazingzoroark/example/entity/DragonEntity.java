@@ -27,12 +27,14 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import javax.annotation.Nullable;
 import java.util.Map;
 
 public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IRayCreator<DragonEntity>, IMultiHitboxUser<DragonEntity>, IDynamicRideUser<DragonEntity> {
     private static final DataParameter<Boolean> BREATHING_FIRE = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
+    @NotNull
     private final AnimationDataEntity animationData = new AnimationDataEntity(this, 3f);
     private final MultiHitboxList<DragonEntity> multiHitboxList;
     private final DynamicRidePosList ridePositions;
@@ -276,7 +278,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
 
 
     @Override
-    public void initializeAnimationData(AnimationDataEntity animationData) {
+    public void initializeAnimationData(@NonNull AnimationDataEntity animationData) {
         /*
         animationData.addAnimationController(new AnimationController<DragonEntity, AnimationDataEntity>(
                 this, "test", "default",
@@ -305,6 +307,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     }
 
     @Override
+    @NotNull
     public AnimationDataEntity getAnimationData() {
         return this.animationData;
     }

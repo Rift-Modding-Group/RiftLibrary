@@ -19,8 +19,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class RiftLibProjectile extends EntityArrow implements IAnimatable<AnimationDataProjectile> {
-    private final AnimationDataProjectile data = new AnimationDataProjectile(this);
-
     public RiftLibProjectile(World worldIn) {
         super(worldIn);
     }
@@ -142,11 +140,6 @@ public abstract class RiftLibProjectile extends EntityArrow implements IAnimatab
 
     public double getDamageBonusFromCrit(double initDamage) {
         return this.rand.nextInt((int) initDamage / 2 + 2);
-    }
-
-    @Override
-    public AnimationDataProjectile getAnimationData() {
-        return this.data;
     }
 
     public abstract SoundEvent getOnProjectileHitSound();

@@ -7,9 +7,14 @@ import anightdazingzoroark.riftlib.projectile.RiftLibProjectile;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 public class BombProjectile extends RiftLibProjectile {
+    @NotNull
+    private final AnimationDataProjectile data = new AnimationDataProjectile(this);
+
     public BombProjectile(World worldIn) {
         super(worldIn);
     }
@@ -43,7 +48,12 @@ public class BombProjectile extends RiftLibProjectile {
     }
 
     @Override
-    public void initializeAnimationData(AnimationDataProjectile animationData) {
+    public SoundEvent getOnProjectileHitSound() {
+        return null;
+    }
+
+    @Override
+    public void initializeAnimationData(@NonNull AnimationDataProjectile animationData) {
         animationData.addAnimationController(new AnimationController<BombProjectile, AnimationDataProjectile>(
                 this, "bomb", "default",
                 new AnimationControllerState<AnimationDataProjectile>("default")
@@ -53,7 +63,8 @@ public class BombProjectile extends RiftLibProjectile {
     }
 
     @Override
-    public SoundEvent getOnProjectileHitSound() {
-        return null;
+    @NotNull
+    public AnimationDataProjectile getAnimationData() {
+        return this.data;
     }
 }

@@ -50,8 +50,8 @@ public class GeoProjectileRenderer<T extends RiftLibProjectile> extends Render<T
 			);
 		}
 
-        this.modelProvider.setClientAnimations(entity);
 		this.modelProvider.createAndUpdateAnimatedLocators(entity);
+        this.modelProvider.setClientAnimations(entity);
 
         GlStateManager.pushMatrix();
 		GlStateManager.scale(this.projectileScale(), this.projectileScale(), this.projectileScale());

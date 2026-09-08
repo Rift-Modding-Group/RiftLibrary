@@ -8,11 +8,13 @@ import net.minecraft.entity.*;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 public class GoKartEntity extends EntityCreature implements IAnimatable<AnimationDataEntity> {
+    @NotNull
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
 
     public GoKartEntity(World worldIn) {
@@ -87,7 +89,7 @@ public class GoKartEntity extends EntityCreature implements IAnimatable<Animatio
     //ride management stuff ends here
 
     @Override
-    public void initializeAnimationData(AnimationDataEntity animationData) {
+    public void initializeAnimationData(@NonNull AnimationDataEntity animationData) {
         animationData.addAnimationController(new AnimationController<GoKartEntity, AnimationDataEntity>(
                 this, "movement", "default",
                 new AnimationControllerState<AnimationDataEntity>("default")
@@ -96,6 +98,7 @@ public class GoKartEntity extends EntityCreature implements IAnimatable<Animatio
     }
 
     @Override
+    @NotNull
     public AnimationDataEntity getAnimationData() {
         return this.animationData;
     }

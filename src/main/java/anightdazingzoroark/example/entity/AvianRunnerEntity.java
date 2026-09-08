@@ -1,26 +1,25 @@
 package anightdazingzoroark.example.entity;
 
-import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
-import anightdazingzoroark.riftlib.core.manager.AnimationDataTileEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAILookIdle;
-import net.minecraft.entity.ai.EntityAIWanderAvoidWater;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 public class AvianRunnerEntity extends EntityCreature implements IAnimatable<AnimationDataEntity> {
+    @NotNull
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
 
     public AvianRunnerEntity(World worldIn) {
@@ -101,7 +100,7 @@ public class AvianRunnerEntity extends EntityCreature implements IAnimatable<Ani
     //ride management stuff ends here
 
     @Override
-    public void initializeAnimationData(AnimationDataEntity animationData) {
+    public void initializeAnimationData(@NonNull AnimationDataEntity animationData) {
         animationData.addAnimationController(new AnimationController<AvianRunnerEntity, AnimationDataEntity>(
                 this, "movement", "default",
                 new AnimationControllerState<AnimationDataEntity>("default")
@@ -113,6 +112,7 @@ public class AvianRunnerEntity extends EntityCreature implements IAnimatable<Ani
     }
 
     @Override
+    @NotNull
     public AnimationDataEntity getAnimationData() {
         return this.animationData;
     }

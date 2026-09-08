@@ -5,6 +5,7 @@ import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataItemStack;
 import anightdazingzoroark.riftlib.item.AnimatedItemStackHolder;
 import net.minecraft.item.ItemStack;
+import org.jspecify.annotations.NonNull;
 
 public class AnimatedBubbleGunItem extends AnimatedItemStackHolder {
     public AnimatedBubbleGunItem(ItemStack stack) {
@@ -12,7 +13,7 @@ public class AnimatedBubbleGunItem extends AnimatedItemStackHolder {
     }
 
     @Override
-    public void initializeAnimationData(AnimationDataItemStack animationData) {
+    public void initializeAnimationData(@NonNull AnimationDataItemStack animationData) {
         animationData.addAnimationController(new AnimationController<AnimatedBubbleGunItem, AnimationDataItemStack>(
                 this, "blow", "default",
                 new AnimationControllerState<AnimationDataItemStack>("default")

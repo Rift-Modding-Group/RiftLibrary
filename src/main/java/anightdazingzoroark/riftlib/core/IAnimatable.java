@@ -1,6 +1,7 @@
 package anightdazingzoroark.riftlib.core;
 
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * This interface must be applied to any object that wants to be animated
@@ -9,6 +10,7 @@ public interface IAnimatable<D extends AbstractAnimationData<?, D>> {
     /**
      * The animation data for the object that will be animated.
      * */
+    @NotNull
     D getAnimationData();
 
     /**
@@ -16,5 +18,5 @@ public interface IAnimatable<D extends AbstractAnimationData<?, D>> {
      * are to be run here, such as animation controllers, molang
      * variable initialization, etc.
      * */
-    void initializeAnimationData(D animationData);
+    void initializeAnimationData(@NotNull D animationData);
 }

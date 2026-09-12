@@ -1,8 +1,13 @@
 package anightdazingzoroark.riftlib.renderers.geo;
 
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
@@ -12,8 +17,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.EnumHandSide;
 import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
 import anightdazingzoroark.riftlib.core.util.Color;
@@ -49,6 +57,8 @@ public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder> extends
 	//this map holds data for individual itemstacks and removes unrendered items every now and then
 	//key is the itemstack render identity, value is the animated itemstack holder and last render time
 	private final Map<Integer, MutablePair<T, Long>> holderCache = new HashMap<>();
+	private final Map<UUID, EnumSet<EnumHand>> heldItemHands = new HashMap<>();
+	private final Map<UUID, EnumMap<EnumHand, Integer>> equipSessions = new HashMap<>();
 	private long lastHolderCacheCleanup;
 
 	public GeoItemRenderer(AnimatedGeoModel<T> modelProvider, Function<ItemStack, T> holderCreator) {
@@ -80,17 +90,78 @@ public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder> extends
 			entry.setRight(now);
 		}
 
+		holder.setTransformType(transformType);
 		return holder;
 	}
 
-	//cache for instances of an item. totally different from uniqueID from before
+	//held items keep one holder through stack data changes and receive a new holder when re-equipped
 	protected int getHolderCacheKey(ItemStack itemStack, ItemCameraTransforms.TransformType transformType) {
+		Minecraft minecraft = Minecraft.getMinecraft();
+		if (minecraft.player != null && (transformType == ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND
+				|| transformType == ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND)) {
+			EnumHandSide renderedHandSide = transformType == ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND
+					? EnumHandSide.RIGHT : EnumHandSide.LEFT;
+			EnumHand renderedHand = minecraft.player.getPrimaryHand() == renderedHandSide ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
+			ItemStack heldStack = minecraft.player.getHeldItem(renderedHand);
+			boolean usesThisRenderer = !heldStack.isEmpty() && heldStack.getItem().getTileEntityItemStackRenderer() == this;
+			int equipSession = this.updateEquipSession(minecraft.player, renderedHand, usesThisRenderer);
+			return Objects.hash(minecraft.player.getUniqueID(), renderedHand, transformType, equipSession);
+		}
+
+		if (minecraft.world != null) {
+			for (EntityPlayer player : minecraft.world.playerEntities) {
+				EnumHand heldHand = null;
+				if (player.getHeldItemMainhand() == itemStack) heldHand = EnumHand.MAIN_HAND;
+				else if (player.getHeldItemOffhand() == itemStack) heldHand = EnumHand.OFF_HAND;
+
+				if (heldHand != null) {
+					int equipSession = this.updateEquipSession(player, heldHand, true);
+					return Objects.hash(player.getUniqueID(), heldHand, transformType, equipSession);
+				}
+			}
+		}
+
 		return Objects.hash(
 				itemStack.getItem(),
 				itemStack.getMetadata(),
 				itemStack.hasTagCompound() ? itemStack.getTagCompound().toString() : null,
 				transformType
 		);
+	}
+
+	public void updateEquipSessions() {
+		Minecraft minecraft = Minecraft.getMinecraft();
+		if (minecraft.world == null) {
+			this.heldItemHands.clear();
+			this.equipSessions.clear();
+			return;
+		}
+
+		Set<UUID> currentPlayers = new HashSet<>();
+		for (EntityPlayer player : minecraft.world.playerEntities) {
+			currentPlayers.add(player.getUniqueID());
+			for (EnumHand hand : EnumHand.values()) {
+				ItemStack heldStack = player.getHeldItem(hand);
+				boolean usesThisRenderer = !heldStack.isEmpty() && heldStack.getItem().getTileEntityItemStackRenderer() == this;
+				this.updateEquipSession(player, hand, usesThisRenderer);
+			}
+		}
+
+		this.heldItemHands.keySet().retainAll(currentPlayers);
+		this.equipSessions.keySet().retainAll(currentPlayers);
+	}
+
+	private int updateEquipSession(EntityPlayer player, EnumHand hand, boolean usesThisRenderer) {
+		UUID playerId = player.getUniqueID();
+		EnumSet<EnumHand> heldHands = this.heldItemHands.computeIfAbsent(playerId, ignored -> EnumSet.noneOf(EnumHand.class));
+		EnumMap<EnumHand, Integer> playerEquipSessions = this.equipSessions.computeIfAbsent(playerId, ignored -> new EnumMap<>(EnumHand.class));
+
+		if (!usesThisRenderer) {
+			heldHands.remove(hand);
+			return playerEquipSessions.getOrDefault(hand, 0);
+		}
+		if (heldHands.add(hand)) playerEquipSessions.merge(hand, 1, Integer::sum);
+		return playerEquipSessions.getOrDefault(hand, 0);
 	}
 
 	public void cleanupHolderCache(long now) {
@@ -122,8 +193,6 @@ public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder> extends
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(0, 0.01f, 0);
 		GlStateManager.translate(0.5, 0.5, 0.5);
-
-		animatable.setTransformType(transformType);
 
 		Minecraft.getMinecraft().renderEngine.bindTexture(this.getTextureLocation(animatable));
 		Color renderColor = this.getRenderColor(animatable, 0f);

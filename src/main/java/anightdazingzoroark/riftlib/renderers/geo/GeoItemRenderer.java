@@ -21,7 +21,7 @@ import anightdazingzoroark.riftlib.geo.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import org.apache.commons.lang3.tuple.MutablePair;
 
-@SuppressWarnings({ "rawtypes", "unchecked" })
+@SuppressWarnings({"unchecked" })
 public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder> extends TileEntityItemStackRenderer implements IGeoRenderer<T> {
 	/**
 	 * these constants are for cleaning up cache related to rendering of itemstacks
@@ -122,6 +122,8 @@ public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder> extends
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(0, 0.01f, 0);
 		GlStateManager.translate(0.5, 0.5, 0.5);
+
+		animatable.setTransformType(transformType);
 
 		Minecraft.getMinecraft().renderEngine.bindTexture(this.getTextureLocation(animatable));
 		Color renderColor = this.getRenderColor(animatable, 0f);

@@ -6,6 +6,7 @@ import anightdazingzoroark.riftlib.core.manager.AnimationDataProjectile;
 import anightdazingzoroark.riftlib.projectile.RiftLibProjectile;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,8 +34,8 @@ public class BombProjectile extends RiftLibProjectile {
     }
 
     @Override
-    public void projectileEntityEffects(@Nullable EntityLivingBase entityLivingBase) {
-        this.world.createExplosion(this, this.posX, this.posY, this.posZ, 4f, true);
+    public void projectileImpactEffects(@Nullable EntityLivingBase hitEntity, @NotNull Vec3d hitPos) {
+        this.world.createExplosion(this, hitPos.x, hitPos.y, hitPos.z, 4f, true);
     }
 
     @Override

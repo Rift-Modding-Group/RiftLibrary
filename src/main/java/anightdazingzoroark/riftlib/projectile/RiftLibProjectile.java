@@ -14,6 +14,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,6 +34,7 @@ public abstract class RiftLibProjectile extends EntityArrow implements IAnimatab
         this.shootingEntity = shooter;
     }
 
+    @Override
     protected void onHit(RayTraceResult raytraceResultIn) {
         Entity entity = raytraceResultIn.entityHit;
         BlockPos blockPos = raytraceResultIn.getBlockPos();
@@ -43,10 +45,10 @@ public abstract class RiftLibProjectile extends EntityArrow implements IAnimatab
                 if (this.getIsCritical()) damage += this.getDamageBonusFromCrit(damage);
 
                 if (entity instanceof MultiPartEntityPart multiPartEntityPart && multiPartEntityPart.parent instanceof EntityLivingBase parent) {
-                    this.projectileEntityEffects(parent);
+                    this.projectileImpactEffects(parent, this.getPositionVector());
                 }
                 else if (entity instanceof EntityLivingBase entitylivingbase) {
-                    this.projectileEntityEffects(entitylivingbase);
+                    this.projectileImpactEffects(entitylivingbase, this.getPositionVector());
                 }
 
                 if (entity.attackEntityFrom(this.getDamageSource(), (float) damage)) {
@@ -81,7 +83,7 @@ public abstract class RiftLibProjectile extends EntityArrow implements IAnimatab
                 this.setIsCritical(false);
 
                 if (iblockstate.getMaterial() != Material.AIR) this.inTile.onEntityCollision(this.world, blockPos, iblockstate, this);
-                this.projectileEntityEffects(null);
+                this.projectileImpactEffects(null, this.getPositionVector());
                 if (this.canSelfDestroyUponHit()) this.setDead();
             }
         }
@@ -111,7 +113,10 @@ public abstract class RiftLibProjectile extends EntityArrow implements IAnimatab
     }
 
     //-----overridable stuff-----
-    public abstract void projectileEntityEffects(@Nullable EntityLivingBase entityLivingBase);
+    /**
+     * Executes upon impact, should be obvious what it does
+     * */
+    public abstract void projectileImpactEffects(@Nullable EntityLivingBase hitEntity, @NotNull Vec3d hitPos);
 
     public boolean canSelfDestroyUponHit() {
         return true;

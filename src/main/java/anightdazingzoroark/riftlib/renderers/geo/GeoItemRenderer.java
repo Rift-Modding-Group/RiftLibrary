@@ -1,7 +1,6 @@
 package anightdazingzoroark.riftlib.renderers.geo;
 
 import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -57,7 +56,7 @@ public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder> extends
 	//this map holds data for individual itemstacks and removes unrendered items every now and then
 	//key is the itemstack render identity, value is the animated itemstack holder and last render time
 	private final Map<Integer, MutablePair<T, Long>> holderCache = new HashMap<>();
-	private final Map<UUID, EnumSet<EnumHand>> heldItemHands = new HashMap<>();
+	private final Map<UUID, EnumMap<EnumHand, Integer>> equippedItemIdentities = new HashMap<>();
 	private final Map<UUID, EnumMap<EnumHand, Integer>> equipSessions = new HashMap<>();
 	private long lastHolderCacheCleanup;
 
@@ -103,8 +102,7 @@ public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder> extends
 					? EnumHandSide.RIGHT : EnumHandSide.LEFT;
 			EnumHand renderedHand = minecraft.player.getPrimaryHand() == renderedHandSide ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
 			ItemStack heldStack = minecraft.player.getHeldItem(renderedHand);
-			boolean usesThisRenderer = !heldStack.isEmpty() && heldStack.getItem().getTileEntityItemStackRenderer() == this;
-			int equipSession = this.updateEquipSession(minecraft.player, renderedHand, usesThisRenderer);
+			int equipSession = this.updateEquipSession(minecraft.player, renderedHand, heldStack);
 			return Objects.hash(minecraft.player.getUniqueID(), renderedHand, transformType, equipSession);
 		}
 
@@ -115,7 +113,7 @@ public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder> extends
 				else if (player.getHeldItemOffhand() == itemStack) heldHand = EnumHand.OFF_HAND;
 
 				if (heldHand != null) {
-					int equipSession = this.updateEquipSession(player, heldHand, true);
+					int equipSession = this.updateEquipSession(player, heldHand, itemStack);
 					return Objects.hash(player.getUniqueID(), heldHand, transformType, equipSession);
 				}
 			}
@@ -132,7 +130,7 @@ public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder> extends
 	public void updateEquipSessions() {
 		Minecraft minecraft = Minecraft.getMinecraft();
 		if (minecraft.world == null) {
-			this.heldItemHands.clear();
+			this.equippedItemIdentities.clear();
 			this.equipSessions.clear();
 			return;
 		}
@@ -142,25 +140,28 @@ public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder> extends
 			currentPlayers.add(player.getUniqueID());
 			for (EnumHand hand : EnumHand.values()) {
 				ItemStack heldStack = player.getHeldItem(hand);
-				boolean usesThisRenderer = !heldStack.isEmpty() && heldStack.getItem().getTileEntityItemStackRenderer() == this;
-				this.updateEquipSession(player, hand, usesThisRenderer);
+				this.updateEquipSession(player, hand, heldStack);
 			}
 		}
 
-		this.heldItemHands.keySet().retainAll(currentPlayers);
+		this.equippedItemIdentities.keySet().retainAll(currentPlayers);
 		this.equipSessions.keySet().retainAll(currentPlayers);
 	}
 
-	private int updateEquipSession(EntityPlayer player, EnumHand hand, boolean usesThisRenderer) {
+	private int updateEquipSession(EntityPlayer player, EnumHand hand, ItemStack heldStack) {
 		UUID playerId = player.getUniqueID();
-		EnumSet<EnumHand> heldHands = this.heldItemHands.computeIfAbsent(playerId, ignored -> EnumSet.noneOf(EnumHand.class));
+		EnumMap<EnumHand, Integer> equippedItems = this.equippedItemIdentities.computeIfAbsent(playerId, ignored -> new EnumMap<>(EnumHand.class));
 		EnumMap<EnumHand, Integer> playerEquipSessions = this.equipSessions.computeIfAbsent(playerId, ignored -> new EnumMap<>(EnumHand.class));
 
-		if (!usesThisRenderer) {
-			heldHands.remove(hand);
+		if (heldStack.isEmpty() || heldStack.getItem().getTileEntityItemStackRenderer() != this) {
+			equippedItems.remove(hand);
 			return playerEquipSessions.getOrDefault(hand, 0);
 		}
-		if (heldHands.add(hand)) playerEquipSessions.merge(hand, 1, Integer::sum);
+
+		int selectedSlot = hand == EnumHand.MAIN_HAND ? player.inventory.currentItem : -1;
+		int itemIdentity = Objects.hash(heldStack.getItem(), selectedSlot);
+		Integer previousIdentity = equippedItems.put(hand, itemIdentity);
+		if (!Objects.equals(previousIdentity, itemIdentity)) playerEquipSessions.merge(hand, 1, Integer::sum);
 		return playerEquipSessions.getOrDefault(hand, 0);
 	}
 

@@ -8,7 +8,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -26,7 +25,6 @@ public class AnimationDataResolver {
         return switch (targetType) {
             case "Entity" -> resolveEntity(world, nbtTagCompound.getInteger("EntityID"));
             case "Projectile" -> resolveEntity(world, nbtTagCompound.getInteger("ProjectileID"));
-            case "TileEntity" -> resolveTileEntity(world, nbtTagCompound.getIntArray("TileEntityPos"));
             //case "Armor" -> resolveArmor(world, nbtTagCompound);
             //case "ItemStack" -> resolveItemStack(world, nbtTagCompound);
             default -> null;
@@ -36,14 +34,6 @@ public class AnimationDataResolver {
     private static AbstractAnimationData<?, ?> resolveEntity(@NotNull World world, int entityId) {
         Entity entity = world.getEntityByID(entityId);
         if (!(entity instanceof IAnimatable<?> animatable)) return null;
-        return animatable.getAnimationData();
-    }
-
-    private static AbstractAnimationData<?, ?> resolveTileEntity(@NotNull World world, int[] posData) {
-        if (posData.length != 3) return null;
-
-        TileEntity tileEntity = world.getTileEntity(new BlockPos(posData[0], posData[1], posData[2]));
-        if (!(tileEntity instanceof IAnimatable<?> animatable)) return null;
         return animatable.getAnimationData();
     }
 

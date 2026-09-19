@@ -1,11 +1,11 @@
-package anightdazingzoroark.example.client.model.tile;
+package anightdazingzoroark.example.client.model.block;
 
-import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
+import anightdazingzoroark.example.animatedblock.AnimatedMerryGoRoundBlock;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import org.jetbrains.annotations.NotNull;
 
-public class MerryGoRoundBlockModel extends AnimatedGeoModel<MerryGoRoundTileEntity> {
+public class MerryGoRoundBlockModel extends AnimatedGeoModel<AnimatedMerryGoRoundBlock> {
     @Override
     @NotNull
     public String getModId() {
@@ -14,13 +14,13 @@ public class MerryGoRoundBlockModel extends AnimatedGeoModel<MerryGoRoundTileEnt
 
     @Override
     @NotNull
-    public String getModelIdentifier(MerryGoRoundTileEntity object) {
+    public String getModelIdentifier(AnimatedMerryGoRoundBlock object) {
         return "geometry.merry_go_round";
     }
 
     @Override
     @NotNull
-    public String getTextureLocation(MerryGoRoundTileEntity object) {
+    public String getTextureLocation(AnimatedMerryGoRoundBlock object) {
         return "block/merry_go_round.png";
     }
 }

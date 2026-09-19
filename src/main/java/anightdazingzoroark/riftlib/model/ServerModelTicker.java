@@ -2,8 +2,6 @@ package anightdazingzoroark.riftlib.model;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import net.minecraft.entity.Entity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -21,10 +19,6 @@ public class ServerModelTicker {
             this.update((IAnimatable<?>) entity);
         }
 
-        for (TileEntity tile : new ArrayList<>(event.world.loadedTileEntityList)) {
-            if (tile.isInvalid() || !(tile instanceof IAnimatable<?>)) continue;
-            this.update((IAnimatable<?>) tile);
-        }
     }
 
     @SubscribeEvent

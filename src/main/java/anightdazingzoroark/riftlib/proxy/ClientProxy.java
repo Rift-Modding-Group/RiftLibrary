@@ -1,14 +1,16 @@
 package anightdazingzoroark.riftlib.proxy;
 
-import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
-import anightdazingzoroark.example.block.tile.SprinklerTileEntity;
 import anightdazingzoroark.example.client.renderer.armor.GreenArmorRenderer;
 import anightdazingzoroark.example.client.renderer.armor.SatelliteDishHelmetRenderer;
 import anightdazingzoroark.example.client.renderer.entity.*;
-import anightdazingzoroark.example.client.renderer.tile.MerryGoRoundRenderer;
-import anightdazingzoroark.example.client.renderer.tile.SprinklerRenderer;
+import anightdazingzoroark.example.client.renderer.block.MerryGoRoundRenderer;
+import anightdazingzoroark.example.client.renderer.block.SprinklerRenderer;
 import anightdazingzoroark.example.entity.*;
 import anightdazingzoroark.example.registry.ItemRegistry;
+import anightdazingzoroark.example.registry.BlockRegistry;
+import anightdazingzoroark.riftlib.renderers.geo.GeoBlockRenderer;
+import anightdazingzoroark.riftlib.block.AnimatedBlockRegistry;
+import anightdazingzoroark.riftlib.renderers.geo.GeoBlockRendererTicker;
 import anightdazingzoroark.riftlib.RiftLibMod;
 import anightdazingzoroark.riftlib.hitbox.RiftLibCollisionHitbox;
 import anightdazingzoroark.riftlib.hitbox.EntityHitboxRenderer;
@@ -27,7 +29,6 @@ import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffect;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffectRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -44,6 +45,8 @@ public class ClientProxy extends ServerProxy {
         MinecraftForge.EVENT_BUS.register(new ParticleTicker());
         MinecraftForge.EVENT_BUS.register(new RiftLibSoundEffectRegistry());
         MinecraftForge.EVENT_BUS.register(new GeoItemRendererTicker());
+        MinecraftForge.EVENT_BUS.register(new GeoBlockRendererTicker());
+        MinecraftForge.EVENT_BUS.register(new AnimatedBlockRegistry.Events());
         MinecraftForge.EVENT_BUS.register(new HitboxTicker.Client());
         MinecraftForge.EVENT_BUS.register(new RayTicker.Client());
         MinecraftForge.EVENT_BUS.register(new WorldSpaceBoundingBoxRenderer());
@@ -58,10 +61,6 @@ public class ClientProxy extends ServerProxy {
             RenderingRegistry.registerEntityRenderingHandler(AlarmClockEntity.class, AlarmClockRenderer::new);
             RenderingRegistry.registerEntityRenderingHandler(GoKartEntity.class, GoKartRenderer::new);
             RenderingRegistry.registerEntityRenderingHandler(AvianRunnerEntity.class, AvianRunnerRenderer::new);
-
-            //block renderers
-            ClientRegistry.bindTileEntitySpecialRenderer(MerryGoRoundTileEntity.class, new MerryGoRoundRenderer());
-            ClientRegistry.bindTileEntitySpecialRenderer(SprinklerTileEntity.class, new SprinklerRenderer());
 
             //sound effects
             RiftLibSoundEffectRegistry.registerSoundEffect(
@@ -78,6 +77,9 @@ public class ClientProxy extends ServerProxy {
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {
+            GeoBlockRenderer.registerBlockRenderer(BlockRegistry.MERRY_GO_ROUND_BLOCK, new MerryGoRoundRenderer());
+            GeoBlockRenderer.registerBlockRenderer(BlockRegistry.SPRINKLER_BLOCK, new SprinklerRenderer());
+
             GreenArmorRenderer greenArmorRenderer = new GreenArmorRenderer();
             GeoArmorRenderer.registerArmorRenderer(ItemRegistry.GREEN_HEAD, greenArmorRenderer);
             GeoArmorRenderer.registerArmorRenderer(ItemRegistry.GREEN_CHEST, greenArmorRenderer);

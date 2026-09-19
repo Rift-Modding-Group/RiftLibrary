@@ -35,7 +35,7 @@ public class RiftLibApplyMessageEffect extends RiftLibMessage<RiftLibApplyMessag
 
     @Override
     public void executeOnServer(MinecraftServer server, RiftLibApplyMessageEffect message, EntityPlayer player, MessageContext messageContext) {
-        AbstractAnimationData<?, ?> resolvedAnimData = AnimationDataResolver.resolveNBTAsData(server.getEntityWorld(), message.animDataNBT);
+        AbstractAnimationData<?, ?> resolvedAnimData = AnimationDataResolver.resolveNBTAsData(player.world, message.animDataNBT);
         if (resolvedAnimData == null) return;
 
         resolvedAnimData.getAnimationMessageEffects().get(message.messageName).runValue().run();

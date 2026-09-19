@@ -1,17 +1,19 @@
 package anightdazingzoroark.riftlib.model;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.block.AnimatedBlockStateHolder;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 
 import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.function.Supplier;
 
 public class ServerModelRegistry {
     private static final Map<Class<?>, Supplier<? extends AnimatedGeoModel<?>>> SERVER_MODEL_FACTORIES = new HashMap<>();
-    private static final Map<IAnimatable<?>, AnimatedGeoModel<?>> SERVER_MODELS = new WeakHashMap<>();
+    private static final Map<IAnimatable<?>, AnimatedGeoModel<?>> SERVER_MODELS = Collections.synchronizedMap(new WeakHashMap<>());
     private static boolean modelFetcherRegistered;
 
     public static <T extends IAnimatable<?>> void registerServerModel(Class<T> animatableClass, AnimatedGeoModel<T> modelFactory) {
@@ -19,6 +21,7 @@ public class ServerModelRegistry {
     }
 
     public static <T extends IAnimatable<?>> void registerServerModel(Class<T> animatableClass, Supplier<? extends AnimatedGeoModel<T>> modelFactory) {
+        if (AnimatedBlockStateHolder.class.isAssignableFrom(animatableClass)) throw new IllegalArgumentException("Animated block holders are client-only");
         ensureModelFetcherRegistered();
         SERVER_MODEL_FACTORIES.put(animatableClass, modelFactory);
     }

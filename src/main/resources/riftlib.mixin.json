@@ -4,7 +4,11 @@
   "compatibilityLevel": "JAVA_8",
   "target": "@env(DEFAULT)",
   "client": [
-    "ForgeHooksClientMixin"
+    "ForgeHooksClientMixin",
+    "BlockMixin",
+    "BlockStateContainerStateImplementationMixin",
+    "ChunkMixin",
+    "RenderGlobalMixin"
   ],
   "mixins": [
     "RenderItemMixin"

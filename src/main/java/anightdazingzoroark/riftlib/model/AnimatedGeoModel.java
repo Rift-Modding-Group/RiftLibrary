@@ -3,6 +3,7 @@ package anightdazingzoroark.riftlib.model;
 import java.util.*;
 
 import anightdazingzoroark.riftlib.RiftLib;
+import anightdazingzoroark.riftlib.block.AnimatedBlockStateHolder;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 
@@ -57,7 +58,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 
 		//if there is no server model, the client will be the main authority in
 		//ticking animations.
-		if (!hasServerModel && animData.clientTicker == null) {
+		if (!hasServerModel /*&& !(entity instanceof AnimatedBlockStateHolder)*/ && animData.clientTicker == null) {
 			AnimationTicker ticker = new AnimationTicker(animData);
 			animData.clientTicker = ticker;
 			MinecraftForge.EVENT_BUS.register(ticker);

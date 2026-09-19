@@ -2,8 +2,6 @@ package anightdazingzoroark.example;
 
 import anightdazingzoroark.example.block.MerryGoRoundBlock;
 import anightdazingzoroark.example.block.SprinklerBlock;
-import anightdazingzoroark.example.block.tile.MerryGoRoundTileEntity;
-import anightdazingzoroark.example.block.tile.SprinklerTileEntity;
 import anightdazingzoroark.example.client.renderer.item.*;
 import anightdazingzoroark.example.item.*;
 import anightdazingzoroark.example.registry.BlockRegistry;
@@ -23,7 +21,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -102,9 +99,7 @@ public class CommonListener {
 		EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "go_kart"), 0xbf2c12, 0xb3b3b3);
 		EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "avian_runner"), 0x383a88, 0xc7ccd2);
 
-		//tile entity registry
-        GameRegistry.registerTileEntity(MerryGoRoundTileEntity.class, new ResourceLocation(RiftLib.ModID, "merry_go_round_te"));
-        GameRegistry.registerTileEntity(SprinklerTileEntity.class, new ResourceLocation(RiftLib.ModID, "sprinkler_te"));
+
 	}
 
 	@SubscribeEvent

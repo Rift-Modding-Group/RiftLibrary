@@ -16,6 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -52,7 +53,18 @@ public abstract class GeoBlockRenderer<A extends AnimatedBlockStateHolder> imple
     }
 
     /**
-     * Associates both rendering and holder creation with a block. Call during client initialization.
+     * Resolves the animated model texture used by vanilla block particles for a block state.
+     * The temporary holder has no world and exists only while client models are prepared.
+     * */
+    public ResourceLocation getParticleTexture(IBlockState state) {
+        A holder = this.createHolder(null, BlockPos.ORIGIN, state);
+        String path = this.modelProvider.getTextureLocation(holder);
+        if (path.endsWith(".png")) path = path.substring(0, path.length() - 4);
+        return new ResourceLocation(this.modelProvider.getModId(), path);
+    }
+
+    /**
+     * Associates rendering, holder creation, and generated particle models with a block. Call during ModelRegistryEvent.
      * Automatically disables vanilla model rendering and opaque/full-cube rendering properties.
      * */
     public static <A extends AnimatedBlockStateHolder> void registerBlockRenderer(Block block, GeoBlockRenderer<A> renderer) {

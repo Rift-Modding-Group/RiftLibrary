@@ -3,13 +3,10 @@ package anightdazingzoroark.riftlib.proxy;
 import anightdazingzoroark.example.client.renderer.armor.GreenArmorRenderer;
 import anightdazingzoroark.example.client.renderer.armor.SatelliteDishHelmetRenderer;
 import anightdazingzoroark.example.client.renderer.entity.*;
-import anightdazingzoroark.example.client.renderer.block.MerryGoRoundRenderer;
-import anightdazingzoroark.example.client.renderer.block.SprinklerRenderer;
 import anightdazingzoroark.example.entity.*;
 import anightdazingzoroark.example.registry.ItemRegistry;
-import anightdazingzoroark.example.registry.BlockRegistry;
-import anightdazingzoroark.riftlib.renderers.geo.GeoBlockRenderer;
 import anightdazingzoroark.riftlib.block.AnimatedBlockRegistry;
+import anightdazingzoroark.riftlib.block.AnimatedBlockModelLoader;
 import anightdazingzoroark.riftlib.renderers.geo.GeoBlockRendererTicker;
 import anightdazingzoroark.riftlib.RiftLibMod;
 import anightdazingzoroark.riftlib.hitbox.RiftLibCollisionHitbox;
@@ -29,6 +26,7 @@ import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffect;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffectRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -41,6 +39,7 @@ public class ClientProxy extends ServerProxy {
     @Override
     public void preInit(FMLPreInitializationEvent e) {
         super.preInit(e);
+        ModelLoaderRegistry.registerLoader(new AnimatedBlockModelLoader());
         RenderingRegistry.registerEntityRenderingHandler(RiftLibCollisionHitbox.class, new EntityHitboxRenderer.Factory());
         MinecraftForge.EVENT_BUS.register(new ParticleTicker());
         MinecraftForge.EVENT_BUS.register(new RiftLibSoundEffectRegistry());
@@ -77,9 +76,6 @@ public class ClientProxy extends ServerProxy {
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {
-            GeoBlockRenderer.registerBlockRenderer(BlockRegistry.MERRY_GO_ROUND_BLOCK, new MerryGoRoundRenderer());
-            GeoBlockRenderer.registerBlockRenderer(BlockRegistry.SPRINKLER_BLOCK, new SprinklerRenderer());
-
             GreenArmorRenderer greenArmorRenderer = new GreenArmorRenderer();
             GeoArmorRenderer.registerArmorRenderer(ItemRegistry.GREEN_HEAD, greenArmorRenderer);
             GeoArmorRenderer.registerArmorRenderer(ItemRegistry.GREEN_CHEST, greenArmorRenderer);

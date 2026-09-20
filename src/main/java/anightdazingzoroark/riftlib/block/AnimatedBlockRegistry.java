@@ -1,22 +1,29 @@
 package anightdazingzoroark.riftlib.block;
 
+import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.renderers.geo.GeoBlockRenderer;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -29,6 +36,8 @@ public class AnimatedBlockRegistry {
     public static final AnimatedBlockRegistry INSTANCE = new AnimatedBlockRegistry();
     private final Map<Block, GeoBlockRenderer<?>> renderers = new IdentityHashMap<>();
     private final Map<World, Long2ObjectOpenHashMap<Long2ObjectOpenHashMap<Entry>>> worlds = new IdentityHashMap<>();
+    private final Map<ResourceLocation, ResourceLocation> modelTextures = new HashMap<>();
+    private boolean modelsPrepared;
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isRegistered(Block block) {
@@ -41,6 +50,7 @@ public class AnimatedBlockRegistry {
     public void addRenderer(Block block, GeoBlockRenderer<?> renderer) {
         Objects.requireNonNull(block);
         Objects.requireNonNull(renderer);
+        if (this.modelsPrepared) throw new IllegalStateException("Animated block renderers must be registered before the ModelRegistryEvent finishes");
         if (this.renderers.containsKey(block)) throw new IllegalArgumentException("Animated block renderer already registered: " + block.getRegistryName());
         IBlockState state = block.getDefaultState();
         if (state.isFullBlock() && state.getLightOpacity() == 255) block.setLightOpacity(0);
@@ -55,6 +65,11 @@ public class AnimatedBlockRegistry {
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean hasRenderers() {
         return !this.renderers.isEmpty();
+    }
+
+    @Nullable
+    public ResourceLocation getModelTexture(ResourceLocation location) {
+        return this.modelTextures.get(location);
     }
 
     @Nullable
@@ -180,6 +195,31 @@ public class AnimatedBlockRegistry {
 
     @SideOnly(Side.CLIENT)
     public static class Events {
+        /**
+         * Generates one empty particle model for each animated block state and installs its state mapping.
+         * */
+        @SubscribeEvent(priority = EventPriority.LOWEST)
+        public void onModelRegistry(ModelRegistryEvent event) {
+            INSTANCE.modelTextures.clear();
+            for (Map.Entry<Block, GeoBlockRenderer<?>> rendererEntry : INSTANCE.renderers.entrySet()) {
+                Block block = rendererEntry.getKey();
+                ResourceLocation registryName = Objects.requireNonNull(block.getRegistryName());
+                Map<IBlockState, ModelResourceLocation> stateModels = new IdentityHashMap<>();
+                int stateIndex = 0;
+                for (IBlockState state : block.getBlockState().getValidStates()) {
+                    ResourceLocation location = new ResourceLocation(
+                            RiftLib.ModID,
+                            "animated_block/" + registryName.getNamespace() + "/" + registryName.getPath() + "/" + stateIndex++
+                    );
+                    ModelResourceLocation modelLocation = new ModelResourceLocation(location, "normal");
+                    stateModels.put(state, modelLocation);
+                    INSTANCE.modelTextures.put(modelLocation, rendererEntry.getValue().getParticleTexture(state));
+                }
+                ModelLoader.setCustomStateMapper(block, mappedBlock -> stateModels);
+            }
+            INSTANCE.modelsPrepared = true;
+        }
+
         @SubscribeEvent
         public void onChunkUnload(ChunkEvent.Unload event) {
             if (!event.getWorld().isRemote) return;

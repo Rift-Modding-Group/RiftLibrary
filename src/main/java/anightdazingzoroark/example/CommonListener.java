@@ -3,6 +3,8 @@ package anightdazingzoroark.example;
 import anightdazingzoroark.example.block.MerryGoRoundBlock;
 import anightdazingzoroark.example.block.SprinklerBlock;
 import anightdazingzoroark.example.client.renderer.item.*;
+import anightdazingzoroark.example.client.renderer.block.MerryGoRoundRenderer;
+import anightdazingzoroark.example.client.renderer.block.SprinklerRenderer;
 import anightdazingzoroark.example.item.*;
 import anightdazingzoroark.example.registry.BlockRegistry;
 import anightdazingzoroark.riftlib.RiftLibMod;
@@ -26,6 +28,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.registries.IForgeRegistry;
 import anightdazingzoroark.example.registry.ItemRegistry;
 import anightdazingzoroark.riftlib.RiftLib;
+import anightdazingzoroark.riftlib.renderers.geo.GeoBlockRenderer;
 
 public class CommonListener {
 	private static IForgeRegistry<Item> itemRegistry;
@@ -170,6 +173,9 @@ public class CommonListener {
 	@SubscribeEvent
 	@SideOnly(Side.CLIENT)
 	public void onModelRegistry(ModelRegistryEvent event) {
+        GeoBlockRenderer.registerBlockRenderer(BlockRegistry.MERRY_GO_ROUND_BLOCK, new MerryGoRoundRenderer());
+        GeoBlockRenderer.registerBlockRenderer(BlockRegistry.SPRINKLER_BLOCK, new SprinklerRenderer());
+
         ModelLoader.setCustomModelResourceLocation(
                 ItemRegistry.BOMB,
                 0,

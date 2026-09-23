@@ -1,5 +1,9 @@
 package anightdazingzoroark.riftlib.ridePositionLogic;
 
+import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
+import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
+import anightdazingzoroark.riftlib.util.AnimationUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -54,7 +58,17 @@ public class DynamicRidePosTicker {
             if (!(event.getEntity() instanceof EntityLivingBase passenger)) return;
             if (!(passenger.getRidingEntity() instanceof IDynamicRideUser<?> dynamicRideUser)) return;
 
+            EntityLivingBase dynamicRideEntity = dynamicRideUser.getDynamicRideUser();
             DynamicRidePosSnapshot ridePosSnapshot = dynamicRideUser.ridePosList().snapshot;
+            GeoModelProvider<?> modelProvider = AnimationUtils.getGeoModelForEntity(dynamicRideEntity);
+            if (modelProvider instanceof AnimatedGeoModel<?> animatedGeoModel) {
+                animatedGeoModel.prepareClientAnimationPose((IAnimatable<?>) dynamicRideEntity);
+                ridePosSnapshot.markClientAnimationPrepared(
+                        dynamicRideEntity.world.getTotalWorldTime(),
+                        (float) event.getRenderPartialTicks()
+                );
+            }
+
             float partialTicks = (float) event.getRenderPartialTicks();
             ridePosSnapshot.storeSnapshot(partialTicks, dynamicRideUser.getRenderYaw(partialTicks));
             ridePosSnapshot.cachePassengerRidePositions();

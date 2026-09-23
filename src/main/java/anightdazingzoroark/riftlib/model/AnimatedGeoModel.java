@@ -91,6 +91,14 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		}
 	}
 
+	@SideOnly(Side.CLIENT)
+	@SuppressWarnings("unchecked")
+	public void prepareClientAnimationPose(IAnimatable<?> entity) {
+		T typedEntity = (T) entity;
+		this.setClientAnimations(typedEntity);
+		this.createAndUpdateAnimatedLocators(typedEntity);
+	}
+
 	//small but useful helper method
 	@SideOnly(Side.CLIENT)
 	private boolean hasServerModel(T animatable) {

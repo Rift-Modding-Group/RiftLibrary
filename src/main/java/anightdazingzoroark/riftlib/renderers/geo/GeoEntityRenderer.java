@@ -59,6 +59,10 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
         //---get model---
         GeoModel model = this.modelProvider.getModel(entity);
 
+		//---snapshot ride position for dynamic ride position users---
+		DynamicRidePosSnapshot ridePosSnapshot = entity instanceof IDynamicRideUser<?> dynamicRideUser && entity.isBeingRidden()
+				? dynamicRideUser.ridePosList().snapshot : null;
+
 		//rest is good ol rendering code
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(x, y, z);
@@ -73,15 +77,12 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 		this.applyRotations(entity, finalYaw, partialTicks);
 
 		//---set up client animations and update animated locators---
-        this.modelProvider.setClientAnimations(entity);
-		this.modelProvider.createAndUpdateAnimatedLocators(entity);
-
-		//---define dynamic ride snapshot if entity is a dynamicrideuser---
-		DynamicRidePosSnapshot ridePosSnapshot = null;
+		if (ridePosSnapshot == null || !ridePosSnapshot.consumeClientAnimationPrepared(entity.world.getTotalWorldTime(), partialTicks)) {
+			this.modelProvider.prepareClientAnimationPose(entity);
+		}
 
 		//---cache post-locator passenger render positions for this frame---
-		if (entity instanceof IDynamicRideUser<?> dynamicRideUser && entity.isBeingRidden()) {
-			ridePosSnapshot = dynamicRideUser.ridePosList().snapshot;
+		if (entity instanceof IDynamicRideUser<?> && entity.isBeingRidden() && ridePosSnapshot != null) {
 			ridePosSnapshot.storeSnapshot(partialTicks, finalYaw);
 			ridePosSnapshot.renderOriginVec = new Vec3d(
 					entity.posX - x,

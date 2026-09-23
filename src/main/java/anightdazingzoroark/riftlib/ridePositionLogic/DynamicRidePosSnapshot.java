@@ -28,6 +28,9 @@ public class DynamicRidePosSnapshot {
     private double posZ;
     private float rotationYaw;
     private float renderYawOffset;
+    private boolean clientAnimationPrepared;
+    private long clientAnimationWorldTime;
+    private float clientAnimationPartialTicks;
 
     public DynamicRidePosSnapshot(@NotNull IDynamicRideUser<?> dynamicRideUser) {
         this.dynamicRideUser = dynamicRideUser;
@@ -61,6 +64,20 @@ public class DynamicRidePosSnapshot {
         dynamicRideEntity.rotationYaw = this.rotationYaw;
         dynamicRideEntity.renderYawOffset = this.renderYawOffset;
         this.storedDynamicRideEntity = false;
+    }
+
+    public void markClientAnimationPrepared(long worldTime, float partialTicks) {
+        this.clientAnimationPrepared = true;
+        this.clientAnimationWorldTime = worldTime;
+        this.clientAnimationPartialTicks = partialTicks;
+    }
+
+    public boolean consumeClientAnimationPrepared(long worldTime, float partialTicks) {
+        boolean prepared = this.clientAnimationPrepared
+                && this.clientAnimationWorldTime == worldTime
+                && this.clientAnimationPartialTicks == partialTicks;
+        this.clientAnimationPrepared = false;
+        return prepared;
     }
 
     public void cachePassengerRidePositions() {

@@ -29,7 +29,7 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
     @NotNull
     private final MultiHitboxList<FlyingPufferfishEntity> multiHitboxList;
     @NotNull
-    private final AnimationDataEntity animationData = new AnimationDataEntity(this, 2f);
+    private final AnimationDataEntity animationData = new AnimationDataEntity(this);
     private final Map<String, RiftLibRayBuilder> rayMap;
 
     public FlyingPufferfishEntity(World worldIn) {
@@ -99,6 +99,10 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
 
     @Override
     public void initializeAnimationData(@NonNull AnimationDataEntity animationData) {
+        //---scaling---
+        animationData.setScale(2f);
+
+        //---animations---
         animationData.addAnimationController(new AnimationController<FlyingPufferfishEntity, AnimationDataEntity>(
                 this, "puff", "default",
                 new AnimationControllerState<AnimationDataEntity>("default")

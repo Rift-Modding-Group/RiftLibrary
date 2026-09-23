@@ -25,8 +25,7 @@ import java.util.*;
 import java.util.function.Function;
 
 public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivingBase, AnimationDataEntity> {
-    @NotNull
-    private final Function<EntityLivingBase, Float> holderScale;
+    private Function<EntityLivingBase, Float> holderScale;
     private final Map<String, AnimatedBoundingBox> animatedBoundingBoxes = new HashMap<>();
     private final Map<String, List<AnimatedBoundingBox>> animatedBoundingBoxesByTag = new HashMap<>();
     //client only, meant for debugging
@@ -34,16 +33,7 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
     private boolean boundingBoxesRecentlyUpdated;
 
     public AnimationDataEntity(EntityLivingBase holder) {
-        this(holder, 1f);
-    }
-
-    public AnimationDataEntity(EntityLivingBase holder, float holderScale) {
-        this(holder, entity -> holderScale);
-    }
-
-    public AnimationDataEntity(EntityLivingBase holder, @NotNull Function<EntityLivingBase, Float> holderScale) {
         super(holder, getAnimatable(holder));
-        this.holderScale = holderScale;
     }
 
     @Override
@@ -121,11 +111,19 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
         }
     }
 
+    public void setScale(float value) {
+        this.setScale(entity -> value);
+    }
+
+    public void setScale(@NotNull Function<EntityLivingBase, Float> holderScale) {
+        this.holderScale = holderScale;
+    }
+
     /**
      * The basis of model scaling of the entity.
      * */
     public float getScale() {
-        return this.holderScale.apply(this.getHolder());
+        return this.holderScale == null ? 1f : this.holderScale.apply(this.getHolder());
     }
 
     //-----animated bounding box definitions from here on out (only entities use hitboxes hence this lol)-----
@@ -154,7 +152,7 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
 
         Vec3d modelSpacePos = animatedBoundingBox.getModelSpacePosition();
         float[] modelSpaceSize = animatedBoundingBox.getModelSpaceSize();
-        float scale = this.holderScale.apply(this.getHolder());
+        float scale = this.getScale();
 
         double yaw = -Math.toRadians(this.getHolder().isBeingRidden() ? this.getHolder().rotationYaw : this.getHolder().rotationYawHead);
         Quaternion quaternion = QuaternionUtils.createXYZQuaternion(0D, yaw, 0D);

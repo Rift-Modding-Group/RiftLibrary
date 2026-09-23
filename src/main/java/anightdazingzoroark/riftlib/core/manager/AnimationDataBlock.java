@@ -5,13 +5,32 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.function.Function;
+
 public class AnimationDataBlock extends AbstractAnimationData<AnimatedBlockStateHolder, AnimationDataBlock> {
+    private Function<AnimatedBlockStateHolder, Float> holderScale;
+
     public AnimationDataBlock(AnimatedBlockStateHolder holder) {
         super(holder, holder);
     }
 
     @Override
     public void updateOnDataTick() {}
+
+    public void setScale(float value) {
+        this.setScale(block -> value);
+    }
+
+    public void setScale(@NotNull Function<AnimatedBlockStateHolder, Float> holderScale) {
+        this.holderScale = holderScale;
+    }
+
+    /**
+     * The basis of model scaling of the block.
+     * */
+    public float getScale() {
+        return this.holderScale == null ? 1f : this.holderScale.apply(this.getHolder());
+    }
 
     @Override
     public boolean isValid() {

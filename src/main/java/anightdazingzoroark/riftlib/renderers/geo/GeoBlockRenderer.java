@@ -97,6 +97,8 @@ public abstract class GeoBlockRenderer<A extends AnimatedBlockStateHolder> imple
         GlStateManager.color(1f, 1f, 1f, 1f);
         GlStateManager.pushMatrix();
         GlStateManager.translate(x + 0.5, y + 0.01, z + 0.5);
+        float scaleValue = holder.getAnimationData().getScale();
+        GlStateManager.scale(scaleValue, scaleValue, scaleValue);
 
         IBlockState state = holder.getBlockState();
         EnumFacing facing = EnumFacing.NORTH;

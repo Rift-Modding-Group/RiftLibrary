@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public interface IDynamicRideUser<T extends EntityLivingBase & IAnimatable<AnimationDataEntity> & IMultiHitboxUser<?>> {
+public interface IDynamicRideUser<T extends EntityLivingBase & IAnimatable<AnimationDataEntity>> {
     /**
      * Get the parent. Must always return the entity its being implemented in.
      * */

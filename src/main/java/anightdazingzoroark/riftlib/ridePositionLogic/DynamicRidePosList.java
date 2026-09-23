@@ -12,15 +12,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjglx.util.vector.Quaternion;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DynamicRidePosList {
     @NotNull
     private final IDynamicRideUser<?> dynamicRideUser;
     @NotNull
     private final AnimationDataEntity animData;
-    @NotNull
-    private final Map<String, AnimatedLocator> riderPosMap = new HashMap<>();
 
     //positions for controller
     @Nullable
@@ -38,61 +37,16 @@ public class DynamicRidePosList {
         this.snapshot = new DynamicRidePosSnapshot(dynamicRideUser);
     }
 
-    /**
-     * Continuously update usable AnimatedLocators for use in
-     * ride positions.
-     * */
-    public void updateUsableLocators() {
+    public void updatePositions() {
         EntityLivingBase dynamicRideEntity = this.dynamicRideUser.getDynamicRideUser();
         if (!dynamicRideEntity.world.isRemote) {
             ServerModelRegistry.requireServerModel((IAnimatable<?>) dynamicRideEntity, "server ride positions");
         }
 
-        //---define set for existing position names---
-        Set<String> existingPosNames = new HashSet<>();
+        this.controllerWorldPos = this.getRidePosFromLocator(this.dynamicRideUser.locatorControllerPosition());
 
-        //---create map---
-        for (AnimatedLocator locator : this.animData.getAnimatedLocators().values()) {
-            //skip locators that cannot be used as rider positions
-            if (!DynamicRidePosUtils.locatorCanBeRidePos(locator.getName())) continue;
-
-            existingPosNames.add(locator.getName());
-
-            //if valid locator name cannot be found in riderPosMap, time to add it
-            if (!this.riderPosMap.containsKey(locator.getName())) {
-                this.riderPosMap.put(locator.getName(), locator);
-            }
-            //otherwise, test equality between the held locator in the map
-            //and the locator given by animData
-            else {
-                AnimatedLocator oldLocator = this.riderPosMap.get(locator.getName());
-                if (oldLocator != locator) {
-                    this.riderPosMap.put(locator.getName(), locator);
-                }
-            }
-        }
-
-        //---remove locators from this.riderPosMap that don't exist in existingPosNames---
-        this.riderPosMap.keySet().removeIf(posName -> !existingPosNames.contains(posName));
-    }
-
-    public void updatePositions() {
-        //---update controller position---
-        if (this.riderPosMap.containsKey(DynamicRidePosUtils.controllerLocatorName)) {
-            this.controllerWorldPos = this.getRidePosFromLocator(DynamicRidePosUtils.controllerLocatorName);
-        }
-        else this.controllerWorldPos = null;
-
-        //---set passenger position---
-        //first, order passenger pos names
-        Map<String, AnimatedLocator> tempRiderPosMap = new HashMap<>(this.riderPosMap);
-        tempRiderPosMap.remove(DynamicRidePosUtils.controllerLocatorName);
-        List<String> orderedPassengerPosNames = new ArrayList<>(tempRiderPosMap.keySet());
-        orderedPassengerPosNames.sort(Comparator.comparingInt(DynamicRidePosUtils::locatorRideIndex));
-
-        //now set them
         List<Vec3d> newPassengerWorldPositions = new ArrayList<>();
-        for (String posName : orderedPassengerPosNames) {
+        for (String posName : this.dynamicRideUser.locatorRidePositions()) {
             Vec3d passengerRidePos = this.getRidePosFromLocator(posName);
             if (passengerRidePos == null) continue;
             newPassengerWorldPositions.add(passengerRidePos);
@@ -101,12 +55,15 @@ public class DynamicRidePosList {
     }
 
     /**
-     * This transforms an AnimatedLocator's model-space position into a preview position.
-     * */
+     * This transforms a declared locator's model-space position into its current world position.
+     */
     @Nullable
-    private Vec3d getRidePosFromLocator(String locatorName) {
-        if (!this.riderPosMap.containsKey(locatorName)) return null;
-        AnimatedLocator animLocator = this.riderPosMap.get(locatorName);
+    private Vec3d getRidePosFromLocator(@Nullable String locatorName) {
+        if (locatorName == null) return null;
+
+        AnimatedLocator animLocator = this.animData.getAnimatedLocator(locatorName);
+        if (animLocator == null) return null;
+
         EntityLivingBase dynamicRideUser = this.dynamicRideUser.getDynamicRideUser();
 
         //correct locator position first

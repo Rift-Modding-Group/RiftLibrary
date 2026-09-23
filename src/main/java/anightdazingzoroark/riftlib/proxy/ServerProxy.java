@@ -19,7 +19,6 @@ import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.registry.Proper
 import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.sync.PropertySyncEvents;
 import anightdazingzoroark.riftlib.ray.RayTicker;
 import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
-import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosTicker;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -63,7 +62,6 @@ public class ServerProxy {
         MinecraftForge.EVENT_BUS.register(new HitboxTicker.Server());
         MinecraftForge.EVENT_BUS.register(new RayTicker.Server());
         MinecraftForge.EVENT_BUS.register(new ServerModelTicker());
-        MinecraftForge.EVENT_BUS.register(new DynamicRidePosTicker.Server());
 
         //custom entity property system setup
         PropertiesBootstrap.register();

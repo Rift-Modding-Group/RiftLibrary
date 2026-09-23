@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 
 public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IRayCreator<DragonEntity>, IMultiHitboxUser<DragonEntity>, IDynamicRideUser<DragonEntity> {
@@ -37,6 +38,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     @NotNull
     private final AnimationDataEntity animationData = new AnimationDataEntity(this);
     private final MultiHitboxList<DragonEntity> multiHitboxList;
+    @NotNull
     private final DynamicRidePosList ridePositions;
     private final Map<String, RiftLibRayBuilder> rayMap;
 
@@ -154,6 +156,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
 
     //ride pos stuff starts here
     @Override
+    @NotNull
     public DynamicRidePosList ridePosList() {
         return this.ridePositions;
     }
@@ -167,6 +170,18 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     //ride management stuff starts here
     public DragonEntity getDynamicRideUser() {
         return this;
+    }
+
+    @Override
+    @NotNull
+    public List<String> locatorRidePositions() {
+        return List.of("passengerRidePosition");
+    }
+
+    @Override
+    @Nullable
+    public String locatorControllerPosition() {
+        return "controllerRidePosition";
     }
 
     @Override

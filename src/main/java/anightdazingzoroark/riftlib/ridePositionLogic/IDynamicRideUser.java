@@ -2,14 +2,17 @@ package anightdazingzoroark.riftlib.ridePositionLogic;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public interface IDynamicRideUser<T extends EntityLivingBase & IAnimatable<AnimationDataEntity>> {
+public interface IDynamicRideUser<T extends EntityLivingBase & IAnimatable<AnimationDataEntity> & IMultiHitboxUser<?>> {
     /**
      * Get the parent. Must always return the entity its being implemented in.
      * */
@@ -19,7 +22,20 @@ public interface IDynamicRideUser<T extends EntityLivingBase & IAnimatable<Anima
      * The ride position list is very important, it uses the AnimatedLocators of an IAnimatable
      * to define where a rider will go to upon riding.
      * */
+    @NotNull
     DynamicRidePosList ridePosList();
+
+    /**
+     * Get the locator names for non-controlling passenger positions in passenger order.
+     */
+    @NotNull
+    List<String> locatorRidePositions();
+
+    /**
+     * Get the locator name for the controlling passenger position, or null when there is none.
+     */
+    @Nullable
+    String locatorControllerPosition();
 
     /**
      * Put this in the Entity.updatePassenger() method in the entity you're implementing this in.

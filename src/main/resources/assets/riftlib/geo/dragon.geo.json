@@ -28,8 +28,8 @@
 						{"origin": [-3.5, 8, 1], "size": [7, 11, 8], "uv": [48, 50]}
 					],
 					"locators": {
-						"rider_pos_main": [0, 19, -7.5],
-						"rider_pos_1": [0, 19, 4.5]
+						"controllerRidePosition": [0, 19, -7.5],
+						"passengerRidePosition": [0, 19, 4.5]
 					},
 					"bounding_boxes": {
 						"body0": {

@@ -10,23 +10,11 @@ import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
-import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class DynamicRidePosTicker {
-    public static class Server {
-        //update usable locators on both client and server. much better to
-        //do so here than force authors to put it in the onUpdate method of
-        //their entities
-        @SubscribeEvent
-        public void onWorldTick(LivingEvent.LivingUpdateEvent event) {
-            if (!(event.getEntity() instanceof IDynamicRideUser<?> dynamicRideUser)) return;
-            dynamicRideUser.ridePosList().updateUsableLocators();
-        }
-    }
-
     @SideOnly(Side.CLIENT)
     public static class Client {
         private Entity cameraRestoreEntity;

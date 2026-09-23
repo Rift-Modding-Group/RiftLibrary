@@ -125,6 +125,12 @@ public class RiftLibCollisionHitbox<T extends IMultiHitboxUser<?>> extends Multi
         return this.getParent().getMultiHitboxUser().processInitialInteract(player, hand);
     }
 
+    //this is to make sure infobox mods when hoverin over this entity won't return anything
+    @Override
+    public Entity getLowestRidingEntity() {
+        return this.getParent().getMultiHitboxUser().getLowestRidingEntity();
+    }
+
     @Override
     public boolean attackEntityFrom(DamageSource source, float amount) {
         if (this.damageSourceIsRider(source)) {

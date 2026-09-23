@@ -2,11 +2,15 @@ package anightdazingzoroark.riftlib.proxy;
 
 import anightdazingzoroark.example.client.renderer.armor.GreenArmorRenderer;
 import anightdazingzoroark.example.client.renderer.armor.SatelliteDishHelmetRenderer;
+import anightdazingzoroark.example.client.renderer.block.MerryGoRoundRenderer;
+import anightdazingzoroark.example.client.renderer.block.SprinklerRenderer;
 import anightdazingzoroark.example.client.renderer.entity.*;
 import anightdazingzoroark.example.entity.*;
+import anightdazingzoroark.example.registry.BlockRegistry;
 import anightdazingzoroark.example.registry.ItemRegistry;
 import anightdazingzoroark.riftlib.block.AnimatedBlockRegistry;
 import anightdazingzoroark.riftlib.block.AnimatedBlockModelLoader;
+import anightdazingzoroark.riftlib.renderers.geo.GeoBlockRenderer;
 import anightdazingzoroark.riftlib.renderers.geo.GeoBlockRendererTicker;
 import anightdazingzoroark.riftlib.RiftLibMod;
 import anightdazingzoroark.riftlib.hitbox.RiftLibCollisionHitbox;
@@ -60,6 +64,10 @@ public class ClientProxy extends ServerProxy {
             RenderingRegistry.registerEntityRenderingHandler(AlarmClockEntity.class, AlarmClockRenderer::new);
             RenderingRegistry.registerEntityRenderingHandler(GoKartEntity.class, GoKartRenderer::new);
             RenderingRegistry.registerEntityRenderingHandler(AvianRunnerEntity.class, AvianRunnerRenderer::new);
+
+            //block renderers
+            GeoBlockRenderer.registerBlockRenderer(BlockRegistry.MERRY_GO_ROUND_BLOCK, new MerryGoRoundRenderer());
+            GeoBlockRenderer.registerBlockRenderer(BlockRegistry.SPRINKLER_BLOCK, new SprinklerRenderer());
 
             //sound effects
             RiftLibSoundEffectRegistry.registerSoundEffect(

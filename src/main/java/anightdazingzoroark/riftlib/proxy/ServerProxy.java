@@ -1,10 +1,12 @@
 package anightdazingzoroark.riftlib.proxy;
 
-import anightdazingzoroark.example.CommonListener;
 import anightdazingzoroark.example.client.model.entity.DragonModel;
 import anightdazingzoroark.example.client.model.entity.FlyingPufferfishModel;
 import anightdazingzoroark.example.entity.DragonEntity;
 import anightdazingzoroark.example.entity.FlyingPufferfishEntity;
+import anightdazingzoroark.example.registry.BlockRegistry;
+import anightdazingzoroark.example.registry.EntityRegistry;
+import anightdazingzoroark.example.registry.ItemRegistry;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.RiftLibMod;
 import anightdazingzoroark.riftlib.hitbox.HitboxTicker;
@@ -69,7 +71,14 @@ public class ServerProxy {
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {
-            MinecraftForge.EVENT_BUS.register(new CommonListener());
+            MinecraftForge.EVENT_BUS.register(new EntityRegistry());
+
+            BlockRegistry.registerBlocks();
+            MinecraftForge.EVENT_BUS.register(new BlockRegistry());
+
+            ItemRegistry.registerItems();
+            MinecraftForge.EVENT_BUS.register(new ItemRegistry());
+
             ServerModelRegistry.registerServerModel(DragonEntity.class, DragonModel::new);
             ServerModelRegistry.registerServerModel(FlyingPufferfishEntity.class, FlyingPufferfishModel::new);
         }

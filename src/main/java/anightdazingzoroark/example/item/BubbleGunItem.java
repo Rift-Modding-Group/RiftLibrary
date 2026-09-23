@@ -11,11 +11,6 @@ import net.minecraft.world.World;
 
 //when the player holds this item and right clicks, they will spawn a bunch of bubbles that go forward
 public class BubbleGunItem extends Item {
-    public BubbleGunItem() {
-        this.maxStackSize = 1;
-        this.setCreativeTab(RiftLibMod.getRiftlibItemGroup());
-    }
-
     @Override
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
         player.setActiveHand(hand);

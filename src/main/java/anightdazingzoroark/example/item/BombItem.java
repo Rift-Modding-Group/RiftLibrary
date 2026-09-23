@@ -12,12 +12,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 
 public class BombItem extends Item {
-    public BombItem() {
-        super();
-        this.maxStackSize = 1;
-        this.setCreativeTab(RiftLibMod.getRiftlibItemGroup());
-    }
-
     @Override
     public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
         player.setActiveHand(hand);

@@ -66,7 +66,9 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 		//here, yaw rotation on the head applies to the entire entity when not ridden
 		//and the yaw rotation on the body when ridden because yes
 		float trueYaw = Interpolations.lerpYaw(entity.prevRotationYawHead, entity.rotationYawHead, partialTicks);
-		float riddenYaw = Interpolations.lerpYaw(entity.prevRotationYaw, entity.rotationYaw, partialTicks);
+		float riddenYaw = entity instanceof IDynamicRideUser<?> dynamicRideUser
+				? dynamicRideUser.getRenderYaw(partialTicks)
+				: Interpolations.lerpYaw(entity.prevRotationYaw, entity.rotationYaw, partialTicks);
 		float finalYaw = entity.isBeingRidden() ? riddenYaw : trueYaw;
 		this.applyRotations(entity, finalYaw, partialTicks);
 
@@ -127,6 +129,11 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 
 		//---render passengers at the cached dynamic ride positions if user is dynamicrideuser---
 		if (ridePosSnapshot != null) {
+			float renderYawOffset = entity.renderYawOffset;
+			float prevRenderYawOffset = entity.prevRenderYawOffset;
+			entity.renderYawOffset = finalYaw;
+			entity.prevRenderYawOffset = finalYaw;
+
 			for (Entity passenger : entity.getPassengers()) {
 				Vec3d ridePos = ridePosSnapshot.getRidePosition(passenger);
 				if (ridePos == null) continue;
@@ -135,23 +142,35 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 				if (passenger == Minecraft.getMinecraft().player && Minecraft.getMinecraft().gameSettings.thirdPersonView == 0) continue;
 
 				ridePosSnapshot.renderingPassengers.add(passenger.getEntityId());
-				try {
-					//float passengerYaw = passenger.prevRotationYaw + (passenger.rotationYaw - passenger.prevRotationYaw) * partialTicks;
-					float passengerYaw = Interpolations.lerpYaw(passenger.prevRotationYaw, passenger.rotationYaw, partialTicks);
-					this.renderManager.renderEntity(
-							passenger,
-							ridePos.x - ridePosSnapshot.renderOriginVec.x,
-							ridePos.y - ridePosSnapshot.renderOriginVec.y,
-							ridePos.z - ridePosSnapshot.renderOriginVec.z,
-							passengerYaw,
-							partialTicks,
-							false
-					);
+				boolean isController = passenger.equals(entity.getControllingPassenger());
+				float passengerYaw = isController ?
+						finalYaw : Interpolations.lerpYaw(passenger.prevRotationYaw, passenger.rotationYaw, partialTicks);
+				float rotationYawHead = 0;
+				float prevRotationYawHead = 0;
+				if (isController && passenger instanceof EntityLivingBase livingPassenger) {
+					rotationYawHead = livingPassenger.rotationYawHead;
+					prevRotationYawHead = livingPassenger.prevRotationYawHead;
+					livingPassenger.rotationYawHead = finalYaw;
+					livingPassenger.prevRotationYawHead = finalYaw;
 				}
-				finally {
-					ridePosSnapshot.renderingPassengers.remove(passenger.getEntityId());
+				this.renderManager.renderEntity(
+						passenger,
+						ridePos.x - ridePosSnapshot.renderOriginVec.x,
+						ridePos.y - ridePosSnapshot.renderOriginVec.y,
+						ridePos.z - ridePosSnapshot.renderOriginVec.z,
+						passengerYaw,
+						partialTicks,
+						false
+				);
+				if (isController && passenger instanceof EntityLivingBase livingPassenger) {
+					livingPassenger.rotationYawHead = rotationYawHead;
+					livingPassenger.prevRotationYawHead = prevRotationYawHead;
 				}
+				ridePosSnapshot.renderingPassengers.remove(passenger.getEntityId());
 			}
+
+			entity.renderYawOffset = renderYawOffset;
+			entity.prevRenderYawOffset = prevRenderYawOffset;
 		}
 	}
 

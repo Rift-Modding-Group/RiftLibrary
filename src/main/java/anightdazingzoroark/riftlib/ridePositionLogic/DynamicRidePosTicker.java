@@ -1,7 +1,5 @@
 package anightdazingzoroark.riftlib.ridePositionLogic;
 
-import anightdazingzoroark.riftlib.molang.utils.Interpolations;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -50,24 +48,18 @@ public class DynamicRidePosTicker {
             }
         }
 
-        //move the first-person camera to the current dynamic ride position for this frame.
+        //move the camera to the current dynamic ride position for this frame.
         @SubscribeEvent
         public void onCameraSetup(EntityViewRenderEvent.CameraSetup event) {
-            if (Minecraft.getMinecraft().gameSettings.thirdPersonView != 0) return;
             if (!(event.getEntity() instanceof EntityLivingBase passenger)) return;
             if (!(passenger.getRidingEntity() instanceof IDynamicRideUser<?> dynamicRideUser)) return;
 
-            EntityLivingBase dynamicRideEntity = dynamicRideUser.getDynamicRideUser();
             DynamicRidePosSnapshot ridePosSnapshot = dynamicRideUser.ridePosList().snapshot;
+            float partialTicks = (float) event.getRenderPartialTicks();
+            ridePosSnapshot.storeSnapshot(partialTicks, dynamicRideUser.getRenderYaw(partialTicks));
+            ridePosSnapshot.cachePassengerRidePositions();
+            ridePosSnapshot.restoreSnapshot();
             Vec3d ridePos = ridePosSnapshot.getRidePosition(passenger);
-            if (ridePos == null) {
-                float partialTicks = (float) event.getRenderPartialTicks();
-                float finalYaw = Interpolations.lerpYaw(dynamicRideEntity.prevRotationYaw, dynamicRideEntity.rotationYaw, partialTicks);
-                ridePosSnapshot.storeSnapshot(partialTicks, finalYaw);
-                ridePosSnapshot.cachePassengerRidePositions();
-                ridePosSnapshot.restoreSnapshot();
-                ridePos = ridePosSnapshot.getRidePosition(passenger);
-            }
             if (ridePos == null) return;
 
             if (this.cameraRestoreEntity == null) {

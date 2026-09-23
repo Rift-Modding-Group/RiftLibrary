@@ -53,7 +53,6 @@ public class AvianRunnerEntity extends EntityCreature implements IAnimatable<Ani
         if (!this.isPassenger(passenger)) return;
 
         this.rotationYaw = passenger.rotationYaw;
-        this.prevRotationYaw = this.rotationYaw;
         this.rotationPitch = passenger.rotationPitch * 0.5f;
         this.setRotation(this.rotationYaw, this.rotationPitch);
         this.renderYawOffset = this.rotationYaw;

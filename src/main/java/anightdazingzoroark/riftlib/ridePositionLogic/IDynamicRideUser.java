@@ -2,7 +2,7 @@ package anightdazingzoroark.riftlib.ridePositionLogic;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
-import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
+import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -106,5 +106,17 @@ public interface IDynamicRideUser<T extends EntityLivingBase & IAnimatable<Anima
 
     default boolean canRotateMounted() {
         return true;
+    }
+
+    default float getRenderYaw(float partialTicks) {
+        Entity controller = this.getDynamicRideUser().getControllingPassenger();
+        if (this.canRotateMounted() && controller != null) {
+            return Interpolations.lerpYaw(controller.prevRotationYaw, controller.rotationYaw, partialTicks);
+        }
+        return Interpolations.lerpYaw(
+                this.getDynamicRideUser().prevRotationYaw,
+                this.getDynamicRideUser().rotationYaw,
+                partialTicks
+        );
     }
 }

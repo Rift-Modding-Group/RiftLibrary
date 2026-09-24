@@ -205,7 +205,6 @@ public class RiftLibParticleEmitter {
         AtomicReference<Vec3d> directionFromShape = new AtomicReference<>(Vec3d.ZERO);
         this.molangParser.withScope(this.emitterScope, () -> {
             Vec3d obtainedOffset = this.emitterShape.defineParticleOffset(this);
-            offset.set(obtainedOffset);
 
             //get from shape first
             Vec3d obtainedDirectionFromShape = this.emitterShape.defineDirection(
@@ -215,10 +214,12 @@ public class RiftLibParticleEmitter {
                     this.posZ + obtainedOffset.z
             );
 
-            //rotate using quaternion and return
+            //rotate the shape's offset and direction from emitter space into world space
+            obtainedOffset = VectorUtils.rotateVectorWithQuaternion(obtainedOffset, this.rotationQuaternion);
             obtainedDirectionFromShape = VectorUtils.rotateVectorWithQuaternion(obtainedDirectionFromShape, this.rotationQuaternion).normalize();
 
-            //final value
+            //final values
+            offset.set(obtainedOffset);
             directionFromShape.set(obtainedDirectionFromShape);
         });
 

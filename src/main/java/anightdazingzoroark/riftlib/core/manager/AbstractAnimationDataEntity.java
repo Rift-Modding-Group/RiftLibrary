@@ -52,15 +52,14 @@ public abstract class AbstractAnimationDataEntity<T extends Entity, D extends Ab
     protected void createMolangQueries() {
         super.createMolangQueries();
 
-        this.registerMolangQuery("query.modified_distance_moved", (values, animData) -> this.modifiedDistanceMoved);
-        this.registerMolangQuery("query.distance_from_camera", (values, animData) -> {
+        this.registerMolangQuery("modified_distance_moved", (values, animData) -> this.modifiedDistanceMoved);
+        this.registerMolangQuery("distance_from_camera", (values, animData) -> {
             if (this.getWorld() == null || !this.getWorld().isRemote) return 0D;
 
             Entity camera = Minecraft.getMinecraft().getRenderViewEntity();
-            float partialTick = Minecraft.getMinecraft().getRenderPartialTicks();
-
             if (camera == null) return 0D;
 
+            float partialTick = Minecraft.getMinecraft().getRenderPartialTicks();
             Vec3d entityCamera = new Vec3d(
                     Interpolations.lerp(camera.prevPosX, camera.posX, partialTick),
                     Interpolations.lerp(camera.prevPosY, camera.posY, partialTick),
@@ -73,21 +72,21 @@ public abstract class AbstractAnimationDataEntity<T extends Entity, D extends Ab
             );
             return entityCamera.add(ActiveRenderInfo.getCameraPosition()).distanceTo(entityPosition);
         });
-        this.registerMolangQuery("query.is_on_ground", (values, animData) -> {
+        this.registerMolangQuery("is_on_ground", (values, animData) -> {
             return MolangUtils.booleanToDouble(this.getHolder().onGround);
         });
-        this.registerMolangQuery("query.is_in_water", (values, animData) -> {
+        this.registerMolangQuery("is_in_water", (values, animData) -> {
             return MolangUtils.booleanToDouble(this.getHolder().isInWater());
         });
-        this.registerMolangQuery("query.is_in_water_or_rain", (values, animData) -> {
+        this.registerMolangQuery("is_in_water_or_rain", (values, animData) -> {
             return MolangUtils.booleanToDouble(this.getHolder().isWet());
         });
-        this.registerMolangQuery("query.is_on_fire", (values, animData) -> {
+        this.registerMolangQuery("is_on_fire", (values, animData) -> {
             return MolangUtils.booleanToDouble(this.getHolder().isBurning());
         });
-        this.registerMolangQuery("query.ground_speed", (values, animData) -> this.getHorizontalSpeed());
-        this.registerMolangQuery("query.vertical_speed", (values, animData) -> this.getVerticalSpeed());
-        this.registerMolangQuery("query.yaw_speed", (values, animData) -> {
+        this.registerMolangQuery("ground_speed", (values, animData) -> this.getHorizontalSpeed());
+        this.registerMolangQuery("vertical_speed", (values, animData) -> this.getVerticalSpeed());
+        this.registerMolangQuery("yaw_speed", (values, animData) -> {
             if (this.getWorld() == null || !this.getWorld().isRemote) {
                 return (double) (this.getHolder().rotationYaw - this.getHolder().prevRotationYaw);
             }
@@ -96,7 +95,7 @@ public abstract class AbstractAnimationDataEntity<T extends Entity, D extends Ab
             float prevEntityYaw = Interpolations.lerpYaw(this.getHolder().prevRotationYaw, this.getHolder().rotationYaw, partialTick - 0.1f);
             return (double) (currentEntityYaw - prevEntityYaw);
         });
-        this.registerMolangQuery("query.is_riding", (values, animData) -> {
+        this.registerMolangQuery("is_riding", (values, animData) -> {
             return MolangUtils.booleanToDouble(this.getHolder().isRiding());
         });
     }

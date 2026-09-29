@@ -345,21 +345,21 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
      * */
     protected void createMolangQueries() {
         //-----for data specifically-----
-        this.registerMolangQuery("query.anim_time", (values, animData) -> this.animTime);
-        this.registerMolangQuery("query.delta_time", (values, animData) -> this.deltaTime);
-        this.registerMolangQuery("query.life_time", (values, animData) -> this.lifeTime);
+        this.registerMolangQuery("anim_time", (values, animData) -> this.animTime);
+        this.registerMolangQuery("delta_time", (values, animData) -> this.deltaTime);
+        this.registerMolangQuery("life_time", (values, animData) -> this.lifeTime);
         //-----for world-----
-        this.registerMolangQuery("query.actor_count", (values, animData) -> {
+        this.registerMolangQuery("actor_count", (values, animData) -> {
             World world = this.getWorld();
             if (world == null) return 0D;
             return (double) world.getLoadedEntityList().size();
         });
-        this.registerMolangQuery("query.time_of_day", (values, animData) -> {
+        this.registerMolangQuery("time_of_day", (values, animData) -> {
             World world = this.getWorld();
             if (world == null) return 0D;
             return world.getTotalWorldTime() / 24000D;
         });
-        this.registerMolangQuery("query.moon_phase", (values, animData) -> {
+        this.registerMolangQuery("moon_phase", (values, animData) -> {
             World world = this.getWorld();
             if (world == null) return 0D;
             return (double) world.getMoonPhase();
@@ -374,7 +374,8 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
      * Helper function to simplify creation of molang queries
      * */
     protected void registerMolangQuery(String name, int argCount, BiFunction<IValue[], AbstractAnimationData<?, ?>, Double> operation) {
-        this.molangQueries.put(name, new MolangFunction(name) {
+        String queryName = "query." + name;
+        this.molangQueries.put(queryName, new MolangFunction(queryName) {
             @Override
             public int requiredArgCount() {
                 return argCount;

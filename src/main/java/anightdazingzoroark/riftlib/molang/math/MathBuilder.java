@@ -301,7 +301,7 @@ public class MathBuilder {
     }
 
     public IValue parseSymbols(List<Object> symbols, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
-        IValue ternary = this.tryTernary(symbols);
+        IValue ternary = this.tryTernary(symbols, animationData);
         if (ternary != null) return ternary;
         else {
             int size = symbols.size();
@@ -388,7 +388,7 @@ public class MathBuilder {
         return -1;
     }
 
-    protected IValue tryTernary(List<Object> symbols) throws MolangException {
+    protected IValue tryTernary(List<Object> symbols, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
         int question = -1;
         int questions = 0;
         int colon = -1;
@@ -414,7 +414,11 @@ public class MathBuilder {
         }
 
         if (questions == colons && question > 0 && question + 1 < colon && colon < size - 1) {
-            return new Ternary(this.parseSymbols(symbols.subList(0, question)), this.parseSymbols(symbols.subList(question + 1, colon)), this.parseSymbols(symbols.subList(colon + 1, size)));
+            return new Ternary(
+                    this.parseSymbols(symbols.subList(0, question), animationData),
+                    this.parseSymbols(symbols.subList(question + 1, colon), animationData),
+                    this.parseSymbols(symbols.subList(colon + 1, size), animationData)
+            );
         }
         else return null;
     }

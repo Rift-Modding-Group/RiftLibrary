@@ -1,20 +1,41 @@
-package anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.sync;
+package anightdazingzoroark.riftlib.nbtStorageUser.propertySystem;
 
 import anightdazingzoroark.riftlib.internalMessage.RiftLibUpdateAllPropertyKeys;
-import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.RiftLibProperty;
-import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.AbstractEntityProperties;
 import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.registry.PropertiesBootstrap;
 import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.registry.PropertiesRoot;
 import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.registry.PropertyRegistry;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class PropertySyncEvents {
+import java.util.ArrayList;
+
+public class PropertyEvents {
+    @SubscribeEvent
+    public void onServerTick(TickEvent.WorldTickEvent event) {
+        if (event.side.isClient() || event.phase != TickEvent.Phase.END) return;
+        this.tickProperties(event.world);
+    }
+
+    @SubscribeEvent
+    @SideOnly(Side.CLIENT)
+    public void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.side.isServer() || event.phase != TickEvent.Phase.END) return;
+
+        Minecraft minecraft = Minecraft.getMinecraft();
+        if (minecraft.isGamePaused() || minecraft.world == null) return;
+        this.tickProperties(minecraft.world);
+    }
+
     @SubscribeEvent
     public void onStartTracking(PlayerEvent.StartTracking event) {
         Entity target = event.getTarget();
@@ -57,5 +78,16 @@ public class PropertySyncEvents {
                 new RiftLibUpdateAllPropertyKeys(target.getEntityId(), setKey, set.writeAllToNBT()),
                 watcher
         );
+    }
+
+    private void tickProperties(World world) {
+        for (Entity entity : new ArrayList<>(world.getLoadedEntityList())) {
+            if (!entity.isEntityAlive()) continue;
+            for (String name : PropertyRegistry.getAllPropertyNames()) {
+                if (!PropertyRegistry.entityCanHaveProperty(name, entity)) continue;
+                AbstractEntityProperties<?> properties = RiftLibProperty.getProperty(name, entity);
+                if (properties != null) properties.onTickProperty();
+            }
+        }
     }
 }

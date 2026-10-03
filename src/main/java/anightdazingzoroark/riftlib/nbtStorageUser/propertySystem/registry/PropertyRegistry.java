@@ -2,6 +2,7 @@ package anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.registry;
 
 import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.AbstractEntityProperties;
 import net.minecraft.entity.Entity;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,11 +18,11 @@ public class PropertyRegistry {
     /**
      * Use this to register your property.
      * */
-    public static void register(String name, ClassPropertyPair<?> propertyMaker) {
+    public static void register(@NotNull String name, @NotNull ClassPropertyPair<?> propertyMaker) {
         REGISTRY.put(name, propertyMaker);
     }
 
-    public static ClassPropertyPair<?> getPropertyClassPair(String key, Entity entity) {
+    public static ClassPropertyPair<?> getPropertyClassPair(@NotNull String key, @NotNull Entity entity) {
         Class<? extends Entity> entityClass = entity.getClass();
         if (!REGISTRY.containsKey(key)) return null;
         ClassPropertyPair<?> classPropertyPair = REGISTRY.get(key);
@@ -29,11 +30,13 @@ public class PropertyRegistry {
         else return classPropertyPair;
     }
 
+    @NotNull
     public static Set<String> getAllPropertyNames() {
         return REGISTRY.keySet();
     }
 
-    public static boolean entityCanHaveProperty(String key, Entity entity) {
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public static boolean entityCanHaveProperty(@NotNull String key, @NotNull Entity entity) {
         if (!REGISTRY.containsKey(key)) return false;
         ClassPropertyPair<?> classPropertyPair = REGISTRY.get(key);
         return classPropertyPair.entityClass.isAssignableFrom(entity.getClass());
@@ -42,5 +45,5 @@ public class PropertyRegistry {
     //much shorter than declaring an ImmutablePair
     //and oh yeah, the bi function for property instead of a class removes
     //reflection related headaches. fuck reflection smh.
-    public record ClassPropertyPair<E extends Entity>(Class<E> entityClass, BiFunction<String, E, AbstractEntityProperties<E>> propertyMaker) {}
+    public record ClassPropertyPair<E extends Entity>(@NotNull Class<E> entityClass, @NotNull BiFunction<String, E, AbstractEntityProperties<E>> propertyMaker) {}
 }

@@ -15,6 +15,7 @@ import java.util.Map;
  * To make a property, just extend this class. And to register it, use PropertyRegistry.register()
  * */
 public abstract class AbstractEntityProperties<E extends Entity> {
+    @NotNull
     protected final Map<String, ImmutablePair<AbstractPropertyValue<?>, Boolean>> propertyValueMap = new HashMap<>();
     @NotNull
     private final String propertyName;
@@ -30,14 +31,14 @@ public abstract class AbstractEntityProperties<E extends Entity> {
     /**
      * Override this to register any default values your property might have.
      * */
-    protected abstract void registerDefaults(E entity);
+    protected abstract void registerDefaults(@NotNull E entity);
 
-    protected void register(AbstractPropertyValue<?> value) {
+    protected void register(@NotNull AbstractPropertyValue<?> value) {
         this.register(value, true);
     }
 
     //persistence means that the data will be saved when the world is unloaded
-    protected void register(AbstractPropertyValue<?> value, boolean persist) {
+    protected void register(@NotNull AbstractPropertyValue<?> value, boolean persist) {
         //check if the property already exists, it it already does, skip
         if (this.propertyValueMap.containsKey(value.getKey())) {
             throw new UnsupportedOperationException("Key "+value.getKey()+" already exists in property "+this.getPropertyName()+"!");
@@ -53,7 +54,7 @@ public abstract class AbstractEntityProperties<E extends Entity> {
     //-----methods relating to putting values-----
     //universal setter and getter
     @SuppressWarnings("unchecked")
-    private <I extends AbstractPropertyValue<?>> I getExistingProperty(String key) {
+    private <I extends AbstractPropertyValue<?>> I getExistingProperty(@NotNull String key) {
         //check if key exists
         if (!this.propertyValueMap.containsKey(key)) {
             throw new UnsupportedOperationException("Key "+key+" does not exist in property "+this.getPropertyName()+"!");
@@ -62,11 +63,11 @@ public abstract class AbstractEntityProperties<E extends Entity> {
         return (I) this.propertyValueMap.get(key).left;
     }
 
-    public <I> void set(String key, I value) {
+    public <I> void set(@NotNull String key, I value) {
         this.set(key, value, true);
     }
 
-    public <I> void set(String key, I value, boolean includeSync) {
+    public <I> void set(@NotNull String key, I value, boolean includeSync) {
         //check if key corresponds to value
         AbstractPropertyValue<I> propertyValue = this.getExistingProperty(key);
 
@@ -82,18 +83,17 @@ public abstract class AbstractEntityProperties<E extends Entity> {
     }
 
     //sync to client from server
-    private void syncToClient(AbstractPropertyValue<?> value) {
-        if (this.entityHolder != null && !this.entityHolder.world.isRemote) {
-            PropertiesNetworking.sendSingle(
-                    this.entityHolder,
-                    this.propertyName,
-                    value.getKey(),
-                    this.writeOneToNBT(value.getKey())
-            );
-        }
+    private void syncToClient(@NotNull AbstractPropertyValue<?> value) {
+        if (this.entityHolder == null || this.entityHolder.world.isRemote) return;
+        PropertiesNetworking.sendSingle(
+                this.entityHolder,
+                this.propertyName,
+                value.getKey(),
+                this.writeOneToNBT(value.getKey())
+        );
     }
 
-    protected void syncToClientMultiple(String... keys) {
+    protected void syncToClientMultiple(@NotNull String... keys) {
         if (this.entityHolder == null || this.entityHolder.world.isRemote) return;
         PropertiesNetworking.sendMultiple(
                 this.entityHolder,
@@ -103,22 +103,27 @@ public abstract class AbstractEntityProperties<E extends Entity> {
         );
     }
 
+    //-----updating per tick-----
+    public abstract void onTickProperty();
+
     //-----general getters-----
-    public <I> I get(String key) {
+    public <I> I get(@NotNull String key) {
         AbstractPropertyValue<I> propertyValue = this.getExistingProperty(key);
         return propertyValue.getValue();
     }
 
-    public boolean has(String key) {
+    public boolean has(@NotNull String key) {
         return this.propertyValueMap.containsKey(key);
     }
 
     //-----holder related-----
-    public @NotNull String getPropertyName() {
+    @NotNull
+    public String getPropertyName() {
         return this.propertyName;
     }
 
-    public @NotNull E getEntityHolder() {
+    @NotNull
+    public E getEntityHolder() {
         return this.entityHolder;
     }
 

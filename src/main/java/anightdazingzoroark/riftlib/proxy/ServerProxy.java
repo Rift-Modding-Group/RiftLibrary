@@ -18,7 +18,7 @@ import anightdazingzoroark.riftlib.model.ServerModelRegistry;
 import anightdazingzoroark.riftlib.model.ServerModelTicker;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleComponentRegistry;
 import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.registry.PropertiesBootstrap;
-import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.sync.PropertySyncEvents;
+import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.PropertyEvents;
 import anightdazingzoroark.riftlib.ray.RayTicker;
 import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
 import net.minecraft.world.WorldServer;
@@ -67,7 +67,7 @@ public class ServerProxy {
 
         //custom entity property system setup
         PropertiesBootstrap.register();
-        MinecraftForge.EVENT_BUS.register(new PropertySyncEvents());
+        MinecraftForge.EVENT_BUS.register(new PropertyEvents());
 
         //these will only happen in a deobfuscated environment
         if (RiftLibMod.DEOBF_ENVIRONMENT && !RiftLibMod.DISABLE_IN_DEV) {

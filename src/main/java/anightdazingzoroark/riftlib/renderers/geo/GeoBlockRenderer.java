@@ -5,8 +5,14 @@ import anightdazingzoroark.riftlib.block.AnimatedBlockRegistry;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.util.Color;
+import anightdazingzoroark.riftlib.geo.GeoBone;
+import anightdazingzoroark.riftlib.geo.GeoCube;
 import anightdazingzoroark.riftlib.geo.GeoModel;
+import anightdazingzoroark.riftlib.geo.GeoQuad;
+import anightdazingzoroark.riftlib.geo.GeoVertex;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
+import anightdazingzoroark.riftlib.block.AnimatedBlockParticleFace;
+import anightdazingzoroark.riftlib.util.MatrixStack;
 import anightdazingzoroark.riftlib.util.TriFunction;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirectional;
@@ -15,6 +21,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -24,6 +31,10 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
+import javax.vecmath.Vector3f;
+import javax.vecmath.Vector4f;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @SideOnly(Side.CLIENT)
@@ -61,6 +72,119 @@ public abstract class GeoBlockRenderer<A extends AnimatedBlockStateHolder> imple
         String path = this.modelProvider.getTextureLocation(holder);
         if (path.endsWith(".png")) path = path.substring(0, path.length() - 4);
         return new ResourceLocation(this.modelProvider.getModId(), path);
+    }
+
+    /**
+     * Divides every visible model face into texture-aligned particle sections and records its transformed surface position.
+     * */
+    public List<AnimatedBlockParticleFace> createParticleFaces(World world, BlockPos pos, IBlockState state) {
+        A holder = this.createHolder(world, pos, state);
+        GeoModel model = this.modelProvider.getModel(holder);
+        int[] textureSize = model.getTextureSize();
+        TextureAtlasSprite texture = Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes().getTexture(state);
+        List<AnimatedBlockParticleFace> faces = new ArrayList<>();
+        MatrixStack matrices = new MatrixStack();
+        float scale = holder.getAnimationData().getScale();
+        matrices.scale(scale, scale, scale);
+
+        EnumFacing facing = EnumFacing.NORTH;
+        if (state.getPropertyKeys().contains(BlockHorizontal.FACING)) facing = state.getValue(BlockHorizontal.FACING);
+        else if (state.getPropertyKeys().contains(BlockDirectional.FACING)) facing = state.getValue(BlockDirectional.FACING);
+        if (facing == EnumFacing.SOUTH) matrices.rotateY((float) Math.PI);
+        else if (facing == EnumFacing.WEST) matrices.rotateY((float) Math.PI / 2F);
+        else if (facing == EnumFacing.EAST) matrices.rotateY((float) Math.PI * 1.5F);
+        else if (facing == EnumFacing.UP) matrices.rotateX((float) Math.PI / 2F);
+        else if (facing == EnumFacing.DOWN) matrices.rotateX((float) -Math.PI / 2F);
+
+        for (GeoBone bone : model.getTopLevelBones()) {
+            this.collectParticleFaces(bone, matrices, texture, textureSize[0], textureSize[1], faces);
+        }
+        return faces;
+    }
+
+    private void collectParticleFaces(
+            GeoBone bone, MatrixStack matrices, TextureAtlasSprite texture,
+            int textureWidth, int textureHeight, List<AnimatedBlockParticleFace> faces
+    ) {
+        matrices.push();
+        matrices.translate(bone);
+        matrices.moveToPivot(bone);
+        matrices.rotate(bone);
+        matrices.scale(bone);
+        matrices.moveBackFromPivot(bone);
+
+        if (!bone.isHidden()) {
+            for (GeoCube cube : bone.childCubes) {
+                matrices.push();
+                matrices.moveToPivot(cube);
+                matrices.rotate(cube);
+                matrices.moveBackFromPivot(cube);
+                for (GeoQuad quad : cube.getGeoQuads()) {
+                    GeoVertex[] vertices = quad.geoVertices();
+                    float minU = 1F;
+                    float maxU = 0F;
+                    float minV = 1F;
+                    float maxV = 0F;
+                    for (GeoVertex vertex : vertices) {
+                        minU = Math.min(minU, vertex.textureU);
+                        maxU = Math.max(maxU, vertex.textureU);
+                        minV = Math.min(minV, vertex.textureV);
+                        maxV = Math.max(maxV, vertex.textureV);
+                    }
+                    if (maxU <= minU || maxV <= minV) continue;
+
+                    Vector3f topLeft = null;
+                    Vector3f topRight = null;
+                    Vector3f bottomLeft = null;
+                    Vector3f bottomRight = null;
+                    for (GeoVertex vertex : vertices) {
+                        Vector4f transformed = new Vector4f(vertex.position.getX(), vertex.position.getY(), vertex.position.getZ(), 1F);
+                        matrices.getModelMatrix().transform(transformed);
+                        Vector3f position = new Vector3f(transformed.getX(), transformed.getY(), transformed.getZ());
+                        if (vertex.textureU == minU && vertex.textureV == minV) topLeft = position;
+                        else if (vertex.textureU == maxU && vertex.textureV == minV) topRight = position;
+                        else if (vertex.textureU == minU && vertex.textureV == maxV) bottomLeft = position;
+                        else if (vertex.textureU == maxU && vertex.textureV == maxV) bottomRight = position;
+                    }
+                    if (topLeft == null || topRight == null || bottomLeft == null || bottomRight == null) continue;
+
+                    Vector3f horizontal = new Vector3f(topRight);
+                    Vector3f vertical = new Vector3f(bottomLeft);
+                    horizontal.sub(topLeft);
+                    vertical.sub(topLeft);
+                    if (horizontal.lengthSquared() <= 0F || vertical.lengthSquared() <= 0F) continue;
+
+                    int columns = Math.max(1, (int) Math.ceil((maxU - minU) * textureWidth / 4F));
+                    int rows = Math.max(1, (int) Math.ceil((maxV - minV) * textureHeight / 4F));
+                    Vector3f normal = new Vector3f(quad.getNormal().getX(), quad.getNormal().getY(), quad.getNormal().getZ());
+                    matrices.getNormalMatrix().transform(normal);
+                    normal.normalize();
+                    float particleScale = Math.clamp((horizontal.length() / columns + vertical.length() / rows) / 0.4F, 0.35F, 1.1F);
+                    faces.add(new AnimatedBlockParticleFace(
+                            texture,
+                            minU,
+                            maxU,
+                            minV,
+                            maxV,
+                            topLeft,
+                            topRight,
+                            bottomLeft,
+                            bottomRight,
+                            normal,
+                            columns,
+                            rows,
+                            particleScale
+                    ));
+                }
+                matrices.pop();
+            }
+        }
+        if (!bone.childBonesAreHiddenToo()) {
+            for (GeoBone childBone : bone.childBones) {
+                this.collectParticleFaces(childBone, matrices, texture, textureWidth, textureHeight, faces);
+            }
+        }
+        matrices.pop();
     }
 
     /**

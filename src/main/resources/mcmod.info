@@ -2,13 +2,14 @@
   {
     "modid": "riftlib",
     "name": "RiftLibrary",
-    "description": "RiftLibrary is a fork of Geckolib for 1.12.2 that in addition to GeckoLib's already existing features adds dynamic hitboxes, dynamic ride positions, support for projectiles, and maybe some more down the line",
-    "version": "${version}",
+    "description": "RiftLibrary is a fork of Geckolib for 1.12.2 that in addition to GeckoLib's already existing features adds dynamic bounding boxes and dynamic ride positions on entities, support for projectiles, and improves upon block and item rendering and MoLang.",
+    "version": "2.0.0",
     "mcversion": "${mcversion}",
-    "url": "https://discord.gg/qVWaKRMCRc",
+    "url": "https://discord.gg/JnjQtkVt8R",
     "updateUrl": "",
     "authorList": ["ANightDazingZoroark"],
     "credits": "Authors of this project",
+    "logoFile": "riftlibrary.png",
     "screenshots": [],
     "dependencies": []
   }

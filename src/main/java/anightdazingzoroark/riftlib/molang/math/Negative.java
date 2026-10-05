@@ -1,17 +1,23 @@
 package anightdazingzoroark.riftlib.molang.math;
 
-public class Negative implements IValue {
-    public IValue value;
+import org.jetbrains.annotations.NotNull;
 
-    public Negative(IValue value) {
+public class Negative implements IValue {
+    @NotNull
+    private final IValue value;
+
+    public Negative(@NotNull IValue value) {
         this.value = value;
     }
 
+    @Override
     public double get() {
         return -this.value.get();
     }
 
+    @Override
+    @NotNull
     public String toString() {
-        return "-" + this.value.toString();
+        return "-" + this.value;
     }
 }

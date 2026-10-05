@@ -41,6 +41,8 @@ import java.util.function.Supplier;
 public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T, D>> {
     @NotNull
     private final T holder;
+    @NotNull
+    private final IAnimatable<D> animatable;
     private final Map<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection = new HashMap<>();
     private final Map<String, AnimationController<? extends IAnimatable<D>, D>> animationControllers = new HashMap<>();
     private final Map<String, Double> initAnimationValues = new HashMap<>();
@@ -53,7 +55,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     @NotNull
     private final MolangParser parser;
     @NotNull
-    private final MolangScope dataScope = new MolangScope();
+    private final MolangScope dataScope;
     protected GeoModel currentModel;
     public double tick;
     public boolean isFirstTick = true;
@@ -69,6 +71,8 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     @SuppressWarnings("unchecked")
     public AbstractAnimationData(@NotNull T holder, @NotNull IAnimatable<D> animatable) {
         this.holder = holder;
+        this.animatable = animatable;
+        this.dataScope = new MolangScope(null, animatable);
         //looks unintuitive i know, but its to prevent NPEs from armor data
         this.parser = FMLCommonHandler.instance().getSide().isClient() ?
                 RiftLibCacheClient.getInstance().parser : RiftLibCacheServer.getInstance().parser;
@@ -80,6 +84,11 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     @NotNull
     public T getHolder() {
         return this.holder;
+    }
+
+    @NotNull
+    public IAnimatable<D> getAnimatable() {
+        return this.animatable;
     }
 
     //-----initialization methods start here-----
@@ -366,26 +375,16 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
         });
     }
 
-    protected void registerMolangQuery(String name, BiFunction<IValue[], AbstractAnimationData<?, ?>, Double> operation) {
+    protected void registerMolangQuery(String name, BiFunction<IValue[], AbstractAnimationData<?, ?>, ?> operation) {
         this.registerMolangQuery(name, 0, operation);
     }
 
     /**
      * Helper function to simplify creation of molang queries
      * */
-    protected void registerMolangQuery(String name, int argCount, BiFunction<IValue[], AbstractAnimationData<?, ?>, Double> operation) {
+    protected void registerMolangQuery(String name, int argCount, BiFunction<IValue[], AbstractAnimationData<?, ?>, ?> operation) {
         String queryName = "query." + name;
-        this.molangQueries.put(queryName, new MolangFunction(queryName) {
-            @Override
-            public int requiredArgCount() {
-                return argCount;
-            }
-
-            @Override
-            public @NotNull BiFunction<IValue[], AbstractAnimationData<?, ?>, Double> operation() {
-                return operation;
-            }
-        });
+        this.molangQueries.put(queryName, new MolangFunction(queryName, argCount, operation));
     }
 
     public Map<String, MolangFunction> getMolangQueries() {

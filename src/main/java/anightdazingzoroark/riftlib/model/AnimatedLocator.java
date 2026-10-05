@@ -49,6 +49,11 @@ public class AnimatedLocator {
         return this.animationData.isValid();
     }
 
+    @NotNull
+    public AbstractAnimationData<?, ?> getAnimationData() {
+        return this.animationData;
+    }
+
     public String getName() {
         return this.locator.name;
     }

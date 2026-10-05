@@ -1,22 +1,37 @@
 package anightdazingzoroark.riftlib.molang.math;
 
-public class Ternary implements IValue {
-    public IValue condition;
-    public IValue ifTrue;
-    public IValue ifFalse;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-    public Ternary(IValue condition, IValue ifTrue, IValue ifFalse) {
+public class Ternary implements IValue {
+    @NotNull
+    private final IValue condition;
+    @NotNull
+    private final IValue ifTrue;
+    @NotNull
+    private final IValue ifFalse;
+
+    public Ternary(@NotNull IValue condition, @NotNull IValue ifTrue, @NotNull IValue ifFalse) {
         this.condition = condition;
         this.ifTrue = ifTrue;
         this.ifFalse = ifFalse;
     }
 
+    @Override
     public double get() {
-        return this.condition.get() != (double)0.0F ? this.ifTrue.get() : this.ifFalse.get();
+        Object value = this.getValue();
+        return value instanceof Number number ? number.doubleValue() : 0D;
     }
 
+    @Override
+    @Nullable
+    public Object getValue() {
+        return this.condition.get() != 0D ? this.ifTrue.getValue() : this.ifFalse.getValue();
+    }
+
+    @Override
+    @NotNull
     public String toString() {
-        return this.condition.toString() + " ? " + this.ifTrue.toString() + " : " + this.ifFalse.toString();
+        return this.condition + " ? " + this.ifTrue + " : " + this.ifFalse;
     }
 }
-

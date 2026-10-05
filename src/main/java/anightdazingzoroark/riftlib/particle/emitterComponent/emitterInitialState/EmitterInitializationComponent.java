@@ -24,8 +24,7 @@ public class EmitterInitializationComponent extends RiftLibEmitterComponent {
             if (componentValue.valueType == RawParticleComponent.ComponentValueType.STRING) {
                 try {
                     MolangMultiStatement molangMultiStatement = (MolangMultiStatement) parser.parseExpression(componentValue.string);
-
-                    if (molangMultiStatement != null) this.initialOperations = new ArrayList<>(molangMultiStatement.expressions);
+                    this.initialOperations = new ArrayList<>(molangMultiStatement.getExpressions());
                 }
                 catch (Exception e) {
                     throw new RuntimeException(e);
@@ -40,8 +39,7 @@ public class EmitterInitializationComponent extends RiftLibEmitterComponent {
             if (componentValue.valueType == RawParticleComponent.ComponentValueType.STRING) {
                 try {
                     MolangMultiStatement molangMultiStatement = (MolangMultiStatement) parser.parseExpression(componentValue.string);
-
-                    if (molangMultiStatement != null) this.repeatingOperations = new ArrayList<>(molangMultiStatement.expressions);
+                    this.repeatingOperations = new ArrayList<>(molangMultiStatement.getExpressions());
                 }
                 catch (Exception e) {
                     throw new RuntimeException(e);

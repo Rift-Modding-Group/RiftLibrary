@@ -4,6 +4,7 @@ import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
+import anightdazingzoroark.riftlib.molang.MolangObject;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.molang.expressions.MolangExpression;
 import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
@@ -23,6 +24,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 import org.lwjglx.util.vector.Quaternion;
 
@@ -31,7 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 //emitters are what spawn particles
 @SideOnly(Side.CLIENT)
-public class RiftLibParticleEmitter {
+public class RiftLibParticleEmitter implements MolangObject {
     private final List<RiftLibParticle> particles = new ArrayList<>();
     public final String particleIdentifier;
     private AnimatedLocator locator;
@@ -52,7 +55,7 @@ public class RiftLibParticleEmitter {
     private int stateParticleIndex = -1;
     private String stateParticleStateName;
 
-    public final MolangScope emitterScope = new MolangScope();
+    public final MolangScope emitterScope = new MolangScope(null, this);
 
     //unparsed particle components
     public final List<Map.Entry<String, RawParticleComponent>> rawParticleComponents;
@@ -68,8 +71,7 @@ public class RiftLibParticleEmitter {
     public RiftLibEmitterLifetimeComponent emitterLifetime;
 
     public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, AnimatedLocator locator) {
-        this(particleBuilder, world, 0, 0, 0);
-        this.locator = locator;
+        this(particleBuilder, world, 0, 0, 0, locator);
     }
 
     public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, double x, double y, double z, double rotationX, double rotationY) {
@@ -80,6 +82,10 @@ public class RiftLibParticleEmitter {
     }
 
     public RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, double x, double y, double z) {
+        this(particleBuilder, world, x, y, z, null);
+    }
+
+    private RiftLibParticleEmitter(ParticleBuilder particleBuilder, World world, double x, double y, double z, AnimatedLocator locator) {
         this.textureLocation = particleBuilder.texture;
         this.particleIdentifier = particleBuilder.identifier;
         this.material = particleBuilder.material;
@@ -87,6 +93,7 @@ public class RiftLibParticleEmitter {
         this.rawParticleComponents = particleBuilder.rawParticleComponents;
         this.emitterId = ParticleTicker.EMITTER_ID++;
         this.world = world;
+        this.locator = locator;
         this.posX = x;
         this.posY = y;
         this.posZ = z;
@@ -288,6 +295,18 @@ public class RiftLibParticleEmitter {
 
     public AnimatedLocator getLocator() {
         return this.locator;
+    }
+
+    @Override
+    @NotNull
+    public MolangScope getMolangScope() {
+        return this.emitterScope;
+    }
+
+    @Override
+    @Nullable
+    public Object getMolangActorOwner() {
+        return this.locator == null ? null : this.locator.getAnimationData().getAnimatable();
     }
 
     private boolean locatorIsUpdated() {

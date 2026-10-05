@@ -1,5 +1,7 @@
 package anightdazingzoroark.riftlib.molang.math;
 
+import org.jetbrains.annotations.NotNull;
+
 public class Constant implements IValue {
     private double value;
 
@@ -7,6 +9,7 @@ public class Constant implements IValue {
         this.value = value;
     }
 
+    @Override
     public double get() {
         return this.value;
     }
@@ -15,6 +18,8 @@ public class Constant implements IValue {
         this.value = value;
     }
 
+    @Override
+    @NotNull
     public String toString() {
         return String.valueOf(this.value);
     }

@@ -1,6 +1,7 @@
 package anightdazingzoroark.riftlib.particle;
 
 import anightdazingzoroark.riftlib.molang.MolangParser;
+import anightdazingzoroark.riftlib.molang.MolangObject;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
@@ -14,13 +15,17 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class RiftLibParticle {
+public class RiftLibParticle implements MolangObject {
     private final World world;
+    @Nullable
+    private final RiftLibParticleEmitter emitter;
     public final MolangParser molangParser;
     public final MolangScope particleScope;
     public double x, y, z;
@@ -77,8 +82,9 @@ public class RiftLibParticle {
 
     public RiftLibParticle(World world, MolangParser parser, MolangScope emitterScope) {
         this.world = world;
+        this.emitter = emitterScope.getOwner() instanceof RiftLibParticleEmitter particleEmitter ? particleEmitter : null;
         this.molangParser = parser;
-        this.particleScope = new MolangScope(emitterScope);
+        this.particleScope = new MolangScope(emitterScope, this);
 
         //init molang stuff
         this.setupMolangVariables();
@@ -94,6 +100,18 @@ public class RiftLibParticle {
             this.molangParser.setVariable("variable.particle_random_3", Math.random());
             this.molangParser.setVariable("variable.particle_random_4", Math.random());
         });
+    }
+
+    @Override
+    @NotNull
+    public MolangScope getMolangScope() {
+        return this.particleScope;
+    }
+
+    @Override
+    @Nullable
+    public Object getMolangActorOwner() {
+        return this.emitter;
     }
 
     public void initializeVelocity(Vec3d direction) {

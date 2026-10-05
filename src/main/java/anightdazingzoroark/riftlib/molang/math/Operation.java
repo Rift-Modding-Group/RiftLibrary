@@ -1,99 +1,77 @@
 package anightdazingzoroark.riftlib.molang.math;
 
-import java.util.HashSet;
-import java.util.Set;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public enum Operation {
-    ADD("+", 1) {
-        public double calculate(double a, double b) {
-            return a + b;
-        }
-    },
-    SUB("-", 1) {
-        public double calculate(double a, double b) {
-            return a - b;
-        }
-    },
-    MUL("*", 2) {
-        public double calculate(double a, double b) {
-            return a * b;
-        }
-    },
-    DIV("/", 2) {
-        public double calculate(double a, double b) {
-            return a / (b == (double)0.0F ? (double)1.0F : b);
-        }
-    },
-    MOD("%", 2) {
-        public double calculate(double a, double b) {
-            return a % b;
-        }
-    },
-    POW("^", 3) {
-        public double calculate(double a, double b) {
-            return Math.pow(a, b);
-        }
-    },
-    AND("&&", 5) {
-        public double calculate(double a, double b) {
-            return a != (double)0.0F && b != (double)0.0F ? (double)1.0F : (double)0.0F;
-        }
-    },
-    OR("||", 5) {
-        public double calculate(double a, double b) {
-            return a == (double)0.0F && b == (double)0.0F ? (double)0.0F : (double)1.0F;
-        }
-    },
-    LESS("<", 5) {
-        public double calculate(double a, double b) {
-            return a < b ? (double)1.0F : (double)0.0F;
-        }
-    },
-    LESS_THAN("<=", 5) {
-        public double calculate(double a, double b) {
-            return a <= b ? (double)1.0F : (double)0.0F;
-        }
-    },
-    GREATER_THAN(">=", 5) {
-        public double calculate(double a, double b) {
-            return a >= b ? (double)1.0F : (double)0.0F;
-        }
-    },
-    GREATER(">", 5) {
-        public double calculate(double a, double b) {
-            return a > b ? (double)1.0F : (double)0.0F;
-        }
-    },
-    EQUALS("==", 5) {
-        public double calculate(double a, double b) {
-            return equals(a, b) ? (double)1.0F : (double)0.0F;
-        }
-    },
-    NOT_EQUALS("!=", 5) {
-        public double calculate(double a, double b) {
-            return !equals(a, b) ? (double)1.0F : (double)0.0F;
-        }
-    };
+    NULL_COALESCING("??", 1),
+    OR("||", 2),
+    AND("&&", 3),
+    EQUALS("==", 4),
+    NOT_EQUALS("!=", 4),
+    LESS("<", 5),
+    LESS_THAN("<=", 5),
+    GREATER(">", 5),
+    GREATER_THAN(">=", 5),
+    ADD("+", 6),
+    SUB("-", 6),
+    MUL("*", 7),
+    DIV("/", 7),
+    MOD("%", 7),
+    POW("^", 8),
+    ARROW("->", 9);
 
-    public static final Set<String> OPERATORS = new HashSet();
-    public final String sign;
-    public final int value;
+    @NotNull
+    private final String sign;
+    private final int precedence;
 
-    public static boolean equals(double a, double b) {
-        return Math.abs(a - b) < 1.0E-5;
-    }
-
-    private Operation(String sign, int value) {
+    Operation(@NotNull String sign, int precedence) {
         this.sign = sign;
-        this.value = value;
+        this.precedence = precedence;
     }
 
-    public abstract double calculate(double var1, double var3);
+    public double calculate(double left, double right) {
+        return switch (this) {
+            case ADD -> left + right;
+            case SUB -> left - right;
+            case MUL -> left * right;
+            case DIV -> left / (right == 0D ? 1D : right);
+            case MOD -> left % right;
+            case POW -> Math.pow(left, right);
+            case AND -> left != 0D && right != 0D ? 1D : 0D;
+            case OR -> left != 0D || right != 0D ? 1D : 0D;
+            case LESS -> left < right ? 1D : 0D;
+            case LESS_THAN -> left <= right ? 1D : 0D;
+            case GREATER -> left > right ? 1D : 0D;
+            case GREATER_THAN -> left >= right ? 1D : 0D;
+            case EQUALS -> equals(left, right) ? 1D : 0D;
+            case NOT_EQUALS -> !equals(left, right) ? 1D : 0D;
+            case ARROW, NULL_COALESCING -> throw new UnsupportedOperationException(this.sign + " requires contextual evaluation");
+        };
+    }
 
-    static {
-        for(Operation op : values()) {
-            OPERATORS.add(op.sign);
+    public static boolean equals(double left, double right) {
+        return Math.abs(left - right) < 1.0E-5D;
+    }
+
+    @Nullable
+    public static Operation fromSign(@NotNull String sign) {
+        for (Operation operation : values()) {
+            if (operation.sign.equals(sign)) return operation;
         }
+        return null;
+    }
 
+    @NotNull
+    public String getSign() {
+        return this.sign;
+    }
+
+    public int getPrecedence() {
+        return this.precedence;
+    }
+
+    public boolean isRightAssociative() {
+        return this == POW || this == NULL_COALESCING;
     }
 }

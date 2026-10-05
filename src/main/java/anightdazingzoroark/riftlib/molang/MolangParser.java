@@ -1,210 +1,184 @@
 package anightdazingzoroark.riftlib.molang;
 
-import anightdazingzoroark.riftlib.core.AnimatableRunValue;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
-import anightdazingzoroark.riftlib.internalMessage.RiftLibApplyMessageEffect;
-import anightdazingzoroark.riftlib.molang.math.*;
 import anightdazingzoroark.riftlib.molang.expressions.MolangAssignment;
 import anightdazingzoroark.riftlib.molang.expressions.MolangExpression;
 import anightdazingzoroark.riftlib.molang.expressions.MolangMultiStatement;
 import anightdazingzoroark.riftlib.molang.expressions.MolangValue;
+import anightdazingzoroark.riftlib.molang.math.Constant;
+import anightdazingzoroark.riftlib.molang.math.IValue;
+import anightdazingzoroark.riftlib.molang.math.MathBuilder;
+import anightdazingzoroark.riftlib.molang.math.MolangObjectAccess;
+import anightdazingzoroark.riftlib.molang.math.MolangQueryValue;
+import anightdazingzoroark.riftlib.molang.math.Operation;
 import anightdazingzoroark.riftlib.molang.math.Variable;
-import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import anightdazingzoroark.riftlib.util.MolangUtils;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class MolangParser extends MathBuilder {
-    public static final MolangExpression ZERO = new MolangValue(null, new Constant(0f));
-    public static final MolangExpression ONE = new MolangValue(null, new Constant(1f));
+    @NotNull
+    public static final MolangExpression ZERO = new MolangValue(new Constant(0D));
+    @NotNull
+    public static final MolangExpression ONE = new MolangValue(new Constant(1D));
+    @NotNull
     public static final String RETURN = "return ";
-    private final ThreadLocal<Deque<MolangScope>> scopeStack = ThreadLocal.withInitial(ArrayDeque::new);
-    private MolangMultiStatement currentStatement;
 
-    /**
-     * In this constructor, all other functions are dealt with here
-     * */
+    @NotNull
+    private final ScopedValue<MolangScope> currentScope = ScopedValue.newInstance();
+
     public MolangParser() {
-        super();
-        this.registerFunction("function.send_message", 1, (values, animData) -> {
-            if (animData == null) return 0D;
-            String messageName = values[0].getString();
-            return MolangUtils.booleanToDouble(animData.sendMessage(messageName));
+        this.registerFunction("function.send_message", 1, (arguments, animationData) -> {
+            if (animationData == null) return 0D;
+            return MolangUtils.booleanToDouble(animationData.sendMessage(arguments[0].getString()));
         });
-        this.registerFunction("function.create_offense_hitbox_by_name", 1, (values, animData) -> {
-            if (animData == null || animData.getWorld() == null || animData.getWorld().isRemote) return 0D;
-            if (!(animData.getHolder() instanceof IMultiHitboxUser<?> multiHitboxUser)) return 0D;
-            String valueString = values[0].getString();
-            return MolangUtils.booleanToDouble(multiHitboxUser.getMultiHitboxList().createOffenseHitboxByName(valueString));
+        this.registerFunction("function.create_offense_hitbox_by_name", 1, (arguments, animationData) -> {
+            if (animationData == null || animationData.getWorld() == null || animationData.getWorld().isRemote) return 0D;
+            if (!(animationData.getHolder() instanceof IMultiHitboxUser<?> multiHitboxUser)) return 0D;
+            return MolangUtils.booleanToDouble(multiHitboxUser.getMultiHitboxList().createOffenseHitboxByName(arguments[0].getString()));
         });
-        this.registerFunction("function.destroy_offense_hitbox_by_name", 1, (values, animData) -> {
-            if (animData == null || animData.getWorld() == null || animData.getWorld().isRemote) return 0D;
-            if (!(animData.getHolder() instanceof IMultiHitboxUser<?> multiHitboxUser)) return 0D;
-            String valueString = values[0].getString();
-            return MolangUtils.booleanToDouble(multiHitboxUser.getMultiHitboxList().removeOffenseHitboxByName(valueString));
+        this.registerFunction("function.destroy_offense_hitbox_by_name", 1, (arguments, animationData) -> {
+            if (animationData == null || animationData.getWorld() == null || animationData.getWorld().isRemote) return 0D;
+            if (!(animationData.getHolder() instanceof IMultiHitboxUser<?> multiHitboxUser)) return 0D;
+            return MolangUtils.booleanToDouble(multiHitboxUser.getMultiHitboxList().removeOffenseHitboxByName(arguments[0].getString()));
         });
-        this.registerFunction("function.create_offense_hitbox_by_tag", 1, (values, animData) -> {
-            if (animData == null || animData.getWorld() == null || animData.getWorld().isRemote) return 0D;
-            if (!(animData.getHolder() instanceof IMultiHitboxUser<?> multiHitboxUser)) return 0D;
-            String valueString = values[0].getString();
-            return MolangUtils.booleanToDouble(multiHitboxUser.getMultiHitboxList().createOffenseHitboxesByTag(valueString));
+        this.registerFunction("function.create_offense_hitbox_by_tag", 1, (arguments, animationData) -> {
+            if (animationData == null || animationData.getWorld() == null || animationData.getWorld().isRemote) return 0D;
+            if (!(animationData.getHolder() instanceof IMultiHitboxUser<?> multiHitboxUser)) return 0D;
+            return MolangUtils.booleanToDouble(multiHitboxUser.getMultiHitboxList().createOffenseHitboxesByTag(arguments[0].getString()));
         });
-        this.registerFunction("function.destroy_offense_hitbox_by_tag", 1, (values, animData) -> {
-            if (animData == null || animData.getWorld() == null || animData.getWorld().isRemote) return 0D;
-            if (!(animData.getHolder() instanceof IMultiHitboxUser<?> multiHitboxUser)) return 0D;
-            String valueString = values[0].getString();
-            return MolangUtils.booleanToDouble(multiHitboxUser.getMultiHitboxList().removeOffenseHitboxesByTag(valueString));
+        this.registerFunction("function.destroy_offense_hitbox_by_tag", 1, (arguments, animationData) -> {
+            if (animationData == null || animationData.getWorld() == null || animationData.getWorld().isRemote) return 0D;
+            if (!(animationData.getHolder() instanceof IMultiHitboxUser<?> multiHitboxUser)) return 0D;
+            return MolangUtils.booleanToDouble(multiHitboxUser.getMultiHitboxList().removeOffenseHitboxesByTag(arguments[0].getString()));
         });
     }
 
-    //-----molang scope stuff starts here-----
+    @Nullable
     public MolangScope scope() {
-        Deque<MolangScope> scope = this.scopeStack.get();
-        return scope.isEmpty() ? null : scope.peek();
+        return this.currentScope.isBound() ? this.currentScope.get() : null;
     }
 
-    public void pushScope(MolangScope scope) {
-        this.scopeStack.get().push(scope);
+    public void withScope(@NotNull MolangScope scope, @NotNull Runnable operation) {
+        ScopedValue.where(this.currentScope, scope).run(operation);
     }
 
-    public void popScope() {
-        this.scopeStack.get().pop();
+    @Nullable
+    public <T> T withScope(@NotNull MolangScope scope, @NotNull Supplier<T> operation) {
+        return ScopedValue.where(this.currentScope, scope).call(operation::get);
     }
 
-    public void withScope(MolangScope scope, Runnable r) {
-        this.pushScope(scope);
-        try {
-            r.run();
-        }
-        finally {
-            this.popScope();
-        }
-    }
-    //-----molang scope stuff ends here-----
-
-    public void setVariable(String name, double value) {
-        Variable variable = this.getVariable(name);
-        if (variable != null) variable.set(value);
+    public void setVariable(@NotNull String name, double value) {
+        this.getVariable(name).set(value);
     }
 
-    public Variable getVariable(String name) {
-        Variable variable = this.currentStatement == null ? null : this.currentStatement.locals.get(name);
-        if (variable == null) variable = super.getVariable(name);
+    @Override
+    @NotNull
+    public Variable getVariable(@NotNull String name) {
+        Variable variable = super.getVariable(name);
+        if (variable != null) return variable;
 
-        if (variable == null) {
-            variable = new Variable(this, name);
-            this.registerVariable(variable);
-        }
-
+        variable = new Variable(this, name);
+        this.registerVariable(variable);
         return variable;
     }
 
+    @NotNull
     public MolangExpression parseExpression(@NotNull String expression) throws MolangException {
         return this.parseExpression(expression, null);
     }
 
+    @NotNull
     public MolangExpression parseExpression(@NotNull String expression, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
-        List<String> lines = new ArrayList<>();
+        String normalized = this.lowercaseOutsideStrings(expression.trim());
+        List<String> statements = new ArrayList<>();
+        StringBuilder statement = new StringBuilder();
+        boolean inString = false;
+        boolean escaping = false;
+        char quote = 0;
 
-        for (String split : this.splitStatements(this.lowercaseOutsideStrings(expression.trim()))) {
-            if (!split.trim().isEmpty()) lines.add(split);
-        }
-
-        if (lines.isEmpty()) {
-            throw new MolangException("Molang expression cannot be blank!");
-        }
-        else {
-            MolangMultiStatement result = new MolangMultiStatement(this);
-            this.currentStatement = result;
-
-            try {
-                for (String line : lines) {
-                    result.expressions.add(this.parseOneLine(line, animationData));
-                }
+        for (int i = 0; i < normalized.length(); i++) {
+            char character = normalized.charAt(i);
+            if (inString) {
+                statement.append(character);
+                if (escaping) escaping = false;
+                else if (character == '\\') escaping = true;
+                else if (character == quote) inString = false;
             }
-            catch (Exception e) {
-                this.currentStatement = null;
-                throw e;
+            else if (character == '\'' || character == '"') {
+                inString = true;
+                quote = character;
+                statement.append(character);
             }
-
-            this.currentStatement = null;
-            return result;
+            else if (character == ';') {
+                if (!statement.toString().isBlank()) statements.add(statement.toString());
+                statement.setLength(0);
+            }
+            else statement.append(character);
         }
+
+        if (inString) throw new MolangException("Unterminated string literal in '" + expression + "'!");
+        if (!statement.toString().isBlank()) statements.add(statement.toString());
+        if (statements.isEmpty()) throw new MolangException("Molang expression cannot be blank!");
+
+        List<MolangExpression> parsedStatements = new ArrayList<>(statements.size());
+        for (String currentStatement : statements) {
+            parsedStatements.add(this.parseOneLine(currentStatement, animationData));
+        }
+        return new MolangMultiStatement(parsedStatements);
     }
 
-    protected MolangExpression parseOneLine(String expression, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
-        expression = expression.trim();
-        if (expression.startsWith("return ")) {
-            try {
-                return new MolangValue(this, this.parse(expression.substring("return ".length()))).addReturn();
-            }
-            catch (Exception var5) {
-                throw new MolangException("Couldn't parse return '" + expression + "' expression!");
-            }
+    @NotNull
+    protected MolangExpression parseOneLine(@NotNull String expression, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
+        String trimmed = expression.trim();
+        if (trimmed.startsWith(RETURN)) {
+            List<Token> returnTokens = this.tokenize(trimmed.substring(RETURN.length()));
+            return new MolangValue(this.parseTokens(returnTokens, animationData)).addReturn();
         }
-        else {
-            List<Object> symbols;
-            try {
-                symbols = this.breakdownChars(this.breakdown(expression));
-            }
-            catch (Exception e) {
-                throw new MolangException("Couldn't parse '" + expression + "' expression!");
-            }
 
-            if (symbols.size() >= 3
-                    && symbols.get(0) instanceof String
-                    && this.isValueReturner(symbols.get(0))
-                    && symbols.get(1).equals("=")
-            ) {
-                //-----variable stuff-----
-                String name = (String) symbols.getFirst();
-
-                //block assignment to functions
-                if (this.isFunction(name)) {
-                    throw new MolangException("Cannot assign value to function '" + name + "' in '" + expression + "'!");
-                }
-
-                //continue with variable stuff
-                Variable variable = this.getVariable(name);
-
-                //create a statement-local variable if it doesn't exist anywhere yet
-                if (this.currentStatement != null
-                        && !this.variables.containsKey(name)
-                        && !this.currentStatement.locals.containsKey(name)) {
-
-                    variable = new Variable(this, name);
-                    this.currentStatement.locals.put(name, variable);
-                }
-
-                //-----other symbols-----
-                symbols = symbols.subList(2, symbols.size());
-
-                return new MolangAssignment(this, variable, this.parseSymbolsMolang(symbols, animationData));
-            }
-            else return new MolangValue(this, this.parseSymbolsMolang(symbols, animationData));
+        List<Token> tokens = this.tokenize(trimmed);
+        int assignmentIndex = -1;
+        for (int i = 0; i < tokens.size(); i++) {
+            if (tokens.get(i).getType() != TokenType.ASSIGNMENT) continue;
+            if (assignmentIndex >= 0) throw new MolangException("A statement can only contain one assignment!");
+            assignmentIndex = i;
         }
+        if (assignmentIndex >= 0) {
+            if (assignmentIndex == 0 || assignmentIndex == tokens.size() - 1) {
+                throw new MolangException("Assignment is missing a target or value!");
+            }
+            if (assignmentIndex == 1 && tokens.getFirst().getType() == TokenType.IDENTIFIER
+                    && this.isFunction(tokens.getFirst().getText())) {
+                throw new MolangException("Cannot assign a value to function '" + tokens.getFirst().getText() + "'!");
+            }
+
+            IValue target = this.parseTokens(tokens.subList(0, assignmentIndex), animationData);
+            IValue value = this.parseTokens(tokens.subList(assignmentIndex + 1, tokens.size()), animationData);
+            if (target instanceof Variable variable) return new MolangAssignment(variable, value);
+            if (target instanceof MolangObjectAccess objectAccess && objectAccess.canSetValue()) {
+                return new MolangAssignment(objectAccess, value);
+            }
+            throw new MolangException("The left side of an assignment must be a variable!");
+        }
+        return new MolangValue(this.parseTokens(tokens, animationData));
     }
 
-    private IValue parseSymbolsMolang(List<Object> symbols, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
-        try {
-            return this.parseSymbols(symbols, animationData);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            throw new MolangException("Couldn't parse an expression!");
-        }
+    @Override
+    @NotNull
+    protected IValue createOperator(@NotNull Operation operation, @NotNull IValue left, @NotNull IValue right) throws MolangException {
+        if (operation == Operation.ARROW) return new MolangObjectAccess(this, left, right);
+        return super.createOperator(operation, left, right);
     }
 
-    public boolean isOperator(String s) {
-        return super.isOperator(s) || s.equals("=");
+    @Override
+    @NotNull
+    protected IValue createQuery(@NotNull String name, @NotNull IValue[] arguments, @Nullable AbstractAnimationData<?, ?> animationData) {
+        return new MolangQueryValue(this, name, arguments, animationData);
     }
 }

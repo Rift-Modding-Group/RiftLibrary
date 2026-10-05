@@ -4,674 +4,456 @@ import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiFunction;
 
 public class MathBuilder {
-    public final Map<String, Variable> variables = new HashMap<>();
-    public final Map<String, MolangFunction> functions = new HashMap<>();
+    @NotNull
+    private final Map<String, Variable> variables = new HashMap<>();
+    @NotNull
+    private final Map<String, MolangFunction> functions = new HashMap<>();
 
     /**
      * In this constructor, all math related functions will be registered here
      * */
     public MathBuilder() {
-        this.registerFunction("math.pi", 0, (values, animData) -> Math.PI);
-        this.registerFunction("math.e", 0, (values, animData) -> Math.E);
-        this.registerFunction("math.floor", 1, (values, animData) -> Math.floor(values[0].get()));
-        this.registerFunction("math.round", 1, (values, animData) -> (double) Math.round(values[0].get()));
-        this.registerFunction("math.ceil", 1, (values, animData) -> Math.ceil(values[0].get()));
-        this.registerFunction("math.trunc", 1, (values, animData) -> {
-            double value = values[0].get();
+        this.registerFunction("math.pi", 0, (arguments, animationData) -> Math.PI);
+        this.registerFunction("math.e", 0, (arguments, animationData) -> Math.E);
+        this.registerFunction("math.floor", 1, (arguments, animationData) -> Math.floor(arguments[0].get()));
+        this.registerFunction("math.round", 1, (arguments, animationData) -> (double) Math.round(arguments[0].get()));
+        this.registerFunction("math.ceil", 1, (arguments, animationData) -> Math.ceil(arguments[0].get()));
+        this.registerFunction("math.trunc", 1, (arguments, animationData) -> {
+            double value = arguments[0].get();
             return value < 0D ? Math.ceil(value) : Math.floor(value);
         });
-        this.registerFunction("math.clamp", 3, (values, animData) -> Math.clamp(values[0].get(), values[1].get(), values[2].get()));
-        this.registerFunction("math.max", 2, (values, animData) -> Math.max(values[0].get(), values[1].get()));
-        this.registerFunction("math.min", 2, (values, animData) -> Math.min(values[0].get(), values[1].get()));
-        this.registerFunction("math.abs", 1, (values, animData) -> Math.abs(values[0].get()));
-        this.registerFunction("math.acos", 1, (values, animData) -> Math.toDegrees(Math.acos(values[0].get())));
-        this.registerFunction("math.asin", 1, (values, animData) -> Math.toDegrees(Math.asin(values[0].get())));
-        this.registerFunction("math.atan", 1, (values, animData) -> Math.toDegrees(Math.atan(values[0].get())));
-        this.registerFunction("math.atan2", 2, (values, animData) -> Math.toDegrees(Math.atan2(values[0].get(), values[1].get())));
-        this.registerFunction("math.cos", 1, (values, animData) -> Math.cos(Math.toRadians(values[0].get())));
-        this.registerFunction("math.sin", 1, (values, animData) -> Math.sin(Math.toRadians(values[0].get())));
-        this.registerFunction("math.tan", 1, (values, animData) -> Math.tan(Math.toRadians(values[0].get())));
-        this.registerFunction("math.exp", 1, (values, animData) -> Math.exp(values[0].get()));
-        this.registerFunction("math.ln", 1, (values, animData) -> Math.log(values[0].get()));
-        this.registerFunction("math.sqrt", 1, (values, animData) -> Math.sqrt(values[0].get()));
-        this.registerFunction("math.mod", 2, (values, animData) -> values[0].get() % values[1].get());
-        this.registerFunction("math.pow", 2, (values, animData) -> Math.pow(values[0].get(), values[1].get()));
-        this.registerFunction("math.lerp", 3, (values, animData) -> {
-            return Interpolations.lerp(values[0].get(), values[1].get(), values[2].get());
+        this.registerFunction("math.clamp", 3, (arguments, animationData) -> Math.clamp(arguments[0].get(), arguments[1].get(), arguments[2].get()));
+        this.registerFunction("math.max", 2, (arguments, animationData) -> Math.max(arguments[0].get(), arguments[1].get()));
+        this.registerFunction("math.min", 2, (arguments, animationData) -> Math.min(arguments[0].get(), arguments[1].get()));
+        this.registerFunction("math.abs", 1, (arguments, animationData) -> Math.abs(arguments[0].get()));
+        this.registerFunction("math.acos", 1, (arguments, animationData) -> Math.toDegrees(Math.acos(arguments[0].get())));
+        this.registerFunction("math.asin", 1, (arguments, animationData) -> Math.toDegrees(Math.asin(arguments[0].get())));
+        this.registerFunction("math.atan", 1, (arguments, animationData) -> Math.toDegrees(Math.atan(arguments[0].get())));
+        this.registerFunction("math.atan2", 2, (arguments, animationData) -> Math.toDegrees(Math.atan2(arguments[0].get(), arguments[1].get())));
+        this.registerFunction("math.cos", 1, (arguments, animationData) -> Math.cos(Math.toRadians(arguments[0].get())));
+        this.registerFunction("math.sin", 1, (arguments, animationData) -> Math.sin(Math.toRadians(arguments[0].get())));
+        this.registerFunction("math.tan", 1, (arguments, animationData) -> Math.tan(Math.toRadians(arguments[0].get())));
+        this.registerFunction("math.exp", 1, (arguments, animationData) -> Math.exp(arguments[0].get()));
+        this.registerFunction("math.ln", 1, (arguments, animationData) -> Math.log(arguments[0].get()));
+        this.registerFunction("math.sqrt", 1, (arguments, animationData) -> Math.sqrt(arguments[0].get()));
+        this.registerFunction("math.mod", 2, (arguments, animationData) -> arguments[0].get() % arguments[1].get());
+        this.registerFunction("math.pow", 2, (arguments, animationData) -> Math.pow(arguments[0].get(), arguments[1].get()));
+        this.registerFunction("math.lerp", 3, (arguments, animationData) -> Interpolations.lerp(arguments[0].get(), arguments[1].get(), arguments[2].get()));
+        this.registerFunction("math.lerprotate", 3, (arguments, animationData) -> Interpolations.lerpYaw(arguments[0].get(), arguments[1].get(), arguments[2].get()));
+        this.registerFunction("math.hermite_blend", 1, (arguments, animationData) -> {
+            double value = arguments[0].get();
+            return 3D * value * value - 2D * value * value * value;
         });
-        this.registerFunction("math.lerprotate", 3, (values, animData) -> {
-            return Interpolations.lerpYaw(values[0].get(), values[1].get(), values[2].get());
+        this.registerFunction("math.die_roll", 3, (arguments, animationData) -> {
+            int amount = Math.max(0, (int) Math.floor(arguments[0].get()));
+            double lowerBound = Math.min(arguments[1].get(), arguments[2].get());
+            double upperBound = Math.max(arguments[1].get(), arguments[2].get());
+            if (lowerBound < -Double.MAX_VALUE || upperBound > Double.MAX_VALUE) return 0D;
+            double total = 0D;
+
+            for (int i = 0; i < amount; i++) {
+                if (lowerBound == upperBound) total += lowerBound;
+                else {
+                    double exclusiveUpperBound = upperBound == Double.MAX_VALUE ? upperBound : Math.nextUp(upperBound);
+                    total += ThreadLocalRandom.current().nextDouble(lowerBound, exclusiveUpperBound);
+                }
+            }
+            return total;
         });
-        this.registerFunction("math.hermite_blend", 1, (values, animData) -> {
-            double min = Math.ceil(values[0].get());
-            return Math.floor(3D * Math.pow(min, 2D) - 2D * Math.pow(min, 3D));
-        });
-        this.registerFunction("math.die_roll", 3, (values, animData) -> {
-            int amount = Math.max(0, (int) Math.floor(values[0].get()));
-            double lowerBound = Math.min(values[1].get(), values[2].get());
-            double upperBound = Math.max(values[1].get(), values[2].get());
+        this.registerFunction("math.die_roll_integer", 3, (arguments, animationData) -> {
+            int amount = Math.max(0, (int) Math.floor(arguments[0].get()));
+            int lowerBound = (int) Math.ceil(Math.min(arguments[1].get(), arguments[2].get()));
+            int upperBound = (int) Math.floor(Math.max(arguments[1].get(), arguments[2].get()));
+            if (lowerBound > upperBound) return 0D;
 
             double total = 0D;
             for (int i = 0; i < amount; i++) {
-                total += Math.random() * (upperBound - lowerBound) + lowerBound;
+                total += ThreadLocalRandom.current().nextLong(lowerBound, (long) upperBound + 1L);
             }
-
             return total;
         });
-        this.registerFunction("math.die_roll_integer", 3, (values, animData) -> {
-            int amount = Math.max(0, (int) Math.floor(values[0].get()));
-            int lowerBound = (int) Math.ceil(Math.min(values[1].get(), values[2].get()));
-            int upperBound = (int) Math.floor(Math.max(values[1].get(), values[2].get()));
-            if (lowerBound > upperBound) return 0D;
-
-            double total = 0D;
-            for (int i = 0; i < amount; i++) {
-                total += Math.floor(Math.random() * (upperBound - lowerBound + 1)) + lowerBound;
-            }
-
-            return total;
+        this.registerFunction("math.random", 2, (arguments, animationData) -> {
+            double lowerBound = arguments[0].get();
+            double upperBound = arguments[1].get();
+            if (lowerBound > upperBound || lowerBound < -Double.MAX_VALUE || upperBound > Double.MAX_VALUE) return 0D;
+            if (lowerBound == upperBound) return lowerBound;
+            double exclusiveUpperBound = upperBound == Double.MAX_VALUE ? upperBound : Math.nextUp(upperBound);
+            return ThreadLocalRandom.current().nextDouble(lowerBound, exclusiveUpperBound);
         });
-        this.registerFunction("math.random", 2, (values, animData) -> {
-            double lowerBound = values[0].get();
-            double upperBound = values[1].get();
+        this.registerFunction("math.random_integer", 2, (arguments, animationData) -> {
+            int lowerBound = (int) arguments[0].get();
+            int upperBound = (int) arguments[1].get();
             if (lowerBound > upperBound) return 0D;
-
-            Random random = new Random();
-            return random.nextDouble(lowerBound, upperBound);
-        });
-        this.registerFunction("math.random_integer", 2, (values, animData) -> {
-            int lowerBound = (int) values[0].get();
-            int upperBound = (int) values[1].get();
-            if (lowerBound > upperBound) return 0D;
-
-            Random random = new Random();
-            return (double) random.nextInt(lowerBound, upperBound);
+            return (double) ThreadLocalRandom.current().nextLong(lowerBound, (long) upperBound + 1L);
         });
     }
 
-    //-----registry stuff starts here-----
-    protected void registerVariable(Variable variable) {
+    protected void registerVariable(@NotNull Variable variable) {
         this.variables.put(variable.getName(), variable);
     }
 
-    protected void registerFunction(String name, int argCount, BiFunction<IValue[], AbstractAnimationData<?, ?>, Double> operation) {
-        this.functions.put(name, new MolangFunction(name) {
-            @Override
-            public int requiredArgCount() {
-                return argCount;
-            }
-
-            @Override
-            @NotNull
-            public BiFunction<IValue[], AbstractAnimationData<?, ?>, Double> operation() {
-                return operation;
-            }
-        });
-    }
-    //-----registry stuff ends here-----
-
-    public IValue parse(String expression) throws Exception {
-        return this.parseSymbols(this.breakdownChars(this.breakdown(expression)));
+    protected void registerFunction(
+            @NotNull String name, int requiredArgumentCount,
+            @NotNull BiFunction<IValue[], AbstractAnimationData<?, ?>, ?> operation
+    ) {
+        this.functions.put(name, new MolangFunction(name, requiredArgumentCount, operation));
     }
 
-    public String[] breakdown(String expression) throws Exception {
-        StringBuilder normalized = new StringBuilder();
-        int left = 0;
-        int right = 0;
-        boolean inString = false;
-        boolean escaping = false;
-        char quote = 0;
+    @NotNull
+    public IValue parse(@NotNull String expression) throws MolangException {
+        return this.parseTokens(this.tokenize(this.lowercaseOutsideStrings(expression)), null);
+    }
 
-        for (int i = 0; i < expression.length(); ++i) {
-            char c = expression.charAt(i);
+    @NotNull
+    protected List<Token> tokenize(@NotNull String expression) throws MolangException {
+        int[] cursor = new int[]{0};
+        List<Token> tokens = this.readTokens(expression, cursor, false);
+        if (cursor[0] != expression.length()) {
+            throw new MolangException("Unexpected closing parenthesis in '" + expression + "'!");
+        }
+        return tokens;
+    }
 
-            if (inString) {
-                normalized.append(c);
+    @NotNull
+    private List<Token> readTokens(@NotNull String expression, int @NotNull [] cursor, boolean nested) throws MolangException {
+        List<Token> tokens = new ArrayList<>();
 
-                if (escaping) escaping = false;
-                else if (c == '\\') escaping = true;
-                else if (c == quote) {
-                    inString = false;
-                    quote = 0;
-                }
-
+        while (cursor[0] < expression.length()) {
+            char character = expression.charAt(cursor[0]);
+            if (Character.isWhitespace(character)) {
+                cursor[0]++;
                 continue;
             }
-
-            if (this.isQuote(c)) {
-                inString = true;
-                quote = c;
-                normalized.append(c);
+            if (character == ')') {
+                if (!nested) return tokens;
+                cursor[0]++;
+                return tokens;
+            }
+            if (character == '(') {
+                cursor[0]++;
+                tokens.add(new Token(this.readTokens(expression, cursor, true)));
                 continue;
             }
+            if (character == '\'' || character == '"') {
+                char quote = character;
+                StringBuilder value = new StringBuilder();
+                boolean closed = false;
+                cursor[0]++;
 
-            if (Character.isWhitespace(c)) continue;
-
-            if (!this.isLegalExpressionCharacter(c)) {
-                throw new Exception("Given expression '" + expression + "' contains illegal characters!");
-            }
-
-            if (c == '(') ++left;
-            else if (c == ')') ++right;
-
-            normalized.append(c);
-        }
-
-        if (inString) {
-            throw new Exception("Given expression '" + expression + "' has an unterminated string literal!");
-        }
-
-        if (left != right) {
-            throw new Exception("Given expression '" + expression + "' has more uneven amount of parenthesis, there are " + left + " open and " + right + " closed!");
-        }
-
-        return normalized.toString().split("(?!^)");
-    }
-
-    public List<Object> breakdownChars(String[] chars) {
-        List<Object> symbols = new ArrayList<>();
-        String buffer = "";
-        int len = chars.length;
-
-        for (int i = 0; i < len; ++i) {
-            String s = chars[i];
-            if (this.isQuote(s)) {
-                if (!buffer.isEmpty()) {
-                    symbols.add(buffer);
-                    buffer = "";
-                }
-
-                StringBuilder literal = new StringBuilder();
-                boolean escaping = false;
-
-                for (int j = i + 1; j < len; ++j) {
-                    String c = chars[j];
-
-                    if (escaping) {
-                        literal.append(this.unescapeStringCharacter(c.charAt(0)));
-                        escaping = false;
-                        continue;
-                    }
-
-                    if (c.equals("\\")) {
-                        escaping = true;
-                        continue;
-                    }
-
-                    if (c.equals(s)) {
-                        symbols.add(new StringValue(literal.toString()));
-                        i = j;
+                while (cursor[0] < expression.length()) {
+                    character = expression.charAt(cursor[0]++);
+                    if (character == quote) {
+                        closed = true;
                         break;
                     }
-
-                    literal.append(c);
+                    if (character == '\\' && cursor[0] < expression.length()) {
+                        char escaped = expression.charAt(cursor[0]++);
+                        value.append(switch (escaped) {
+                            case 'n' -> '\n';
+                            case 'r' -> '\r';
+                            case 't' -> '\t';
+                            default -> escaped;
+                        });
+                    }
+                    else value.append(character);
                 }
 
+                if (!closed) throw new MolangException("Unterminated string literal in '" + expression + "'!");
+                tokens.add(new Token(TokenType.STRING, value.toString()));
+                continue;
+            }
+            if (character == ',') {
+                tokens.add(new Token(TokenType.COMMA, ","));
+                cursor[0]++;
                 continue;
             }
 
-            boolean longOperator = i > 0 && this.isOperator(chars[i - 1] + s);
-            if (!this.isOperator(s) && !longOperator && !s.equals(",")) {
-                if (s.equals("(")) {
-                    if (!buffer.isEmpty()) {
-                        symbols.add(buffer);
-                        buffer = "";
-                    }
-
-                    int counter = 1;
-
-                    for (int j = i + 1; j < len; ++j) {
-                        String c = chars[j];
-                        if (this.isQuote(c)) {
-                            String stringQuote = c;
-                            buffer = buffer + c;
-                            boolean escaping = false;
-
-                            for (++j; j < len; ++j) {
-                                c = chars[j];
-                                buffer = buffer + c;
-
-                                if (escaping) {
-                                    escaping = false;
-                                }
-                                else if (c.equals("\\")) {
-                                    escaping = true;
-                                }
-                                else if (c.equals(stringQuote)) {
-                                    break;
-                                }
-                            }
-
-                            continue;
-                        }
-
-                        if (c.equals("(")) ++counter;
-                        else if (c.equals(")")) --counter;
-
-                        if (counter == 0) {
-                            symbols.add(this.breakdownChars(buffer.split("(?!^)")));
-                            i = j;
-                            buffer = "";
-                            break;
-                        }
-
-                        buffer = buffer + c;
-                    }
-                }
-                else buffer = buffer + s;
+            String pair = cursor[0] + 1 < expression.length() ? expression.substring(cursor[0], cursor[0] + 2) : "";
+            if (Operation.fromSign(pair) != null) {
+                tokens.add(new Token(TokenType.OPERATOR, pair));
+                cursor[0] += 2;
+                continue;
             }
-            else {
-                if (s.equals("-")) {
-                    int size = symbols.size();
-                    boolean isFirst = size == 0 && buffer.isEmpty();
-                    boolean isOperatorBehind = size > 0 && (this.isOperator(symbols.get(size - 1)) || symbols.get(size - 1).equals(",")) && buffer.isEmpty();
-                    if (isFirst || isOperatorBehind) {
-                        buffer = buffer + s;
-                        continue;
-                    }
-                }
-
-                if (longOperator) {
-                    s = chars[i - 1] + s;
-                    buffer = buffer.substring(0, buffer.length() - 1);
-                }
-
-                if (!buffer.isEmpty()) {
-                    symbols.add(buffer);
-                    buffer = "";
-                }
-
-                symbols.add(s);
+            if (character == '=') {
+                tokens.add(new Token(TokenType.ASSIGNMENT, "="));
+                cursor[0]++;
+                continue;
             }
+            if (character == '?' || character == ':') {
+                tokens.add(new Token(TokenType.OPERATOR, String.valueOf(character)));
+                cursor[0]++;
+                continue;
+            }
+            if (character == '!') {
+                tokens.add(new Token(TokenType.PREFIX, "!"));
+                cursor[0]++;
+                continue;
+            }
+
+            Operation operation = Operation.fromSign(String.valueOf(character));
+            if (operation != null) {
+                boolean expectsValue = tokens.isEmpty()
+                        || tokens.getLast().type == TokenType.OPERATOR
+                        || tokens.getLast().type == TokenType.PREFIX
+                        || tokens.getLast().type == TokenType.COMMA
+                        || tokens.getLast().type == TokenType.ASSIGNMENT;
+                TokenType type = character == '-' && expectsValue ? TokenType.PREFIX : TokenType.OPERATOR;
+                tokens.add(new Token(type, String.valueOf(character)));
+                cursor[0]++;
+                continue;
+            }
+
+            int start = cursor[0];
+            while (cursor[0] < expression.length()) {
+                character = expression.charAt(cursor[0]);
+                if (Character.isWhitespace(character) || "()+-/*%^&|<>=!?:,'\"".indexOf(character) >= 0) break;
+                if (!Character.isLetterOrDigit(character) && character != '_' && character != '.') {
+                    throw new MolangException("Illegal character '" + character + "' in '" + expression + "'!");
+                }
+                cursor[0]++;
+            }
+
+            if (start == cursor[0]) {
+                throw new MolangException("Unexpected character '" + character + "' in '" + expression + "'!");
+            }
+
+            String text = expression.substring(start, cursor[0]);
+            TokenType type = text.matches("(?:\\d+(?:\\.\\d*)?|\\.\\d+)") ? TokenType.NUMBER : TokenType.IDENTIFIER;
+            tokens.add(new Token(type, text));
         }
 
-        if (!buffer.isEmpty()) symbols.add(buffer);
-
-        return symbols;
+        if (nested) throw new MolangException("Unclosed parenthesis in '" + expression + "'!");
+        return tokens;
     }
 
-    public IValue parseSymbols(List<Object> symbols) throws MolangException {
-        return this.parseSymbols(symbols, null);
-    }
+    @NotNull
+    protected IValue parseTokens(@NotNull List<Token> tokens, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
+        if (tokens.isEmpty()) throw new MolangException("Molang expression cannot be blank!");
 
-    public IValue parseSymbols(List<Object> symbols, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
-        IValue ternary = this.tryTernary(symbols, animationData);
-        if (ternary != null) return ternary;
-        else {
-            int size = symbols.size();
-            if (size == 1) return this.valueFromObject(symbols.getFirst(), animationData);
-            else {
-                if (size == 2) {
-                    Object first = symbols.get(0);
-                    Object second = symbols.get(1);
-                    if ((this.isValueReturner(first) || first.equals("-")) && second instanceof List) {
-                        //if this is a function with no args we're dealing with, return an exception
-                        String funcName = (String) first;
-                        if (this.isFunctionNoArgs(funcName, animationData)) {
-                            throw new MolangException("Function "+funcName+" does not accept any arguments, yet it is treated as if it does!");
-                        }
-                        //normal function creation
-                        return this.createFunction(funcName, (List) second, animationData);
-                    }
-                }
-
-                int lastOp = this.seekLastOperator(symbols);
-
-                int leftOp;
-                for (int op = lastOp; op != -1; op = leftOp) {
-                    leftOp = this.seekLastOperator(symbols, op - 1);
-                    if (leftOp != -1) {
-                        Operation left = this.operationForOperator((String)symbols.get(leftOp));
-                        Operation right = this.operationForOperator((String)symbols.get(op));
-                        if (right.value > left.value) {
-                            IValue leftValue = this.parseSymbols(symbols.subList(0, leftOp), animationData);
-                            IValue rightValue = this.parseSymbols(symbols.subList(leftOp + 1, size), animationData);
-                            return new Operator(left, leftValue, rightValue);
-                        }
-
-                        if (left.value > right.value) {
-                            Operation initial = this.operationForOperator((String)symbols.get(lastOp));
-                            if (initial.value < left.value) {
-                                IValue leftValue = this.parseSymbols(symbols.subList(0, lastOp), animationData);
-                                IValue rightValue = this.parseSymbols(symbols.subList(lastOp + 1, size), animationData);
-                                return new Operator(initial, leftValue, rightValue);
-                            }
-
-                            IValue leftValue = this.parseSymbols(symbols.subList(0, op), animationData);
-                            IValue rightValue = this.parseSymbols(symbols.subList(op + 1, size), animationData);
-                            return new Operator(right, leftValue, rightValue);
-                        }
-                    }
-                }
-
-                Operation operation = this.operationForOperator((String)symbols.get(lastOp));
-                return new Operator(operation, this.parseSymbols(symbols.subList(0, lastOp), animationData), this.parseSymbols(symbols.subList(lastOp + 1, size), animationData));
+        int coalescingIndex = -1;
+        for (int i = 0; i < tokens.size(); i++) {
+            Token token = tokens.get(i);
+            if (token.type == TokenType.OPERATOR && token.text.equals(Operation.NULL_COALESCING.getSign())) {
+                coalescingIndex = i;
+                break;
             }
         }
-    }
-
-    protected int seekLastOperator(List<Object> symbols) {
-        return this.seekLastOperator(symbols, symbols.size() - 1);
-    }
-
-    protected int seekLastOperator(List<Object> symbols, int offset) {
-        for(int i = offset; i >= 0; --i) {
-            Object o = symbols.get(i);
-            if (this.isOperator(o)) {
-                return i;
+        if (coalescingIndex >= 0) {
+            if (coalescingIndex == 0 || coalescingIndex == tokens.size() - 1) {
+                throw new MolangException("Operator '??' is missing an operand!");
             }
+            IValue left = this.parseTokens(tokens.subList(0, coalescingIndex), animationData);
+            IValue right = this.parseTokens(tokens.subList(coalescingIndex + 1, tokens.size()), animationData);
+            return this.createOperator(Operation.NULL_COALESCING, left, right);
         }
 
-        return -1;
-    }
-
-    protected int seekFirstOperator(List<Object> symbols) {
-        return this.seekFirstOperator(symbols, 0);
-    }
-
-    protected int seekFirstOperator(List<Object> symbols, int offset) {
-        int i = offset;
-
-        for(int size = symbols.size(); i < size; ++i) {
-            Object o = symbols.get(i);
-            if (this.isOperator(o)) {
-                return i;
+        int questionIndex = -1;
+        int colonIndex = -1;
+        int ternaryDepth = 0;
+        for (int i = 0; i < tokens.size(); i++) {
+            Token token = tokens.get(i);
+            if (token.type != TokenType.OPERATOR) continue;
+            if (token.text.equals("?")) {
+                if (questionIndex < 0) questionIndex = i;
+                ternaryDepth++;
             }
-        }
-
-        return -1;
-    }
-
-    protected IValue tryTernary(List<Object> symbols, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
-        int question = -1;
-        int questions = 0;
-        int colon = -1;
-        int colons = 0;
-        int size = symbols.size();
-
-        for(int i = 0; i < size; ++i) {
-            Object object = symbols.get(i);
-            if (object instanceof String) {
-                if (object.equals("?")) {
-                    if (question == -1) question = i;
-
-                    ++questions;
-                }
-                else if (object.equals(":")) {
-                    if (colons + 1 == questions && colon == -1) {
-                        colon = i;
-                    }
-
-                    ++colons;
+            else if (token.text.equals(":") && questionIndex >= 0) {
+                ternaryDepth--;
+                if (ternaryDepth == 0) {
+                    colonIndex = i;
+                    break;
                 }
             }
         }
 
-        if (questions == colons && question > 0 && question + 1 < colon && colon < size - 1) {
-            return new Ternary(
-                    this.parseSymbols(symbols.subList(0, question), animationData),
-                    this.parseSymbols(symbols.subList(question + 1, colon), animationData),
-                    this.parseSymbols(symbols.subList(colon + 1, size), animationData)
-            );
-        }
-        else return null;
-    }
-
-    protected IValue createFunction(String first, List<Object> args, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
-        if (first.equals("!")) {
-            return new Negate(this.parseSymbols(args, animationData));
-        }
-        else if (first.startsWith("!") && first.length() > 1) {
-            return new Negate(this.createFunction(first.substring(1), args, animationData));
-        }
-        else if (first.equals("-")) {
-            return new Negative(new Group(this.parseSymbols(args, animationData)));
-        }
-        else if (first.startsWith("-") && first.length() > 1) {
-            return new Negative(this.createFunction(first.substring(1), args, animationData));
-        }
-        else if (this.functions.containsKey(first)) {
-            return this.parseFunctionOrQuery(first, args, animationData, this.functions);
-        }
-        else if (animationData != null && animationData.getMolangQueries().containsKey(first)) {
-            return this.parseFunctionOrQuery(first, args, animationData, animationData.getMolangQueries());
-        }
-
-        throw new MolangException("Function '" + first + "' couldn't be found!");
-    }
-
-    private IValue parseFunctionOrQuery(
-            String first, List<Object> args, @Nullable AbstractAnimationData<?, ?> animationData,
-            Map<String, MolangFunction> functionMapRef
-    ) throws MolangException {
-        List<IValue> values = new ArrayList<>();
-        List<Object> buffer = new ArrayList<>();
-
-        for (Object o : args) {
-            if (o.equals(",")) {
-                values.add(this.parseSymbols(buffer, animationData));
-                buffer.clear();
+        if (questionIndex >= 0) {
+            if (questionIndex == 0 || questionIndex == tokens.size() - 1) {
+                throw new MolangException("Incomplete conditional expression!");
             }
-            else buffer.add(o);
+            IValue condition = this.parseTokens(tokens.subList(0, questionIndex), animationData);
+            IValue ifTrue = this.parseTokens(tokens.subList(questionIndex + 1, colonIndex < 0 ? tokens.size() : colonIndex), animationData);
+            IValue ifFalse = colonIndex < 0 ? new Constant(0D) : this.parseTokens(tokens.subList(colonIndex + 1, tokens.size()), animationData);
+            return new Ternary(condition, ifTrue, ifFalse);
         }
 
-        if (!buffer.isEmpty()) {
-            values.add(this.parseSymbols(buffer, animationData));
-        }
+        Operation selectedOperation = null;
+        int selectedIndex = -1;
+        for (int i = 0; i < tokens.size(); i++) {
+            Token token = tokens.get(i);
+            if (token.type != TokenType.OPERATOR) continue;
+            Operation operation = Operation.fromSign(token.text);
+            if (operation == null) throw new MolangException("Unexpected operator '" + token.text + "'!");
 
-        MolangFunction function = functionMapRef.get(first);
-        if (function == null) throw new MolangException("Function '" + first + "' couldn't be found!");
-        IValue[] argsArr = values.toArray(new IValue[0]);
-
-        //exception for unexpected argument counts
-        //note that a negative arg count for a function means it has no limit
-        if (argsArr.length < function.requiredArgCount() && function.requiredArgCount() >= 0) {
-            String message = String.format(
-                    "Function '%s' requires at least %s arguments. %s are given!",
-                    function.name, function.requiredArgCount(), argsArr.length
-            );
-            throw new MolangException(message);
-        }
-
-        return new IValue() {
-            @Override
-            public double get() {
-                return function.operation().apply(argsArr, animationData);
+            if (selectedOperation == null || operation.getPrecedence() < selectedOperation.getPrecedence()
+                    || operation.getPrecedence() == selectedOperation.getPrecedence() && !operation.isRightAssociative()) {
+                selectedOperation = operation;
+                selectedIndex = i;
             }
+        }
+
+        if (selectedOperation != null) {
+            if (selectedIndex == 0 || selectedIndex == tokens.size() - 1) {
+                throw new MolangException("Operator '" + selectedOperation.getSign() + "' is missing an operand!");
+            }
+            IValue left = this.parseTokens(tokens.subList(0, selectedIndex), animationData);
+            IValue right = this.parseTokens(tokens.subList(selectedIndex + 1, tokens.size()), animationData);
+            return this.createOperator(selectedOperation, left, right);
+        }
+
+        Token first = tokens.getFirst();
+        if (first.type == TokenType.PREFIX) {
+            if (tokens.size() == 1) throw new MolangException("Prefix operator '" + first.text + "' is missing an operand!");
+            IValue value = this.parseTokens(tokens.subList(1, tokens.size()), animationData);
+            return first.text.equals("!") ? new Negate(value) : new Negative(value);
+        }
+
+        if (tokens.size() == 2 && first.type == TokenType.IDENTIFIER && tokens.get(1).type == TokenType.GROUP) {
+            List<Token> argumentTokens = tokens.get(1).children;
+            List<IValue> arguments = new ArrayList<>();
+            int argumentStart = 0;
+            for (int i = 0; i <= argumentTokens.size(); i++) {
+                if (i < argumentTokens.size() && argumentTokens.get(i).type != TokenType.COMMA) continue;
+                if (i == argumentStart) {
+                    if (!argumentTokens.isEmpty()) throw new MolangException("Function '" + first.text + "' has an empty argument!");
+                }
+                else arguments.add(this.parseTokens(argumentTokens.subList(argumentStart, i), animationData));
+                argumentStart = i + 1;
+            }
+
+            IValue[] argumentArray = arguments.toArray(IValue[]::new);
+            if (first.text.startsWith("query.")) return this.createQuery(first.text, argumentArray, animationData);
+            return this.createFunctionValue(first.text, argumentArray, animationData);
+        }
+
+        if (tokens.size() != 1) throw new MolangException("Could not resolve Molang expression near '" + first.text + "'!");
+
+        return switch (first.type) {
+            case NUMBER -> new Constant(Double.parseDouble(first.text));
+            case STRING -> new StringValue(first.text);
+            case GROUP -> new Group(this.parseTokens(first.children, animationData));
+            case IDENTIFIER -> {
+                if (first.text.startsWith("query.")) yield this.createQuery(first.text, new IValue[0], animationData);
+                MolangFunction function = this.functions.get(first.text);
+                if (function != null) yield this.createFunctionValue(first.text, new IValue[0], animationData);
+                Variable variable = this.getVariable(first.text);
+                if (variable == null) throw new MolangException("Variable '" + first.text + "' couldn't be found!");
+                yield variable;
+            }
+            default -> throw new MolangException("Unexpected token '" + first.text + "'!");
         };
     }
 
-    public IValue valueFromObject(Object object, @Nullable AbstractAnimationData<?, ?> animationData) throws MolangException {
-        if (object instanceof String symbol) {
-            if (symbol.startsWith("!")) {
-                return new Negate(this.valueFromObject(symbol.substring(1), animationData));
-            }
-
-            if (this.isDecimal(symbol)) {
-                return new Constant(Double.parseDouble(symbol));
-            }
-
-            if (this.isValueReturner(symbol)) {
-                //negating a value returner
-                if (symbol.startsWith("-")) {
-                    symbol = symbol.substring(1);
-                    return new Negative(this.valueFromObject(symbol, animationData));
-                }
-                //this is for functions that have no args. functions w no args have no parenthesis at all
-                else if (this.isFunctionNoArgs(symbol, animationData)) {
-                    return this.createFunction(symbol, List.of(), animationData);
-                }
-                //this is for good ol variables
-                else {
-                    IValue value = this.getVariable(symbol);
-                    if (value != null) return value;
-                }
-            }
+    @NotNull
+    private IValue createFunctionValue(
+            @NotNull String name, @NotNull IValue[] arguments,
+            @Nullable AbstractAnimationData<?, ?> animationData
+    ) throws MolangException {
+        MolangFunction function = this.functions.get(name);
+        if (function == null) throw new MolangException("Function '" + name + "' couldn't be found!");
+        if (arguments.length < function.getRequiredArgumentCount()) {
+            throw new MolangException("Function '" + name + "' requires at least " + function.getRequiredArgumentCount()
+                    + " arguments, but " + arguments.length + " were given!");
         }
-        else if (object instanceof IValue value) {
-            return value;
-        }
-        else if (object instanceof List) {
-            return new Group(this.parseSymbols((List) object, animationData));
-        }
-
-        throw new MolangException("Given object couldn't be converted to value! " + object);
+        return new MolangFunctionValue(function, arguments, animationData);
     }
 
-    protected String lowercaseOutsideStrings(String expression) {
-        StringBuilder builder = new StringBuilder();
-        boolean inString = false;
-        boolean escaping = false;
-        char quote = 0;
-
-        for (int i = 0; i < expression.length(); ++i) {
-            char c = expression.charAt(i);
-
-            if (inString) {
-                builder.append(c);
-
-                if (escaping) escaping = false;
-                else if (c == '\\') escaping = true;
-                else if (c == quote) {
-                    inString = false;
-                    quote = 0;
-                }
-
-                continue;
-            }
-
-            if (this.isQuote(c)) {
-                inString = true;
-                quote = c;
-                builder.append(c);
-            }
-            else builder.append(Character.toLowerCase(c));
-        }
-
-        return builder.toString();
-    }
-
-    protected List<String> splitStatements(String expression) {
-        List<String> statements = new ArrayList<>();
-        StringBuilder buffer = new StringBuilder();
-        boolean inString = false;
-        boolean escaping = false;
-        char quote = 0;
-
-        for (int i = 0; i < expression.length(); ++i) {
-            char c = expression.charAt(i);
-
-            if (inString) {
-                buffer.append(c);
-
-                if (escaping) {
-                    escaping = false;
-                }
-                else if (c == '\\') {
-                    escaping = true;
-                }
-                else if (c == quote) {
-                    inString = false;
-                    quote = 0;
-                }
-
-                continue;
-            }
-
-            if (this.isQuote(c)) {
-                inString = true;
-                quote = c;
-                buffer.append(c);
-            }
-            else if (c == ';') {
-                statements.add(buffer.toString());
-                buffer.setLength(0);
-            }
-            else {
-                buffer.append(c);
-            }
-        }
-
-        statements.add(buffer.toString());
-        return statements;
-    }
-
-    protected Variable getVariable(String name) {
+    @Nullable
+    protected Variable getVariable(@NotNull String name) {
         return this.variables.get(name);
     }
 
-    protected Operation operationForOperator(String op) throws MolangException {
-        for (Operation operation : Operation.values()) {
-            if (operation.sign.equals(op)) return operation;
-        }
-
-        throw new MolangException("There is no such operator '" + op + "'!");
+    @NotNull
+    protected IValue createOperator(@NotNull Operation operation, @NotNull IValue left, @NotNull IValue right) throws MolangException {
+        if (operation == Operation.ARROW) throw new MolangException("The arrow operator requires a Molang parser context!");
+        return new Operator(operation, left, right);
     }
 
-    //a "value returner" is basically a non-alphanumeric representation of some kind of value
-    //this includes variables and functions
-    public boolean isValueReturner(Object o) {
-        return o instanceof String string && !this.isDecimal(string) && !this.isOperator(string);
+    @NotNull
+    protected IValue createQuery(
+            @NotNull String name, @NotNull IValue[] arguments,
+            @Nullable AbstractAnimationData<?, ?> animationData
+    ) throws MolangException {
+        throw new MolangException("Queries require a Molang parser context!");
     }
 
-    public boolean isOperator(Object o) {
-        return o instanceof String string && this.isOperator(string);
+    public boolean isFunction(@NotNull String name) {
+        return name.startsWith("query.") || name.startsWith("math.") || name.startsWith("function.");
     }
 
-    public boolean isOperator(String s) {
-        return Operation.OPERATORS.contains(s) || s.equals("?") || s.equals(":");
-    }
+    @NotNull
+    protected String lowercaseOutsideStrings(@NotNull String expression) {
+        StringBuilder result = new StringBuilder(expression.length());
+        boolean inString = false;
+        boolean escaping = false;
+        char quote = 0;
 
-    //this is to block value assignments to functions, like the ones for
-    //math and the ones for molang queries.
-    public boolean isFunction(String s) {
-        String lower = s.toLowerCase();
-        return lower.startsWith("query.") || lower.startsWith("math.") || lower.startsWith("function.");
-    }
-
-    protected boolean isDecimal(String s) {
-        return s.matches("^-?\\d+(\\.\\d+)?$");
-    }
-
-    protected boolean isQuote(String s) {
-        return s.length() == 1 && this.isQuote(s.charAt(0));
-    }
-
-    protected boolean isQuote(char c) {
-        return c == '\'' || c == '"';
-    }
-
-    protected boolean isLegalExpressionCharacter(char c) {
-        return (c >= 'a' && c <= 'z')
-                || (c >= 'A' && c <= 'Z')
-                || (c >= '0' && c <= '9')
-                || "_+-/*%^&|<>=!?:.,()".indexOf(c) >= 0;
-    }
-
-    protected char unescapeStringCharacter(char c) {
-        return switch (c) {
-            case 'n' -> '\n';
-            case 'r' -> '\r';
-            case 't' -> '\t';
-            default -> c;
-        };
-    }
-
-    protected boolean isFunctionNoArgs(String s, @Nullable AbstractAnimationData<?, ?> animationData) {
-        for (Map.Entry<String, MolangFunction> functionEntry : this.functions.entrySet()) {
-            if (functionEntry.getKey().equals(s) && functionEntry.getValue().requiredArgCount() <= 0) return true;
-        }
-        if (animationData != null) {
-            for (Map.Entry<String, MolangFunction> functionEntry : animationData.getMolangQueries().entrySet()) {
-                if (functionEntry.getKey().equals(s) && functionEntry.getValue().requiredArgCount() <= 0) return true;
+        for (int i = 0; i < expression.length(); i++) {
+            char character = expression.charAt(i);
+            if (inString) {
+                result.append(character);
+                if (escaping) escaping = false;
+                else if (character == '\\') escaping = true;
+                else if (character == quote) inString = false;
             }
+            else if (character == '\'' || character == '"') {
+                inString = true;
+                quote = character;
+                result.append(character);
+            }
+            else result.append(Character.toLowerCase(character));
         }
-        return false;
+        return result.toString();
+    }
+
+    protected enum TokenType {
+        NUMBER,
+        IDENTIFIER,
+        STRING,
+        GROUP,
+        OPERATOR,
+        PREFIX,
+        COMMA,
+        ASSIGNMENT
+    }
+
+    protected static class Token {
+        @NotNull
+        private final TokenType type;
+        @NotNull
+        private final String text;
+        @NotNull
+        private final List<Token> children;
+
+        protected Token(@NotNull TokenType type, @NotNull String text) {
+            this.type = type;
+            this.text = text;
+            this.children = List.of();
+        }
+
+        protected Token(@NotNull List<Token> children) {
+            this.type = TokenType.GROUP;
+            this.text = "()";
+            this.children = List.copyOf(children);
+        }
+
+        @NotNull
+        public TokenType getType() {
+            return this.type;
+        }
+
+        @NotNull
+        public String getText() {
+            return this.text;
+        }
     }
 }

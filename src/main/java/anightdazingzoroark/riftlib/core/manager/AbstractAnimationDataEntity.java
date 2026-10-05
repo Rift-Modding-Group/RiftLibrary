@@ -98,6 +98,12 @@ public abstract class AbstractAnimationDataEntity<T extends Entity, D extends Ab
         this.registerMolangQuery("is_riding", (values, animData) -> {
             return MolangUtils.booleanToDouble(this.getHolder().isRiding());
         });
+        this.registerMolangQuery("width", (values, animData) -> {
+            return (double) this.getHolder().width;
+        });
+        this.registerMolangQuery("height", (values, animData) -> {
+            return (double) this.getHolder().height;
+        });
     }
 
     @Override

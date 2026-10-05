@@ -1,17 +1,23 @@
 package anightdazingzoroark.riftlib.molang.math;
 
-public class Negate implements anightdazingzoroark.riftlib.molang.math.IValue {
-    public anightdazingzoroark.riftlib.molang.math.IValue value;
+import org.jetbrains.annotations.NotNull;
 
-    public Negate(IValue value) {
+public class Negate implements IValue {
+    @NotNull
+    private final IValue value;
+
+    public Negate(@NotNull IValue value) {
         this.value = value;
     }
 
+    @Override
     public double get() {
-        return this.value.get() == (double)0.0F ? (double)1.0F : (double)0.0F;
+        return this.value.get() == 0D ? 1D : 0D;
     }
 
+    @Override
+    @NotNull
     public String toString() {
-        return "!" + this.value.toString();
+        return "!" + this.value;
     }
 }

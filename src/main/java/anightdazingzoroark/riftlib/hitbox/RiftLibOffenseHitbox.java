@@ -52,7 +52,7 @@ public class RiftLibOffenseHitbox<T extends IMultiHitboxUser<?>> implements IHit
         List<Entity> candidates = this.getParent().getWorld().getEntitiesWithinAABB(Entity.class, hitboxAABB, new Predicate<Entity>() {
             @Override
             public boolean apply(Entity input) {
-                return input.isEntityAlive() && input != parentEntityLiving && this.isHitboxOfParent(input);
+                return input != parentEntityLiving && this.isHitboxOfParent(input);
             }
 
             private boolean isHitboxOfParent(Entity entity) {

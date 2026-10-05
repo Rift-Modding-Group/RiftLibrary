@@ -180,6 +180,8 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 	 * */
 	@Override
 	public boolean shouldRender(A livingEntity, ICamera camera, double camX, double camY, double camZ) {
+		if ((livingEntity instanceof IDynamicRideUser<?> && livingEntity.isBeingRidden())) return true;
+
 		boolean mainRender = super.shouldRender(livingEntity, camera, camX, camY, camZ);
 		if (livingEntity.getParts() == null) return mainRender;
 

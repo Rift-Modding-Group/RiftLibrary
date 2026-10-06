@@ -83,8 +83,8 @@ public class EmitterShapeDiscComponent extends RiftLibEmitterShapeComponent {
         Vec3d vecX = vecNormal.crossProduct(helper).normalize();
         Vec3d vecY = vecNormal.crossProduct(vecX).normalize();
 
-        double radius = this.surfaceOnly ? this.radius.get() : emitter.random.nextDouble() * this.radius.get();
-        double theta = 2 * Math.PI * emitter.random.nextDouble();
+        double radius = this.surfaceOnly ? this.radius.get() : emitter.nextRandomDouble() * this.radius.get();
+        double theta = 2 * Math.PI * emitter.nextRandomDouble();
 
         Vec3d inPlane = vecX.scale(radius * Math.cos(theta)).add(vecY.scale(radius * Math.sin(theta)));
 
@@ -109,9 +109,9 @@ public class EmitterShapeDiscComponent extends RiftLibEmitterShapeComponent {
             //generally the direction to go towards should be the same as its xyz offset from the center of sphere emitter
             int pointer = this.particleDirection.equals("outwards") ? 1 : this.particleDirection.equals("inwards") ? -1 : 0;
             return new Vec3d(
-                    pointer * (emissionX - emitter.posX),
-                    pointer * (emissionY - emitter.posY),
-                    pointer * (emissionZ - emitter.posZ)
+                    pointer * (emissionX - emitter.getX()),
+                    pointer * (emissionY - emitter.getY()),
+                    pointer * (emissionZ - emitter.getZ())
             ).normalize();
         }
     }

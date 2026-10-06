@@ -24,7 +24,7 @@ public class EmitterInstantComponent extends RiftLibEmitterRateComponent {
     public void createParticles(RiftLibParticleEmitter emitter) {
         double particleCount = this.particleCount.get();
         while (emitter.getParticleCount() < particleCount) {
-            emitter.getParticles().add(emitter.createParticle());
+            emitter.addParticle(emitter.createParticle());
             emitter.setParticleCount(emitter.getParticleCount() + 1);
         }
     }

@@ -11,7 +11,7 @@ public abstract class RiftLibEmitterShapeComponent extends RiftLibEmitterCompone
     protected IValue[] offset = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
 
     public void applyComponent(RiftLibParticleEmitter emitter) {
-        emitter.emitterShape = this;
+        emitter.setEmitterShape(this);
     }
 
     public abstract Vec3d defineParticleOffset(RiftLibParticleEmitter emitter);

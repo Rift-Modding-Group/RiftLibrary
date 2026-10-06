@@ -41,10 +41,12 @@ public class ParticleMotionCollisionComponent extends RiftLibParticleComponent {
 
     @Override
     public void applyComponent(RiftLibParticle particle) {
-        particle.collisionEnabled = this.enabled;
-        particle.collisionDrag = this.collisionDrag;
-        particle.coeffOfRestitution = this.coeffOfRestitution;
-        particle.collisionRadius = this.collisionRadius;
-        particle.expireOnContact = this.expireOnContact;
+        particle.setCollision(
+                this.enabled,
+                this.collisionDrag,
+                this.coeffOfRestitution,
+                this.collisionRadius,
+                this.expireOnContact
+        );
     }
 }

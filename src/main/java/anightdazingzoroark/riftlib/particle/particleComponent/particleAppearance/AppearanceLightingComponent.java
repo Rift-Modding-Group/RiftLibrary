@@ -13,6 +13,6 @@ public class AppearanceLightingComponent extends RiftLibParticleComponent {
 
     @Override
     public void applyComponent(RiftLibParticle particle) {
-        particle.useLocalLighting = true;
+        particle.enableLocalLighting();
     }
 }

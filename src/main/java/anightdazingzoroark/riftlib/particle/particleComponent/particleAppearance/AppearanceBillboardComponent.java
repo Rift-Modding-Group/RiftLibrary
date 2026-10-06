@@ -103,7 +103,7 @@ public class AppearanceBillboardComponent extends RiftLibParticleComponent {
 
     @Override
     public void applyComponent(RiftLibParticle particle) {
-        particle.particleAppearance = this;
+        particle.setAppearance(this);
     }
 
     public double[] getSize() {

@@ -32,12 +32,12 @@ public class EmitterSteadyComponent extends RiftLibEmitterRateComponent {
         double particleRate = this.spawnRate.get() / 20D;
 
         emitter.setParticleCount(emitter.getParticleCount() + particleRate);
-        while (emitter.getParticleCount() >= 1 && emitter.getParticles().size() < maxParticleCount) {
-            emitter.getParticles().add(emitter.createParticle());
+        while (emitter.getParticleCount() >= 1 && emitter.getParticleAmount() < maxParticleCount) {
+            emitter.addParticle(emitter.createParticle());
             emitter.setParticleCount(emitter.getParticleCount() - 1);
         }
 
-        if (emitter.getParticles().size() >= maxParticleCount) {
+        if (emitter.getParticleAmount() >= maxParticleCount) {
             emitter.setParticleCount(Math.min(emitter.getParticleCount(), 1));
         }
     }

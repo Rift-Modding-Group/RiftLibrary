@@ -18,87 +18,88 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class RiftLibParticle implements MolangObject {
+    @Nullable
     private final World world;
     @Nullable
     private final RiftLibParticleEmitter emitter;
-    public final MolangParser molangParser;
-    public final MolangScope particleScope;
-    public double x, y, z;
-    public double prevX, prevY, prevZ;
-    public double velX, velY, velZ;
-    public double rotation;
-    public double velRotation;
-    public double accelRotation;
-    private boolean isDead;
-    public boolean useLocalLighting;
-
-    //debug info
-    public int emitterId; //this is mostly for debugging
-    public int particleId; //this too is for debugging, mainly of individual particles
-
-    //expire/not expire within certain blocks of said strings
-    public List<ParticleBlockRule> blocksExpireIfNotIn = new ArrayList<>();
-    public List<ParticleBlockRule> blocksExpireIfIn = new ArrayList<>();
+    @NotNull
+    private final MolangParser molangParser;
+    @NotNull
+    private final MolangScope particleScope;
+    @NotNull
     private final BlockPos.MutableBlockPos tempPos = new BlockPos.MutableBlockPos();
-
-    //other collision related stuff
+    @NotNull
     private final MutableAxisAlignedBB tempAABB = new MutableAxisAlignedBB();
-    public IValue collisionEnabled = MolangParser.ZERO;
-    public float collisionDrag;
-    public float coeffOfRestitution;
-    public Float collisionRadius;
-    public boolean expireOnContact;
+    @NotNull
+    private List<ParticleBlockRule> blocksExpireIfNotIn = List.of();
+    @NotNull
+    private List<ParticleBlockRule> blocksExpireIfIn = List.of();
+    @NotNull
+    private IValue collisionEnabled = MolangParser.ZERO;
+    @NotNull
+    private IValue initialSpeed = MolangParser.ZERO;
+    @NotNull
+    private IValue[] linearAcceleration = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
+    @NotNull
+    private IValue linearDragCoefficient = MolangParser.ZERO;
+    @NotNull
+    private IValue initialRotation = MolangParser.ZERO;
+    @NotNull
+    private IValue rotationRate = MolangParser.ZERO;
+    @NotNull
+    private IValue rotationAcceleration = MolangParser.ZERO;
+    @NotNull
+    private IValue rotationDragCoefficient = MolangParser.ZERO;
+    @Nullable
+    private AppearanceBillboardComponent particleAppearance;
+    @Nullable
+    private IValue lifetimeExpression;
+    @Nullable
+    private IValue expirationExpression;
+    @NotNull
+    private IValue[] colorArray = new IValue[]{MolangParser.ONE, MolangParser.ONE, MolangParser.ONE};
+    @NotNull
+    private IValue colorAlpha = MolangParser.ONE;
+    @Nullable
+    private Float collisionRadius;
+    private double x;
+    private double y;
+    private double z;
+    private double prevX;
+    private double prevY;
+    private double prevZ;
+    private double velX;
+    private double velY;
+    private double velZ;
+    private double rotation;
+    private double velRotation;
+    private float collisionDrag;
+    private float coeffOfRestitution;
+    private boolean isDead;
+    private boolean useLocalLighting;
+    private boolean expireOnContact;
+    private int emitterId;
+    private int particleId;
+    private int lifetime;
+    private int age;
 
-    //speed
-    public IValue initialSpeed = MolangParser.ZERO;
-    public IValue[] linearAcceleration = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
-    public IValue linearDragCoefficient = MolangParser.ZERO;
-
-    //rotation
-    public IValue initialRotation = MolangParser.ZERO;
-    public IValue rotationRate = MolangParser.ZERO;
-    public IValue rotationAcceleration = MolangParser.ZERO;
-    public IValue rotationDragCoefficient = MolangParser.ZERO;
-
-    //flipbook data
-    public AppearanceBillboardComponent particleAppearance;
-
-    //IValue lifetime info
-    public IValue lifetimeExpression;
-    public IValue expirationExpression;
-
-    //runtime data, are parsed molang variables
-    private int lifetime, age; //REMEMBER THAT THESE ARE IN TICKS
-    public float randomOne, randomTwo, randomThree, randomFour;
-
-    //for color
-    public IValue[] colorArray = new IValue[]{MolangParser.ONE, MolangParser.ONE, MolangParser.ONE};
-    public IValue colorAlpha = MolangParser.ONE;
-
-    public RiftLibParticle(World world, MolangParser parser, MolangScope emitterScope) {
+    public RiftLibParticle(@Nullable World world, @NotNull MolangParser parser, @NotNull MolangScope emitterScope) {
         this.world = world;
         this.emitter = emitterScope.getOwner() instanceof RiftLibParticleEmitter particleEmitter ? particleEmitter : null;
         this.molangParser = parser;
         this.particleScope = new MolangScope(emitterScope, this);
-
-        //init molang stuff
-        this.setupMolangVariables();
-    }
-
-    //all molang variables are created here
-    private void setupMolangVariables() {
         this.molangParser.withScope(this.particleScope, () -> {
             this.molangParser.setVariable("variable.particle_age", 0);
             this.molangParser.setVariable("variable.particle_lifetime", 0);
-            this.molangParser.setVariable("variable.particle_random_1", Math.random());
-            this.molangParser.setVariable("variable.particle_random_2", Math.random());
-            this.molangParser.setVariable("variable.particle_random_3", Math.random());
-            this.molangParser.setVariable("variable.particle_random_4", Math.random());
+            this.molangParser.setVariable("variable.particle_random_1", ThreadLocalRandom.current().nextDouble());
+            this.molangParser.setVariable("variable.particle_random_2", ThreadLocalRandom.current().nextDouble());
+            this.molangParser.setVariable("variable.particle_random_3", ThreadLocalRandom.current().nextDouble());
+            this.molangParser.setVariable("variable.particle_random_4", ThreadLocalRandom.current().nextDouble());
         });
     }
 
@@ -114,13 +115,10 @@ public class RiftLibParticle implements MolangObject {
         return this.emitter;
     }
 
-    public void initializeVelocity(Vec3d direction) {
-        AtomicReference<Vec3d> toFinalVelocity = new AtomicReference<>(Vec3d.ZERO);
-        this.molangParser.withScope(this.particleScope, () -> {
-            toFinalVelocity.set(direction.scale(this.initialSpeed.get()));
-        });
-
-        Vec3d finalVelocity = toFinalVelocity.get();
+    public void initializeVelocity(@NotNull Vec3d direction) {
+        Vec3d finalVelocity = Objects.requireNonNull(
+                this.molangParser.withScope(this.particleScope, () -> direction.scale(this.initialSpeed.get()))
+        );
 
         //divide all by 20 to turn them from blocks/second into blocks/tick
         this.velX = finalVelocity.x / 20D;
@@ -136,57 +134,50 @@ public class RiftLibParticle implements MolangObject {
     }
 
     public void update() {
-        this.molangParser.withScope(this.particleScope, () -> {
-            //set the lifetime from expression
-            this.lifetime = (int) (this.lifetimeExpression.get() * 20);
+        IValue lifetimeValue = this.lifetimeExpression;
+        IValue expirationValue = this.expirationExpression;
+        AppearanceBillboardComponent appearance = this.particleAppearance;
+        if (lifetimeValue == null) {
+            throw new IllegalStateException("No minecraft:particle_lifetime_expression component has been parsed!");
+        }
+        if (expirationValue == null) {
+            throw new IllegalStateException("No particle expiration expression has been parsed!");
+        }
+        if (appearance == null) {
+            throw new IllegalStateException("No minecraft:particle_appearance_billboard component has been parsed!");
+        }
 
-            //update life based on age and expiration
+        this.molangParser.withScope(this.particleScope, () -> {
+            this.lifetime = (int) (lifetimeValue.get() * 20D);
+            this.tempPos.setPos(this.x, this.y, this.z);
+
             if (!this.isDead) {
                 if (this.age < this.lifetime) this.age++;
                 if (this.age >= this.lifetime
-                        || this.expirationExpression.get() != 0
+                        || expirationValue.get() != 0D
                         || !this.isWithinValidBlock()
                 ) this.isDead = true;
             }
 
-            //dynamically set molang variables
             this.molangParser.setVariable("variable.particle_age", this.age / 20D);
             this.molangParser.setVariable("variable.particle_lifetime", this.lifetime / 20D);
+            appearance.updateAppearance(this);
 
-            //update temp pos
-            this.tempPos.setPos(this.x, this.y, this.z);
-
-            //update flipbook
-            if (this.particleAppearance == null) {
-                throw new IllegalStateException("No minecraft:particle_appearance_billboard component has been parsed! Please check the documentation!");
-            }
-            this.particleAppearance.updateAppearance(this);
-
-            //-----rotation modification-----
-            if (this.velRotation != 0) {
+            if (this.velRotation != 0D) {
                 this.rotation += this.velRotation;
-
-                //clamp between -180 and 180 degrees
-                if (this.rotation > 180) this.rotation -= 360;
-                if (this.rotation < -180) this.rotation += 360;
+                if (this.rotation > 180D) this.rotation -= 360D;
+                if (this.rotation < -180D) this.rotation += 360D;
             }
 
-            //get rotation acceleration
-            //turn degrees per sec^2 into degrees per second^2
-            this.accelRotation = this.rotationAcceleration.get() / 400;
+            double rotationAcceleration = this.rotationAcceleration.get() / 400D;
+            if (rotationAcceleration != 0D) this.velRotation += rotationAcceleration;
 
-            //apply to rotation velocity
-            if (this.accelRotation != 0) this.velRotation += this.accelRotation;
-
-            //apply rotational linearDrag
             double rotationalDrag = this.rotationDragCoefficient.get();
-            if (rotationalDrag > 0) {
-                double factor = Math.max(0, 1 - (rotationalDrag / 20));
+            if (rotationalDrag > 0D) {
+                double factor = Math.max(0D, 1D - rotationalDrag / 20D);
                 this.velRotation *= factor;
             }
 
-            //-----position modification-----
-            //move based on velocity (w collision)
             this.prevX = this.x;
             this.prevY = this.y;
             this.prevZ = this.z;
@@ -196,7 +187,7 @@ public class RiftLibParticle implements MolangObject {
             double nextZ = this.z + this.velZ;
 
             boolean collided = false;
-            if (this.collisionEnabled.get() != 0 && this.collisionRadius != null && this.collisionRadius > 0) {
+            if (this.collisionEnabled.get() != 0D && this.collisionRadius != null && this.collisionRadius > 0F) {
                 collided = this.resolveCollision(nextX, nextY, nextZ);
             }
             else {
@@ -205,21 +196,15 @@ public class RiftLibParticle implements MolangObject {
                 this.z = nextZ;
             }
 
-            //expire on contact should be driven by actual collision response
-            if (this.expireOnContact && collided) {
-                this.isDead = true;
-            }
+            if (this.expireOnContact && collided) this.isDead = true;
 
-            //change velocity based on acceleration
-            //the division by 400 is to convert from blocks/sec^2 to blocks/tick^2
             this.velX += this.linearAcceleration[0].get() / 400D;
             this.velY += this.linearAcceleration[1].get() / 400D;
             this.velZ += this.linearAcceleration[2].get() / 400D;
 
-            //apply linear drag
             double linearDrag = this.linearDragCoefficient.get();
-            if (linearDrag > 0) {
-                double factor = Math.max(0, 1 - (linearDrag / 20));
+            if (linearDrag > 0D) {
+                double factor = Math.max(0D, 1D - linearDrag / 20D);
                 this.velX *= factor;
                 this.velY *= factor;
                 this.velZ *= factor;
@@ -227,15 +212,13 @@ public class RiftLibParticle implements MolangObject {
         });
     }
 
-    public void renderParticle(BufferBuilder buffer, Entity cameraEntity, float partialTicks) {
-        if (this.particleAppearance == null) {
-            throw new IllegalStateException("No minecraft:particle_appearance_billboard component has been parsed! Please check the documentation!");
-        }
+    public void renderParticle(@NotNull BufferBuilder buffer, @NotNull Entity cameraEntity, float partialTicks) {
+        AppearanceBillboardComponent appearance = this.particleAppearance;
+        if (appearance == null) throw new IllegalStateException("No minecraft:particle_appearance_billboard component has been parsed!");
 
         this.molangParser.withScope(this.particleScope, () -> {
-            //sizes
-            float scaleX = (float) this.particleAppearance.getSize()[0];
-            float scaleY = (float) this.particleAppearance.getSize()[1];
+            float scaleX = (float) appearance.getSize()[0];
+            float scaleY = (float) appearance.getSize()[1];
 
             //camera position (lerped)
             double camX = Interpolations.lerp(cameraEntity.lastTickPosX, cameraEntity.posX, partialTicks);
@@ -250,18 +233,14 @@ public class RiftLibParticle implements MolangObject {
             //origin point
             Vec3d pointOrigin = new Vec3d(particleX - camX, particleY - camY, particleZ - camZ);
 
-            //get and emit vector quad
-            List<Vec3d> vecQuad = this.particleAppearance.getCameraMode().getPoints(scaleX, scaleY, partialTicks, this.rotation);
-            this.emitQuad(buffer, pointOrigin, vecQuad.getFirst(), vecQuad.get(1), vecQuad.get(2), vecQuad.getLast(), partialTicks);
+            List<Vec3d> vecQuad = appearance.getCameraMode().getPoints(scaleX, scaleY, partialTicks, this.rotation);
+            this.emitQuad(appearance, buffer, pointOrigin, vecQuad.getFirst(), vecQuad.get(1), vecQuad.get(2), vecQuad.getLast(), partialTicks);
         });
     }
 
-    private void emitQuad(BufferBuilder buffer, Vec3d pointOrigin, Vec3d pointOne, Vec3d pointTwo, Vec3d pointThree, Vec3d pointFour, float partialTicks) {
-        if (this.particleAppearance == null) {
-            throw new IllegalStateException("No minecraft:particle_appearance_billboard component has been parsed! Please check the documentation!");
-        }
-
-        //lighting
+    private void emitQuad(@NotNull AppearanceBillboardComponent appearance, @NotNull BufferBuilder buffer,
+                          @NotNull Vec3d pointOrigin, @NotNull Vec3d pointOne, @NotNull Vec3d pointTwo,
+                          @NotNull Vec3d pointThree, @NotNull Vec3d pointFour, float partialTicks) {
         int light = this.getBrightnessForRender(partialTicks);
         int j = (light >> 16) & 0xFFFF;
         int k = light & 0xFFFF;
@@ -272,13 +251,12 @@ public class RiftLibParticle implements MolangObject {
         float blue = (float) this.colorArray[2].get();
         float alpha = (float) this.colorAlpha.get();
 
-        //emit vertices based on camera mode too
-        float[] uvs = this.particleAppearance.getUVs();
+        float[] uvs = appearance.getUVs();
         float uvXMin = uvs[0];
         float uvYMin = uvs[1];
         float uvXMax = uvs[2];
         float uvYMax = uvs[3];
-        if (this.particleAppearance.getCameraMode() == ParticleCameraMode.ROTATE_XYZ) {
+        if (appearance.getCameraMode() == ParticleCameraMode.ROTATE_XYZ) {
             buffer.pos(pointOrigin.x + pointOne.x, pointOrigin.y + pointOne.y, pointOrigin.z + pointOne.z)
                     .tex(uvXMax, uvYMax)
                     .lightmap(j, k)
@@ -331,15 +309,15 @@ public class RiftLibParticle implements MolangObject {
     }
 
     private int getBrightnessForRender(float partialTicks) {
-        //fullbright when lighting component is NOT present
-        if (!this.useLocalLighting || this.world == null) return 0xF000F0;
+        World currentWorld = this.world;
+        if (!this.useLocalLighting || currentWorld == null) return 0xF000F0;
 
         double x = this.prevX + (this.x - this.prevX) * partialTicks;
         double y = this.prevY + (this.y - this.prevY) * partialTicks;
         double z = this.prevZ + (this.z - this.prevZ) * partialTicks;
 
         BlockPos blockpos = new BlockPos(x, y, z);
-        return this.world.isBlockLoaded(blockpos) ? this.world.getCombinedLight(blockpos, 0) : 0;
+        return currentWorld.isBlockLoaded(blockpos) ? currentWorld.getCombinedLight(blockpos, 0) : 0;
     }
 
     public boolean isDead() {
@@ -347,9 +325,10 @@ public class RiftLibParticle implements MolangObject {
     }
 
     private boolean isWithinValidBlock() {
-        //if blocksExpireIfNotIn and blocksExpireIfIn are empty, skip
         if (this.blocksExpireIfNotIn.isEmpty() && this.blocksExpireIfIn.isEmpty()) return true;
-        IBlockState blockState = this.world.getBlockState(this.tempPos);
+        World currentWorld = this.world;
+        if (currentWorld == null || !currentWorld.isBlockLoaded(this.tempPos)) return true;
+        IBlockState blockState = currentWorld.getBlockState(this.tempPos);
 
         for (ParticleBlockRule blockRule : this.blocksExpireIfNotIn) {
             if (!blockRule.matches(blockState)) return false;
@@ -401,11 +380,13 @@ public class RiftLibParticle implements MolangObject {
     }
 
     private boolean isCollided(double xTest, double yTest, double zTest) {
-        if (this.collisionRadius == null || this.collisionEnabled.get() == 0) return false;
+        World currentWorld = this.world;
+        Float radius = this.collisionRadius;
+        if (currentWorld == null || radius == null || this.collisionEnabled.get() == 0D) return false;
 
         this.tempAABB.set(
-                xTest - this.collisionRadius, yTest - this.collisionRadius, zTest - this.collisionRadius,
-                xTest + this.collisionRadius, yTest + this.collisionRadius, zTest + this.collisionRadius
+                xTest - radius, yTest - radius, zTest - radius,
+                xTest + radius, yTest + radius, zTest + radius
         );
 
         int minX = MathHelper.floor(this.tempAABB.getMinX());
@@ -419,12 +400,12 @@ public class RiftLibParticle implements MolangObject {
             for (int y = minY; y <= maxY; y++) {
                 for (int z = minZ; z <= maxZ; z++) {
                     this.tempPos.setPos(x, y, z);
-                    if (!this.world.isBlockLoaded(this.tempPos)) continue;
+                    if (!currentWorld.isBlockLoaded(this.tempPos)) continue;
 
-                    IBlockState state = this.world.getBlockState(this.tempPos);
+                    IBlockState state = currentWorld.getBlockState(this.tempPos);
                     if (state.getMaterial().isReplaceable()) continue;
 
-                    AxisAlignedBB blockBox = state.getCollisionBoundingBox(this.world, this.tempPos);
+                    AxisAlignedBB blockBox = state.getCollisionBoundingBox(currentWorld, this.tempPos);
                     if (blockBox == null) continue;
 
                     if (this.tempAABB.intersects(
@@ -440,9 +421,9 @@ public class RiftLibParticle implements MolangObject {
     }
 
     private void applyCollisionDrag(boolean dragX, boolean dragY, boolean dragZ) {
-        if (this.collisionDrag <= 0f) return;
+        if (this.collisionDrag <= 0F) return;
 
-        double dragPerTick = this.collisionDrag / 20.0;
+        double dragPerTick = this.collisionDrag / 20D;
 
         if (dragX) this.velX = this.approachZero(this.velX, dragPerTick);
         if (dragY) this.velY = this.approachZero(this.velY, dragPerTick);
@@ -450,9 +431,76 @@ public class RiftLibParticle implements MolangObject {
     }
 
     private double approachZero(double v, double amount) {
-        if (v > 0) return Math.max(0, v - amount);
-        if (v < 0) return Math.min(0, v + amount);
-        return 0;
+        if (v > 0D) return Math.max(0D, v - amount);
+        if (v < 0D) return Math.min(0D, v + amount);
+        return 0D;
+    }
+
+    public void setDebugIds(int emitterId, int particleId) {
+        this.emitterId = emitterId;
+        this.particleId = particleId;
+    }
+
+    public void setPosition(double x, double y, double z) {
+        this.x = this.prevX = x;
+        this.y = this.prevY = y;
+        this.z = this.prevZ = z;
+    }
+
+    public void setAppearance(@NotNull AppearanceBillboardComponent appearance) {
+        this.particleAppearance = appearance;
+    }
+
+    public void enableLocalLighting() {
+        this.useLocalLighting = true;
+    }
+
+    public void setColor(@NotNull IValue[] color, @NotNull IValue alpha) {
+        if (color.length != 3) throw new IllegalArgumentException("Particle colors require exactly three RGB expressions!");
+        this.colorArray = color.clone();
+        this.colorAlpha = alpha;
+    }
+
+    public void setInitialSpeed(@NotNull IValue initialSpeed) {
+        this.initialSpeed = initialSpeed;
+    }
+
+    public void setInitialSpin(@NotNull IValue initialRotation, @NotNull IValue rotationRate) {
+        this.initialRotation = initialRotation;
+        this.rotationRate = rotationRate;
+    }
+
+    public void setLifetimeExpressions(@NotNull IValue lifetimeExpression, @NotNull IValue expirationExpression) {
+        this.lifetimeExpression = lifetimeExpression;
+        this.expirationExpression = expirationExpression;
+    }
+
+    public void setExpireInBlocks(@NotNull List<ParticleBlockRule> rules) {
+        this.blocksExpireIfIn = List.copyOf(rules);
+    }
+
+    public void setExpireNotInBlocks(@NotNull List<ParticleBlockRule> rules) {
+        this.blocksExpireIfNotIn = List.copyOf(rules);
+    }
+
+    public void setDynamicMotion(@NotNull IValue[] linearAcceleration, @NotNull IValue linearDragCoefficient,
+                                 @NotNull IValue rotationAcceleration, @NotNull IValue rotationDragCoefficient) {
+        if (linearAcceleration.length != 3) {
+            throw new IllegalArgumentException("Particle acceleration requires exactly three expressions!");
+        }
+        this.linearAcceleration = linearAcceleration.clone();
+        this.linearDragCoefficient = linearDragCoefficient;
+        this.rotationAcceleration = rotationAcceleration;
+        this.rotationDragCoefficient = rotationDragCoefficient;
+    }
+
+    public void setCollision(@NotNull IValue enabled, float collisionDrag, float coefficientOfRestitution,
+                             @Nullable Float collisionRadius, boolean expireOnContact) {
+        this.collisionEnabled = enabled;
+        this.collisionDrag = collisionDrag;
+        this.coeffOfRestitution = coefficientOfRestitution;
+        this.collisionRadius = collisionRadius;
+        this.expireOnContact = expireOnContact;
     }
 
     public int getAge() {

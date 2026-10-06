@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class RiftLibLoader {
     @NotNull
@@ -106,6 +107,7 @@ public class RiftLibLoader {
         }
     }
 
+    //for use in client
     @NotNull
     public ParticleBuilder loadParticle(MolangParser parser, RiftLibResourceReader resourceReader, ResourceLocation location) {
         try {
@@ -115,6 +117,19 @@ public class RiftLibLoader {
         catch (Exception e) {
             RiftLib.LOGGER.error(String.format("Error parsing %S", location), e);
             throw (new RuntimeException(e));
+        }
+    }
+
+    //for use in server, mostly for the particle command
+    @NotNull
+    public String loadParticleIdentifier(RiftLibResourceReader resourceReader, ResourceLocation location) {
+        try {
+            RawParticle rawParticle = this.gson.fromJson(this.getResourceAsString(location, resourceReader), RawParticle.class);
+            return Objects.requireNonNull(rawParticle.rawParticleEffect.description.identifier, location + " has no particle identifier!");
+        }
+        catch (Exception exception) {
+            RiftLib.LOGGER.error(String.format("Error parsing %S", location), exception);
+            throw new RuntimeException(exception);
         }
     }
 

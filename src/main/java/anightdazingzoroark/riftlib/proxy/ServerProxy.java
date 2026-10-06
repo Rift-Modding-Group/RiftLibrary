@@ -98,7 +98,7 @@ public class ServerProxy {
         ));
     }
 
-    public void spawnParticle(String name, double x, double y, double z) {}
+    public void spawnParticle(String name, double x, double y, double z, String... variables) {}
 
-    public void spawnParticle(String name, double x, double y, double z, double rotationX, double rotationY) {}
+    public void spawnParticle(String name, double x, double y, double z, double rotationX, double rotationY, String... variables) {}
 }

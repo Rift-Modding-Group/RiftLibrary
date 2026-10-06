@@ -7,9 +7,11 @@ import anightdazingzoroark.riftlib.mobFamily.MobFamily;
 import anightdazingzoroark.riftlib.mobFamily.MobFamilyCreator;
 import anightdazingzoroark.riftlib.mobFamily.MobFamilyManager;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
+import net.minecraft.command.ServerCommandManager;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemStack;
 import net.minecraft.launchwrapper.Launch;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -130,8 +132,11 @@ public class RiftLibMod {
 
     @Mod.EventHandler
     public void serverLoad(FMLServerStartingEvent event) {
+		MinecraftServer server = event.getServer();
+		ServerCommandManager manager = (ServerCommandManager) server.getCommandManager();
+		manager.registerCommand(new RiftLibCommandParticle());
+
         event.registerServerCommand(new RiftLibMobFamily());
-		event.registerServerCommand(new RiftLibCommandParticle());
 		event.registerServerCommand(new RiftLibShowBoundingBox());
     }
 }

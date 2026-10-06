@@ -33,7 +33,6 @@ public class ParticleLifetimeExpressionComponent extends RiftLibParticleComponen
 
     @Override
     public void applyComponent(RiftLibParticle particle) {
-        particle.lifetimeExpression = this.lifetimeValue;
-        particle.expirationExpression = this.expirationValue;
+        particle.setLifetimeExpressions(this.lifetimeValue, this.expirationValue);
     }
 }

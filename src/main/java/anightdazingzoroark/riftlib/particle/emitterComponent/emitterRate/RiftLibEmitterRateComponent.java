@@ -7,7 +7,7 @@ import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleCom
 public abstract class RiftLibEmitterRateComponent extends RiftLibEmitterComponent {
     @Override
     public void applyComponent(RiftLibParticleEmitter emitter) {
-        emitter.emitterRate = this;
+        emitter.setEmitterRate(this);
     }
 
     public abstract void createParticles(RiftLibParticleEmitter emitter);

@@ -1,6 +1,5 @@
 package anightdazingzoroark.riftlib.particle;
 
-import anightdazingzoroark.riftlib.exceptions.MolangException;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -16,7 +15,7 @@ public class ParticleTicker {
     public static int EMITTER_ID;
 
     @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event) throws MolangException {
+    public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
 
         //do not tick if the game is paused

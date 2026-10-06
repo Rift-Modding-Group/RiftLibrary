@@ -46,10 +46,10 @@ public class EmitterShapeSphereComponent extends RiftLibEmitterShapeComponent {
 
     @Override
     public Vec3d defineParticleOffset(RiftLibParticleEmitter emitter) {
-        double radius = this.surfaceOnly ? this.radius.get() : (2 * emitter.random.nextDouble() - 1) * this.radius.get();
-        double offsetY = (2 * emitter.random.nextDouble() - 1) * radius;
+        double radius = this.surfaceOnly ? this.radius.get() : (2 * emitter.nextRandomDouble() - 1) * this.radius.get();
+        double offsetY = (2 * emitter.nextRandomDouble() - 1) * radius;
         double radiusAtY = Math.sqrt(radius * radius - offsetY * offsetY);
-        double theta = 2 * Math.PI * emitter.random.nextDouble();
+        double theta = 2 * Math.PI * emitter.nextRandomDouble();
         double offsetX = radiusAtY * Math.cos(theta);
         double offsetZ = radiusAtY * Math.sin(theta);
         return new Vec3d(
@@ -73,9 +73,9 @@ public class EmitterShapeSphereComponent extends RiftLibEmitterShapeComponent {
             //generally the direction to go towards should be the same as its xyz offset from the center of sphere emitter
             int pointer = this.particleDirection.equals("outwards") ? 1 : this.particleDirection.equals("inwards") ? -1 : 0;
             return new Vec3d(
-                    pointer * (emissionX - emitter.posX),
-                    pointer * (emissionY - emitter.posY),
-                    pointer * (emissionZ - emitter.posZ)
+                    pointer * (emissionX - emitter.getX()),
+                    pointer * (emissionY - emitter.getY()),
+                    pointer * (emissionZ - emitter.getZ())
             ).normalize();
         }
     }

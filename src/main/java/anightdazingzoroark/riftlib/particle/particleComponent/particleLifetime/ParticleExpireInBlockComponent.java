@@ -30,8 +30,8 @@ public class ParticleExpireInBlockComponent extends RiftLibParticleComponent {
 
     @Override
     public void applyComponent(RiftLibParticle particle) {
-        particle.blocksExpireIfIn = this.blocksExpireIfIn.stream()
-                .map(this::parseRule).collect(Collectors.toList());
+        particle.setExpireInBlocks(this.blocksExpireIfIn.stream()
+                .map(this::parseRule).collect(Collectors.toList()));
     }
 
     private ParticleBlockRule parseRule(String blockString) {

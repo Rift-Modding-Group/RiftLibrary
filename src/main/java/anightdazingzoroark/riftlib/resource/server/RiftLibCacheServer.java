@@ -20,8 +20,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -32,6 +34,8 @@ public class RiftLibCacheServer extends RiftLibResourceHolder {
     private Map<String, Map<String, Animation>> animations = new HashMap<>();
     @NotNull
     private Map<String, Map<String, GeoModel>> geoModels = new HashMap<>();
+    @NotNull
+    private Set<String> particleIdentifiers = Set.of();
 
     private final Map<ResourceLocation, ResourceOpener> resources = new HashMap<>();
 
@@ -62,6 +66,7 @@ public class RiftLibCacheServer extends RiftLibResourceHolder {
 
         Map<String, Map<String, Animation>> tempAnimations = new HashMap<>();
         Map<String, Map<String, GeoModel>> tempModels = new HashMap<>();
+        Set<String> tempParticleIdentifiers = new HashSet<>();
         RiftLibResourceReader resourceReader = location -> {
             ResourceOpener opener = this.resources.get(location);
             if (opener == null) throw new IOException("Unknown resource " + location);
@@ -116,10 +121,19 @@ public class RiftLibCacheServer extends RiftLibResourceHolder {
                     RiftLib.LOGGER.error("Error loading server model file \"" + location + "\"!", e);
                 }
             }
+            else if (path.startsWith("particles/") && path.endsWith(".json")) {
+                try {
+                    tempParticleIdentifiers.add(this.loader.loadParticleIdentifier(resourceReader, location));
+                }
+                catch (Exception exception) {
+                    RiftLib.LOGGER.error("Error loading server particle file \"" + location + "\"!", exception);
+                }
+            }
         }
 
         this.animations = tempAnimations;
         this.geoModels = tempModels;
+        this.particleIdentifiers = Set.copyOf(tempParticleIdentifiers);
     }
 
     private void collectFolderResources(File source) {
@@ -134,6 +148,7 @@ public class RiftLibCacheServer extends RiftLibResourceHolder {
         for (File domain : domains) {
             this.collectFolderResources(domain, "animations", fileName -> fileName.endsWith(".json"));
             this.collectFolderResources(domain, "geo", fileName -> fileName.endsWith(".json"));
+            this.collectFolderResources(domain, "particles", fileName -> fileName.endsWith(".json"));
         }
     }
 
@@ -207,6 +222,7 @@ public class RiftLibCacheServer extends RiftLibResourceHolder {
 
                 this.collectZipResource(source, entry.getName(), "animations", fileName -> fileName.endsWith(".json"));
                 this.collectZipResource(source, entry.getName(), "geo", fileName -> fileName.endsWith(".json"));
+                this.collectZipResource(source, entry.getName(), "particles", fileName -> fileName.endsWith(".json"));
             }
         }
         catch (IOException e) {
@@ -254,6 +270,15 @@ public class RiftLibCacheServer extends RiftLibResourceHolder {
         }
 
         return Map.copyOf(this.geoModels);
+    }
+
+    @NotNull
+    public Set<String> getParticleIdentifiers() {
+        if (!RiftLib.isInitialized()) {
+            throw new RuntimeException("RiftLib was never initialized! Please read the documentation!");
+        }
+
+        return this.particleIdentifiers;
     }
 
     @FunctionalInterface

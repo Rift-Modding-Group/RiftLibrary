@@ -109,27 +109,26 @@ public class ClientProxy extends ServerProxy {
 
     @SideOnly(Side.CLIENT)
     @Override
-    public void spawnParticle(String name, double x, double y, double z) {
+    public void spawnParticle(String name, double x, double y, double z, String... variables) {
         //get particle builder
         ParticleBuilder builder = RiftLibParticleHelper.getParticleBuilder(name);
 
         //create an emitter
         if (builder != null) {
-            RiftLibParticleEmitter emitter = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, x, y, z);
+            RiftLibParticleEmitter emitter = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, x, y, z, variables);
             ParticleTicker.EMITTER_LIST.add(emitter);
         }
     }
 
     @SideOnly(Side.CLIENT)
     @Override
-    public void spawnParticle(String name, double x, double y, double z, double rotationX, double rotationY) {
+    public void spawnParticle(String name, double x, double y, double z, double rotationX, double rotationY, String... variables) {
         //get particle builder
         ParticleBuilder builder = RiftLibParticleHelper.getParticleBuilder(name);
+        if (builder == null) return;
 
         //create an emitter
-        if (builder != null) {
-            RiftLibParticleEmitter emitter = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, x, y, z, rotationX, rotationY);
-            ParticleTicker.EMITTER_LIST.add(emitter);
-        }
+        RiftLibParticleEmitter emitter = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, x, y, z, rotationX, rotationY, variables);
+        ParticleTicker.EMITTER_LIST.add(emitter);
     }
 }

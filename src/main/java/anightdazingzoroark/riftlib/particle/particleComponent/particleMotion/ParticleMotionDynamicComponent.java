@@ -37,9 +37,11 @@ public class ParticleMotionDynamicComponent extends RiftLibParticleComponent {
 
     @Override
     public void applyComponent(RiftLibParticle particle) {
-        particle.linearAcceleration = this.linearAcceleration;
-        particle.linearDragCoefficient = this.linearDragCoefficient;
-        particle.rotationAcceleration = this.rotationAcceleration;
-        particle.rotationDragCoefficient = this.rotationDragCoefficient;
+        particle.setDynamicMotion(
+                this.linearAcceleration,
+                this.linearDragCoefficient,
+                this.rotationAcceleration,
+                this.rotationDragCoefficient
+        );
     }
 }

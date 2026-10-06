@@ -47,12 +47,12 @@ public class EmitterShapeBoxComponent extends RiftLibEmitterShapeComponent {
     @Override
     public Vec3d defineParticleOffset(RiftLibParticleEmitter emitter) {
         //in cubes, |x|, |y|, and |z| are less than or equal to associated dimension length
-        double randomX = emitter.random.nextDouble() * this.halfDimensions[0].get() * 2 - this.halfDimensions[0].get();
-        double randomY = emitter.random.nextDouble() * this.halfDimensions[1].get() * 2 - this.halfDimensions[1].get();
-        double randomZ = emitter.random.nextDouble() * this.halfDimensions[2].get() * 2 - this.halfDimensions[2].get();
+        double randomX = emitter.nextRandomDouble() * this.halfDimensions[0].get() * 2 - this.halfDimensions[0].get();
+        double randomY = emitter.nextRandomDouble() * this.halfDimensions[1].get() * 2 - this.halfDimensions[1].get();
+        double randomZ = emitter.nextRandomDouble() * this.halfDimensions[2].get() * 2 - this.halfDimensions[2].get();
 
         if (this.surfaceOnly) {
-            int face = emitter.random.nextInt(6);
+            int face = emitter.nextRandomInt(6);
 
             return switch (face) {
                 //positive x
@@ -115,9 +115,9 @@ public class EmitterShapeBoxComponent extends RiftLibEmitterShapeComponent {
             //generally the direction to go towards should be the same as its xyz offset from the center of sphere emitter
             int pointer = this.particleDirection.equals("outwards") ? 1 : this.particleDirection.equals("inwards") ? -1 : 0;
             return new Vec3d(
-                    pointer * (emissionX - emitter.posX),
-                    pointer * (emissionY - emitter.posY),
-                    pointer * (emissionZ - emitter.posZ)
+                    pointer * (emissionX - emitter.getX()),
+                    pointer * (emissionY - emitter.getY()),
+                    pointer * (emissionZ - emitter.getZ())
             ).normalize();
         }
     }

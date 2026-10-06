@@ -68,7 +68,6 @@ public class AppearanceTintingComponent extends RiftLibParticleComponent {
 
     @Override
     public void applyComponent(RiftLibParticle particle) {
-        particle.colorArray = new IValue[]{this.red, this.green, this.blue};
-        particle.colorAlpha = this.alpha;
+        particle.setColor(new IValue[]{this.red, this.green, this.blue}, this.alpha);
     }
 }

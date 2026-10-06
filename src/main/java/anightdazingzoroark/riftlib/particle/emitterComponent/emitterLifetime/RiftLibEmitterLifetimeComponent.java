@@ -7,7 +7,7 @@ import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleCom
 public abstract class RiftLibEmitterLifetimeComponent extends RiftLibEmitterComponent {
     @Override
     public void applyComponent(RiftLibParticleEmitter emitter) {
-        emitter.emitterLifetime = this;
+        emitter.setEmitterLifetime(this);
     }
 
     public abstract boolean canCreateParticles(RiftLibParticleEmitter emitter);

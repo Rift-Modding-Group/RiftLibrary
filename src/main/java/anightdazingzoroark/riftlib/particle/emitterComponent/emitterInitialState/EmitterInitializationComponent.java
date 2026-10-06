@@ -51,7 +51,6 @@ public class EmitterInitializationComponent extends RiftLibEmitterComponent {
 
     @Override
     public void applyComponent(RiftLibParticleEmitter emitter) {
-        emitter.initialOperations = this.initialOperations;
-        emitter.repeatingOperations = this.repeatingOperations;
+        emitter.setInitializationOperations(this.initialOperations, this.repeatingOperations);
     }
 }

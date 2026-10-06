@@ -27,7 +27,6 @@ public class ParticleInitialSpinComponent extends RiftLibParticleComponent {
 
     @Override
     public void applyComponent(RiftLibParticle particle) {
-        particle.initialRotation = this.initialRotation;
-        particle.rotationRate = this.rotationRate;
+        particle.setInitialSpin(this.initialRotation, this.rotationRate);
     }
 }

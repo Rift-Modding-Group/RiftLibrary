@@ -22,6 +22,6 @@ public class ParticleInitialSpeedComponent extends RiftLibParticleComponent {
 
     @Override
     public void applyComponent(RiftLibParticle particle) {
-        particle.initialSpeed = this.initialSpeed;
+        particle.setInitialSpeed(this.initialSpeed);
     }
 }

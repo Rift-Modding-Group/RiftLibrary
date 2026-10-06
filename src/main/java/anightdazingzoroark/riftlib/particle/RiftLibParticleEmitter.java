@@ -61,7 +61,7 @@ public class RiftLibParticleEmitter implements MolangObject {
     @NotNull
     private final MolangScope emitterScope = new MolangScope(null, this);
     @NotNull
-    private final List<Map.Entry<String, RawParticleComponent>> rawParticleComponents;
+    private final List<ImmutablePair<String, RawParticleComponent>> rawParticleComponents;
     @NotNull
     private List<MolangExpression> initialOperations = List.of();
     @NotNull

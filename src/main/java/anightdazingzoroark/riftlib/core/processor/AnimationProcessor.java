@@ -13,6 +13,7 @@ import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundHelper;
 import anightdazingzoroark.riftlib.util.MolangUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
@@ -42,9 +43,9 @@ public class AnimationProcessor {
 		//create anim values list to store the changes in
 		BoneAnimationValuesList boneAnimationValues = new BoneAnimationValuesList();
 		List<EventKeyFrame.CustomInstructionKeyFrame> customInstructionEvents = new ArrayList<>();
-		List<Map.Entry<AnimationController<?, ?>, EventKeyFrame.ParticleEventKeyFrame>> particleEvents = new ArrayList<>();
+		List<ImmutablePair<AnimationController<?, ?>, EventKeyFrame.ParticleEventKeyFrame>> particleEvents = new ArrayList<>();
 		List<EventKeyFrame.SoundEventKeyFrame> soundEvents = new ArrayList<>();
-		List<Map.Entry<AnimationController<?, ?>, AnimationController.StateParticleEvent>> stateParticleEvents = new ArrayList<>();
+		List<ImmutablePair<AnimationController<?, ?>, AnimationController.StateParticleEvent>> stateParticleEvents = new ArrayList<>();
 		boolean isServerSynced = animationData.isServerSynced() || ServerModelRegistry.hasServerModel(entity);
 		boolean runCustomInstructions = !runClientEffects || !isServerSynced;
 
@@ -101,10 +102,10 @@ public class AnimationProcessor {
 			//-----client only stuff down here-----
 			if (runClientEffects) {
 				for (AnimationController.StateParticleEvent stateParticleEvent : controller.drainStateParticleEvents()) {
-					stateParticleEvents.add(new AbstractMap.SimpleImmutableEntry<>(controller, stateParticleEvent));
+					stateParticleEvents.add(new ImmutablePair<>(controller, stateParticleEvent));
 				}
 				for (EventKeyFrame.ParticleEventKeyFrame particleEvent : controller.drainParticleEvents()) {
-					particleEvents.add(new AbstractMap.SimpleImmutableEntry<>(controller, particleEvent));
+					particleEvents.add(new ImmutablePair<>(controller, particleEvent));
 				}
 				soundEvents.addAll(controller.drainSoundEvents());
 			}

@@ -8,6 +8,7 @@ import anightdazingzoroark.riftlib.particle.ParticleMaterial;
 import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleComponentRegistry;
 import net.minecraft.util.ResourceLocation;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -58,7 +59,7 @@ public class ParticleConstructor {
 
             //get particle components, dont parse them yet however
             if (RiftLibParticleComponentRegistry.isParticleComponent(rawComponent.getKey())) {
-                toReturn.rawParticleComponents.add(rawComponent);
+                toReturn.rawParticleComponents.add(new ImmutablePair<>(rawComponent.getKey(), rawComponent.getValue()));
             }
         }
 

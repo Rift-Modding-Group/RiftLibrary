@@ -24,8 +24,8 @@ import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 import anightdazingzoroark.riftlib.util.MatrixStack;
 
 import java.util.Collection;
-import java.util.List;
 
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public interface IGeoRenderer<T> {
 	MatrixStack MATRIX_STACK = new MatrixStack();
 

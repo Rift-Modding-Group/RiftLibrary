@@ -4,9 +4,13 @@ import java.util.List;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosSnapshot;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
+import anightdazingzoroark.riftlib.util.MathUtils;
+import anightdazingzoroark.riftlib.util.QuaternionUtils;
+import anightdazingzoroark.riftlib.util.VectorUtils;
 import com.google.common.collect.Lists;
 
 import net.minecraft.client.Minecraft;
@@ -34,8 +38,9 @@ import anightdazingzoroark.riftlib.geo.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 import anightdazingzoroark.riftlib.util.AnimationUtils;
+import org.lwjglx.util.vector.Quaternion;
 
-@SuppressWarnings({ "rawtypes", "unchecked" })
+@SuppressWarnings({ "rawtypes", "unchecked", "SuspiciousNameCombination" })
 public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable<AnimationDataEntity>> extends Render<A> implements IGeoRenderer<A> {
 	static {
 		AnimationController.addModelFetcher((IAnimatable<?> object) -> {
@@ -48,6 +53,7 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 
 	protected final AnimatedGeoModel<A> modelProvider;
 	protected final List<GeoLayerRenderer<A>> layerRenderers = Lists.newArrayList();
+	private float locatorPartialTicks;
 
     public GeoEntityRenderer(RenderManager renderManager, AnimatedGeoModel<A> modelProvider) {
 		super(renderManager);
@@ -176,6 +182,81 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 	}
 
 	/**
+	 * override is just to collect partial ticks for use in
+	 * the repositionAnimatedLocators override
+	 * */
+	@Override
+	public void render(GeoModel model, A animatable, float partialTicks, float red, float green, float blue, float alpha) {
+		this.locatorPartialTicks = partialTicks;
+		IGeoRenderer.super.render(model, animatable, partialTicks, red, green, blue, alpha);
+	}
+
+	/**
+	 * an override specifically for IDynamicRideUser instances
+	 * to make sure that custom camera transforms cannot offset
+	 * animated locators
+	 * */
+	@Override
+	public void repositionAnimatedLocators(A animatable) {
+		if (!(animatable instanceof IDynamicRideUser<?> dynamicRideUser)) {
+			IGeoRenderer.super.repositionAnimatedLocators(animatable);
+			return;
+		}
+		double entityX = MathUtils.slopeResult(
+				this.locatorPartialTicks, true, 0D, 1D,
+				animatable.prevPosX, animatable.posX
+		);
+		double entityY = MathUtils.slopeResult(
+				this.locatorPartialTicks, true, 0D, 1D,
+				animatable.prevPosY, animatable.posY
+		);
+		double entityZ = MathUtils.slopeResult(
+				this.locatorPartialTicks, true, 0D, 1D,
+				animatable.prevPosZ, animatable.posZ
+		);
+		float renderYaw;
+		if (animatable.isBeingRidden()) {
+			renderYaw = dynamicRideUser.getRenderYaw(this.locatorPartialTicks);
+		}
+		else {
+			float yawDifference = MathHelper.wrapDegrees(animatable.rotationYawHead - animatable.prevRotationYawHead);
+			renderYaw = (float) MathUtils.slopeResult(
+					this.locatorPartialTicks, true, 0D, 1D,
+					animatable.prevRotationYawHead,
+					animatable.prevRotationYawHead + yawDifference
+			);
+		}
+
+		double yawRadians = -Math.toRadians(renderYaw);
+		Quaternion entityYaw = QuaternionUtils.createYXZQuaternion(0D, yawRadians, 0D);
+		Quaternion modelToWorldRotation = QuaternionUtils.createYXZQuaternion(0D, Math.PI + yawRadians, 0D);
+		float modelScale = animatable.getAnimationData().getScale();
+
+		for (AnimatedLocator animatedLocator : animatable.getAnimationData().getAnimatedLocators().values()) {
+			Vec3d modelPosition = animatedLocator.getModelSpacePosition();
+			Vec3d entityRelativePosition = new Vec3d(
+					-modelPosition.x / 16D * modelScale,
+					modelPosition.y / 16D * modelScale,
+					-modelPosition.z / 16D * modelScale
+			);
+			entityRelativePosition = VectorUtils.rotateVectorWithQuaternion(
+					entityRelativePosition, entityYaw
+			);
+			animatedLocator.setWorldSpacePosition(
+					entityX + entityRelativePosition.x,
+					entityY + entityRelativePosition.y,
+					entityZ + entityRelativePosition.z
+			);
+
+			Quaternion locatorRotation = animatedLocator.getModelSpaceYXZQuaternion();
+			Quaternion worldRotation = new Quaternion();
+			Quaternion.mul(modelToWorldRotation, locatorRotation, worldRotation);
+			Quaternion.normalise(worldRotation, worldRotation);
+			animatedLocator.setWorldSpaceYXZQuaternion(worldRotation);
+		}
+	}
+
+	/**
 	 * Make it so that when rendering an entity, hitboxes being in range of camera also counts.
 	 * */
 	@Override
@@ -195,7 +276,7 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 
 	@Override
 	public ResourceLocation getEntityTexture(A entity) {
-		return getTextureLocation(entity);
+		return this.getTextureLocation(entity);
 	}
 
 	@Override
@@ -239,8 +320,7 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 		return RenderHurtColor.set(entityLivingBaseIn, partialTicks);
 	}
 
-	protected void renderLeash(EntityLiving entityLivingIn, double x, double y, double z, float entityYaw,
-			float partialTicks) {
+	protected void renderLeash(EntityLiving entityLivingIn, double x, double y, double z, float entityYaw, float partialTicks) {
 		Entity entity = entityLivingIn.getLeashHolder();
 
 		if (entity != null) {

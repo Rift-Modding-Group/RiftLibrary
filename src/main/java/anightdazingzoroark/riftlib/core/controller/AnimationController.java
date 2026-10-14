@@ -831,7 +831,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             for (Pair<IBone, BoneSnapshot> snapshot : boneSnapshotCollection.values()) {
                 if (animation != null && animation.boneAnimations != null) {
                     if (animation.boneAnimations.stream().anyMatch(x -> x.boneName.equals(snapshot.getLeft().getName()))) {
-                        targetSnapshots.put(snapshot.getLeft().getName(), new BoneSnapshot(snapshot.getLeft()));
+                        targetSnapshots.put(snapshot.getLeft().getName(), new BoneSnapshot(snapshot.getRight()));
                     }
                 }
             }

@@ -1,6 +1,9 @@
 package anightdazingzoroark.riftlib.renderers.geo;
 
+import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,24 +57,13 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
 	private T currentArmorHolder;
 	private EntityLivingBase entityLiving;
 
+    //this defines which bones on the model should be shown or hidden
+    //based on the presence of an armor slot
     @NotNull
-	private String headBone = "";
+    private Map<EntityEquipmentSlot, List<String>> equipmentBoneBindings = new EnumMap<>(EntityEquipmentSlot.class);
+    //this defines a bone on the model that corresponds to an armor part for animation
     @NotNull
-    private String bodyBone = "";
-    @NotNull
-    private String rightArmBone = "";
-    @NotNull
-    private String leftArmBone = "";
-    @NotNull
-    private String hipsBone = "";
-    @NotNull
-    private String rightLegBone = "";
-    @NotNull
-    private String leftLegBone = "";
-    @NotNull
-    private String rightBootBone = "";
-    @NotNull
-    private String leftBootBone = "";
+    private Map<ArmorBodyPart, List<String>> bodyPartBoneBindings = new EnumMap<>(ArmorBodyPart.class);
 
     //-----static registry stuff-----
 	public static void registerArmorRenderer(Item armorItem, GeoArmorRenderer<?> renderer) {
@@ -105,72 +97,56 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
 	public void render(float partialTicks) {
 		GeoModel model = this.modelProvider.getModel(this.currentArmorHolder);
 
-		GlStateManager.translate(0.0D, 1.501F, 0.0D);
-		GlStateManager.scale(-1.0F, -1.0F, 1.0F);
+		GlStateManager.translate(0.0D, 1.501f, 0.0D);
+		GlStateManager.scale(-1f, -1f, 1f);
 
 		this.modelProvider.setClientAnimations(this.currentArmorHolder);
 		this.modelProvider.createAndUpdateAnimatedLocators(this.currentArmorHolder);
 		this.fitToBiped();
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(0, 0.01f, 0);
-		IBone rightArmBone = !this.rightArmBone.isEmpty() ? this.modelProvider.getBone(this.rightArmBone) : null;
-		IBone leftArmBone = !this.leftArmBone.isEmpty() ? this.modelProvider.getBone(this.leftArmBone) : null;
-		if (this.swingProgress > 0.0F) {
-            if (rightArmBone != null) {
-                rightArmBone.getScale().z = 1.25f;
-                rightArmBone.getScale().x = 1.25f;
-            }
-            if (leftArmBone != null) {
-                leftArmBone.getScale().z = 1.3f;
-                leftArmBone.getScale().x = 1.05f;
-            }
-		}
-		if (this.isSneak) {
-			IBone headBone = !this.headBone.isEmpty() ? this.modelProvider.getBone(this.headBone) : null;
-            IBone bodyBone = !this.bodyBone.isEmpty() ? this.modelProvider.getBone(this.bodyBone) : null;
-            IBone hipsBone = !this.hipsBone.isEmpty() ? this.modelProvider.getBone(this.hipsBone) : null;
-			IBone rightLegBone = !this.rightLegBone.isEmpty() ? this.modelProvider.getBone(this.rightLegBone) : null;
-			IBone leftLegBone = !this.leftLegBone.isEmpty() ? this.modelProvider.getBone(this.leftLegBone) : null;
-			IBone rightBootBone = !this.rightBootBone.isEmpty() ? this.modelProvider.getBone(this.rightBootBone) : null;
-			IBone leftBootBone = !this.leftBootBone.isEmpty() ? this.modelProvider.getBone(this.leftBootBone) : null;
 
-			this.transformBoneAndChildren(headBone, bone ->
+        //displace for arm swinging
+		if (this.swingProgress > 0.0F) {
+			this.transformBoundBones(ArmorBodyPart.RIGHT_ARM, bone -> {
+				bone.getScale().z = 1.25f;
+				bone.getScale().x = 1.25f;
+			});
+			this.transformBoundBones(ArmorBodyPart.LEFT_ARM, bone -> {
+				bone.getScale().z = 1.3f;
+				bone.getScale().x = 1.05f;
+			});
+		}
+
+        //displace for sneaking
+		if (this.isSneak) {
+			this.transformBoundBones(ArmorBodyPart.HEAD, bone ->
 					bone.getPosition().y = bone.getPosition().y - 3.5f
             );
 
-            this.transformBoneAndChildren(bodyBone, bone -> {
-                bone.getPosition().z = bone.getPosition().x - 0.4f;
-                bone.getPosition().y = bone.getPosition().x - 3.5f;
+			Consumer<IBone> torsoDisplacement = bone -> {
+				bone.getPosition().z = bone.getPosition().z - 0.4f;
+				bone.getPosition().y = bone.getPosition().y - 3.5f;
+			};
+			this.transformBoundBones(ArmorBodyPart.BODY, torsoDisplacement);
+			this.transformBoundBones(ArmorBodyPart.HIPS, torsoDisplacement);
+
+			this.transformBoundBones(ArmorBodyPart.RIGHT_ARM, bone -> {
+				bone.getPosition().y = bone.getPosition().y - 3f;
+				bone.getPosition().x = bone.getPosition().x + 0.35f;
             });
 
-            this.transformBoneAndChildren(hipsBone, bone -> {
-                bone.getPosition().z = bone.getPosition().x - 0.4f;
-                bone.getPosition().y = bone.getPosition().x - 3.5f;
+			this.transformBoundBones(ArmorBodyPart.LEFT_ARM, bone -> {
+				bone.getPosition().y = bone.getPosition().y - 3f;
+				bone.getPosition().x = bone.getPosition().x - 0.35f;
             });
 
-            if (bodyBone != null) {
-                this.transformBoneAndChildren(rightArmBone, bone -> {
-                    bone.getPosition().y = bodyBone.getPosition().x - 3f;
-                    bone.getPosition().x = bodyBone.getPosition().x + 0.35f;
-                });
-
-                this.transformBoneAndChildren(leftArmBone, bone -> {
-                    bone.getPosition().y = bodyBone.getPosition().x - 3f;
-                    bone.getPosition().x = bodyBone.getPosition().x - 0.35f;
-                });
-
-                this.transformBoneAndChildren(rightLegBone, bone ->
-                        bone.getPosition().z = bodyBone.getPosition().x + 4f);
-                this.transformBoneAndChildren(leftLegBone, bone ->
-                        bone.getPosition().z = bodyBone.getPosition().x + 4f
-                );
-                this.transformBoneAndChildren(rightBootBone, bone ->
-                        bone.getPosition().z = bodyBone.getPosition().x + 4f
-                );
-                this.transformBoneAndChildren(leftBootBone, bone ->
-                        bone.getPosition().z = bodyBone.getPosition().x + 4f
-                );
-            }
+			Consumer<IBone> legDisplacement = bone ->
+					bone.getPosition().z = bone.getPosition().z + 4f;
+			this.transformBoundBones(ArmorBodyPart.RIGHT_LEG, legDisplacement);
+			this.transformBoundBones(ArmorBodyPart.LEFT_LEG, legDisplacement);
+			this.transformBoundBones(ArmorBodyPart.RIGHT_FOOT, legDisplacement);
+			this.transformBoundBones(ArmorBodyPart.LEFT_FOOT, legDisplacement);
 		}
 		Minecraft.getMinecraft().renderEngine.bindTexture(this.getTextureLocation(this.currentArmorHolder));
 		Color renderColor = this.getRenderColor(this.currentArmorHolder, partialTicks);
@@ -185,15 +161,21 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
 
 	private void fitToBiped() {
         if (this.entityLiving instanceof EntityArmorStand) return;
-        this.tryFitBoneToBiped(this.bipedHead, this.headBone);
-        this.tryFitBoneToBiped(this.bipedBody, this.bodyBone);
-        this.tryFitBoneToBiped(this.bipedRightArm, this.rightArmBone);
-        this.tryFitBoneToBiped(this.bipedLeftArm, this.leftArmBone);
-        this.tryFitBoneToBiped(this.bipedBody, this.hipsBone);
-        this.tryFitBoneToBiped(this.bipedRightLeg, this.rightLegBone);
-        this.tryFitBoneToBiped(this.bipedLeftLeg, this.leftLegBone);
-        this.tryFitBoneToBiped(this.bipedRightLeg, this.rightBootBone);
-        this.tryFitBoneToBiped(this.bipedLeftLeg, this.leftBootBone);
+
+        for (Map.Entry<ArmorBodyPart, List<String>> bodyPartBoneBinding : this.bodyPartBoneBindings.entrySet()) {
+            ArmorBodyPart armorBodyPart = bodyPartBoneBinding.getKey();
+            List<String> boundBones = bodyPartBoneBinding.getValue();
+            for (String boundBone : boundBones) this.tryFitBoneToBiped(armorBodyPart.bipedBoneGetter.apply(this), boundBone);
+        }
+	}
+
+	private void transformBoundBones(@NotNull ArmorBodyPart armorBodyPart, @NotNull Consumer<IBone> transformation) {
+		List<String> boundBones = this.bodyPartBoneBindings.get(armorBodyPart);
+		if (boundBones == null) return;
+
+		for (String boundBone : boundBones) {
+			this.transformBoneAndChildren(this.modelProvider.getBone(boundBone), transformation);
+		}
 	}
 
     private void transformBoneAndChildren(@Nullable IBone bone, Consumer<IBone> transformation) {
@@ -308,34 +290,15 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
 	public GeoArmorRenderer applySlot(EntityEquipmentSlot slot) {
 		this.modelProvider.getModel(this.currentArmorHolder);
 
-        this.tryHideBone(this.headBone, true);
-        this.tryHideBone(this.bodyBone, true);
-        this.tryHideBone(this.rightArmBone, true);
-        this.tryHideBone(this.leftArmBone, true);
-        this.tryHideBone(this.hipsBone, true);
-        this.tryHideBone(this.rightLegBone, true);
-        this.tryHideBone(this.leftLegBone, true);
-        this.tryHideBone(this.rightBootBone, true);
-        this.tryHideBone(this.leftBootBone, true);
+        //hide everything first
+        for (List<String> boundBones : this.equipmentBoneBindings.values()) {
+            for (String boundBone : boundBones) this.tryHideBone(boundBone, true);
+        }
 
-        switch (slot) {
-            case HEAD:
-                this.tryHideBone(this.headBone, false);
-                break;
-            case CHEST:
-                this.tryHideBone(this.bodyBone, false);
-                this.tryHideBone(this.rightArmBone, false);
-                this.tryHideBone(this.leftArmBone, false);
-                break;
-            case LEGS:
-                this.tryHideBone(this.hipsBone, false);
-                this.tryHideBone(this.rightLegBone, false);
-                this.tryHideBone(this.leftLegBone, false);
-                break;
-            case FEET:
-                this.tryHideBone(this.rightBootBone, false);
-                this.tryHideBone(this.leftBootBone, false);
-                break;
+        //reveal based on if given slot was equipped
+        List<String> bonesBoundToGivenSlot = this.equipmentBoneBindings.get(slot);
+        if (bonesBoundToGivenSlot != null) {
+            for (String boundBone : bonesBoundToGivenSlot) this.tryHideBone(boundBone, false);
         }
 		return this;
 	}
@@ -347,72 +310,32 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
     }
 
     //setting bones here
-    public void setHeadBone(String name) {
-        if (name == null) RiftLib.LOGGER.warn("Cannot assign null as bone name");
-        this.headBone = name;
+    public void bindBoneToEquipmentSlot(@NotNull EntityEquipmentSlot equipmentSlot, @NotNull String name) {
+        List<String> boundBones = this.equipmentBoneBindings.computeIfAbsent(equipmentSlot, bodyPart -> new ArrayList<>());
+        if (!boundBones.contains(name)) boundBones.add(name);
     }
 
-    public void setBodyBone(String name) {
-        if (name == null) {
-            RiftLib.LOGGER.warn("Cannot assign null as bone name");
-            return;
-        }
-        this.bodyBone = name;
+    public void bindBoneToBodyPart(@NotNull ArmorBodyPart armorBodyPart, @NotNull String name) {
+        List<String> boundBones = this.bodyPartBoneBindings.computeIfAbsent(armorBodyPart, bodyPart -> new ArrayList<>());
+        if (!boundBones.contains(name)) boundBones.add(name);
     }
 
-    public void setRightArmBone(String name) {
-        if (name == null) {
-            RiftLib.LOGGER.warn("Cannot assign null as bone name");
-            return;
-        }
-        this.rightArmBone = name;
-    }
+    public enum ArmorBodyPart {
+        HEAD(bipedModel -> bipedModel.bipedHead),
+        BODY(bipedModel -> bipedModel.bipedBody),
+        RIGHT_ARM(bipedModel -> bipedModel.bipedRightArm),
+        LEFT_ARM(bipedModel -> bipedModel.bipedLeftArm),
+        HIPS(bipedModel -> bipedModel.bipedBody),
+        RIGHT_LEG(bipedModel -> bipedModel.bipedRightLeg),
+        LEFT_LEG(bipedModel -> bipedModel.bipedLeftLeg),
+        RIGHT_FOOT(bipedModel -> bipedModel.bipedRightLeg),
+        LEFT_FOOT(bipedModel -> bipedModel.bipedLeftLeg);
 
-    public void setLeftArmBone(String name) {
-        if (name == null) {
-            RiftLib.LOGGER.warn("Cannot assign null as bone name");
-            return;
-        }
-        this.leftArmBone = name;
-    }
+        @NotNull
+        private final Function<ModelBiped, ModelRenderer> bipedBoneGetter;
 
-    public void setHipsBone(String name) {
-        if (name == null) {
-            RiftLib.LOGGER.warn("Cannot assign null as bone name");
-            return;
+        ArmorBodyPart(@NotNull Function<ModelBiped, ModelRenderer> bipedBoneGetter) {
+            this.bipedBoneGetter = bipedBoneGetter;
         }
-        this.hipsBone = name;
-    }
-
-    public void setRightLegBone(String name) {
-        if (name == null) {
-            RiftLib.LOGGER.warn("Cannot assign null as bone name");
-            return;
-        }
-        this.rightLegBone = name;
-    }
-
-    public void setLeftLegBone(String name) {
-        if (name == null) {
-            RiftLib.LOGGER.warn("Cannot assign null as bone name");
-            return;
-        }
-        this.leftLegBone = name;
-    }
-
-    public void setRightBootBone(String name) {
-        if (name == null) {
-            RiftLib.LOGGER.warn("Cannot assign null as bone name");
-            return;
-        }
-        this.rightBootBone = name;
-    }
-
-    public void setLeftBootBone(String name) {
-        if (name == null) {
-            RiftLib.LOGGER.warn("Cannot assign null as bone name");
-            return;
-        }
-        this.leftBootBone = name;
     }
 }

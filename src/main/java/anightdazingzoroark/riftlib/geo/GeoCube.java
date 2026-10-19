@@ -20,9 +20,9 @@ public class GeoCube {
 	public double inflate;
 	public Boolean mirror;
 
-    public GeoCube(@NotNull RawGeoModel.RawModelCube cube, @NotNull RawGeoModel.RawModelDescription description, double boneInflate, boolean mirror) {
+    public GeoCube(@NotNull RawGeoModel.RawModelCube cube, @NotNull RawGeoModel.RawModelDescription description, double boneInflate, boolean boneMirror) {
         this.size = VectorUtils.convertDoubleToFloat(VectorUtils.fromArray(cube.size));
-        this.mirror = cube.mirror;
+        this.mirror = cube.mirror == null ? boneMirror : cube.mirror;
         this.inflate = cube.inflate == null ? boneInflate : cube.inflate / 16;;
 
         Vector3f pivot = VectorUtils.convertDoubleToFloat(VectorUtils.fromArray(cube.pivot));
@@ -38,7 +38,7 @@ public class GeoCube {
         GeoVertex[] vertices = this.createVertices(cube);
         this.quads = cube.uv.isBoxUV()
                 ? this.createBoxUVQuads(cube, description, vertices)
-                : this.createFaceUVQuads(cube, description, vertices, mirror);
+                : this.createFaceUVQuads(cube, description, vertices);
     }
 
     //-----quad creation operations-----
@@ -74,13 +74,13 @@ public class GeoCube {
     }
 
     //---face uv quads---
-    private GeoQuad[] createFaceUVQuads(@NotNull RawGeoModel.RawModelCube cube, @NotNull RawGeoModel.RawModelDescription description, GeoVertex[] v, boolean boneMirror) {
+    private GeoQuad[] createFaceUVQuads(@NotNull RawGeoModel.RawModelCube cube, @NotNull RawGeoModel.RawModelDescription description, GeoVertex[] v) {
         RawFaceUVUser faces = cube.uv.faceUV;
 
         float textureWidth = description.texture_width;
         float textureHeight = description.texture_height;
 
-        if (Boolean.TRUE.equals(this.mirror) || boneMirror) {
+        if (Boolean.TRUE.equals(this.mirror)) {
             return new GeoQuad[] {
                     this.face(faces.westUV,  this.vertices(v, 6, 7, 5, 4), textureWidth, textureHeight, EnumFacing.WEST),
                     this.face(faces.eastUV,  this.vertices(v, 3, 2, 0, 1), textureWidth, textureHeight, EnumFacing.EAST),

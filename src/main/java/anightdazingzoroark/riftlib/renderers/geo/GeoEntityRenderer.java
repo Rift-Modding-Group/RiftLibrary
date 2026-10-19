@@ -14,12 +14,14 @@ import anightdazingzoroark.riftlib.util.VectorUtils;
 import com.google.common.collect.Lists;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.culling.ICamera;
-import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.entity.layers.LayerRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityHanging;
@@ -31,6 +33,8 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.client.event.RenderLivingEvent;
+import net.minecraftforge.common.MinecraftForge;
 import anightdazingzoroark.riftlib.core.IAnimatableModel;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.util.Color;
@@ -41,7 +45,7 @@ import anightdazingzoroark.riftlib.util.AnimationUtils;
 import org.lwjglx.util.vector.Quaternion;
 
 @SuppressWarnings({ "rawtypes", "unchecked", "SuspiciousNameCombination" })
-public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable<AnimationDataEntity>> extends Render<A> implements IGeoRenderer<A> {
+public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable<AnimationDataEntity>> extends RenderLivingBase<A> implements IGeoRenderer<A> {
 	static {
 		AnimationController.addModelFetcher((IAnimatable<?> object) -> {
 			if (object instanceof Entity entity) {
@@ -56,12 +60,15 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 	private float locatorPartialTicks;
 
     public GeoEntityRenderer(RenderManager renderManager, AnimatedGeoModel<A> modelProvider) {
-		super(renderManager);
+		super(renderManager, new ModelBase() {}, 0f);
 		this.modelProvider = modelProvider;
+		this.mainModel = new GeoEntityModel<>(this);
 	}
 
 	@Override
 	public void doRender(A entity, double x, double y, double z, float entityYaw, float partialTicks) {
+		if (MinecraftForge.EVENT_BUS.post(new RenderLivingEvent.Pre<>(entity, this, partialTicks, x, y, z))) return;
+
         //---get model---
         GeoModel model = this.modelProvider.getModel(entity);
 
@@ -121,11 +128,23 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 			for (GeoLayerRenderer<A> layerRenderer : this.layerRenderers) {
 				layerRenderer.render(entity, partialTicks, 0, renderColor);
 			}
+			float limbSwingAmount = entity.prevLimbSwingAmount + (entity.limbSwingAmount - entity.prevLimbSwingAmount) * partialTicks;
+			float limbSwing = entity.limbSwing - entity.limbSwingAmount * (1f - partialTicks);
+			float ageInTicks = entity.ticksExisted + partialTicks;
+			float netHeadYaw = Interpolations.lerpYaw(entity.prevRotationYawHead, entity.rotationYawHead, partialTicks)
+					- Interpolations.lerpYaw(entity.prevRenderYawOffset, entity.renderYawOffset, partialTicks);
+			float headPitch = entity.prevRotationPitch + (entity.rotationPitch - entity.prevRotationPitch) * partialTicks;
+			for (LayerRenderer<A> layerRenderer : super.layerRenderers) {
+				layerRenderer.doRenderLayer(
+						entity, limbSwing, limbSwingAmount, partialTicks,
+						ageInTicks, netHeadYaw, headPitch, 1f / 16f
+				);
+			}
 		}
-		if (entity instanceof EntityLiving) {
-			Entity leashHolder = ((EntityLiving) entity).getLeashHolder();
+		if (entity instanceof EntityLiving entityLiving) {
+			Entity leashHolder = entityLiving.getLeashHolder();
 			if (leashHolder != null) {
-				this.renderLeash((EntityLiving) entity, x, y, z, entityYaw, partialTicks);
+				this.renderLeash(entityLiving, x, y, z, entityYaw, partialTicks);
 			}
 		}
 
@@ -179,6 +198,8 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 			entity.renderYawOffset = renderYawOffset;
 			entity.prevRenderYawOffset = prevRenderYawOffset;
 		}
+
+		MinecraftForge.EVENT_BUS.post(new RenderLivingEvent.Post<>(entity, this, partialTicks, x, y, z));
 	}
 
 	/**
@@ -304,18 +325,16 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 		}
 	}
 
+	@Override
 	protected boolean isVisible(A livingEntityIn) {
 		return !livingEntityIn.isInvisible();
 	}
 
-	protected float getDeathMaxRotation(A entityLivingBaseIn) {
-		return 90f;
-	}
-
-	public final boolean addLayer(GeoLayerRenderer<A> layer) {
+    public boolean addLayer(GeoLayerRenderer<A> layer) {
 		return this.layerRenderers.add(layer);
 	}
 
+	@Override
 	protected boolean setDoRenderBrightness(A entityLivingBaseIn, float partialTicks) {
 		return RenderHurtColor.set(entityLivingBaseIn, partialTicks);
 	}

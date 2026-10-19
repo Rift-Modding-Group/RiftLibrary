@@ -141,8 +141,7 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
 				bone.getPosition().x = bone.getPosition().x - 0.35f;
             });
 
-			Consumer<IBone> legDisplacement = bone ->
-					bone.getPosition().z = bone.getPosition().z + 4f;
+			Consumer<IBone> legDisplacement = bone -> bone.getPosition().z = bone.getPosition().z + 4f;
 			this.transformBoundBones(ArmorBodyPart.RIGHT_LEG, legDisplacement);
 			this.transformBoundBones(ArmorBodyPart.LEFT_LEG, legDisplacement);
 			this.transformBoundBones(ArmorBodyPart.RIGHT_FOOT, legDisplacement);

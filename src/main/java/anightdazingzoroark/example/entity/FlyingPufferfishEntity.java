@@ -4,7 +4,7 @@ import anightdazingzoroark.riftlib.core.AnimatableRunValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataEntityLiving;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.hitbox.MultiHitboxList;
 import anightdazingzoroark.riftlib.ray.IRayCreator;
@@ -25,11 +25,11 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
 
-public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<AnimationDataEntity>, IMultiHitboxUser<FlyingPufferfishEntity>, IRayCreator<FlyingPufferfishEntity> {
+public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<AnimationDataEntityLiving>, IMultiHitboxUser<FlyingPufferfishEntity>, IRayCreator<FlyingPufferfishEntity> {
     @NotNull
     private final MultiHitboxList<FlyingPufferfishEntity> multiHitboxList;
     @NotNull
-    private final AnimationDataEntity animationData = new AnimationDataEntity(this);
+    private final AnimationDataEntityLiving animationData = new AnimationDataEntityLiving(this);
     private final Map<String, RiftLibRayBuilder> rayMap;
 
     public FlyingPufferfishEntity(World worldIn) {
@@ -79,11 +79,13 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
 
     //ray stuff starts here
     @Override
+    @NonNull
     public FlyingPufferfishEntity getRayCreator() {
         return this;
     }
 
     @Override
+    @NonNull
     public Map<String, RiftLibRayBuilder> getRayBuilders() {
         return this.rayMap;
     }
@@ -98,14 +100,14 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
     //ray stuff ends here
 
     @Override
-    public void initializeAnimationData(@NonNull AnimationDataEntity animationData) {
+    public void initializeAnimationData(@NonNull AnimationDataEntityLiving animationData) {
         //---scaling---
         animationData.setScale(2f);
 
         //---animations---
-        animationData.addAnimationController(new AnimationController<FlyingPufferfishEntity, AnimationDataEntity>(
+        animationData.addAnimationController(new AnimationController<FlyingPufferfishEntity, AnimationDataEntityLiving>(
                 this, "puff", "default",
-                new AnimationControllerState<AnimationDataEntity>("default")
+                new AnimationControllerState<AnimationDataEntityLiving>("default")
                         .addAnimation("animation.flying_pufferfish.inflate_loop")
         ));
 
@@ -119,7 +121,7 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
 
     @Override
     @NotNull
-    public AnimationDataEntity getAnimationData() {
+    public AnimationDataEntityLiving getAnimationData() {
         return this.animationData;
     }
 }

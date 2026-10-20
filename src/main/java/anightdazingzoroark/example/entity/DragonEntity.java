@@ -5,7 +5,7 @@ import anightdazingzoroark.riftlib.core.AnimatableRunValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataEntityLiving;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.hitbox.MultiHitboxList;
 import anightdazingzoroark.riftlib.hitbox.RiftLibCollisionHitbox;
@@ -33,10 +33,10 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
-public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntity>, IRayCreator<DragonEntity>, IMultiHitboxUser<DragonEntity>, IDynamicRideUser<DragonEntity> {
+public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntityLiving>, IRayCreator<DragonEntity>, IMultiHitboxUser<DragonEntity>, IDynamicRideUser<DragonEntity> {
     private static final DataParameter<Boolean> BREATHING_FIRE = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
     @NotNull
-    private final AnimationDataEntity animationData = new AnimationDataEntity(this);
+    private final AnimationDataEntityLiving animationData = new AnimationDataEntityLiving(this);
     private final MultiHitboxList<DragonEntity> multiHitboxList;
     @NotNull
     private final DynamicRidePosList ridePositions;
@@ -229,11 +229,13 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
 
     //ray management stuff starts here
     @Override
+    @NotNull
     public DragonEntity getRayCreator() {
         return this;
     }
 
     @Override
+    @NotNull
     public Map<String, RiftLibRayBuilder> getRayBuilders() {
         return this.rayMap;
     }
@@ -293,11 +295,11 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
 
 
     @Override
-    public void initializeAnimationData(@NonNull AnimationDataEntity animationData) {
+    public void initializeAnimationData(@NonNull AnimationDataEntityLiving animationData) {
         /*
-        animationData.addAnimationController(new AnimationController<DragonEntity, AnimationDataEntity>(
+        animationData.addAnimationController(new AnimationController<DragonEntity, AnimationDataEntityLiving>(
                 this, "test", "default",
-                new AnimationControllerState<AnimationDataEntity>("default")
+                new AnimationControllerState<AnimationDataEntityLiving>("default")
                         .addAnimation("animation.dragon.test")
         ));
          */
@@ -305,16 +307,16 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
         animationData.setScale(3f);
 
         //---animations---
-        animationData.addAnimationController(new AnimationController<DragonEntity, AnimationDataEntity>(
+        animationData.addAnimationController(new AnimationController<DragonEntity, AnimationDataEntityLiving>(
                 this, "movement", "default",
-                new AnimationControllerState<AnimationDataEntity>("default")
+                new AnimationControllerState<AnimationDataEntityLiving>("default")
                         .addAnimation("animation.dragon.flying")
         ));
-        animationData.addAnimationController(new AnimationController<DragonEntity, AnimationDataEntity>(
+        animationData.addAnimationController(new AnimationController<DragonEntity, AnimationDataEntityLiving>(
                 this, "attack", "default",
-                new AnimationControllerState<AnimationDataEntity>("default")
+                new AnimationControllerState<AnimationDataEntityLiving>("default")
                         .addStateTransition("fireBreathAttack", data -> this.isBreathingFire()),
-                new AnimationControllerState<AnimationDataEntity>("fireBreathAttack")
+                new AnimationControllerState<AnimationDataEntityLiving>("fireBreathAttack")
                         .addAnimation("animation.dragon.breathe_fire_while_flying")
                         .addStateTransition("default", data -> data.allAnimationsFinished("attack"))
                         .addExitEffect(data -> data.sendMessage("endBreathUse"))
@@ -327,7 +329,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
 
     @Override
     @NotNull
-    public AnimationDataEntity getAnimationData() {
+    public AnimationDataEntityLiving getAnimationData() {
         return this.animationData;
     }
 }

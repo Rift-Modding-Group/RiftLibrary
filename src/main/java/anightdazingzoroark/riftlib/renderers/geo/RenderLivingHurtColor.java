@@ -12,15 +12,15 @@ import net.minecraft.util.ResourceLocation;
  * unsetBrightness() methods in order to apply red tint on the models upon
  * entities getting hurt
  */
-public class RenderHurtColor extends RenderLivingBase<EntityLivingBase> {
+public class RenderLivingHurtColor extends RenderLivingBase<EntityLivingBase> {
 	/**
 	 * Private instance
 	 */
-	private static RenderHurtColor instance;
+	private static RenderLivingHurtColor instance;
 
-	public static RenderHurtColor getInstance() {
+	public static RenderLivingHurtColor getInstance() {
 		if (instance == null) {
-			instance = new RenderHurtColor(Minecraft.getMinecraft().getRenderManager(), null, 0);
+			instance = new RenderLivingHurtColor(Minecraft.getMinecraft().getRenderManager(), null, 0);
 		}
 
 		return instance;
@@ -34,7 +34,7 @@ public class RenderHurtColor extends RenderLivingBase<EntityLivingBase> {
 		getInstance().unsetBrightness();
 	}
 
-	public RenderHurtColor(RenderManager renderManagerIn, ModelBase modelBaseIn, float shadowSizeIn) {
+	public RenderLivingHurtColor(RenderManager renderManagerIn, ModelBase modelBaseIn, float shadowSizeIn) {
 		super(renderManagerIn, modelBaseIn, shadowSizeIn);
 	}
 

@@ -1,6 +1,6 @@
 package anightdazingzoroark.riftlib.hitbox;
 
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationDataAdvancedEntity;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibSyncHitboxEntityId;
 import anightdazingzoroark.riftlib.model.AnimatedBoundingBox;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
@@ -17,13 +17,13 @@ public class MultiHitboxList<T extends IMultiHitboxUser<?>> {
     @NotNull
     private final T multiHitboxUser;
     @NotNull
-    private final AnimationDataEntity animData;
+    private final AbstractAnimationDataAdvancedEntity<?, ?> animData;
     private final Map<String, RiftLibCollisionHitbox<T>> collisionHitboxes = new HashMap<>();
     private final Map<String, List<RiftLibCollisionHitbox<T>>> collisionHitboxesByTag = new HashMap<>();
     private final Map<String, RiftLibOffenseHitbox<T>> offenseHitboxes = new HashMap<>();
     private final Map<String, List<RiftLibOffenseHitbox<T>>> offenseHitboxesByTag = new HashMap<>();
 
-    public MultiHitboxList(@NotNull T multiHitboxUser, @NotNull AnimationDataEntity animData) {
+    public MultiHitboxList(@NotNull T multiHitboxUser, @NotNull AbstractAnimationDataAdvancedEntity<?, ?> animData) {
         this.multiHitboxUser = multiHitboxUser;
         this.animData = animData;
     }

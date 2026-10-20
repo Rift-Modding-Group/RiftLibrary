@@ -1,12 +1,10 @@
 package anightdazingzoroark.riftlib.hitbox;
 
-import anightdazingzoroark.example.entity.DragonEntity;
 import anightdazingzoroark.riftlib.RiftLib;
 import mcp.mobius.waila.addons.core.HUDHandlerEntities;
 import mcp.mobius.waila.api.*;
 import mcp.mobius.waila.api.impl.ModuleRegistrar;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
@@ -38,7 +36,7 @@ public class RiftLibCollisionHitboxHWYLA implements IWailaPlugin {
             if (!hitbox.getParent().hitboxUseHWYLA()) return currenttip;
 
             //get parents provider list
-            EntityLivingBase parent = hitbox.getParent().getMultiHitboxUser();
+            Entity parent = hitbox.getParent().getMultiHitboxUser();
             Map<Integer, List<IWailaEntityProvider>> providerGroups = ModuleRegistrar.instance().getHeadEntityProviders(parent);
 
             //no provider list, use default handler and parent
@@ -67,7 +65,7 @@ public class RiftLibCollisionHitboxHWYLA implements IWailaPlugin {
             if (!hitbox.getParent().hitboxUseHWYLA()) return currenttip;
 
             //get parents provider list
-            EntityLivingBase parent = hitbox.getParent().getMultiHitboxUser();
+            Entity parent = hitbox.getParent().getMultiHitboxUser();
             Map<Integer, List<IWailaEntityProvider>> providerGroups = ModuleRegistrar.instance().getBodyEntityProviders(parent);
 
             //no provider list, use default handler and parent
@@ -96,7 +94,7 @@ public class RiftLibCollisionHitboxHWYLA implements IWailaPlugin {
             if (!hitbox.getParent().hitboxUseHWYLA()) return currenttip;
 
             //get parents provider list
-            EntityLivingBase parent = hitbox.getParent().getMultiHitboxUser();
+            Entity parent = hitbox.getParent().getMultiHitboxUser();
             Map<Integer, List<IWailaEntityProvider>> providerGroups = ModuleRegistrar.instance().getTailEntityProviders(parent);
 
             //no provider list, use default handler and parent

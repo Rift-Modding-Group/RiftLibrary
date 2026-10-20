@@ -2,15 +2,13 @@ package anightdazingzoroark.riftlib.core.manager;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.geo.GeoBoundingBox;
-import anightdazingzoroark.riftlib.geo.GeoLocator;
 import anightdazingzoroark.riftlib.geo.GeoModel;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.model.AnimatedBoundingBox;
-import anightdazingzoroark.riftlib.model.AnimatedLocator;
-import anightdazingzoroark.riftlib.util.MolangUtils;
+import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
@@ -21,19 +19,27 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.lwjglx.util.vector.Quaternion;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
-public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivingBase, AnimationDataEntity> {
-    private Function<EntityLivingBase, Float> holderScale;
+/**
+ * Shared advanced data for living and non-living entity data.
+ * */
+public abstract class AbstractAnimationDataAdvancedEntity<T extends Entity, D extends AbstractAnimationDataAdvancedEntity<T, D>>
+        extends AbstractAnimationDataEntity<T, D> {
+    private Function<T, Float> holderScale;
     private final Map<String, AnimatedBoundingBox> animatedBoundingBoxes = new HashMap<>();
     private final Map<String, List<AnimatedBoundingBox>> animatedBoundingBoxesByTag = new HashMap<>();
-    //client only, meant for debugging
     private final Map<String, AxisAlignedBB> debugBoundingBoxes = new HashMap<>();
     private boolean boundingBoxesRecentlyUpdated;
 
-    public AnimationDataEntity(EntityLivingBase holder) {
-        super(holder, getAnimatable(holder));
+    public AbstractAnimationDataAdvancedEntity(@NonNull T holder, @NotNull IAnimatable<D> animatable) {
+        super(holder, animatable);
     }
 
     @Override
@@ -51,6 +57,26 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
     }
 
     @Override
+    public void createAnimatedObjects(@NotNull GeoModel model) {
+        if (this.currentModel == model) return;
+        super.createAnimatedObjects(model);
+        this.animatedBoundingBoxes.clear();
+        this.animatedBoundingBoxesByTag.clear();
+
+        if (this.getHolder() instanceof IMultiHitboxUser<?>) {
+            for (GeoBoundingBox boundingBox : model.getAllBoundingBoxes()) {
+                if (boundingBox == null) continue;
+                AnimatedBoundingBox toAdd = new AnimatedBoundingBox(boundingBox);
+                this.animatedBoundingBoxes.put(toAdd.getName(), toAdd);
+                for (String tag : toAdd.getTags()) {
+                    this.animatedBoundingBoxesByTag.computeIfAbsent(tag, key -> new ArrayList<>()).add(toAdd);
+                }
+            }
+            this.boundingBoxesRecentlyUpdated = true;
+        }
+    }
+
+    @Override
     @NonNull
     public NBTTagCompound getNBT() {
         NBTTagCompound toReturn = super.getNBT();
@@ -59,66 +85,22 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
         return toReturn;
     }
 
-    @Override
-    protected void createMolangQueries() {
-        super.createMolangQueries();
-        //---normal stuff---
-        this.registerMolangQuery("health", (values, animData) -> {
-            return (double) this.getHolder().getHealth();
-        });
-        this.registerMolangQuery("max_health", (values, animData) -> {
-            return (double) this.getHolder().getMaxHealth();
-        });
-        this.registerMolangQuery("is_riding", (values, animData) -> {
-            return MolangUtils.booleanToDouble(this.getHolder().isRiding());
-        });
-        this.registerMolangQuery("is_sprinting", (values, animData) -> {
-            return MolangUtils.booleanToDouble(this.getHolder().isSprinting());
-        });
+    /**
+     * The yaw used by model-space locators, hitboxes, and rays.
+     * */
+    public float getModelYaw() {
+        return this.getHolder().rotationYaw;
     }
 
-    @SuppressWarnings("unchecked")
-    private static IAnimatable<AnimationDataEntity> getAnimatable(EntityLivingBase holder) {
-        if (holder instanceof IAnimatable<?>) return (IAnimatable<AnimationDataEntity>) holder;
-        throw new IllegalArgumentException("AnimationDataEntity holder must implement IAnimatable");
-    }
-
-    //this override updates locators and bounding boxes
-    @Override
-    public void createAnimatedObjects(GeoModel model) {
-        if (this.currentModel != model) {
-            this.animatedLocators.clear();
-            this.animatedBoundingBoxes.clear();
-            this.animatedBoundingBoxesByTag.clear();
-
-            //locators
-            for (GeoLocator locator : model.getAllLocators()) {
-                if (locator == null) continue;
-                this.animatedLocators.put(locator.getName(), new AnimatedLocator(locator, this));
-            }
-
-            //bounding boxes
-            if (this.getHolder() instanceof IMultiHitboxUser<?>) {
-                for (GeoBoundingBox boundingBox : model.getAllBoundingBoxes()) {
-                    if (boundingBox == null) continue;
-                    AnimatedBoundingBox toAdd = new AnimatedBoundingBox(boundingBox);
-                    this.animatedBoundingBoxes.put(toAdd.getName(), toAdd);
-                    for (String tag : toAdd.getTags()) {
-                        this.animatedBoundingBoxesByTag.computeIfAbsent(tag, key -> new ArrayList<>()).add(toAdd);
-                    }
-                }
-                this.boundingBoxesRecentlyUpdated = true;
-            }
-
-            this.currentModel = model;
-        }
+    public float getModelYaw(float partialTicks) {
+        return Interpolations.lerpYaw(this.getHolder().prevRotationYaw, this.getHolder().rotationYaw, partialTicks);
     }
 
     public void setScale(float value) {
         this.setScale(entity -> value);
     }
 
-    public void setScale(@NotNull Function<EntityLivingBase, Float> holderScale) {
+    public void setScale(@NotNull Function<T, Float> holderScale) {
         this.holderScale = holderScale;
     }
 
@@ -130,10 +112,12 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
     }
 
     //-----animated bounding box definitions from here on out (only entities use hitboxes hence this lol)-----
+    @NotNull
     public Map<String, AnimatedBoundingBox> getAnimatedBoundingBoxes() {
         return this.animatedBoundingBoxes;
     }
 
+    @NotNull
     public Map<String, List<AnimatedBoundingBox>> getAnimatedBoundingBoxesByTag() {
         return this.animatedBoundingBoxesByTag;
     }
@@ -157,7 +141,7 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
         float[] modelSpaceSize = animatedBoundingBox.getModelSpaceSize();
         float scale = this.getScale();
 
-        double yaw = -Math.toRadians(this.getHolder().isBeingRidden() ? this.getHolder().rotationYaw : this.getHolder().rotationYawHead);
+        double yaw = -Math.toRadians(this.getModelYaw());
         Quaternion quaternion = QuaternionUtils.createXYZQuaternion(0D, yaw, 0D);
         Vec3d hitboxPos = VectorUtils.rotateVectorWithQuaternion(new Vec3d(
                 -modelSpacePos.x * scale / 16D,
@@ -178,13 +162,13 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
     }
 
     @SideOnly(Side.CLIENT)
-    public void createDebugAABB(String name) {
+    public void createDebugAABB(@NotNull String name) {
         AxisAlignedBB aabb = this.getWorldSpaceAABB(name);
         if (aabb != null) this.debugBoundingBoxes.put(name, aabb);
     }
 
     @SideOnly(Side.CLIENT)
-    public void removeDebugAABB(String name) {
+    public void removeDebugAABB(@NotNull String name) {
         this.debugBoundingBoxes.remove(name);
     }
 
@@ -195,6 +179,7 @@ public class AnimationDataEntity extends AbstractAnimationDataEntity<EntityLivin
     }
 
     @SideOnly(Side.CLIENT)
+    @NotNull
     public Map<String, AxisAlignedBB> getDebugBoundingBoxes() {
         return this.debugBoundingBoxes;
     }

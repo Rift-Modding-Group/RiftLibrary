@@ -4,14 +4,19 @@ import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import anightdazingzoroark.riftlib.util.MiscUtils;
 import anightdazingzoroark.riftlib.util.MolangUtils;
+import java.util.function.Function;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.entity.Entity;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Common entity animation data, including projectile queries and locators.
+ * */
 public abstract class AbstractAnimationDataEntity<T extends Entity, D extends AbstractAnimationDataEntity<T, D>> extends AbstractAnimationData<T, D> {
     private double modifiedDistanceMoved;
 

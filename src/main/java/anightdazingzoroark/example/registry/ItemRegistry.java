@@ -1,8 +1,10 @@
 package anightdazingzoroark.example.registry;
 
 import anightdazingzoroark.example.client.renderer.item.*;
+import anightdazingzoroark.example.item.AlarmClockItem;
 import anightdazingzoroark.example.item.BombItem;
 import anightdazingzoroark.example.item.BubbleGunItem;
+import anightdazingzoroark.example.item.GoKartItem;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.RiftLibMod;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -38,12 +40,16 @@ public class ItemRegistry {
     public static Item MERRY_GO_ROUND;
     public static Item SPRINKLER;
     public static Item BUBBLE_GUN;
+    public static Item GO_KART;
+    public static Item ALARM_CLOCK;
     public static Item FIDGET_SPINNER;
     public static Item FIREWORK_STICK;
 
     public static void registerItems() {
         if (itemsRegistered) throw new IllegalStateException("Items have already been registered!");
 
+        ALARM_CLOCK = registerItem(new AlarmClockItem().setMaxStackSize(1), "alarm_clock");
+        GO_KART = registerItem(new GoKartItem().setMaxStackSize(1), "go_kart");
         BOMB = registerItem(new BombItem().setMaxStackSize(1), "bomb");
         BUBBLE_GUN = registerItem(new BubbleGunItem().setMaxStackSize(1), "bubble_gun");
         FIDGET_SPINNER = registerItem(new Item().setMaxStackSize(1), "fidget_spinner");
@@ -80,6 +86,14 @@ public class ItemRegistry {
     @SideOnly(Side.CLIENT)
     public void onModelRegistry(ModelRegistryEvent event) {
         //---vanilla item rendering for positions---
+        ModelLoader.setCustomModelResourceLocation(
+                ALARM_CLOCK, 0,
+                new ModelResourceLocation(RiftLib.ModID + ":alarm_clock", "inventory")
+        );
+        ModelLoader.setCustomModelResourceLocation(
+                GO_KART, 0,
+                new ModelResourceLocation(RiftLib.ModID + ":go_kart", "inventory")
+        );
         ModelLoader.setCustomModelResourceLocation(
                 BOMB, 0,
                 new ModelResourceLocation(RiftLib.ModID+":bomb", "inventory")

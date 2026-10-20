@@ -3,7 +3,7 @@ package anightdazingzoroark.example.entity;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataEntityLiving;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLivingBase;
@@ -18,9 +18,9 @@ import org.jspecify.annotations.NonNull;
 
 import javax.annotation.Nullable;
 
-public class AvianRunnerEntity extends EntityCreature implements IAnimatable<AnimationDataEntity> {
+public class AvianRunnerEntity extends EntityCreature implements IAnimatable<AnimationDataEntityLiving> {
     @NotNull
-    private final AnimationDataEntity animationData = new AnimationDataEntity(this);
+    private final AnimationDataEntityLiving animationData = new AnimationDataEntityLiving(this);
 
     public AvianRunnerEntity(World worldIn) {
         super(worldIn);
@@ -99,12 +99,12 @@ public class AvianRunnerEntity extends EntityCreature implements IAnimatable<Ani
     //ride management stuff ends here
 
     @Override
-    public void initializeAnimationData(@NonNull AnimationDataEntity animationData) {
-        animationData.addAnimationController(new AnimationController<AvianRunnerEntity, AnimationDataEntity>(
+    public void initializeAnimationData(@NonNull AnimationDataEntityLiving animationData) {
+        animationData.addAnimationController(new AnimationController<AvianRunnerEntity, AnimationDataEntityLiving>(
                 this, "movement", "default",
-                new AnimationControllerState<AnimationDataEntity>("default")
-                        .addStateTransition("running", AnimationDataEntity::isMoving),
-                new AnimationControllerState<AnimationDataEntity>("running", 0.1)
+                new AnimationControllerState<AnimationDataEntityLiving>("default")
+                        .addStateTransition("running", AnimationDataEntityLiving::isMoving),
+                new AnimationControllerState<AnimationDataEntityLiving>("running", 0.1)
                         .addAnimation("animation.avian_runner.run")
                         .addStateTransition("default", data -> !data.isMoving())
         ));
@@ -112,7 +112,7 @@ public class AvianRunnerEntity extends EntityCreature implements IAnimatable<Ani
 
     @Override
     @NotNull
-    public AnimationDataEntity getAnimationData() {
+    public AnimationDataEntityLiving getAnimationData() {
         return this.animationData;
     }
 }

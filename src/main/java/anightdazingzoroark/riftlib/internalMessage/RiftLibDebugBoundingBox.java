@@ -1,7 +1,7 @@
 package anightdazingzoroark.riftlib.internalMessage;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationDataAdvancedEntity;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
@@ -44,7 +44,7 @@ public class RiftLibDebugBoundingBox extends RiftLibMessage<RiftLibDebugBounding
     @Override
     public void executeOnClient(Minecraft client, RiftLibDebugBoundingBox message, EntityPlayer player, MessageContext messageContext) {
         Entity entity = client.world.getEntityByID(message.entityId);
-        if (!(entity instanceof IAnimatable<?> animatable && animatable.getAnimationData() instanceof AnimationDataEntity animData)) return;
+        if (!(entity instanceof IAnimatable<?> animatable && animatable.getAnimationData() instanceof AbstractAnimationDataAdvancedEntity<?, ?> animData)) return;
 
         if (message.add) animData.createDebugAABB(message.aabbName);
         else animData.removeDebugAABB(message.aabbName);

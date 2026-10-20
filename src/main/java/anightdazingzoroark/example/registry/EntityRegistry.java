@@ -39,14 +39,14 @@ public class EntityRegistry {
                 .entity(AlarmClockEntity.class)
                 .name("alarm_clock")
                 .id(new ResourceLocation(RiftLib.ModID, "alarm_clock"), id++)
-                .tracker(160, 2, false)
+                .tracker(160, 2, true)
                 .build()
         );
         event.getRegistry().register(EntityEntryBuilder.create()
                 .entity(GoKartEntity.class)
                 .name("go_kart")
                 .id(new ResourceLocation(RiftLib.ModID, "go_kart"), id++)
-                .tracker(160, 2, false)
+                .tracker(160, 2, true)
                 .build()
         );
         event.getRegistry().register(EntityEntryBuilder.create()
@@ -60,8 +60,6 @@ public class EntityRegistry {
         //egg registry
         net.minecraftforge.fml.common.registry.EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "dragon"), 0x980d0d, 0xca7824);
         net.minecraftforge.fml.common.registry.EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "flying_pufferfish"), 0xffae00, 0xbfc700);
-        net.minecraftforge.fml.common.registry.EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "alarm_clock"), 0x0000ff, 0xffffff);
-        net.minecraftforge.fml.common.registry.EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "go_kart"), 0xbf2c12, 0xb3b3b3);
         net.minecraftforge.fml.common.registry.EntityRegistry.registerEgg(new ResourceLocation(RiftLib.ModID, "avian_runner"), 0x383a88, 0xc7ccd2);
     }
 }

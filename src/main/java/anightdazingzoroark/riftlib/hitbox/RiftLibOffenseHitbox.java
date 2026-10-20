@@ -1,10 +1,8 @@
 package anightdazingzoroark.riftlib.hitbox;
 
 import anightdazingzoroark.riftlib.model.AnimatedBoundingBox;
-import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import com.google.common.base.Predicate;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MultiPartEntityPart;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
@@ -38,6 +36,10 @@ public class RiftLibOffenseHitbox<T extends IMultiHitboxUser<?>> implements IHit
     public void onUpdate() {
         //-----dont update further when dead-----
         if (this.isDead) return;
+        if (!this.getParent().getMultiHitboxUser().isEntityAlive()) {
+            this.kill();
+            return;
+        }
 
         //-----set aabb-----
         float[] finalSize = this.getHitboxSize();
@@ -48,23 +50,23 @@ public class RiftLibOffenseHitbox<T extends IMultiHitboxUser<?>> implements IHit
         );
 
         //-----check aabb collisions-----
-        EntityLivingBase parentEntityLiving = this.getParent().getMultiHitboxUser();
+        Entity parentEntity = this.getParent().getMultiHitboxUser();
         List<Entity> candidates = this.getParent().getWorld().getEntitiesWithinAABB(Entity.class, hitboxAABB, new Predicate<Entity>() {
             @Override
             public boolean apply(Entity input) {
-                return input != parentEntityLiving && this.isHitboxOfParent(input);
+                return input != parentEntity && this.isHitboxOfParent(input);
             }
 
             private boolean isHitboxOfParent(Entity entity) {
                 if (!(entity instanceof MultiPartEntityPart multiPartEntityPart)) return true;
-                return multiPartEntityPart.parent != parentEntityLiving;
+                return multiPartEntityPart.parent != parentEntity;
             }
         });
 
         //-----apply damage to hit entities-----
         for (Entity target : candidates) {
             if (!this.alreadyHitEntities.add(target.getEntityId())) continue;
-            parentEntityLiving.attackEntityAsMob(target);
+            this.getParent().attackEntityWithHitbox(target);
         }
     }
 

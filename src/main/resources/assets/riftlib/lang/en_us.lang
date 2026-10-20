@@ -29,3 +29,5 @@ entity.avian_runner.name=Avian Runner
 
 ui.hovered_tool=%s level %s
 ui.open_in_jei=Click to open in JEI
+item.riftlib.go_kart.name=Go-Kart
+item.riftlib.alarm_clock.name=Alarm Clock

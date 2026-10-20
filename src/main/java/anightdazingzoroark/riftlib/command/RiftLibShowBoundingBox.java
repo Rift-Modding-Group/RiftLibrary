@@ -1,8 +1,7 @@
 package anightdazingzoroark.riftlib.command;
 
-import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationDataAdvancedEntity;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibDebugBoundingBox;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraft.command.CommandBase;
@@ -31,7 +30,7 @@ public class RiftLibShowBoundingBox extends CommandBase {
         if (args.length != 3) throw new WrongUsageException("command.riftlib.show_bounding_box_usage", new Object[0]);
         else {
             Entity entity = getEntity(server, sender, args[0]);
-            if (!(entity instanceof IAnimatable<?> animatable && animatable.getAnimationData() instanceof AnimationDataEntity animData)) {
+            if (!(entity instanceof IAnimatable<?> animatable && animatable.getAnimationData() instanceof AbstractAnimationDataAdvancedEntity<?, ?> animData)) {
                 throw new WrongUsageException("command.riftlib.not_animatable", new Object[]{entity.getName()});
             }
             String action = args[1];

@@ -1,13 +1,13 @@
 package anightdazingzoroark.riftlib.hitbox;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationDataAdvancedEntity;
 import net.minecraft.entity.*;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
-public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<AnimationDataEntity> & IMultiHitboxUser<?>> extends IEntityMultiPart {
+public interface IMultiHitboxUser<T extends Entity & IAnimatable<? extends AbstractAnimationDataAdvancedEntity<?, ?>> & IMultiHitboxUser<?>> extends IEntityMultiPart {
     /**
      * Get the parent. Must always return the entity its being implemented in.
      * */
@@ -39,6 +39,16 @@ public interface IMultiHitboxUser<T extends EntityLivingBase & IAnimatable<Anima
             return this.getMultiHitboxUser().attackEntityFrom(source, damage);
         }
         return false;
+    }
+
+    /**
+     * Performs an offense hitbox attack. Living entities use their normal melee
+     * attack; non-living entities can override this to apply their own damage or effects.
+     */
+    default void attackEntityWithHitbox(@NotNull Entity target) {
+        if (this.getMultiHitboxUser() instanceof EntityLivingBase livingUser) {
+            livingUser.attackEntityAsMob(target);
+        }
     }
 
     /**

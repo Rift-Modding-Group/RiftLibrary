@@ -1,7 +1,7 @@
 package anightdazingzoroark.riftlib.renderers.geo;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataEntityLiving;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
@@ -10,10 +10,10 @@ import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.core.util.Color;
 import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 
-public abstract class GeoLayerRenderer<A extends EntityLivingBase & IAnimatable<AnimationDataEntity>> implements LayerRenderer<A> {
+public abstract class GeoEntityLivingLayerRenderer<A extends EntityLivingBase & IAnimatable<AnimationDataEntityLiving>> implements LayerRenderer<A> {
 	protected final IGeoRenderer<A> entityRenderer;
 
-	public GeoLayerRenderer(IGeoRenderer<A> entityRendererIn) {
+	public GeoEntityLivingLayerRenderer(IGeoRenderer<A> entityRendererIn) {
 		this.entityRenderer = entityRendererIn;
 	}
 

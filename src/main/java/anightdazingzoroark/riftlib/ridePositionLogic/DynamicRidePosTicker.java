@@ -55,10 +55,10 @@ public class DynamicRidePosTicker {
         //move the camera to the current dynamic ride position for this frame.
         @SubscribeEvent
         public void onCameraSetup(EntityViewRenderEvent.CameraSetup event) {
-            if (!(event.getEntity() instanceof EntityLivingBase passenger)) return;
+            Entity passenger = event.getEntity();
             if (!(passenger.getRidingEntity() instanceof IDynamicRideUser<?> dynamicRideUser)) return;
 
-            EntityLivingBase dynamicRideEntity = dynamicRideUser.getDynamicRideUser();
+            Entity dynamicRideEntity = dynamicRideUser.getDynamicRideUser();
             DynamicRidePosSnapshot ridePosSnapshot = dynamicRideUser.ridePosList().snapshot;
             GeoModelProvider<?> modelProvider = AnimationUtils.getGeoModelForEntity(dynamicRideEntity);
             if (modelProvider instanceof AnimatedGeoModel<?> animatedGeoModel) {

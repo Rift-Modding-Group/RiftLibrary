@@ -3,10 +3,11 @@ package anightdazingzoroark.riftlib.util;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
+import org.jetbrains.annotations.NotNull;
 
 public class MiscUtils {
     //better than using the motion variables :tm:
-    public static double getEntityHorizontalSpeed(Entity entity) {
+    public static double getEntityHorizontalSpeed(@NotNull Entity entity) {
         float partialTicks = Minecraft.getMinecraft().getRenderPartialTicks();
 
         //query.modified_distance_moved is to be modifiable based on entity speed
@@ -20,7 +21,7 @@ public class MiscUtils {
         return Math.sqrt(dx * dx + dz * dz);
     }
 
-    public static double getEntityVerticalSpeed(Entity entity) {
+    public static double getEntityVerticalSpeed(@NotNull Entity entity) {
         float partialTicks = Minecraft.getMinecraft().getRenderPartialTicks();
         double currentPosY = Interpolations.lerp(entity.prevPosY, entity.posY, partialTicks);
         return currentPosY - entity.prevPosY;

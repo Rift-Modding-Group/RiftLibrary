@@ -1,7 +1,7 @@
 package anightdazingzoroark.riftlib.sounds;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationDataEntity;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibPlaySoundForPlayer;
@@ -48,8 +48,7 @@ public class RiftLibSoundHelper {
     }
 
     private static SoundCategory getSoundCategoryFromAnimatable(IAnimatable<?> source) {
-        if (source.getAnimationData() instanceof AnimationDataEntity entitySrc) return entitySrc.getHolder().getSoundCategory();
-        else if (source.getAnimationData() instanceof AnimationDataEntity) return SoundCategory.BLOCKS;
+        if (source.getAnimationData() instanceof AbstractAnimationDataEntity<?, ?> entitySrc) return entitySrc.getHolder().getSoundCategory();
         //will add back soon
         //else if (source instanceof GeoArmorItem) return SoundCategory.PLAYERS;
         return SoundCategory.MASTER;

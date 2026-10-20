@@ -2,7 +2,6 @@ package anightdazingzoroark.riftlib.hitbox;
 
 import anightdazingzoroark.riftlib.model.AnimatedBoundingBox;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MultiPartEntityPart;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.DamageSource;
@@ -65,7 +64,7 @@ public class RiftLibCollisionHitbox<T extends IMultiHitboxUser<?>> extends Multi
 
     @Override
     public void onUpdate() {
-        EntityLivingBase parentEntityLiving = this.getParent().getMultiHitboxUser();
+        Entity parentEntity = this.getParent().getMultiHitboxUser();
 
         //-----set scale-----
         float[] finalSize = this.getHitboxSize();
@@ -83,7 +82,7 @@ public class RiftLibCollisionHitbox<T extends IMultiHitboxUser<?>> extends Multi
         }
 
         //-----remove if entity is dead or no longer exists-----
-        if (!parentEntityLiving.isEntityAlive()) {
+        if (!parentEntity.isEntityAlive()) {
             this.world.removeEntityDangerously(this);
         }
         super.onUpdate();
@@ -95,12 +94,13 @@ public class RiftLibCollisionHitbox<T extends IMultiHitboxUser<?>> extends Multi
      * (note: is really bad xd)
      * */
     private void collideEntityWithHitbox(Entity entityIn) {
-        EntityLivingBase parent = this.getParent().getMultiHitboxUser();
+        Entity parent = this.getParent().getMultiHitboxUser();
         if (entityIn == null || entityIn.equals(parent) || parent.isRidingSameEntity(entityIn) || entityIn.noClip) return;
 
         double dispX = entityIn.posX - parent.posX;
         double dispZ = entityIn.posZ - parent.posZ;
         double maxDisp = MathHelper.absMax(dispX, dispZ);
+        if (maxDisp < 0.01D) return;
 
         maxDisp = MathHelper.sqrt(maxDisp);
         dispX /= maxDisp;
@@ -141,13 +141,13 @@ public class RiftLibCollisionHitbox<T extends IMultiHitboxUser<?>> extends Multi
 
     private boolean damageSourceIsRider(DamageSource source) {
         if (source == null) return false;
-        EntityLivingBase parentEntityLiving = this.getParent().getMultiHitboxUser();
+        Entity parentEntity = this.getParent().getMultiHitboxUser();
 
-        if (parentEntityLiving.isBeingRidden()) {
-            if (source.getTrueSource() != null && parentEntityLiving.isPassenger(source.getTrueSource())) {
+        if (parentEntity.isBeingRidden()) {
+            if (source.getTrueSource() != null && parentEntity.isPassenger(source.getTrueSource())) {
                 return true;
             }
-            if (source.getImmediateSource() != null && parentEntityLiving.isPassenger(source.getImmediateSource())) {
+            if (source.getImmediateSource() != null && parentEntity.isPassenger(source.getImmediateSource())) {
                 return true;
             }
         }

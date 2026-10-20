@@ -1,7 +1,7 @@
 package anightdazingzoroark.riftlib.renderers.debug;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationDataAdvancedEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
@@ -40,7 +40,7 @@ public class WorldSpaceBoundingBoxRenderer {
 
         GL11.glBegin(GL11.GL_LINES);
         for (Entity entity : minecraft.world.loadedEntityList) {
-            AnimationDataEntity animData = this.getAnimationData(entity);
+            AbstractAnimationDataAdvancedEntity<?, ?> animData = this.getAnimationData(entity);
             if (animData == null) continue;
 
             for (AxisAlignedBB aabb : animData.getDebugBoundingBoxes().values()) {
@@ -60,15 +60,15 @@ public class WorldSpaceBoundingBoxRenderer {
 
     private boolean hasAnyDisplayedAABB(Minecraft minecraft) {
         for (Entity entity : minecraft.world.loadedEntityList) {
-            AnimationDataEntity animData = this.getAnimationData(entity);
+            AbstractAnimationDataAdvancedEntity<?, ?> animData = this.getAnimationData(entity);
             if (animData != null && !animData.getDebugBoundingBoxes().isEmpty()) return true;
         }
         return false;
     }
 
-    private AnimationDataEntity getAnimationData(Entity entity) {
+    private AbstractAnimationDataAdvancedEntity<?, ?> getAnimationData(Entity entity) {
         if (!(entity instanceof IAnimatable<?> animatable)) return null;
-        if (animatable.getAnimationData() instanceof AnimationDataEntity animData) return animData;
+        if (animatable.getAnimationData() instanceof AbstractAnimationDataAdvancedEntity<?, ?> animData) return animData;
         return null;
     }
 

@@ -1,12 +1,9 @@
 package anightdazingzoroark.riftlib.hitbox;
 
 import anightdazingzoroark.riftlib.model.AnimatedBoundingBox;
-import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 import org.lwjglx.util.vector.Quaternion;
@@ -19,18 +16,18 @@ public interface IHitbox<T extends IMultiHitboxUser<?>> {
      * Return the parent of the hitbox
      * */
     @NotNull
-    T getParent();
+    public T getParent();
 
     /**
      * Return the bounding box this hitbox is based on
      * */
     @NotNull
-    AnimatedBoundingBox getBoundingBox();
+    public AnimatedBoundingBox getBoundingBox();
 
     /**
      * Return the width and height based on parent scale and fixed size
      * */
-    default float[] getHitboxSize() {
+    public default float[] getHitboxSize() {
         float parentScale = this.getParent().getMultiHitboxUser().getAnimationData().getScale();
         return new float[]{
                 parentScale * this.getBoundingBox().getModelSpaceSize()[0] / 16f,
@@ -43,8 +40,8 @@ public interface IHitbox<T extends IMultiHitboxUser<?>> {
      * and locator position
      * */
     @NotNull
-    default Vec3d getHitboxPosition() {
-        EntityLivingBase parentEntityLiving = this.getParent().getMultiHitboxUser();
+    public default Vec3d getHitboxPosition() {
+        Entity parentEntity = this.getParent().getMultiHitboxUser();
         float parentScale = this.getParent().getMultiHitboxUser().getAnimationData().getScale();
 
         //correct the model space positions first
@@ -59,9 +56,7 @@ public interface IHitbox<T extends IMultiHitboxUser<?>> {
         Vec3d posVec = new Vec3d(newHitboxX * parentScale, newHitboxY * parentScale, newHitboxZ * parentScale);
 
         //determine yaw
-        double normalYawRadians = -Math.toRadians(parentEntityLiving.rotationYawHead);
-        double riddenYawRadians = -Math.toRadians(parentEntityLiving.rotationYaw);
-        double finalYawRadians = parentEntityLiving.isBeingRidden() ? riddenYawRadians : normalYawRadians;
+        double finalYawRadians = -Math.toRadians(this.getParent().getMultiHitboxUser().getAnimationData().getModelYaw());
 
         //rotate vector around yaw
         Quaternion quaternion = QuaternionUtils.createXYZQuaternion(0, finalYawRadians, 0);
@@ -69,9 +64,9 @@ public interface IHitbox<T extends IMultiHitboxUser<?>> {
 
         //put in world
         return new Vec3d(
-                parentEntityLiving.posX + posVec.x,
-                parentEntityLiving.posY + posVec.y,
-                parentEntityLiving.posZ + posVec.z
+                parentEntity.posX + posVec.x,
+                parentEntity.posY + posVec.y,
+                parentEntity.posZ + posVec.z
         );
     }
 }

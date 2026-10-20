@@ -1,7 +1,7 @@
 package anightdazingzoroark.riftlib.ridePositionLogic;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationDataEntity;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -12,10 +12,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public interface IDynamicRideUser<T extends EntityLivingBase & IAnimatable<AnimationDataEntity>> {
+public interface IDynamicRideUser<T extends Entity & IAnimatable<? extends AbstractAnimationDataEntity<?, ?>>> {
     /**
      * Get the parent. Must always return the entity its being implemented in.
      * */
+    @NotNull
     T getDynamicRideUser();
 
     /**
@@ -62,13 +63,18 @@ public interface IDynamicRideUser<T extends EntityLivingBase & IAnimatable<Anima
                 this.getDynamicRideUser().rotationYaw = passenger.rotationYaw;
                 this.getDynamicRideUser().rotationPitch = passenger.rotationPitch * 0.5f;
                 this.getDynamicRideUser().setRotation(this.getDynamicRideUser().rotationYaw, this.getDynamicRideUser().rotationPitch);
-                this.getDynamicRideUser().renderYawOffset = this.getDynamicRideUser().rotationYaw;
+                if (this.getDynamicRideUser() instanceof EntityLivingBase livingMount) {
+                    livingMount.renderYawOffset = livingMount.rotationYaw;
+                }
             }
 
             this.applyRidePosition(passenger, controllerPos);
 
-            if (passenger instanceof EntityLivingBase) {
-                ((EntityLivingBase) passenger).renderYawOffset = this.getDynamicRideUser().renderYawOffset;
+            if (passenger instanceof EntityLivingBase livingPassenger) {
+                livingPassenger.renderYawOffset = this.getDynamicRideUser().rotationYaw;
+                if (this.getDynamicRideUser() instanceof EntityLivingBase livingMount) {
+                    livingPassenger.renderYawOffset = livingMount.renderYawOffset;
+                }
             }
         }
         //---now deal with other positions for other passengers---

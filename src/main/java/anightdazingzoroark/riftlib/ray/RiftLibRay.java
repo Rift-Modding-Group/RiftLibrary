@@ -187,9 +187,7 @@ public class RiftLibRay {
     private RayPose currentPose() {
         //---common stuff---
         //determine entity yaw and turn into quaternion
-        double normalYawRadians = -Math.toRadians(this.rayCreator.getRayCreator().rotationYawHead);
-        double riddenYawRadians = -Math.toRadians(this.rayCreator.getRayCreator().rotationYaw);
-        double finalYawRadians = this.rayCreator.getRayCreator().isBeingRidden() ? riddenYawRadians : normalYawRadians;
+        double finalYawRadians = -Math.toRadians(this.rayCreator.getRayCreator().getAnimationData().getModelYaw());
 
         //---for origin---
         //set initial entity offset from center, in model space ofc

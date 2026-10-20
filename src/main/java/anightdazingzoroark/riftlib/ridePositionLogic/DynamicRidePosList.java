@@ -1,12 +1,13 @@
 package anightdazingzoroark.riftlib.ridePositionLogic;
 
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationDataAdvancedEntity;
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationDataEntity;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.model.ServerModelRegistry;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,7 +20,7 @@ public class DynamicRidePosList {
     @NotNull
     private final IDynamicRideUser<?> dynamicRideUser;
     @NotNull
-    private final AnimationDataEntity animData;
+    private final AbstractAnimationDataAdvancedEntity<?, ?> animData;
 
     //positions for controller
     @Nullable
@@ -31,14 +32,14 @@ public class DynamicRidePosList {
     @NotNull
     public final DynamicRidePosSnapshot snapshot;
 
-    public DynamicRidePosList(@NotNull IDynamicRideUser<?> dynamicRideUser, @NotNull AnimationDataEntity animData) {
+    public DynamicRidePosList(@NotNull IDynamicRideUser<?> dynamicRideUser, @NotNull AbstractAnimationDataAdvancedEntity<?, ?> animData) {
         this.dynamicRideUser = dynamicRideUser;
         this.animData = animData;
         this.snapshot = new DynamicRidePosSnapshot(dynamicRideUser);
     }
 
     public void updatePositions() {
-        EntityLivingBase dynamicRideEntity = this.dynamicRideUser.getDynamicRideUser();
+        Entity dynamicRideEntity = this.dynamicRideUser.getDynamicRideUser();
         if (!dynamicRideEntity.world.isRemote) {
             ServerModelRegistry.requireServerModel((IAnimatable<?>) dynamicRideEntity, "server ride positions");
         }
@@ -64,7 +65,7 @@ public class DynamicRidePosList {
         AnimatedLocator animLocator = this.animData.getAnimatedLocator(locatorName);
         if (animLocator == null) return null;
 
-        EntityLivingBase dynamicRideUser = this.dynamicRideUser.getDynamicRideUser();
+        Entity dynamicRideUser = this.dynamicRideUser.getDynamicRideUser();
 
         //correct locator position first
         Vec3d modelSpacePos = animLocator.getModelSpacePosition();

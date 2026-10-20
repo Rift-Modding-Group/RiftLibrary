@@ -1,7 +1,7 @@
 package anightdazingzoroark.riftlib.renderers.geo;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataEntityLiving;
 import anightdazingzoroark.riftlib.geo.GeoModel;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.entity.Entity;
@@ -15,13 +15,13 @@ import java.nio.FloatBuffer;
 /**
  * Adapts a geo entity model to vanilla's {@link ModelBase} layer API.
  */
-public class GeoEntityModel<A extends EntityLivingBase & IAnimatable<AnimationDataEntity>> extends ModelBase {
+public class GeoEntityLivingModel<A extends EntityLivingBase & IAnimatable<AnimationDataEntityLiving>> extends ModelBase {
     @NotNull
-    private final GeoEntityRenderer<A> renderer;
+    private final GeoEntityLivingRenderer<A> renderer;
     @NotNull
     private final FloatBuffer colorBuffer = BufferUtils.createFloatBuffer(4);
 
-    public GeoEntityModel(@NotNull GeoEntityRenderer<A> renderer) {
+    public GeoEntityLivingModel(@NotNull GeoEntityLivingRenderer<A> renderer) {
         this.renderer = renderer;
     }
 

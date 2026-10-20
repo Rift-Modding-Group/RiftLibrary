@@ -1,20 +1,22 @@
 package anightdazingzoroark.riftlib.ray;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.util.math.AxisAlignedBB;
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationDataAdvancedEntity;
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationDataEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.List;
 import java.util.Map;
+import org.jetbrains.annotations.NotNull;
 
-public interface IRayCreator<T extends EntityLivingBase & IAnimatable<AnimationDataEntity>> {
+public interface IRayCreator<T extends Entity & IAnimatable<? extends AbstractAnimationDataAdvancedEntity<?, ?>>> {
+    @NotNull
     T getRayCreator();
 
     /**
      * Ray builders are to be defined here.
      * */
+    @NotNull
     Map<String, RiftLibRayBuilder> getRayBuilders();
 
     /**

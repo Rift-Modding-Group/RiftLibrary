@@ -37,13 +37,15 @@ public class DynamicRidePosSnapshot {
     }
 
     public void storeSnapshot(float partialTicks, float finalYaw) {
-        EntityLivingBase dynamicRideEntity = this.dynamicRideUser.getDynamicRideUser();
+        Entity dynamicRideEntity = this.dynamicRideUser.getDynamicRideUser();
         if (!this.storedDynamicRideEntity) {
             this.posX = dynamicRideEntity.posX;
             this.posY = dynamicRideEntity.posY;
             this.posZ = dynamicRideEntity.posZ;
             this.rotationYaw = dynamicRideEntity.rotationYaw;
-            this.renderYawOffset = dynamicRideEntity.renderYawOffset;
+            if (dynamicRideEntity instanceof EntityLivingBase livingMount) {
+                this.renderYawOffset = livingMount.renderYawOffset;
+            }
             this.storedDynamicRideEntity = true;
         }
 
@@ -51,18 +53,22 @@ public class DynamicRidePosSnapshot {
         dynamicRideEntity.posY = Interpolations.lerp(dynamicRideEntity.lastTickPosY, dynamicRideEntity.posY, partialTicks);
         dynamicRideEntity.posZ = Interpolations.lerp(dynamicRideEntity.lastTickPosZ, dynamicRideEntity.posZ, partialTicks);
         dynamicRideEntity.rotationYaw = finalYaw;
-        dynamicRideEntity.renderYawOffset = finalYaw;
+        if (dynamicRideEntity instanceof EntityLivingBase livingMount) {
+            livingMount.renderYawOffset = finalYaw;
+        }
     }
 
     public void restoreSnapshot() {
         if (!this.storedDynamicRideEntity) return;
 
-        EntityLivingBase dynamicRideEntity = this.dynamicRideUser.getDynamicRideUser();
+        Entity dynamicRideEntity = this.dynamicRideUser.getDynamicRideUser();
         dynamicRideEntity.posX = this.posX;
         dynamicRideEntity.posY = this.posY;
         dynamicRideEntity.posZ = this.posZ;
         dynamicRideEntity.rotationYaw = this.rotationYaw;
-        dynamicRideEntity.renderYawOffset = this.renderYawOffset;
+        if (dynamicRideEntity instanceof EntityLivingBase livingMount) {
+            livingMount.renderYawOffset = this.renderYawOffset;
+        }
         this.storedDynamicRideEntity = false;
     }
 
@@ -81,7 +87,7 @@ public class DynamicRidePosSnapshot {
     }
 
     public void cachePassengerRidePositions() {
-        EntityLivingBase dynamicRideEntity = this.dynamicRideUser.getDynamicRideUser();
+        Entity dynamicRideEntity = this.dynamicRideUser.getDynamicRideUser();
         Entity controller = dynamicRideEntity.getControllingPassenger();
         this.dynamicRideUser.ridePosList().updatePositions();
         this.passengerRenderPositions.clear();

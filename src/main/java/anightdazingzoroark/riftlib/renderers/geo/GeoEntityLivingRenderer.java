@@ -3,14 +3,10 @@ package anightdazingzoroark.riftlib.renderers.geo;
 import java.util.List;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.manager.AnimationDataEntity;
-import anightdazingzoroark.riftlib.model.AnimatedLocator;
+import anightdazingzoroark.riftlib.core.manager.AnimationDataEntityLiving;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosSnapshot;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
-import anightdazingzoroark.riftlib.util.MathUtils;
-import anightdazingzoroark.riftlib.util.QuaternionUtils;
-import anightdazingzoroark.riftlib.util.VectorUtils;
 import com.google.common.collect.Lists;
 
 import net.minecraft.client.Minecraft;
@@ -42,10 +38,10 @@ import anightdazingzoroark.riftlib.geo.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 import anightdazingzoroark.riftlib.util.AnimationUtils;
-import org.lwjglx.util.vector.Quaternion;
+import org.jetbrains.annotations.NotNull;
 
-@SuppressWarnings({ "rawtypes", "unchecked", "SuspiciousNameCombination" })
-public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable<AnimationDataEntity>> extends RenderLivingBase<A> implements IGeoRenderer<A> {
+@SuppressWarnings({"unchecked"})
+public abstract class GeoEntityLivingRenderer<A extends EntityLivingBase & IAnimatable<AnimationDataEntityLiving>> extends RenderLivingBase<A> implements IGeoRenderer<A> {
 	static {
 		AnimationController.addModelFetcher((IAnimatable<?> object) -> {
 			if (object instanceof Entity entity) {
@@ -56,13 +52,13 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 	}
 
 	protected final AnimatedGeoModel<A> modelProvider;
-	protected final List<GeoLayerRenderer<A>> layerRenderers = Lists.newArrayList();
+	protected final List<GeoEntityLivingLayerRenderer<A>> layerRenderers = Lists.newArrayList();
 	private float locatorPartialTicks;
 
-    public GeoEntityRenderer(RenderManager renderManager, AnimatedGeoModel<A> modelProvider) {
+	public GeoEntityLivingRenderer(@NotNull RenderManager renderManager, @NotNull AnimatedGeoModel<A> modelProvider) {
 		super(renderManager, new ModelBase() {}, 0f);
 		this.modelProvider = modelProvider;
-		this.mainModel = new GeoEntityModel<>(this);
+		this.mainModel = new GeoEntityLivingModel<>(this);
 	}
 
 	@Override
@@ -125,7 +121,7 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 		}
 
 		if (!(entity instanceof EntityPlayer) || !((EntityPlayer) entity).isSpectator()) {
-			for (GeoLayerRenderer<A> layerRenderer : this.layerRenderers) {
+			for (GeoEntityLivingLayerRenderer<A> layerRenderer : this.layerRenderers) {
 				layerRenderer.render(entity, partialTicks, 0, renderColor);
 			}
 			float limbSwingAmount = entity.prevLimbSwingAmount + (entity.limbSwingAmount - entity.prevLimbSwingAmount) * partialTicks;
@@ -148,55 +144,13 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 			}
 		}
 
-		if (flag) RenderHurtColor.unset();
+		if (flag) RenderLivingHurtColor.unset();
 
 		GlStateManager.popMatrix();
 		GlStateManager.popMatrix();
 
-		//---render passengers at the cached dynamic ride positions if user is dynamicrideuser---
 		if (ridePosSnapshot != null) {
-			float renderYawOffset = entity.renderYawOffset;
-			float prevRenderYawOffset = entity.prevRenderYawOffset;
-			entity.renderYawOffset = finalYaw;
-			entity.prevRenderYawOffset = finalYaw;
-
-			for (Entity passenger : entity.getPassengers()) {
-				Vec3d ridePos = ridePosSnapshot.getRidePosition(passenger);
-				if (ridePos == null) continue;
-				//1st pos on player passengers must be skipped or else weird things involving the camera will happen
-				//speaking of that, it should already be dealt with in DynamicRidePosTicker
-				if (passenger == Minecraft.getMinecraft().player && Minecraft.getMinecraft().gameSettings.thirdPersonView == 0) continue;
-
-				ridePosSnapshot.renderingPassengers.add(passenger.getEntityId());
-				boolean isController = passenger.equals(entity.getControllingPassenger());
-				float passengerYaw = isController ?
-						finalYaw : Interpolations.lerpYaw(passenger.prevRotationYaw, passenger.rotationYaw, partialTicks);
-				float rotationYawHead = 0;
-				float prevRotationYawHead = 0;
-				if (isController && passenger instanceof EntityLivingBase livingPassenger) {
-					rotationYawHead = livingPassenger.rotationYawHead;
-					prevRotationYawHead = livingPassenger.prevRotationYawHead;
-					livingPassenger.rotationYawHead = finalYaw;
-					livingPassenger.prevRotationYawHead = finalYaw;
-				}
-				this.renderManager.renderEntity(
-						passenger,
-						ridePos.x - ridePosSnapshot.renderOriginVec.x,
-						ridePos.y - ridePosSnapshot.renderOriginVec.y,
-						ridePos.z - ridePosSnapshot.renderOriginVec.z,
-						passengerYaw,
-						partialTicks,
-						false
-				);
-				if (isController && passenger instanceof EntityLivingBase livingPassenger) {
-					livingPassenger.rotationYawHead = rotationYawHead;
-					livingPassenger.prevRotationYawHead = prevRotationYawHead;
-				}
-				ridePosSnapshot.renderingPassengers.remove(passenger.getEntityId());
-			}
-
-			entity.renderYawOffset = renderYawOffset;
-			entity.prevRenderYawOffset = prevRenderYawOffset;
+			GeoEntityRenderHelper.renderPassengers(this.renderManager, entity, ridePosSnapshot, finalYaw, partialTicks);
 		}
 
 		MinecraftForge.EVENT_BUS.post(new RenderLivingEvent.Post<>(entity, this, partialTicks, x, y, z));
@@ -219,62 +173,11 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 	 * */
 	@Override
 	public void repositionAnimatedLocators(A animatable) {
-		if (!(animatable instanceof IDynamicRideUser<?> dynamicRideUser)) {
+		if (!(animatable instanceof IDynamicRideUser<?>)) {
 			IGeoRenderer.super.repositionAnimatedLocators(animatable);
 			return;
 		}
-		double entityX = MathUtils.slopeResult(
-				this.locatorPartialTicks, true, 0D, 1D,
-				animatable.prevPosX, animatable.posX
-		);
-		double entityY = MathUtils.slopeResult(
-				this.locatorPartialTicks, true, 0D, 1D,
-				animatable.prevPosY, animatable.posY
-		);
-		double entityZ = MathUtils.slopeResult(
-				this.locatorPartialTicks, true, 0D, 1D,
-				animatable.prevPosZ, animatable.posZ
-		);
-		float renderYaw;
-		if (animatable.isBeingRidden()) {
-			renderYaw = dynamicRideUser.getRenderYaw(this.locatorPartialTicks);
-		}
-		else {
-			float yawDifference = MathHelper.wrapDegrees(animatable.rotationYawHead - animatable.prevRotationYawHead);
-			renderYaw = (float) MathUtils.slopeResult(
-					this.locatorPartialTicks, true, 0D, 1D,
-					animatable.prevRotationYawHead,
-					animatable.prevRotationYawHead + yawDifference
-			);
-		}
-
-		double yawRadians = -Math.toRadians(renderYaw);
-		Quaternion entityYaw = QuaternionUtils.createYXZQuaternion(0D, yawRadians, 0D);
-		Quaternion modelToWorldRotation = QuaternionUtils.createYXZQuaternion(0D, Math.PI + yawRadians, 0D);
-		float modelScale = animatable.getAnimationData().getScale();
-
-		for (AnimatedLocator animatedLocator : animatable.getAnimationData().getAnimatedLocators().values()) {
-			Vec3d modelPosition = animatedLocator.getModelSpacePosition();
-			Vec3d entityRelativePosition = new Vec3d(
-					-modelPosition.x / 16D * modelScale,
-					modelPosition.y / 16D * modelScale,
-					-modelPosition.z / 16D * modelScale
-			);
-			entityRelativePosition = VectorUtils.rotateVectorWithQuaternion(
-					entityRelativePosition, entityYaw
-			);
-			animatedLocator.setWorldSpacePosition(
-					entityX + entityRelativePosition.x,
-					entityY + entityRelativePosition.y,
-					entityZ + entityRelativePosition.z
-			);
-
-			Quaternion locatorRotation = animatedLocator.getModelSpaceYXZQuaternion();
-			Quaternion worldRotation = new Quaternion();
-			Quaternion.mul(modelToWorldRotation, locatorRotation, worldRotation);
-			Quaternion.normalise(worldRotation, worldRotation);
-			animatedLocator.setWorldSpaceYXZQuaternion(worldRotation);
-		}
+		GeoEntityRenderHelper.repositionAnimatedLocators(animatable, this.locatorPartialTicks);
 	}
 
 	/**
@@ -301,7 +204,7 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 	}
 
 	@Override
-	public GeoModelProvider getGeoModelProvider() {
+	public GeoModelProvider<A> getGeoModelProvider() {
 		return this.modelProvider;
 	}
 
@@ -330,13 +233,13 @@ public abstract class GeoEntityRenderer<A extends EntityLivingBase & IAnimatable
 		return !livingEntityIn.isInvisible();
 	}
 
-    public boolean addLayer(GeoLayerRenderer<A> layer) {
+    public boolean addLayer(GeoEntityLivingLayerRenderer<A> layer) {
 		return this.layerRenderers.add(layer);
 	}
 
 	@Override
 	protected boolean setDoRenderBrightness(A entityLivingBaseIn, float partialTicks) {
-		return RenderHurtColor.set(entityLivingBaseIn, partialTicks);
+		return RenderLivingHurtColor.set(entityLivingBaseIn, partialTicks);
 	}
 
 	protected void renderLeash(EntityLiving entityLivingIn, double x, double y, double z, float entityYaw, float partialTicks) {

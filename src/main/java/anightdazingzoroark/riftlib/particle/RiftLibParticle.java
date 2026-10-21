@@ -7,6 +7,7 @@ import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleAppearance.AppearanceBillboardComponent;
 import anightdazingzoroark.riftlib.util.MutableAxisAlignedBB;
+import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
@@ -17,6 +18,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.lwjglx.util.vector.Quaternion;
 
 import java.util.List;
 import java.util.Objects;
@@ -73,6 +75,12 @@ public class RiftLibParticle implements MolangObject {
     private double prevX;
     private double prevY;
     private double prevZ;
+    @NotNull
+    private Vec3d accelerationAxisX = new Vec3d(1, 0, 0);
+    @NotNull
+    private Vec3d accelerationAxisY = new Vec3d(0, 1, 0);
+    @NotNull
+    private Vec3d accelerationAxisZ = new Vec3d(0, 0, 1);
     private double velX;
     private double velY;
     private double velZ;
@@ -124,6 +132,17 @@ public class RiftLibParticle implements MolangObject {
         this.velX = finalVelocity.x / 20D;
         this.velY = finalVelocity.y / 20D;
         this.velZ = finalVelocity.z / 20D;
+    }
+
+    /**
+     * Initializes motion in the emitter's orientation at birth. Later emitter rotations
+     * must not change the acceleration frame of particles already in flight.
+     */
+    public void initializeVelocity(@NotNull Vec3d direction, @NotNull Quaternion emitterRotation) {
+        this.initializeVelocity(direction);
+        this.accelerationAxisX = VectorUtils.rotateVectorWithQuaternion(new Vec3d(1, 0, 0), emitterRotation);
+        this.accelerationAxisY = VectorUtils.rotateVectorWithQuaternion(new Vec3d(0, 1, 0), emitterRotation);
+        this.accelerationAxisZ = VectorUtils.rotateVectorWithQuaternion(new Vec3d(0, 0, 1), emitterRotation);
     }
 
     public void initializeRotation() {
@@ -198,9 +217,20 @@ public class RiftLibParticle implements MolangObject {
 
             if (this.expireOnContact && collided) this.isDead = true;
 
-            this.velX += this.linearAcceleration[0].get() / 400D;
-            this.velY += this.linearAcceleration[1].get() / 400D;
-            this.velZ += this.linearAcceleration[2].get() / 400D;
+            double accelerationX = this.linearAcceleration[0].get();
+            double accelerationY = this.linearAcceleration[1].get();
+            double accelerationZ = this.linearAcceleration[2].get();
+
+            //spawn position, initial velocity, and dynamic acceleration share one frame
+            this.velX += (this.accelerationAxisX.x * accelerationX
+                    + this.accelerationAxisY.x * accelerationY
+                    + this.accelerationAxisZ.x * accelerationZ) / 400D;
+            this.velY += (this.accelerationAxisX.y * accelerationX
+                    + this.accelerationAxisY.y * accelerationY
+                    + this.accelerationAxisZ.y * accelerationZ) / 400D;
+            this.velZ += (this.accelerationAxisX.z * accelerationX
+                    + this.accelerationAxisY.z * accelerationY
+                    + this.accelerationAxisZ.z * accelerationZ) / 400D;
 
             double linearDrag = this.linearDragCoefficient.get();
             if (linearDrag > 0D) {

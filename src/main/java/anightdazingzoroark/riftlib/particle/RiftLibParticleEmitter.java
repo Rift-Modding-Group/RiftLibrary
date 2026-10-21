@@ -242,7 +242,7 @@ public class RiftLibParticleEmitter implements MolangObject {
 
         Vec3d offset = shapeVectors[0];
         particle.setPosition(this.posX + offset.x, this.posY + offset.y, this.posZ + offset.z);
-        particle.initializeVelocity(shapeVectors[1]);
+        particle.initializeVelocity(shapeVectors[1], this.rotationQuaternion);
         particle.initializeRotation();
         return particle;
     }

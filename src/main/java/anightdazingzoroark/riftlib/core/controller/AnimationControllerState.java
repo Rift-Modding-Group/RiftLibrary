@@ -17,17 +17,23 @@ import java.util.function.Function;
  * on Bedrock's animation controller system but adapted to java.
  * */
 public class AnimationControllerState<D extends AbstractAnimationData<?, ?>> {
+    @NotNull
     public final String name;
     public final double transitionLength;
     //we want to preserve order in which anims r added, hence this
+    @NotNull
     private final LinkedHashMap<String, StateAnimation<D>> animations = new LinkedHashMap<>();
     //same here but for states
+    @NotNull
     private final LinkedHashMap<String, Function<D, Boolean>> stateTransitions = new LinkedHashMap<>();
+    @NotNull
     private final List<Consumer<D>> onEntryEffects = new ArrayList<>();
+    @NotNull
     private final List<Consumer<D>> onExitEffects = new ArrayList<>();
+    @NotNull
     private final List<StateParticle> particleEffects = new ArrayList<>();
 
-    public AnimationControllerState(String name) {
+    public AnimationControllerState(@NotNull String name) {
         this(name, 0D);
     }
 
@@ -35,7 +41,7 @@ public class AnimationControllerState<D extends AbstractAnimationData<?, ?>> {
      * @param name The name of the state
      * @param transitionLength The time in seconds to cross-fade when transitioning away from this state
      * */
-    public AnimationControllerState(String name, double transitionLength) {
+    public AnimationControllerState(@NotNull String name, double transitionLength) {
         this.name = name;
         this.transitionLength = transitionLength * 20D; //turn to ticks here cos idk lol
     }
@@ -43,7 +49,8 @@ public class AnimationControllerState<D extends AbstractAnimationData<?, ?>> {
     /**
      * @param animationName The name of the animation
      * */
-    public AnimationControllerState<D> addAnimation(String animationName) {
+    @NotNull
+    public AnimationControllerState<D> addAnimation(@NotNull String animationName) {
         this.animations.put(animationName, new StateAnimation<>(animationName, (data) -> true));
         return this;
     }
@@ -52,11 +59,13 @@ public class AnimationControllerState<D extends AbstractAnimationData<?, ?>> {
      * @param animationName The name of the animation
      * @param animationPredicate The predicate that ensures that the animation should play when in this state
      * */
-    public AnimationControllerState<D> addAnimation(String animationName, Function<D, Boolean> animationPredicate) {
+    @NotNull
+    public AnimationControllerState<D> addAnimation(@NotNull String animationName, @NotNull Function<D, Boolean> animationPredicate) {
         this.animations.put(animationName, new StateAnimation<>(animationName, animationPredicate));
         return this;
     }
 
+    @NotNull
     public Map<String, StateAnimation<D>> getAnimations() {
         return this.animations;
     }
@@ -65,11 +74,13 @@ public class AnimationControllerState<D extends AbstractAnimationData<?, ?>> {
      * @param stateName The name of the state to transition to
      * @param transition The condition in which to transition to that state
      * */
-    public AnimationControllerState<D> addStateTransition(String stateName, Function<D, Boolean> transition) {
+    @NotNull
+    public AnimationControllerState<D> addStateTransition(@NotNull String stateName, Function<D, Boolean> transition) {
         this.stateTransitions.put(stateName, transition);
         return this;
     }
 
+    @NotNull
     public LinkedHashMap<String, Function<D, Boolean>> getStateTransitions() {
         return this.stateTransitions;
     }
@@ -78,11 +89,13 @@ public class AnimationControllerState<D extends AbstractAnimationData<?, ?>> {
      * This is basically a MoLang expression or a message that will take effect when entering this state
      * It also takes effect when initializing in this state
      * */
-    public AnimationControllerState<D> addEntryEffect(Consumer<D> entryEffect) {
+    @NotNull
+    public AnimationControllerState<D> addEntryEffect(@NotNull Consumer<D> entryEffect) {
         this.onEntryEffects.add(entryEffect);
         return this;
     }
 
+    @NotNull
     public List<Consumer<D>> getEntryEffects() {
         return this.onEntryEffects;
     }
@@ -90,11 +103,13 @@ public class AnimationControllerState<D extends AbstractAnimationData<?, ?>> {
     /**
      * Same as addEntryEffect but for when exiting the state
      * */
-    public AnimationControllerState<D> addExitEffect(Consumer<D> entryEffect) {
+    @NotNull
+    public AnimationControllerState<D> addExitEffect(@NotNull Consumer<D> entryEffect) {
         this.onExitEffects.add(entryEffect);
         return this;
     }
 
+    @NotNull
     public List<Consumer<D>> getExitEffects() {
         return this.onExitEffects;
     }
@@ -103,11 +118,13 @@ public class AnimationControllerState<D extends AbstractAnimationData<?, ?>> {
      * Defines the particle to create when entering this state. This particle will
      * be deleted when transitioning away from this state
      * */
+    @NotNull
     public AnimationControllerState<D> addParticleEffect(@NotNull String particleName, @NotNull String particleLocator) {
         this.particleEffects.add(new StateParticle(particleName, particleLocator));
         return this;
     }
 
+    @NotNull
     public List<StateParticle> getParticleEffects() {
         return this.particleEffects;
     }

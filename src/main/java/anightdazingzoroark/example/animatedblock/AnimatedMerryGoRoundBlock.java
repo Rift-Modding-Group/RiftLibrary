@@ -16,10 +16,6 @@ public class AnimatedMerryGoRoundBlock extends AnimatedBlockStateHolder {
 
     @Override
     public void initializeAnimationData(@NonNull AnimationDataBlock animationData) {
-        animationData.addAnimationController(new AnimationController<AnimatedMerryGoRoundBlock, AnimationDataBlock>(
-                this, "rotate", "default",
-                new AnimationControllerState<AnimationDataBlock>("default")
-                        .addAnimation("animation.merry_go_round.rotate")
-        ));
+        animationData.addAnimation("animation.merry_go_round.rotate");
     }
 }

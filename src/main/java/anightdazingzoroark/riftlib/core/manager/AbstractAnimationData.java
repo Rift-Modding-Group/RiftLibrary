@@ -4,6 +4,7 @@ import anightdazingzoroark.riftlib.animation.AnimationTicker;
 import anightdazingzoroark.riftlib.core.AnimatableRunValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
+import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.processor.IBone;
 import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
 import anightdazingzoroark.riftlib.geo.GeoLocator;
@@ -17,9 +18,7 @@ import anightdazingzoroark.riftlib.molang.math.MolangFunction;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import anightdazingzoroark.riftlib.resource.client.RiftLibCacheClient;
 import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
-import anightdazingzoroark.riftlib.util.MolangUtils;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
@@ -27,12 +26,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -43,19 +41,28 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     private final T holder;
     @NotNull
     private final IAnimatable<D> animatable;
+    @NotNull
     private final Map<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection = new HashMap<>();
+    @NotNull
     private final Map<String, AnimationController<?, ? extends D>> animationControllers = new HashMap<>();
+    @NotNull
     private final Map<String, Double> initAnimationValues = new HashMap<>();
+    @NotNull
     private final Map<String, Supplier<Double>> onUpdateAnimationValues = new HashMap<>();
+    @NotNull
     private final Map<String, AnimatableRunValue> animationMessageEffects = new HashMap<>();
+    @NotNull
     private final Map<String, GeoModel> modelCopies = new HashMap<>();
+    @NotNull
     protected final Map<String, MolangFunction> molangQueries = new HashMap<>();
+    @NotNull
     protected final Map<String, AnimatedLocator> animatedLocators = new HashMap<>();
     private int animatedLocatorTicker;
     @NotNull
     private final MolangParser parser;
     @NotNull
     private final MolangScope dataScope;
+    @Nullable
     protected GeoModel currentModel;
     public double tick;
     public boolean isFirstTick = true;
@@ -95,15 +102,36 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     /**
      * This registers animation controllers
      * */
-    public void addAnimationController(AnimationController<?, ? extends D> animationController) {
+    public void addAnimationController(@NotNull AnimationController<?, ? extends D> animationController) {
+        String name = animationController.getName();
+        if (name.isEmpty()) throw new IllegalStateException("Blank animation controller name is reserved for singleton animations!");
         this.animationControllers.put(animationController.getName(), animationController);
+    }
+
+    /**
+     * Helper that registers an animation that will load the moment this entity starts rendering
+     */
+    public void addAnimation(@NotNull String animationName) {
+        this.addAnimation(animationName, data -> true);
+    }
+
+    /**
+     * Same as above w support for anim predicate
+     */
+    public void addAnimation(@NotNull String animationName, @NotNull Function<D, Boolean> animationPredicate) {
+        AnimationController<?, ? extends D> animationController = this.animationControllers.computeIfAbsent(
+                "", name -> new AnimationController<>(
+                        this.animatable, name, "default", new AnimationControllerState<D>("default")
+                )
+        );
+        animationController.getState("default").addAnimation(animationName, animationPredicate::apply);
     }
 
     /**
      * This only runs once and will run when this object just started rendering
      * This is meant for updating molang variables once.
      */
-    public void addInitAnimationValue(String name, double value) {
+    public void addInitAnimationValue(@NotNull String name, double value) {
         this.initAnimationValues.put(name, value);
     }
 
@@ -111,14 +139,14 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
      * This runs as long as the holder gets rendered on client or ticked on server
      * This is meant for updating molang variables repeatedly
      */
-    public void addOnUpdateAnimationValue(String name, Supplier<Double> value) {
+    public void addOnUpdateAnimationValue(@NotNull String name, @NotNull Supplier<Double> value) {
         this.onUpdateAnimationValues.put(name, value);
     }
 
     /**
      * This allows for running custom code from animations on the server or client
      */
-    public void addAnimationMessageEffect(String name, AnimatableRunValue animMessageEffect) {
+    public void addAnimationMessageEffect(@NotNull String name, @NotNull AnimatableRunValue animMessageEffect) {
         this.animationMessageEffects.put(name, animMessageEffect);
     }
     //-----initialization methods end here-----
@@ -159,6 +187,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
         return this.animatedLocators.get(name);
     }
 
+    @NotNull
     public Map<String, AnimatedLocator> getAnimatedLocators() {
         return this.animatedLocators;
     }
@@ -184,10 +213,12 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
         this.serverSynced = serverSynced;
     }
 
+    @NotNull
     public Map<String, Pair<IBone, BoneSnapshot>> getBoneSnapshotCollection() {
         return this.boneSnapshotCollection;
     }
 
+    @NotNull
     public Map<String, AnimationController<?, ? extends D>> getAnimationControllers() {
         return this.animationControllers;
     }

@@ -307,11 +307,7 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
         animationData.setScale(3f);
 
         //---animations---
-        animationData.addAnimationController(new AnimationController<DragonEntity, AnimationDataEntityLiving>(
-                this, "movement", "default",
-                new AnimationControllerState<AnimationDataEntityLiving>("default")
-                        .addAnimation("animation.dragon.flying")
-        ));
+        animationData.addAnimation("animation.dragon.flying");
         animationData.addAnimationController(new AnimationController<DragonEntity, AnimationDataEntityLiving>(
                 this, "attack", "default",
                 new AnimationControllerState<AnimationDataEntityLiving>("default")

@@ -16,14 +16,10 @@ public class AnimatedSprinklerBlock extends AnimatedBlockStateHolder {
 
     @Override
     public void initializeAnimationData(@NonNull AnimationDataBlock animationData) {
-        animationData.addAnimationController(new AnimationController<AnimatedSprinklerBlock, AnimationDataBlock>(
-                this, "sprinkler", "default",
-                new AnimationControllerState<AnimationDataBlock>("default")
-                        .addAnimation("animation.sprinkler.spinning")
-                        .addAnimation("animation.sprinkler.hose_water_zero")
-                        .addAnimation("animation.sprinkler.hose_water_one")
-                        .addAnimation("animation.sprinkler.hose_water_two")
-                        .addAnimation("animation.sprinkler.hose_water_three")
-        ));
+        animationData.addAnimation("animation.sprinkler.spinning");
+        animationData.addAnimation("animation.sprinkler.hose_water_zero");
+        animationData.addAnimation("animation.sprinkler.hose_water_one");
+        animationData.addAnimation("animation.sprinkler.hose_water_two");
+        animationData.addAnimation("animation.sprinkler.hose_water_three");
     }
 }

@@ -14,10 +14,6 @@ public class AnimatedFireworkStickItem extends AnimatedItemStackHolder {
 
     @Override
     public void initializeAnimationData(@NonNull AnimationDataItemStack animationData) {
-        animationData.addAnimationController(new AnimationController<AnimatedFireworkStickItem, AnimationDataItemStack>(
-                this, "sparks", "default",
-                new AnimationControllerState<AnimationDataItemStack>("default")
-                        .addAnimation("animation.firework_stick.create_sparks")
-        ));
+        animationData.addAnimation("animation.firework_stick.create_sparks");
     }
 }

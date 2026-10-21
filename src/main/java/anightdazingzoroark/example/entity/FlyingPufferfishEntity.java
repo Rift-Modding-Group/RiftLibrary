@@ -105,11 +105,7 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
         animationData.setScale(2f);
 
         //---animations---
-        animationData.addAnimationController(new AnimationController<FlyingPufferfishEntity, AnimationDataEntityLiving>(
-                this, "puff", "default",
-                new AnimationControllerState<AnimationDataEntityLiving>("default")
-                        .addAnimation("animation.flying_pufferfish.inflate_loop")
-        ));
+        animationData.addAnimation("animation.flying_pufferfish.inflate_loop");
 
         animationData.addAnimationMessageEffect("startPuffUpRay", new AnimatableRunValue(
                 () -> RiftLibRayHelper.createRay(this, "puffUp", "rayCenter"), Side.SERVER

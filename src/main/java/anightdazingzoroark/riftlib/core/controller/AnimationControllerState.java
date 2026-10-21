@@ -16,7 +16,7 @@ import java.util.function.Function;
  * better than what we currently got for animations. And ye its based
  * on Bedrock's animation controller system but adapted to java.
  * */
-public class AnimationControllerState<D extends AbstractAnimationData<?, D>> {
+public class AnimationControllerState<D extends AbstractAnimationData<?, ?>> {
     public final String name;
     public final double transitionLength;
     //we want to preserve order in which anims r added, hence this
@@ -112,7 +112,7 @@ public class AnimationControllerState<D extends AbstractAnimationData<?, D>> {
         return this.particleEffects;
     }
 
-    public record StateAnimation<D extends AbstractAnimationData<?, D>> (@NotNull String name, @NotNull Function<D, Boolean> predicate) {}
+    public record StateAnimation<D extends AbstractAnimationData<?, ?>> (@NotNull String name, @NotNull Function<D, Boolean> predicate) {}
 
     public record StateParticle(@NotNull String particleName, @NotNull String particleLocator) {}
 }

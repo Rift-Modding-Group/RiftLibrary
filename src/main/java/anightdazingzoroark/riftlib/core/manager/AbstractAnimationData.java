@@ -44,7 +44,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     @NotNull
     private final IAnimatable<D> animatable;
     private final Map<String, Pair<IBone, BoneSnapshot>> boneSnapshotCollection = new HashMap<>();
-    private final Map<String, AnimationController<? extends IAnimatable<D>, D>> animationControllers = new HashMap<>();
+    private final Map<String, AnimationController<?, ? extends D>> animationControllers = new HashMap<>();
     private final Map<String, Double> initAnimationValues = new HashMap<>();
     private final Map<String, Supplier<Double>> onUpdateAnimationValues = new HashMap<>();
     private final Map<String, AnimatableRunValue> animationMessageEffects = new HashMap<>();
@@ -95,7 +95,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     /**
      * This registers animation controllers
      * */
-    public void addAnimationController(AnimationController<? extends IAnimatable<D>, D> animationController) {
+    public void addAnimationController(AnimationController<?, ? extends D> animationController) {
         this.animationControllers.put(animationController.getName(), animationController);
     }
 
@@ -188,7 +188,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
         return this.boneSnapshotCollection;
     }
 
-    public Map<String, AnimationController<? extends IAnimatable<D>, D>> getAnimationControllers() {
+    public Map<String, AnimationController<?, ? extends D>> getAnimationControllers() {
         return this.animationControllers;
     }
 
@@ -200,7 +200,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
      * Check if all animations in the current state in the given controller have reached the end of their play cycle
      * */
     public boolean allAnimationsFinished(String controllerName) {
-        for (Map.Entry<String, AnimationController<? extends IAnimatable<D>, D>> animationControllerEntry : this.animationControllers.entrySet()) {
+        for (Map.Entry<String, AnimationController<?, ? extends D>> animationControllerEntry : this.animationControllers.entrySet()) {
             if (!(animationControllerEntry.getKey().equals(controllerName))) continue;
             return animationControllerEntry.getValue().allAnimationsFinished();
         }

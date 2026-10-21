@@ -15,7 +15,7 @@ import java.nio.FloatBuffer;
 /**
  * Adapts a geo entity model to vanilla's {@link ModelBase} layer API.
  */
-public class GeoEntityLivingModel<A extends EntityLivingBase & IAnimatable<AnimationDataEntityLiving>> extends ModelBase {
+public class GeoEntityLivingModel<A extends EntityLivingBase & IAnimatable<? extends AnimationDataEntityLiving>> extends ModelBase {
     @NotNull
     private final GeoEntityLivingRenderer<A> renderer;
     @NotNull

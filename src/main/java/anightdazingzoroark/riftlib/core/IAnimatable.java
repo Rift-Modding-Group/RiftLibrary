@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * This interface must be applied to any object that wants to be animated
  */
-public interface IAnimatable<D extends AbstractAnimationData<?, D>> extends MolangObject {
+public interface IAnimatable<D extends AbstractAnimationData<?, ?>> extends MolangObject {
     /**
      * The animation data for the object that will be animated.
      * */

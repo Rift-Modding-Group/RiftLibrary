@@ -10,7 +10,7 @@ import net.minecraft.util.ResourceLocation;
 import anightdazingzoroark.riftlib.core.util.Color;
 import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 
-public abstract class GeoEntityLivingLayerRenderer<A extends EntityLivingBase & IAnimatable<AnimationDataEntityLiving>> implements LayerRenderer<A> {
+public abstract class GeoEntityLivingLayerRenderer<A extends EntityLivingBase & IAnimatable<? extends AnimationDataEntityLiving>> implements LayerRenderer<A> {
 	protected final IGeoRenderer<A> entityRenderer;
 
 	public GeoEntityLivingLayerRenderer(IGeoRenderer<A> entityRendererIn) {

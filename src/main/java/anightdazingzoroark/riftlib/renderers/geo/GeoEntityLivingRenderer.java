@@ -41,7 +41,7 @@ import anightdazingzoroark.riftlib.util.AnimationUtils;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings({"unchecked"})
-public abstract class GeoEntityLivingRenderer<A extends EntityLivingBase & IAnimatable<AnimationDataEntityLiving>> extends RenderLivingBase<A> implements IGeoRenderer<A> {
+public abstract class GeoEntityLivingRenderer<A extends EntityLivingBase & IAnimatable<? extends AnimationDataEntityLiving>> extends RenderLivingBase<A> implements IGeoRenderer<A> {
 	static {
 		AnimationController.addModelFetcher((IAnimatable<?> object) -> {
 			if (object instanceof Entity entity) {

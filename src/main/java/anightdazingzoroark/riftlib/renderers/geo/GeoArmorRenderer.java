@@ -60,10 +60,13 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
     //this defines which bones on the model should be shown or hidden
     //based on the presence of an armor slot
     @NotNull
-    private Map<EntityEquipmentSlot, List<String>> equipmentBoneBindings = new EnumMap<>(EntityEquipmentSlot.class);
+    private final Map<EntityEquipmentSlot, List<String>> equipmentBoneBindings = new EnumMap<>(EntityEquipmentSlot.class);
     //this defines a bone on the model that corresponds to an armor part for animation
     @NotNull
-    private Map<ArmorBodyPart, List<String>> bodyPartBoneBindings = new EnumMap<>(ArmorBodyPart.class);
+    private final Map<ArmorBodyPart, List<String>> bodyPartBoneBindings = new EnumMap<>(ArmorBodyPart.class);
+    //for legacy bone bindings, which will be removed soon
+    @NotNull
+    private final Map<ArmorBodyPart, String> legacyBoneBindings = new EnumMap<>(ArmorBodyPart.class);
 
     //-----static registry stuff-----
 	public static void registerArmorRenderer(Item armorItem, GeoArmorRenderer<?> renderer) {
@@ -161,18 +164,15 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
 	private void fitToBiped() {
         if (this.entityLiving instanceof EntityArmorStand) return;
 
-        for (Map.Entry<ArmorBodyPart, List<String>> bodyPartBoneBinding : this.bodyPartBoneBindings.entrySet()) {
-            ArmorBodyPart armorBodyPart = bodyPartBoneBinding.getKey();
-            List<String> boundBones = bodyPartBoneBinding.getValue();
-            for (String boundBone : boundBones) this.tryFitBoneToBiped(armorBodyPart.bipedBoneGetter.apply(this), boundBone);
+        for (ArmorBodyPart armorBodyPart : ArmorBodyPart.values()) {
+            for (String boundBone : this.getBoundBones(armorBodyPart)) {
+                this.tryFitBoneToBiped(armorBodyPart.bipedBoneGetter.apply(this), boundBone);
+            }
         }
 	}
 
 	private void transformBoundBones(@NotNull ArmorBodyPart armorBodyPart, @NotNull Consumer<IBone> transformation) {
-		List<String> boundBones = this.bodyPartBoneBindings.get(armorBodyPart);
-		if (boundBones == null) return;
-
-		for (String boundBone : boundBones) {
+		for (String boundBone : this.getBoundBones(armorBodyPart)) {
 			this.transformBoneAndChildren(this.modelProvider.getBone(boundBone), transformation);
 		}
 	}
@@ -290,15 +290,12 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
 		this.modelProvider.getModel(this.currentArmorHolder);
 
         //hide everything first
-        for (List<String> boundBones : this.equipmentBoneBindings.values()) {
-            for (String boundBone : boundBones) this.tryHideBone(boundBone, true);
+        for (EntityEquipmentSlot equipmentSlot : EntityEquipmentSlot.values()) {
+            for (String boundBone : this.getBoundBones(equipmentSlot)) this.tryHideBone(boundBone, true);
         }
 
         //reveal based on if given slot was equipped
-        List<String> bonesBoundToGivenSlot = this.equipmentBoneBindings.get(slot);
-        if (bonesBoundToGivenSlot != null) {
-            for (String boundBone : bonesBoundToGivenSlot) this.tryHideBone(boundBone, false);
-        }
+        for (String boundBone : this.getBoundBones(slot)) this.tryHideBone(boundBone, false);
 		return this;
 	}
 
@@ -319,22 +316,129 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
         if (!boundBones.contains(name)) boundBones.add(name);
     }
 
+	//-----deprecated legacy features-----
+    @NotNull
+    private List<String> getBoundBones(@NotNull ArmorBodyPart armorBodyPart) {
+        List<String> boundBones = this.bodyPartBoneBindings.getOrDefault(armorBodyPart, List.of());
+        String legacyBone = this.legacyBoneBindings.get(armorBodyPart);
+        if (legacyBone == null || boundBones.contains(legacyBone)) return boundBones;
+
+        List<String> combinedBones = new ArrayList<>(boundBones);
+        combinedBones.add(legacyBone);
+        return combinedBones;
+    }
+
+    @NotNull
+    private List<String> getBoundBones(@NotNull EntityEquipmentSlot equipmentSlot) {
+        List<String> boundBones = new ArrayList<>(this.equipmentBoneBindings.getOrDefault(equipmentSlot, List.of()));
+        for (Map.Entry<ArmorBodyPart, String> legacyBinding : this.legacyBoneBindings.entrySet()) {
+            if (legacyBinding.getKey().legacyEquipmentSlot == equipmentSlot && !boundBones.contains(legacyBinding.getValue())) {
+                boundBones.add(legacyBinding.getValue());
+            }
+        }
+        return boundBones;
+    }
+
+    private void setLegacyBone(@NotNull ArmorBodyPart armorBodyPart, @Nullable String name) {
+        if (name == null) {
+            RiftLib.LOGGER.warn("Cannot assign null as bone name");
+            return;
+        }
+        if (name.isEmpty()) this.legacyBoneBindings.remove(armorBodyPart);
+        else this.legacyBoneBindings.put(armorBodyPart, name);
+    }
+
+    /**
+     * @deprecated Use {@link #bindBoneToBodyPart} and {@link #bindBoneToEquipmentSlot}.
+     */
+    @Deprecated(since = "2.1.0")
+    public void setHeadBone(@Nullable String name) {
+        this.setLegacyBone(ArmorBodyPart.HEAD, name);
+    }
+
+    /**
+     * @deprecated Use {@link #bindBoneToBodyPart} and {@link #bindBoneToEquipmentSlot}.
+     */
+    @Deprecated(since = "2.1.0")
+    public void setBodyBone(@Nullable String name) {
+        this.setLegacyBone(ArmorBodyPart.BODY, name);
+    }
+
+    /**
+     * @deprecated Use {@link #bindBoneToBodyPart} and {@link #bindBoneToEquipmentSlot}.
+     */
+    @Deprecated(since = "2.1.0")
+    public void setRightArmBone(@Nullable String name) {
+        this.setLegacyBone(ArmorBodyPart.RIGHT_ARM, name);
+    }
+
+    /**
+     * @deprecated Use {@link #bindBoneToBodyPart} and {@link #bindBoneToEquipmentSlot}.
+     */
+    @Deprecated(since = "2.1.0")
+    public void setLeftArmBone(@Nullable String name) {
+        this.setLegacyBone(ArmorBodyPart.LEFT_ARM, name);
+    }
+
+    /**
+     * @deprecated Use {@link #bindBoneToBodyPart} and {@link #bindBoneToEquipmentSlot}.
+     */
+    @Deprecated(since = "2.1.0")
+    public void setHipsBone(@Nullable String name) {
+        this.setLegacyBone(ArmorBodyPart.HIPS, name);
+    }
+
+    /**
+     * @deprecated Use {@link #bindBoneToBodyPart} and {@link #bindBoneToEquipmentSlot}.
+     */
+    @Deprecated(since = "2.1.0")
+    public void setRightLegBone(@Nullable String name) {
+        this.setLegacyBone(ArmorBodyPart.RIGHT_LEG, name);
+    }
+
+    /**
+     * @deprecated Use {@link #bindBoneToBodyPart} and {@link #bindBoneToEquipmentSlot}.
+     */
+    @Deprecated(since = "2.1.0")
+    public void setLeftLegBone(@Nullable String name) {
+        this.setLegacyBone(ArmorBodyPart.LEFT_LEG, name);
+    }
+
+    /**
+     * @deprecated Use {@link #bindBoneToBodyPart} and {@link #bindBoneToEquipmentSlot}.
+     */
+    @Deprecated(since = "2.1.0")
+    public void setRightBootBone(@Nullable String name) {
+        this.setLegacyBone(ArmorBodyPart.RIGHT_FOOT, name);
+    }
+
+    /**
+     * @deprecated Use {@link #bindBoneToBodyPart} and {@link #bindBoneToEquipmentSlot}.
+     */
+    @Deprecated(since = "2.1.0")
+    public void setLeftBootBone(@Nullable String name) {
+        this.setLegacyBone(ArmorBodyPart.LEFT_FOOT, name);
+    }
+
     public enum ArmorBodyPart {
-        HEAD(bipedModel -> bipedModel.bipedHead),
-        BODY(bipedModel -> bipedModel.bipedBody),
-        RIGHT_ARM(bipedModel -> bipedModel.bipedRightArm),
-        LEFT_ARM(bipedModel -> bipedModel.bipedLeftArm),
-        HIPS(bipedModel -> bipedModel.bipedBody),
-        RIGHT_LEG(bipedModel -> bipedModel.bipedRightLeg),
-        LEFT_LEG(bipedModel -> bipedModel.bipedLeftLeg),
-        RIGHT_FOOT(bipedModel -> bipedModel.bipedRightLeg),
-        LEFT_FOOT(bipedModel -> bipedModel.bipedLeftLeg);
+        HEAD(bipedModel -> bipedModel.bipedHead, EntityEquipmentSlot.HEAD),
+        BODY(bipedModel -> bipedModel.bipedBody, EntityEquipmentSlot.CHEST),
+        RIGHT_ARM(bipedModel -> bipedModel.bipedRightArm, EntityEquipmentSlot.CHEST),
+        LEFT_ARM(bipedModel -> bipedModel.bipedLeftArm, EntityEquipmentSlot.CHEST),
+        HIPS(bipedModel -> bipedModel.bipedBody, EntityEquipmentSlot.LEGS),
+        RIGHT_LEG(bipedModel -> bipedModel.bipedRightLeg, EntityEquipmentSlot.LEGS),
+        LEFT_LEG(bipedModel -> bipedModel.bipedLeftLeg, EntityEquipmentSlot.LEGS),
+        RIGHT_FOOT(bipedModel -> bipedModel.bipedRightLeg, EntityEquipmentSlot.FEET),
+        LEFT_FOOT(bipedModel -> bipedModel.bipedLeftLeg, EntityEquipmentSlot.FEET);
 
         @NotNull
         private final Function<ModelBiped, ModelRenderer> bipedBoneGetter;
+        @NotNull
+        private final EntityEquipmentSlot legacyEquipmentSlot;
 
-        ArmorBodyPart(@NotNull Function<ModelBiped, ModelRenderer> bipedBoneGetter) {
+        ArmorBodyPart(@NotNull Function<ModelBiped, ModelRenderer> bipedBoneGetter, @NotNull EntityEquipmentSlot legacyEquipmentSlot) {
             this.bipedBoneGetter = bipedBoneGetter;
+            this.legacyEquipmentSlot = legacyEquipmentSlot;
         }
     }
 }

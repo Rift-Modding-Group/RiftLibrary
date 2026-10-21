@@ -28,7 +28,7 @@ import java.util.List;
  * Renders animated entities that do not extend EntityLivingBase.
  * */
 @SuppressWarnings("unchecked")
-public class GeoEntityNonLivingRenderer<A extends Entity & IAnimatable<AnimationDataEntityNonLiving>> extends Render<A> implements IGeoRenderer<A> {
+public class GeoEntityNonLivingRenderer<A extends Entity & IAnimatable<AnimationDataEntityNonLiving>> extends Render<A> implements IGeoRenderer<A>, IGeoEntityItemRenderer<A> {
     static {
         AnimationController.addModelFetcher(object -> {
             if (object instanceof Entity entity) {
@@ -92,6 +92,9 @@ public class GeoEntityNonLivingRenderer<A extends Entity & IAnimatable<Animation
             }
             for (GeoEntityNonLivingLayerRenderer<A> layer : this.layerRenderers) {
                 layer.render(entity, partialTicks, entity.ticksExisted + partialTicks, color);
+            }
+            if (!entity.isInvisibleToPlayer(Minecraft.getMinecraft().player)) {
+                GeoLocatorItemRenderHelper.renderItemsAtLocators(this, model, entity, partialTicks);
             }
         }
         catch (RuntimeException | Error exception) {

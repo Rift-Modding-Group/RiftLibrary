@@ -22,7 +22,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityHanging;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
@@ -40,7 +39,7 @@ import anightdazingzoroark.riftlib.util.AnimationUtils;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings({"unchecked"})
-public abstract class GeoEntityLivingRenderer<A extends EntityLivingBase & IAnimatable<? extends AnimationDataEntityLiving>> extends RenderLivingBase<A> implements IGeoRenderer<A> {
+public abstract class GeoEntityLivingRenderer<A extends EntityLivingBase & IAnimatable<? extends AnimationDataEntityLiving>> extends RenderLivingBase<A> implements IGeoRenderer<A>, IGeoEntityItemRenderer<A> {
 	static {
 		AnimationController.addModelFetcher((IAnimatable<?> object) -> {
 			if (object instanceof Entity entity) {
@@ -117,22 +116,21 @@ public abstract class GeoEntityLivingRenderer<A extends EntityLivingBase & IAnim
 			);
 		}
 
-		if (!(entity instanceof EntityPlayer) || !((EntityPlayer) entity).isSpectator()) {
-			for (GeoEntityLivingLayerRenderer<A> layerRenderer : this.layerRenderers) {
-				layerRenderer.render(entity, partialTicks, 0, renderColor);
-			}
-			float limbSwingAmount = entity.prevLimbSwingAmount + (entity.limbSwingAmount - entity.prevLimbSwingAmount) * partialTicks;
-			float limbSwing = entity.limbSwing - entity.limbSwingAmount * (1f - partialTicks);
-			float ageInTicks = entity.ticksExisted + partialTicks;
-			float netHeadYaw = entity.getAnimationData().getHeadYaw(partialTicks);
-			float headPitch = entity.getAnimationData().getHeadPitch(partialTicks);
-			for (LayerRenderer<A> layerRenderer : super.layerRenderers) {
-				layerRenderer.doRenderLayer(
-						entity, limbSwing, limbSwingAmount, partialTicks,
-						ageInTicks, netHeadYaw, headPitch, 1f / 16f
-				);
-			}
+		for (GeoEntityLivingLayerRenderer<A> layerRenderer : this.layerRenderers) {
+			layerRenderer.render(entity, partialTicks, 0, renderColor);
 		}
+		float limbSwingAmount = entity.prevLimbSwingAmount + (entity.limbSwingAmount - entity.prevLimbSwingAmount) * partialTicks;
+		float limbSwing = entity.limbSwing - entity.limbSwingAmount * (1f - partialTicks);
+		float ageInTicks = entity.ticksExisted + partialTicks;
+		float netHeadYaw = entity.getAnimationData().getHeadYaw(partialTicks);
+		float headPitch = entity.getAnimationData().getHeadPitch(partialTicks);
+		for (LayerRenderer<A> layerRenderer : super.layerRenderers) {
+			layerRenderer.doRenderLayer(
+					entity, limbSwing, limbSwingAmount, partialTicks,
+					ageInTicks, netHeadYaw, headPitch, 1f / 16f
+			);
+		}
+
 		if (entity instanceof EntityLiving entityLiving) {
 			Entity leashHolder = entityLiving.getLeashHolder();
 			if (leashHolder != null) {
@@ -141,6 +139,10 @@ public abstract class GeoEntityLivingRenderer<A extends EntityLivingBase & IAnim
 		}
 
 		if (flag) RenderLivingHurtColor.unset();
+
+		if (!entity.isInvisibleToPlayer(Minecraft.getMinecraft().player)) {
+			GeoLocatorItemRenderHelper.renderItemsAtLocators(this, model, entity, partialTicks);
+		}
 
 		GlStateManager.popMatrix();
 		GlStateManager.popMatrix();

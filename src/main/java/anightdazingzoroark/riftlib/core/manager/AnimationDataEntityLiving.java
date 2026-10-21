@@ -13,6 +13,9 @@ import org.jetbrains.annotations.NotNull;
  * Animation data for entities extending EntityLivingBase.
  * */
 public class AnimationDataEntityLiving extends AbstractAnimationDataAdvancedEntity<EntityLivingBase, AnimationDataEntityLiving> {
+    @NotNull
+    private final MovementSpeedTracker movementSpeedTracker = new MovementSpeedTracker();
+
     public AnimationDataEntityLiving(@NotNull EntityLivingBase holder) {
         super(holder, getAnimatable(holder));
     }
@@ -22,6 +25,18 @@ public class AnimationDataEntityLiving extends AbstractAnimationDataAdvancedEnti
     private static IAnimatable<AnimationDataEntityLiving> getAnimatable(@NotNull EntityLivingBase holder) {
         if (holder instanceof IAnimatable<?> animatable) return (IAnimatable<AnimationDataEntityLiving>) animatable;
         throw new IllegalArgumentException("AnimationDataEntityLiving holder must implement IAnimatable");
+    }
+
+    @Override
+    public void updateOnDataTick() {
+        super.updateOnDataTick();
+
+        this.movementSpeedTracker.update(
+                this.getHolder().ticksExisted,
+                this.getHolder().posX - this.getHolder().prevPosX,
+                this.getVerticalSpeed(),
+                this.getHolder().posZ - this.getHolder().prevPosZ
+        );
     }
 
     @Override
@@ -55,7 +70,7 @@ public class AnimationDataEntityLiving extends AbstractAnimationDataAdvancedEnti
         return MathHelper.wrapDegrees(headYaw - modelYaw);
     }
 
-    private float getHeadRotationPartialTicks() {
+    private float getAnimationPartialTicks() {
         if (this.getWorld() == null || !this.getWorld().isRemote) return 1f;
         return Minecraft.getMinecraft().getRenderPartialTicks();
     }
@@ -63,8 +78,12 @@ public class AnimationDataEntityLiving extends AbstractAnimationDataAdvancedEnti
     @Override
     protected void createMolangQueries() {
         super.createMolangQueries();
-        this.registerMolangQuery("head_x_rotation", (values, animData) -> (double) this.getHeadPitch(this.getHeadRotationPartialTicks()));
-        this.registerMolangQuery("head_y_rotation", (values, animData) -> (double) this.getHeadYaw(this.getHeadRotationPartialTicks()));
+        this.registerMolangQuery("head_x_rotation", (values, animData) -> (double) this.getHeadPitch(this.getAnimationPartialTicks()));
+        this.registerMolangQuery("head_y_rotation", (values, animData) -> (double) this.getHeadYaw(this.getAnimationPartialTicks()));
+        this.registerMolangQuery("modified_move_speed", (values, animData) -> {
+            if (this.getHolder().isRiding()) return 0D;
+            return this.movementSpeedTracker.getAmount(this.getAnimationPartialTicks());
+        });
         this.registerMolangQuery("health", (values, animData) -> {
             return (double) this.getHolder().getHealth();
         });
@@ -77,5 +96,29 @@ public class AnimationDataEntityLiving extends AbstractAnimationDataAdvancedEnti
         this.registerMolangQuery("is_sprinting", (values, animData) -> {
             return MolangUtils.booleanToDouble(this.getHolder().isSprinting());
         });
+    }
+
+    /**
+     * Return interpolated total speed of entity, for query.modified_move_speed
+     */
+    public static class MovementSpeedTracker {
+        private boolean initialized;
+        private int lastTick;
+        private float previousAmount;
+        private float amount;
+
+        public void update(int tick, double dx, double dy, double dz) {
+            if (this.initialized && tick == this.lastTick) return;
+
+            this.initialized = true;
+            this.lastTick = tick;
+            this.previousAmount = this.amount;
+            float targetAmount = Math.clamp((float) Math.sqrt(dx * dx + dy * dy + dz * dz) * 4f, 0f, 1f);
+            this.amount += (targetAmount - this.amount) * 0.4f;
+        }
+
+        public float getAmount(float partialTicks) {
+            return this.previousAmount + (this.amount - this.previousAmount) * Math.clamp(partialTicks, 0f, 1f);
+        }
     }
 }

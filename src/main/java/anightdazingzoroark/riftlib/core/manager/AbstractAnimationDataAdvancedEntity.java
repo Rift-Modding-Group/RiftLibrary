@@ -8,6 +8,7 @@ import anightdazingzoroark.riftlib.model.AnimatedBoundingBox;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -32,19 +33,30 @@ import java.util.function.Function;
  * */
 public abstract class AbstractAnimationDataAdvancedEntity<T extends Entity, D extends AbstractAnimationDataAdvancedEntity<T, D>>
         extends AbstractAnimationDataEntity<T, D> {
+    @NotNull
+    private final GroundWalkDistanceTracker groundWalkDistanceTracker = new GroundWalkDistanceTracker();
     private Function<T, Float> holderScale;
     private final Map<String, AnimatedBoundingBox> animatedBoundingBoxes = new HashMap<>();
     private final Map<String, List<AnimatedBoundingBox>> animatedBoundingBoxesByTag = new HashMap<>();
     private final Map<String, AxisAlignedBB> debugBoundingBoxes = new HashMap<>();
     private boolean boundingBoxesRecentlyUpdated;
 
-    public AbstractAnimationDataAdvancedEntity(@NonNull T holder, @NotNull IAnimatable<D> animatable) {
+    public AbstractAnimationDataAdvancedEntity(@NotNull T holder, @NotNull IAnimatable<D> animatable) {
         super(holder, animatable);
     }
 
     @Override
     public void updateOnDataTick() {
         super.updateOnDataTick();
+
+        this.groundWalkDistanceTracker.update(
+                this.getHolder().ticksExisted,
+                this.getHolder().posX - this.getHolder().prevPosX,
+                this.getVerticalSpeed(),
+                this.getHolder().posZ - this.getHolder().prevPosZ,
+                this.getHolder().onGround,
+                this.getHolder().isSneaking()
+        );
 
         //update all debugged world space bounding boxes
         if (this.getHolder().world.isRemote) {
@@ -109,6 +121,18 @@ public abstract class AbstractAnimationDataAdvancedEntity<T extends Entity, D ex
      * */
     public float getScale() {
         return this.holderScale == null ? 1f : this.holderScale.apply(this.getHolder());
+    }
+
+    @Override
+    protected void createMolangQueries() {
+        super.createMolangQueries();
+        this.registerMolangQuery("walk_distance", (values, animData) -> {
+            float partialTicks = 1f;
+            if (this.getWorld() != null && this.getWorld().isRemote) {
+                partialTicks = Minecraft.getMinecraft().getRenderPartialTicks();
+            }
+            return this.groundWalkDistanceTracker.getDistance(partialTicks);
+        });
     }
 
     //-----animated bounding box definitions from here on out (only entities use hitboxes hence this lol)-----
@@ -182,5 +206,18 @@ public abstract class AbstractAnimationDataAdvancedEntity<T extends Entity, D ex
     @NotNull
     public Map<String, AxisAlignedBB> getDebugBoundingBoxes() {
         return this.debugBoundingBoxes;
+    }
+    //----------
+
+    /**
+     * Track distanced walked over solid ground while not sneaking, for query.walk_distance
+     * Extends AbstractAnimationDataEntity.MovementDistanceTracker for... convenience lol
+     */
+    private static class GroundWalkDistanceTracker extends MovementDistanceTracker {
+        protected void update(int tick, double dx, double dy, double dz, boolean onGround, boolean sneaking) {
+            double displacement = 0;
+            if (onGround && !sneaking) displacement = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            super.update(tick, displacement);
+        }
     }
 }

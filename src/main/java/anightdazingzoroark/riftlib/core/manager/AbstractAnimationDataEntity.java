@@ -4,11 +4,9 @@ import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import anightdazingzoroark.riftlib.util.MiscUtils;
 import anightdazingzoroark.riftlib.util.MolangUtils;
-import java.util.function.Function;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ActiveRenderInfo;
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
@@ -18,7 +16,8 @@ import org.jspecify.annotations.NonNull;
  * Common entity animation data, including projectile queries and locators.
  * */
 public abstract class AbstractAnimationDataEntity<T extends Entity, D extends AbstractAnimationDataEntity<T, D>> extends AbstractAnimationData<T, D> {
-    private double modifiedDistanceMoved;
+    @NonNull
+    private final MovementDistanceTracker movementDistance = new MovementDistanceTracker();
 
     public AbstractAnimationDataEntity(@NonNull T holder, @NotNull IAnimatable<D> animatable) {
         super(holder, animatable);
@@ -26,14 +25,7 @@ public abstract class AbstractAnimationDataEntity<T extends Entity, D extends Ab
 
     @Override
     public void updateOnDataTick() {
-        double speed = this.getHorizontalSpeed();
-
-        //the reason why modified_distance_moved is calculated as such is because
-        //getEntitySpeed returns the speed of an entity within the tick, which is
-        //as good as by how many blocks it was displaced within a tick, which is
-        //good enough to add upon for this query
-        if (speed > 0) this.modifiedDistanceMoved += speed;
-        else this.modifiedDistanceMoved = 0;
+        this.movementDistance.update(this.getHolder().ticksExisted, this.getHorizontalSpeed());
     }
 
     @Override
@@ -56,8 +48,13 @@ public abstract class AbstractAnimationDataEntity<T extends Entity, D extends Ab
     @Override
     protected void createMolangQueries() {
         super.createMolangQueries();
-
-        this.registerMolangQuery("modified_distance_moved", (values, animData) -> this.modifiedDistanceMoved);
+        this.registerMolangQuery("modified_distance_moved", (values, animData) -> {
+            float partialTicks = 1f;
+            if (this.getWorld() != null && this.getWorld().isRemote) {
+                partialTicks = Minecraft.getMinecraft().getRenderPartialTicks();
+            }
+            return this.movementDistance.getDistance(partialTicks);
+        });
         this.registerMolangQuery("distance_from_camera", (values, animData) -> {
             if (this.getWorld() == null || !this.getWorld().isRemote) return 0D;
 
@@ -114,5 +111,28 @@ public abstract class AbstractAnimationDataEntity<T extends Entity, D extends Ab
     @Override
     public World getWorld() {
         return this.getHolder().world;
+    }
+
+    /**
+     * Track total horizontal displacement since being loaded, for query.modified_distance_moved
+     */
+    protected static class MovementDistanceTracker {
+        private boolean initialized;
+        private int lastTick;
+        private double previousDistance;
+        private double distance;
+
+        protected void update(int tick, double displacement) {
+            if (this.initialized && tick == this.lastTick) return;
+
+            this.initialized = true;
+            this.lastTick = tick;
+            this.previousDistance = this.distance;
+            this.distance += displacement;
+        }
+
+        protected double getDistance(float partialTicks) {
+            return this.previousDistance + (this.distance - this.previousDistance) * Math.clamp(partialTicks, 0f, 1f);
+        }
     }
 }

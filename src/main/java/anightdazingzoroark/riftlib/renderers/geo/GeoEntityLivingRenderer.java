@@ -4,7 +4,6 @@ import java.util.List;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntityLiving;
-import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosSnapshot;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
 import com.google.common.collect.Lists;
@@ -76,13 +75,11 @@ public abstract class GeoEntityLivingRenderer<A extends EntityLivingBase & IAnim
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(x, y, z);
 
-		//here, yaw rotation on the head applies to the entire entity when not ridden
-		//and the yaw rotation on the body when ridden because yes
-		float trueYaw = Interpolations.lerpYaw(entity.prevRotationYawHead, entity.rotationYawHead, partialTicks);
-		float riddenYaw = entity instanceof IDynamicRideUser<?> dynamicRideUser
-				? dynamicRideUser.getRenderYaw(partialTicks)
-				: Interpolations.lerpYaw(entity.prevRotationYaw, entity.rotationYaw, partialTicks);
-		float finalYaw = entity.isBeingRidden() ? riddenYaw : trueYaw;
+		//Use the same body yaw as world-space locators, hitboxes, and rays.
+		float finalYaw = entity.getAnimationData().getModelYaw(partialTicks);
+		if (entity.isBeingRidden() && entity instanceof IDynamicRideUser<?> dynamicRideUser) {
+			finalYaw = dynamicRideUser.getRenderYaw(partialTicks);
+		}
 		this.applyRotations(entity, finalYaw, partialTicks);
 
 		//---set up client animations and update animated locators---
@@ -127,9 +124,8 @@ public abstract class GeoEntityLivingRenderer<A extends EntityLivingBase & IAnim
 			float limbSwingAmount = entity.prevLimbSwingAmount + (entity.limbSwingAmount - entity.prevLimbSwingAmount) * partialTicks;
 			float limbSwing = entity.limbSwing - entity.limbSwingAmount * (1f - partialTicks);
 			float ageInTicks = entity.ticksExisted + partialTicks;
-			float netHeadYaw = Interpolations.lerpYaw(entity.prevRotationYawHead, entity.rotationYawHead, partialTicks)
-					- Interpolations.lerpYaw(entity.prevRenderYawOffset, entity.renderYawOffset, partialTicks);
-			float headPitch = entity.prevRotationPitch + (entity.rotationPitch - entity.prevRotationPitch) * partialTicks;
+			float netHeadYaw = entity.getAnimationData().getHeadYaw(partialTicks);
+			float headPitch = entity.getAnimationData().getHeadPitch(partialTicks);
 			for (LayerRenderer<A> layerRenderer : super.layerRenderers) {
 				layerRenderer.doRenderLayer(
 						entity, limbSwing, limbSwingAmount, partialTicks,

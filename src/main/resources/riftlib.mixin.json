@@ -12,6 +12,7 @@
     "RenderGlobalMixin"
   ],
   "mixins": [
+    "EntityLivingMixin",
     "RenderItemMixin"
   ],
   "server": [],

@@ -19,10 +19,16 @@ public class AnimationDataEntityLiving extends AbstractAnimationDataAdvancedEnti
     private final MovementSpeedTracker movementSpeedTracker = new MovementSpeedTracker();
     @NotNull
     private final BodyRotationTracker serverBodyRotationTracker = new BodyRotationTracker();
+    @NotNull
+    private final HeadPitchTracker serverHeadPitchTracker = new HeadPitchTracker();
     private boolean hasServerBodyRotation;
     private float serverBodyYaw;
     private float previousServerBodyYaw;
     private boolean serverBodyRotationPending;
+    private boolean hasServerHeadPitch;
+    private float serverHeadPitch;
+    private float previousServerHeadPitch;
+    private boolean serverHeadPitchPending;
 
     public AnimationDataEntityLiving(@NotNull EntityLivingBase holder) {
         super(holder, getAnimatable(holder));
@@ -51,16 +57,23 @@ public class AnimationDataEntityLiving extends AbstractAnimationDataAdvancedEnti
     @NotNull
     public NBTTagCompound getNBT() {
         NBTTagCompound data = super.getNBT();
+
         NBTTagCompound bodyRotation = new NBTTagCompound();
         bodyRotation.setFloat("Yaw", this.getHolder().renderYawOffset);
         bodyRotation.setFloat("PreviousYaw", this.getHolder().prevRenderYawOffset);
         data.setTag("BodyRotation", bodyRotation);
+
+        NBTTagCompound headRotation = new NBTTagCompound();
+        headRotation.setFloat("Pitch", this.getHolder().rotationPitch);
+        headRotation.setFloat("PreviousPitch", this.getHolder().prevRotationPitch);
+        data.setTag("HeadRotation", headRotation);
         return data;
     }
 
     @Override
     public void readNBT(@NotNull NBTTagCompound data) {
         super.readNBT(data);
+
         NBTTagCompound bodyRotation = data.getCompoundTag("BodyRotation");
         this.hasServerBodyRotation = bodyRotation.hasKey("Yaw", 99) && bodyRotation.hasKey("PreviousYaw", 99);
         if (!this.hasServerBodyRotation) {
@@ -71,24 +84,42 @@ public class AnimationDataEntityLiving extends AbstractAnimationDataAdvancedEnti
             this.serverBodyYaw = bodyRotation.getFloat("Yaw");
             this.previousServerBodyYaw = bodyRotation.getFloat("PreviousYaw");
             this.serverBodyRotationPending = true;
-            //live clients commit pending updates at render start, after queued packets and ticks.
-            if (this.getWorld() == null || !this.getWorld().isRemote) this.prepareBodyRotationFrame(0f);
             this.applyServerBodyRotation();
         }
+
+        NBTTagCompound headRotation = data.getCompoundTag("HeadRotation");
+        this.hasServerHeadPitch = headRotation.hasKey("Pitch", 99) && headRotation.hasKey("PreviousPitch", 99);
+        if (!this.hasServerHeadPitch) {
+            this.serverHeadPitchPending = false;
+            this.serverHeadPitchTracker.reset();
+        }
+        else {
+            this.serverHeadPitch = headRotation.getFloat("Pitch");
+            this.previousServerHeadPitch = headRotation.getFloat("PreviousPitch");
+            this.serverHeadPitchPending = true;
+        }
+        //live clients commit both targets at render start, after queued packets and ticks.
+        if (this.getWorld() == null || !this.getWorld().isRemote) this.prepareBodyRotationFrame(0f);
     }
 
     /**
-     * Accepts the latest body target on the same clock used to render this frame.
+     * Accepts body and head-pitch targets on the same clock used to render this frame.
      * */
     public void prepareBodyRotationFrame(float partialTicks) {
+        if (this.serverHeadPitchPending) {
+            this.serverHeadPitchTracker.update(
+                    this.previousServerHeadPitch, this.serverHeadPitch, this.getRotationTime(partialTicks)
+            );
+            this.serverHeadPitchPending = false;
+        }
         if (!this.serverBodyRotationPending) return;
         this.serverBodyRotationTracker.update(
-                this.previousServerBodyYaw, this.serverBodyYaw, this.getBodyRotationTime(partialTicks)
+                this.previousServerBodyYaw, this.serverBodyYaw, this.getRotationTime(partialTicks)
         );
         this.serverBodyRotationPending = false;
     }
 
-    private double getBodyRotationTime(float partialTicks) {
+    private double getRotationTime(float partialTicks) {
         if (this.getWorld() == null) return this.getHolder().ticksExisted + (double) partialTicks;
         if (this.getWorld().isRemote) return LivingBodyRotationTicker.Client.getBodyRotationTime(partialTicks);
         return this.getWorld().getTotalWorldTime() + (double) partialTicks;
@@ -126,7 +157,7 @@ public class AnimationDataEntityLiving extends AbstractAnimationDataAdvancedEnti
             if (!this.serverBodyRotationTracker.initialized) {
                 return Interpolations.lerpYaw(this.previousServerBodyYaw, this.serverBodyYaw, partialTicks);
             }
-            return this.serverBodyRotationTracker.getYaw(this.getBodyRotationTime(partialTicks));
+            return this.serverBodyRotationTracker.getYaw(this.getRotationTime(partialTicks));
         }
         return Interpolations.lerpYaw(this.getHolder().prevRenderYawOffset, this.getHolder().renderYawOffset, partialTicks);
     }
@@ -135,6 +166,13 @@ public class AnimationDataEntityLiving extends AbstractAnimationDataAdvancedEnti
      * Head pitch in Blockbench degrees, positive when looking down.
      * */
     public float getHeadPitch(float partialTicks) {
+        if (this.hasServerHeadPitch && !this.getHolder().isBeingRidden() && !this.getHolder().isRiding()) {
+            //movement packets interpolate pitch independently and can retain an old attack pose.
+            if (!this.serverHeadPitchTracker.initialized) {
+                return Interpolations.lerp(this.previousServerHeadPitch, this.serverHeadPitch, partialTicks);
+            }
+            return this.serverHeadPitchTracker.getPitch(this.getRotationTime(partialTicks));
+        }
         return Interpolations.lerp(this.getHolder().prevRotationPitch, this.getHolder().rotationPitch, partialTicks);
     }
 
@@ -181,6 +219,40 @@ public class AnimationDataEntityLiving extends AbstractAnimationDataAdvancedEnti
         this.registerMolangQuery("is_sprinting", (values, animData) -> {
             return MolangUtils.booleanToDouble(this.getHolder().isSprinting());
         });
+    }
+
+    /**
+     * Linear pitch interpolation; unlike yaw, vertical angles must not wrap.
+     * */
+    private static class HeadPitchTracker {
+        private boolean initialized;
+        private double transitionStart;
+        private float startPitch;
+        private float targetPitch;
+
+        private void update(float previousPitch, float pitch, double time) {
+            if (!this.initialized) {
+                this.initialized = true;
+                this.startPitch = previousPitch;
+                this.targetPitch = pitch;
+                this.transitionStart = Math.floor(time);
+                return;
+            }
+            if (pitch == this.targetPitch) return;
+            this.startPitch = this.getPitch(time);
+            this.targetPitch = pitch;
+            this.transitionStart = time;
+        }
+
+        private float getPitch(double time) {
+            float progress = (float) Math.clamp(time - this.transitionStart, 0D, 1D);
+            if (progress == 1f) return this.targetPitch;
+            return Interpolations.lerp(this.startPitch, this.targetPitch, progress);
+        }
+
+        private void reset() {
+            this.initialized = false;
+        }
     }
 
     /**

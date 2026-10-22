@@ -4,7 +4,7 @@ import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.item.AnimatedItemStackHolder;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -39,15 +39,15 @@ public class AnimationDataResolver {
 
     /*
     private static AbstractAnimationData<?, ?> resolveItemStack(@NotNull World world, @NotNull NBTTagCompound nbtTagCompound) {
-        int playerHolderID = nbtTagCompound.getInteger("PlayerHolderID");
-        int handIndex = nbtTagCompound.getInteger("PlayerHolderHand");
-        if (playerHolderID < 0 || handIndex < 0 || handIndex >= EnumHand.values().length) return null;
+        int entityHolderID = nbtTagCompound.getInteger("EntityHolderID");
+        int handIndex = nbtTagCompound.getByte("EntityHolderHand");
+        if (entityHolderID < 0 || handIndex < 0 || handIndex >= EnumHand.values().length) return null;
 
-        Entity holderEntity = world.getEntityByID(playerHolderID);
-        if (!(holderEntity instanceof EntityPlayer playerHolder)) return null;
+        Entity holderEntity = world.getEntityByID(entityHolderID);
+        if (!(holderEntity instanceof EntityLivingBase entityHolder)) return null;
 
         EnumHand hand = EnumHand.values()[handIndex];
-        ItemStack serverStack = playerHolder.getHeldItem(hand);
+        ItemStack serverStack = entityHolder.getHeldItem(hand);
         if (serverStack.isEmpty()) return null;
 
         ItemStack expectedStack = new ItemStack(nbtTagCompound.getCompoundTag("Stack"));

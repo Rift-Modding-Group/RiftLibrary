@@ -2,6 +2,8 @@ package anightdazingzoroark.riftlib.core.manager;
 
 import anightdazingzoroark.riftlib.item.AnimatedItemStackHolder;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -11,6 +13,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class AnimationDataItemStack extends AbstractAnimationData<AnimatedItemStackHolder, AnimationDataItemStack> {
+    @Nullable
+    private Entity entityHolder;
+    @Nullable
+    private EnumHand entityHolderHand;
+    private boolean hasRenderContext;
+
     public AnimationDataItemStack(AnimatedItemStackHolder holder) {
         super(holder, holder);
     }
@@ -23,65 +31,107 @@ public class AnimationDataItemStack extends AbstractAnimationData<AnimatedItemSt
         return true;
     }
 
+    /**
+     * Associates this animation with the entity actually being rendered, rather than an equal stack elsewhere.
+     * */
+    public void setRenderContext(@Nullable Entity entity, @Nullable EnumHand hand) {
+        this.entityHolder = entity;
+        this.entityHolderHand = hand;
+        this.hasRenderContext = true;
+    }
+
+    /**
+     * Identifies the rendered item and its entity holder for animation messages.
+     * EntityHolderHand is a byte ordinal, or -1 when no hand applies.
+     */
     @Override
-    public @NotNull NBTTagCompound getNBT() {
+    @NotNull
+    public NBTTagCompound getNBT() {
         NBTTagCompound toReturn = super.getNBT();
         ItemStack stack = this.getHolder().getStack();
-        EntityPlayer playerHolder = this.getPlayerHolder();
-        EnumHand playerHolderHand = playerHolder == null ? null : this.getPlayerHoldingHand(playerHolder, stack);
-
         toReturn.setString("AnimationTargetType", "ItemStack");
         toReturn.setString("HolderClass", this.getHolder().getClass().getName());
         toReturn.setTag("Stack", stack.writeToNBT(new NBTTagCompound()));
 
-        int playerHolderID = playerHolder != null ? playerHolder.getEntityId() : -1;
-        toReturn.setInteger("PlayerHolderID", playerHolderID);
-        toReturn.setInteger("PlayerHolderHand", playerHolderHand != null ? playerHolderHand.ordinal() : -1);
+        Entity holder = this.getEntityHolder();
+        EnumHand hand = this.getEntityHolderHand();
+        toReturn.setInteger("EntityHolderID", holder != null ? holder.getEntityId() : -1);
+        toReturn.setByte("EntityHolderHand", (byte) (hand != null ? hand.ordinal() : -1));
         return toReturn;
     }
 
-    //get the player holding the itemstack. null if its not held
     @Nullable
-    public EntityPlayer getPlayerHolder() {
+    public Entity getEntityHolder() {
         ItemStack stack = this.getHolder().getStack();
         if (stack.isEmpty()) return null;
-
-        World world = Minecraft.getMinecraft().world;
-        if (world == null) return null;
-
-        for (EntityPlayer player : world.playerEntities) {
-            if (this.isSameStack(player.getHeldItemMainhand(), stack) || this.isSameStack(player.getHeldItemOffhand(), stack)) {
-                return player;
-            }
+        if (this.hasRenderContext) {
+            return this.entityHolder != null && !this.entityHolder.isDead ? this.entityHolder : null;
         }
 
+        // Holders created outside the renderer can resolve from the loaded entities.
+        World world = this.getWorld();
+        if (world == null) return null;
+        for (Entity entity : world.loadedEntityList) {
+            if (entity instanceof EntityLivingBase living && (this.isSameStack(living.getHeldItemMainhand(), stack)
+                    || this.isSameStack(living.getHeldItemOffhand(), stack))
+            ) {
+                return living;
+            }
+        }
         return null;
     }
 
     @Nullable
-    public EnumHand getPlayerHolderHand() {
+    public EnumHand getEntityHolderHand() {
+        Entity entity = this.getEntityHolder();
+        if (!(entity instanceof EntityLivingBase living)) return null;
         ItemStack stack = this.getHolder().getStack();
-        if (stack.isEmpty()) return null;
-
-        EntityPlayer playerHolder = this.getPlayerHolder();
-        return playerHolder == null ? null : this.getPlayerHoldingHand(playerHolder, stack);
+        if (this.hasRenderContext) {
+            if (this.entityHolderHand != null && this.isSameStack(living.getHeldItem(this.entityHolderHand), stack)) {
+                return this.entityHolderHand;
+            }
+            return null;
+        }
+        if (this.isSameStack(living.getHeldItemMainhand(), stack)) return EnumHand.MAIN_HAND;
+        if (this.isSameStack(living.getHeldItemOffhand(), stack)) return EnumHand.OFF_HAND;
+        return null;
     }
 
-    //check if an item is being right click held on
+    /**
+     * Entity-aware counterpart to the legacy player-only isBeingUsed() check.
+     * */
+    public boolean isBeingUsedByEntity() {
+        Entity entity = this.getEntityHolder();
+        return entity instanceof EntityLivingBase living && living.isHandActive()
+                && this.getEntityHolderHand() == living.getActiveHand()
+                && this.isSameStack(living.getActiveItemStack(), this.getHolder().getStack());
+    }
+
+    /**
+     * @deprecated Use {@link #getEntityHolder()} to support all entity holders.
+     */
+    @Deprecated(since = "2.1.0")
+    @Nullable
+    public EntityPlayer getPlayerHolder() {
+        Entity entity = this.getEntityHolder();
+        return entity instanceof EntityPlayer player ? player : null;
+    }
+
+    /**
+     * @deprecated Use {@link #getEntityHolderHand()} to support all living entity holders.
+     */
+    @Deprecated(since = "2.1.0")
+    @Nullable
+    public EnumHand getPlayerHolderHand() {
+        return this.getEntityHolderHand();
+    }
+
+    /**
+     * @deprecated Use {@link #isBeingUsedByEntity()} to support all living entity holders.
+     */
+    @Deprecated(since = "2.1.0")
     public boolean isBeingUsed() {
-        ItemStack stack = this.getHolder().getStack();
-        if (stack.isEmpty()) return false;
-
-        World world = Minecraft.getMinecraft().world;
-        if (world == null) return false;
-
-        for (EntityPlayer player : world.playerEntities) {
-            if (player.isHandActive() && this.isSameStack(player.getActiveItemStack(), stack)) {
-                return true;
-            }
-        }
-
-        return false;
+        return this.isBeingUsedByEntity();
     }
 
     private boolean isSameStack(ItemStack first, ItemStack second) {
@@ -89,12 +139,6 @@ public class AnimationDataItemStack extends AbstractAnimationData<AnimatedItemSt
                 && !second.isEmpty()
                 && ItemStack.areItemsEqual(first, second)
                 && ItemStack.areItemStackTagsEqual(first, second);
-    }
-
-    private EnumHand getPlayerHoldingHand(EntityPlayer player, ItemStack stack) {
-        if (this.isSameStack(player.getHeldItemMainhand(), stack)) return EnumHand.MAIN_HAND;
-        if (this.isSameStack(player.getHeldItemOffhand(), stack)) return EnumHand.OFF_HAND;
-        return null;
     }
 
     @Override

@@ -17,10 +17,10 @@ public class AnimatedBubbleGunItem extends AnimatedItemStackHolder {
         animationData.addAnimationController(new AnimationController<AnimatedBubbleGunItem, AnimationDataItemStack>(
                 this, "blow", "default",
                 new AnimationControllerState<AnimationDataItemStack>("default")
-                        .addStateTransition("blow", AnimationDataItemStack::isBeingUsed),
+                        .addStateTransition("blow", AnimationDataItemStack::isBeingUsedByEntity),
                 new AnimationControllerState<AnimationDataItemStack>("blow")
                         .addAnimation("animation.bubble_gun.blow_bubbles")
-                        .addStateTransition("default", data -> !data.isBeingUsed())
+                        .addStateTransition("default", data -> !data.isBeingUsedByEntity())
         ));
     }
 }

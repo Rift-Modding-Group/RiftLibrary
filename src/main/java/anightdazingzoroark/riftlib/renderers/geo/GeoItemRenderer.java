@@ -12,10 +12,13 @@ import java.util.function.Function;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.core.controller.AnimationController;
 import anightdazingzoroark.riftlib.item.AnimatedItemStackHolder;
+import anightdazingzoroark.riftlib.item.EntityItemRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -27,6 +30,8 @@ import anightdazingzoroark.riftlib.core.util.Color;
 import anightdazingzoroark.riftlib.geo.GeoModel;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings({"unchecked" })
 public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder> extends TileEntityItemStackRenderer implements IGeoRenderer<T> {
@@ -90,35 +95,94 @@ public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder> extends
 		}
 
 		holder.setTransformType(transformType);
+		Entity entity = this.getEntityHolder(itemStack, transformType);
+		EnumHand hand = null;
+		if (entity instanceof EntityLivingBase living) {
+			if (living.getHeldItemMainhand() == itemStack) hand = EnumHand.MAIN_HAND;
+			else if (living.getHeldItemOffhand() == itemStack) hand = EnumHand.OFF_HAND;
+			else if (transformType == ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND
+					|| transformType == ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND) {
+				EnumHandSide side = transformType == ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND
+						? EnumHandSide.RIGHT : EnumHandSide.LEFT;
+				hand = living.getPrimaryHand() == side ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
+			}
+		}
+		holder.getAnimationData().setRenderContext(entity, hand);
 		return holder;
 	}
 
-	//held items keep one holder through stack data changes and receive a new holder when re-equipped
-	protected int getHolderCacheKey(ItemStack itemStack, ItemCameraTransforms.TransformType transformType) {
+	/**
+	 * Resolves by render context or stack identity so identical items held by different entities stay independent.
+	 * */
+	@Nullable
+	protected Entity getEntityHolder(@NotNull ItemStack stack, @NotNull ItemCameraTransforms.TransformType transformType) {
+		if (transformType == ItemCameraTransforms.TransformType.GUI) return null;
+		EntityItemRenderContext context = EntityItemRenderContext.getCurrent();
+		if (context != null) return context.getEntity();
 		Minecraft minecraft = Minecraft.getMinecraft();
-		if (minecraft.player != null && (transformType == ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND
-				|| transformType == ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND)) {
-			EnumHandSide renderedHandSide = transformType == ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND
-					? EnumHandSide.RIGHT : EnumHandSide.LEFT;
-			EnumHand renderedHand = minecraft.player.getPrimaryHand() == renderedHandSide ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
-			ItemStack heldStack = minecraft.player.getHeldItem(renderedHand);
-			int equipSession = this.updateEquipSession(minecraft.player, renderedHand, heldStack);
-			return Objects.hash(minecraft.player.getUniqueID(), renderedHand, transformType, equipSession);
+		if (transformType == ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND
+				|| transformType == ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND) return minecraft.player;
+		if (transformType != ItemCameraTransforms.TransformType.THIRD_PERSON_LEFT_HAND
+				&& transformType != ItemCameraTransforms.TransformType.THIRD_PERSON_RIGHT_HAND) return null;
+		if (minecraft.world == null) return null;
+		for (Entity entity : minecraft.world.loadedEntityList) {
+			if (entity instanceof EntityLivingBase living
+					&& (living.getHeldItemMainhand() == stack || living.getHeldItemOffhand() == stack)) return living;
 		}
+		return null;
+	}
 
-		if (minecraft.world != null) {
-			for (EntityPlayer player : minecraft.world.playerEntities) {
-				EnumHand heldHand = null;
-				if (player.getHeldItemMainhand() == itemStack) heldHand = EnumHand.MAIN_HAND;
-				else if (player.getHeldItemOffhand() == itemStack) heldHand = EnumHand.OFF_HAND;
+	// Held items keep one holder through stack data changes and receive a new holder when re-equipped.
+	protected int getHolderCacheKey(ItemStack itemStack, ItemCameraTransforms.TransformType transformType) {
+		EntityItemRenderContext renderContext = EntityItemRenderContext.getCurrent();
+		if (renderContext == null || renderContext.getEntity() instanceof EntityPlayer) {
+			Minecraft minecraft = Minecraft.getMinecraft();
+			if (minecraft.player != null && (transformType == ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND
+					|| transformType == ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND)) {
+				EnumHandSide renderedHandSide = transformType == ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND
+						? EnumHandSide.RIGHT : EnumHandSide.LEFT;
+				EnumHand renderedHand = minecraft.player.getPrimaryHand() == renderedHandSide ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
+				ItemStack heldStack = minecraft.player.getHeldItem(renderedHand);
+				int equipSession = this.updateEquipSession(minecraft.player, renderedHand, heldStack);
+				return Objects.hash(minecraft.player.getUniqueID(), renderedHand, transformType, equipSession);
+			}
 
-				if (heldHand != null) {
-					int equipSession = this.updateEquipSession(player, heldHand, itemStack);
-					return Objects.hash(player.getUniqueID(), heldHand, transformType, equipSession);
+			if (minecraft.world != null) {
+				for (EntityPlayer player : minecraft.world.playerEntities) {
+					EnumHand heldHand = null;
+					if (player.getHeldItemMainhand() == itemStack) heldHand = EnumHand.MAIN_HAND;
+					else if (player.getHeldItemOffhand() == itemStack) heldHand = EnumHand.OFF_HAND;
+
+					if (heldHand != null) {
+						int equipSession = this.updateEquipSession(player, heldHand, itemStack);
+						return Objects.hash(player.getUniqueID(), heldHand, transformType, equipSession);
+					}
 				}
 			}
 		}
 
+		// Preserve existing player cache identities for every transform before considering other entities.
+		Entity entity = this.getEntityHolder(itemStack, transformType);
+		if (entity != null) {
+			EnumHand hand = null;
+			if (entity instanceof EntityLivingBase living) {
+				if (transformType == ItemCameraTransforms.TransformType.FIRST_PERSON_LEFT_HAND
+						|| transformType == ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND) {
+					EnumHandSide side = transformType == ItemCameraTransforms.TransformType.FIRST_PERSON_RIGHT_HAND
+							? EnumHandSide.RIGHT : EnumHandSide.LEFT;
+					hand = living.getPrimaryHand() == side ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
+				}
+				else if (living.getHeldItemMainhand() == itemStack) hand = EnumHand.MAIN_HAND;
+				else if (living.getHeldItemOffhand() == itemStack) hand = EnumHand.OFF_HAND;
+				if (hand != null) {
+					int equipSession = this.updateEquipSession(living, hand, itemStack);
+					return Objects.hash(entity.getUniqueID(), hand, transformType, equipSession);
+				}
+			}
+			EntityItemRenderContext context = EntityItemRenderContext.getCurrent();
+			String attachment = context != null ? context.getAttachment() : null;
+			return Objects.hash(entity.getUniqueID(), attachment, transformType, itemStack.getItem());
+		}
 		return Objects.hash(
 				itemStack.getItem(),
 				itemStack.getMetadata(),
@@ -135,34 +199,41 @@ public abstract class GeoItemRenderer<T extends AnimatedItemStackHolder> extends
 			return;
 		}
 
-		Set<UUID> currentPlayers = new HashSet<>();
+		Set<UUID> currentEntities = new HashSet<>();
+		// Keep tracking every player, including entries absent from loadedEntityList.
 		for (EntityPlayer player : minecraft.world.playerEntities) {
-			currentPlayers.add(player.getUniqueID());
+			currentEntities.add(player.getUniqueID());
+			for (EnumHand hand : EnumHand.values()) this.updateEquipSession(player, hand, player.getHeldItem(hand));
+		}
+		for (Entity entity : minecraft.world.loadedEntityList) {
+			if (!(entity instanceof EntityLivingBase living) || entity instanceof EntityPlayer) continue;
+			currentEntities.add(living.getUniqueID());
 			for (EnumHand hand : EnumHand.values()) {
-				ItemStack heldStack = player.getHeldItem(hand);
-				this.updateEquipSession(player, hand, heldStack);
+				ItemStack heldStack = living.getHeldItem(hand);
+				this.updateEquipSession(living, hand, heldStack);
 			}
 		}
 
-		this.equippedItemIdentities.keySet().retainAll(currentPlayers);
-		this.equipSessions.keySet().retainAll(currentPlayers);
+		this.equippedItemIdentities.keySet().retainAll(currentEntities);
+		this.equipSessions.keySet().retainAll(currentEntities);
 	}
 
-	private int updateEquipSession(EntityPlayer player, EnumHand hand, ItemStack heldStack) {
-		UUID playerId = player.getUniqueID();
-		EnumMap<EnumHand, Integer> equippedItems = this.equippedItemIdentities.computeIfAbsent(playerId, ignored -> new EnumMap<>(EnumHand.class));
-		EnumMap<EnumHand, Integer> playerEquipSessions = this.equipSessions.computeIfAbsent(playerId, ignored -> new EnumMap<>(EnumHand.class));
+	private int updateEquipSession(@NotNull EntityLivingBase entity, @NotNull EnumHand hand, @NotNull ItemStack heldStack) {
+		UUID entityId = entity.getUniqueID();
+		EnumMap<EnumHand, Integer> equippedItems = this.equippedItemIdentities.computeIfAbsent(entityId, ignored -> new EnumMap<>(EnumHand.class));
+		EnumMap<EnumHand, Integer> entityEquipSessions = this.equipSessions.computeIfAbsent(entityId, ignored -> new EnumMap<>(EnumHand.class));
 
 		if (heldStack.isEmpty() || heldStack.getItem().getTileEntityItemStackRenderer() != this) {
 			equippedItems.remove(hand);
-			return playerEquipSessions.getOrDefault(hand, 0);
+			return entityEquipSessions.getOrDefault(hand, 0);
 		}
 
-		int selectedSlot = hand == EnumHand.MAIN_HAND ? player.inventory.currentItem : -1;
+		int selectedSlot = -1;
+		if (hand == EnumHand.MAIN_HAND && entity instanceof EntityPlayer player) selectedSlot = player.inventory.currentItem;
 		int itemIdentity = Objects.hash(heldStack.getItem(), selectedSlot);
 		Integer previousIdentity = equippedItems.put(hand, itemIdentity);
-		if (!Objects.equals(previousIdentity, itemIdentity)) playerEquipSessions.merge(hand, 1, Integer::sum);
-		return playerEquipSessions.getOrDefault(hand, 0);
+		if (!Objects.equals(previousIdentity, itemIdentity)) entityEquipSessions.merge(hand, 1, Integer::sum);
+		return entityEquipSessions.getOrDefault(hand, 0);
 	}
 
 	public void cleanupHolderCache(long now) {

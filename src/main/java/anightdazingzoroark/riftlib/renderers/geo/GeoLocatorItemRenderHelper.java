@@ -3,6 +3,7 @@ package anightdazingzoroark.riftlib.renderers.geo;
 import anightdazingzoroark.riftlib.geo.GeoBone;
 import anightdazingzoroark.riftlib.geo.GeoLocator;
 import anightdazingzoroark.riftlib.geo.GeoModel;
+import anightdazingzoroark.riftlib.item.EntityItemRenderContext;
 import anightdazingzoroark.riftlib.util.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -54,7 +55,7 @@ public class GeoLocatorItemRenderHelper {
             if (entity instanceof EntityLivingBase living) livingEntity = living;
             IBakedModel itemModel = renderItem.getItemModelWithOverrides(stack, entity.world, livingEntity);
 
-            try (ItemRenderState state = ItemRenderState.capture()) {
+            try (ItemRenderState state = ItemRenderState.capture(); EntityItemRenderContext context = new EntityItemRenderContext(entity, locator.name)) {
                 FloatBuffer matrix = BufferUtils.createFloatBuffer(16);
                 matrix.put(new float[]{
                         transform.m00, transform.m10, transform.m20, transform.m30,

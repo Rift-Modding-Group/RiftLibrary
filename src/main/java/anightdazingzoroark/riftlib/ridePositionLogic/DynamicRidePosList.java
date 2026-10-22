@@ -80,7 +80,7 @@ public class DynamicRidePosList {
         posVec = new Vec3d(posVec.x * parentScale, posVec.y * parentScale, posVec.z * parentScale);
 
         //change based on yaw of ridden mob
-        double yawRadians = -Math.toRadians(dynamicRideUser.rotationYaw);
+        double yawRadians = -Math.toRadians(this.animData.getModelYaw());
         Quaternion quaternion = QuaternionUtils.createXYZQuaternion(0, yawRadians, 0);
         posVec = VectorUtils.rotateVectorWithQuaternion(posVec, quaternion);
 

@@ -5,7 +5,9 @@ import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import anightdazingzoroark.riftlib.ridePositionLogic.IDynamicRideUser;
 import anightdazingzoroark.riftlib.util.MolangUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,6 +17,12 @@ import org.jetbrains.annotations.NotNull;
 public class AnimationDataEntityLiving extends AbstractAnimationDataAdvancedEntity<EntityLivingBase, AnimationDataEntityLiving> {
     @NotNull
     private final MovementSpeedTracker movementSpeedTracker = new MovementSpeedTracker();
+    @NotNull
+    private final BodyRotationTracker serverBodyRotationTracker = new BodyRotationTracker();
+    private boolean hasServerBodyRotation;
+    private float serverBodyYaw;
+    private float previousServerBodyYaw;
+    private boolean serverBodyRotationPending;
 
     public AnimationDataEntityLiving(@NotNull EntityLivingBase holder) {
         super(holder, getAnimatable(holder));
@@ -40,14 +48,86 @@ public class AnimationDataEntityLiving extends AbstractAnimationDataAdvancedEnti
     }
 
     @Override
+    @NotNull
+    public NBTTagCompound getNBT() {
+        NBTTagCompound data = super.getNBT();
+        NBTTagCompound bodyRotation = new NBTTagCompound();
+        bodyRotation.setFloat("Yaw", this.getHolder().renderYawOffset);
+        bodyRotation.setFloat("PreviousYaw", this.getHolder().prevRenderYawOffset);
+        data.setTag("BodyRotation", bodyRotation);
+        return data;
+    }
+
+    @Override
+    public void readNBT(@NotNull NBTTagCompound data) {
+        super.readNBT(data);
+        NBTTagCompound bodyRotation = data.getCompoundTag("BodyRotation");
+        this.hasServerBodyRotation = bodyRotation.hasKey("Yaw", 99) && bodyRotation.hasKey("PreviousYaw", 99);
+        if (!this.hasServerBodyRotation) {
+            this.serverBodyRotationPending = false;
+            this.serverBodyRotationTracker.reset();
+        }
+        else {
+            this.serverBodyYaw = bodyRotation.getFloat("Yaw");
+            this.previousServerBodyYaw = bodyRotation.getFloat("PreviousYaw");
+            this.serverBodyRotationPending = true;
+            //live clients commit pending updates at render start, after queued packets and ticks.
+            if (this.getWorld() == null || !this.getWorld().isRemote) this.prepareBodyRotationFrame(0f);
+            this.applyServerBodyRotation();
+        }
+    }
+
+    /**
+     * Accepts the latest body target on the same clock used to render this frame.
+     * */
+    public void prepareBodyRotationFrame(float partialTicks) {
+        if (!this.serverBodyRotationPending) return;
+        this.serverBodyRotationTracker.update(
+                this.previousServerBodyYaw, this.serverBodyYaw, this.getBodyRotationTime(partialTicks)
+        );
+        this.serverBodyRotationPending = false;
+    }
+
+    private double getBodyRotationTime(float partialTicks) {
+        if (this.getWorld() == null) return this.getHolder().ticksExisted + (double) partialTicks;
+        if (this.getWorld().isRemote) return LivingBodyRotationTicker.Client.getBodyRotationTime(partialTicks);
+        return this.getWorld().getTotalWorldTime() + (double) partialTicks;
+    }
+
+    private boolean shouldUseServerBodyRotation() {
+        return this.hasServerBodyRotation && !this.getHolder().isBeingRidden() && !this.getHolder().isRiding();
+    }
+
+    /**
+     * Reapplies the server body pose after client body helpers, leaving mounted steering local.
+     * */
+    public boolean applyServerBodyRotation() {
+        if (!this.shouldUseServerBodyRotation()) return false;
+        this.getHolder().renderYawOffset = this.serverBodyYaw;
+        this.getHolder().prevRenderYawOffset = this.previousServerBodyYaw;
+        return true;
+    }
+
+    @Override
     public float getModelYaw() {
-        if (this.getHolder().isBeingRidden()) return super.getModelYaw();
+        if (this.getHolder().isBeingRidden() && this.getHolder() instanceof IDynamicRideUser<?> rideUser) {
+            return rideUser.getRenderYaw(1f);
+        }
+        if (this.shouldUseServerBodyRotation()) return this.serverBodyYaw;
         return this.getHolder().renderYawOffset;
     }
 
     @Override
     public float getModelYaw(float partialTicks) {
-        if (this.getHolder().isBeingRidden()) return super.getModelYaw(partialTicks);
+        if (this.getHolder().isBeingRidden() && this.getHolder() instanceof IDynamicRideUser<?> rideUser) {
+            return rideUser.getRenderYaw(partialTicks);
+        }
+        if (this.shouldUseServerBodyRotation()) {
+            if (!this.serverBodyRotationTracker.initialized) {
+                return Interpolations.lerpYaw(this.previousServerBodyYaw, this.serverBodyYaw, partialTicks);
+            }
+            return this.serverBodyRotationTracker.getYaw(this.getBodyRotationTime(partialTicks));
+        }
         return Interpolations.lerpYaw(this.getHolder().prevRenderYawOffset, this.getHolder().renderYawOffset, partialTicks);
     }
 
@@ -63,10 +143,15 @@ public class AnimationDataEntityLiving extends AbstractAnimationDataAdvancedEnti
      * */
     public float getHeadYaw(float partialTicks) {
         float modelYaw = this.getModelYaw(partialTicks);
+        float headYaw = Interpolations.lerpYaw(this.getHolder().prevRotationYawHead, this.getHolder().rotationYawHead, partialTicks);
         if (this.getHolder().isBeingRidden() && this.getHolder() instanceof IDynamicRideUser<?> rideUser) {
             modelYaw = rideUser.getRenderYaw(partialTicks);
+            Entity controller = this.getHolder().getControllingPassenger();
+            if (rideUser.canRotateMounted() && controller != null) {
+                //use the same render-time rider input as steering, rather than the AI's delayed head yaw.
+                headYaw = Interpolations.lerpYaw(controller.prevRotationYaw, controller.rotationYaw, partialTicks);
+            }
         }
-        float headYaw = Interpolations.lerpYaw(this.getHolder().prevRotationYawHead, this.getHolder().rotationYawHead, partialTicks);
         return MathHelper.wrapDegrees(headYaw - modelYaw);
     }
 
@@ -96,6 +181,40 @@ public class AnimationDataEntityLiving extends AbstractAnimationDataAdvancedEnti
         this.registerMolangQuery("is_sprinting", (values, animData) -> {
             return MolangUtils.booleanToDouble(this.getHolder().isSprinting());
         });
+    }
+
+    /**
+     * Interpolates network body targets without replaying an old turn when partial ticks wrap.
+     * */
+    public static class BodyRotationTracker {
+        private boolean initialized;
+        private double transitionStart;
+        private float startYaw;
+        private float targetYaw;
+
+        public void update(float previousYaw, float yaw, double time) {
+            if (!this.initialized) {
+                this.initialized = true;
+                this.startYaw = previousYaw;
+                this.targetYaw = yaw;
+                this.transitionStart = Math.floor(time);
+                return;
+            }
+            if (MathHelper.wrapDegrees(yaw - this.targetYaw) == 0f) return;
+            this.startYaw = this.getYaw(time);
+            this.targetYaw = yaw;
+            this.transitionStart = time;
+        }
+
+        public float getYaw(double time) {
+            float progress = (float) Math.clamp(time - this.transitionStart, 0D, 1D);
+            if (progress == 1f) return this.targetYaw;
+            return Interpolations.lerpYaw(this.startYaw, this.targetYaw, progress);
+        }
+
+        public void reset() {
+            this.initialized = false;
+        }
     }
 
     /**

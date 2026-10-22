@@ -6,6 +6,7 @@ import anightdazingzoroark.riftlib.molang.utils.Interpolations;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -64,7 +65,12 @@ public interface IDynamicRideUser<T extends Entity & IAnimatable<? extends Abstr
                 this.getDynamicRideUser().rotationPitch = passenger.rotationPitch * 0.5f;
                 this.getDynamicRideUser().setRotation(this.getDynamicRideUser().rotationYaw, this.getDynamicRideUser().rotationPitch);
                 if (this.getDynamicRideUser() instanceof EntityLivingBase livingMount) {
-                    livingMount.renderYawOffset = livingMount.rotationYaw;
+                    // Let the head lead the turn while the body catches up, as with vanilla living entities.
+                    float bodyYaw = Interpolations.lerpYaw(livingMount.prevRenderYawOffset, livingMount.rotationYaw, 0.3f);
+                    float headYaw = MathHelper.wrapDegrees(livingMount.rotationYaw - bodyYaw);
+                    livingMount.renderYawOffset = livingMount.rotationYaw - Math.clamp(headYaw, -75f, 75f);
+                    if (Math.abs(headYaw) < 0.1f) livingMount.renderYawOffset = livingMount.rotationYaw;
+                    livingMount.rotationYawHead = passenger.rotationYaw;
                 }
             }
 
@@ -115,6 +121,9 @@ public interface IDynamicRideUser<T extends Entity & IAnimatable<? extends Abstr
     }
 
     default float getRenderYaw(float partialTicks) {
+        if (this.getDynamicRideUser() instanceof EntityLivingBase livingMount) {
+            return Interpolations.lerpYaw(livingMount.prevRenderYawOffset, livingMount.renderYawOffset, partialTicks);
+        }
         Entity controller = this.getDynamicRideUser().getControllingPassenger();
         if (this.canRotateMounted() && controller != null) {
             return Interpolations.lerpYaw(controller.prevRotationYaw, controller.rotationYaw, partialTicks);

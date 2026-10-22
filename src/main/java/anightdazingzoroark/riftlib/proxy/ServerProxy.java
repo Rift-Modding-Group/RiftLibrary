@@ -7,6 +7,7 @@ import anightdazingzoroark.example.entity.FlyingPufferfishEntity;
 import anightdazingzoroark.example.registry.BlockRegistry;
 import anightdazingzoroark.example.registry.EntityRegistry;
 import anightdazingzoroark.example.registry.ItemRegistry;
+import anightdazingzoroark.riftlib.core.manager.LivingBodyRotationTicker;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.RiftLibMod;
 import anightdazingzoroark.riftlib.hitbox.HitboxTicker;
@@ -60,6 +61,7 @@ public class ServerProxy {
         PROPERTIES_WRAPPER.registerMessage(RiftLibUpdateMultiPropertyKey.class, RiftLibMessageSide.CLIENT);
         PROPERTIES_WRAPPER.registerMessage(RiftLibUpdateAllPropertyKeys.class, RiftLibMessageSide.CLIENT);
 
+        MinecraftForge.EVENT_BUS.register(new LivingBodyRotationTicker());
         //internal model related events
         MinecraftForge.EVENT_BUS.register(new HitboxTicker.Server());
         MinecraftForge.EVENT_BUS.register(new RayTicker.Server());

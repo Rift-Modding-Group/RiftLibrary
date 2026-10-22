@@ -8,6 +8,7 @@ import anightdazingzoroark.example.client.renderer.entity.*;
 import anightdazingzoroark.example.entity.*;
 import anightdazingzoroark.example.registry.BlockRegistry;
 import anightdazingzoroark.example.registry.ItemRegistry;
+import anightdazingzoroark.riftlib.core.manager.LivingBodyRotationTicker;
 import anightdazingzoroark.riftlib.block.AnimatedBlockRegistry;
 import anightdazingzoroark.riftlib.block.AnimatedBlockModelLoader;
 import anightdazingzoroark.riftlib.renderers.geo.GeoBlockRenderer;
@@ -45,6 +46,7 @@ public class ClientProxy extends ServerProxy {
         super.preInit(e);
         ModelLoaderRegistry.registerLoader(new AnimatedBlockModelLoader());
         RenderingRegistry.registerEntityRenderingHandler(RiftLibCollisionHitbox.class, new EntityHitboxRenderer.Factory());
+        MinecraftForge.EVENT_BUS.register(new LivingBodyRotationTicker.Client());
         MinecraftForge.EVENT_BUS.register(new ParticleTicker());
         MinecraftForge.EVENT_BUS.register(new RiftLibSoundEffectRegistry());
         MinecraftForge.EVENT_BUS.register(new GeoItemRendererTicker());

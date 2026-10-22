@@ -3,12 +3,15 @@ package anightdazingzoroark.riftlib.renderers.geo;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import javax.vecmath.Matrix4f;
 
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.armor.AnimatedArmorHolder;
@@ -56,6 +59,8 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
 
 	private T currentArmorHolder;
 	private EntityLivingBase entityLiving;
+    @Nullable
+    private IGeoArmorPoseProvider armorPoseProvider;
 
     //this defines which bones on the model should be shown or hidden
     //based on the presence of an armor slot
@@ -107,10 +112,10 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
 		this.modelProvider.createAndUpdateAnimatedLocators(this.currentArmorHolder);
 		this.fitToBiped();
 		GlStateManager.pushMatrix();
-		GlStateManager.translate(0, 0.01f, 0);
+		if (this.armorPoseProvider == null) GlStateManager.translate(0, 0.01f, 0);
 
         //displace for arm swinging
-		if (this.swingProgress > 0.0F) {
+		if (this.armorPoseProvider == null && this.swingProgress > 0.0F) {
 			this.transformBoundBones(ArmorBodyPart.RIGHT_ARM, bone -> {
 				bone.getScale().z = 1.25f;
 				bone.getScale().x = 1.25f;
@@ -122,7 +127,7 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
 		}
 
         //displace for sneaking
-		if (this.isSneak) {
+		if (this.armorPoseProvider == null && this.isSneak) {
 			this.transformBoundBones(ArmorBodyPart.HEAD, bone ->
 					bone.getPosition().y = bone.getPosition().y - 3.5f
             );
@@ -162,6 +167,21 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
 	}
 
 	private void fitToBiped() {
+        if (this.armorPoseProvider != null) {
+            Map<GeoBone, Matrix4f> poses = new IdentityHashMap<>();
+            GeoModel model = this.modelProvider.getModel(this.currentArmorHolder);
+            for (ArmorBodyPart part : ArmorBodyPart.values()) {
+                GeoBone source = this.armorPoseProvider.getArmorPoseBone(this.entityLiving, part);
+                if (source == null) continue;
+                Matrix4f transform = GeoArmorPoseHelper.getBoneTransform(source);
+                for (String name : this.getBoundBones(part)) {
+                    GeoBone target = model.getAllBones().get(name);
+                    if (target != null) poses.put(target, transform);
+                }
+            }
+            GeoArmorPoseHelper.applyToGeometry(model, poses);
+            return;
+        }
         if (this.entityLiving instanceof EntityArmorStand) return;
 
         for (ArmorBodyPart armorBodyPart : ArmorBodyPart.values()) {
@@ -277,6 +297,7 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
 	}
 
 	public final GeoArmorRenderer applyEntityStats(ModelBiped defaultArmor) {
+        this.armorPoseProvider = defaultArmor instanceof IGeoArmorPoseProvider provider ? provider : null;
 		this.isChild = defaultArmor.isChild;
 		this.isSneak = defaultArmor.isSneak;
 		this.isRiding = defaultArmor.isRiding;
@@ -439,6 +460,11 @@ public abstract class GeoArmorRenderer<T extends AnimatedArmorHolder> extends Mo
         ArmorBodyPart(@NotNull Function<ModelBiped, ModelRenderer> bipedBoneGetter, @NotNull EntityEquipmentSlot legacyEquipmentSlot) {
             this.bipedBoneGetter = bipedBoneGetter;
             this.legacyEquipmentSlot = legacyEquipmentSlot;
+        }
+
+        @NotNull
+        public ModelRenderer getBipedBone(@NotNull ModelBiped model) {
+            return this.bipedBoneGetter.apply(model);
         }
     }
 }

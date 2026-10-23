@@ -5,6 +5,12 @@ import anightdazingzoroark.riftlib.geo.GeoBoundingBox;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
 import anightdazingzoroark.riftlib.util.VectorUtils;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.AxisAlignedBB;
+import anightdazingzoroark.riftlib.core.snapshot.BoneSnapshot;
+import anightdazingzoroark.riftlib.util.MatrixStack;
+import javax.vecmath.Point3f;
+import javax.vecmath.Vector3f;
+import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 import org.lwjglx.util.vector.Quaternion;
@@ -66,6 +72,56 @@ public class AnimatedBoundingBox {
                 locatorPos.y + boneDispOffset.y + boneRotOffset.y,
                 locatorPos.z + boneDispOffset.z + boneRotOffset.z
         );
+    }
+
+    /** Full posed bounds, including all ancestor transforms and rotated extents. */
+    @NotNull
+    public AxisAlignedBB getWorldSpaceBounds(float scale, float yaw, @NotNull Vec3d position, @NotNull Map<String, BoneSnapshot> poses) {
+        MatrixStack matrices = new MatrixStack();
+        matrices.rotateY((float) (Math.PI - Math.toRadians(yaw)));
+        matrices.scale(scale, scale, scale);
+        List<GeoBone> chain = new ArrayList<>();
+        for (GeoBone bone = this.boundingBox.parent; bone != null; bone = bone.parent) chain.add(bone);
+        for (GeoBone bone : chain.reversed()) {
+            BoneSnapshot pose = poses.get(bone.getName());
+            Vector3f displacement = bone.getPosition();
+            Vector3f rotation = bone.getRotation();
+            Vector3f boneScale = bone.getScale();
+            if (pose != null) {
+                displacement = pose.getPosition();
+                rotation = pose.getRotation();
+                boneScale = pose.getScale();
+            }
+            matrices.translate(-displacement.x / 16f, displacement.y / 16f, displacement.z / 16f);
+            matrices.moveToPivot(bone);
+            matrices.rotateZ(rotation.z);
+            matrices.rotateY(rotation.y);
+            matrices.rotateX(rotation.x);
+            matrices.scale(boneScale.x, boneScale.y, boneScale.z);
+            matrices.moveBackFromPivot(bone);
+        }
+        float[] size = this.getUnscaledModelSpaceSize();
+        Vector3f origin = this.boundingBox.getPosition();
+        Point3f minimum = null;
+        Point3f maximum = null;
+        for (int corner = 0; corner < 8; corner++) {
+            Point3f point = new Point3f(
+                    (origin.x - size[0] + ((corner & 1) == 0 ? 0f : size[0])) / 16f,
+                    (origin.y + ((corner & 2) == 0 ? 0f : size[1])) / 16f,
+                    (origin.z + ((corner & 4) == 0 ? 0f : size[0])) / 16f
+            );
+            matrices.getModelMatrix().transform(point);
+            if (minimum == null) {
+                minimum = new Point3f(point);
+                maximum = new Point3f(point);
+            }
+            else {
+                minimum.set(Math.min(minimum.x, point.x), Math.min(minimum.y, point.y), Math.min(minimum.z, point.z));
+                maximum.set(Math.max(maximum.x, point.x), Math.max(maximum.y, point.y), Math.max(maximum.z, point.z));
+            }
+        }
+        return new AxisAlignedBB(position.x + minimum.x, position.y + minimum.y, position.z + minimum.z,
+                position.x + maximum.x, position.y + maximum.y, position.z + maximum.z);
     }
 
     private Vec3d getPositionOffsetFromBoneDisplacements() {

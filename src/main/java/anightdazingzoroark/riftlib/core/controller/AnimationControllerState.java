@@ -1,6 +1,7 @@
 package anightdazingzoroark.riftlib.core.controller;
 
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
+import anightdazingzoroark.riftlib.core.easing.EasingType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -20,6 +21,8 @@ public class AnimationControllerState<D extends AbstractAnimationData<?, ?>> {
     @NotNull
     public final String name;
     public final double transitionLength;
+    @NotNull
+    public EasingType transitionEasingType;
     //we want to preserve order in which anims r added, hence this
     @NotNull
     private final LinkedHashMap<String, StateAnimation<D>> animations = new LinkedHashMap<>();
@@ -42,8 +45,18 @@ public class AnimationControllerState<D extends AbstractAnimationData<?, ?>> {
      * @param transitionLength The time in seconds to cross-fade when transitioning away from this state
      * */
     public AnimationControllerState(@NotNull String name, double transitionLength) {
+        this(name, transitionLength, EasingType.NONE);
+    }
+
+    /**
+     * @param name The name of the state
+     * @param transitionLength The time in seconds to cross-fade when transitioning away from this state
+     * @param transitionEasingType Easing for the cross-fade only; NONE preserves the controller's easing
+     * */
+    public AnimationControllerState(@NotNull String name, double transitionLength, @NotNull EasingType transitionEasingType) {
         this.name = name;
-        this.transitionLength = transitionLength * 20D; //turn to ticks here cos idk lol
+        this.transitionLength = transitionLength * 20D;
+        this.transitionEasingType = transitionEasingType;
     }
 
     /**

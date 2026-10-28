@@ -49,17 +49,20 @@ public class GeoEntityNonLivingRenderer<A extends Entity & IAnimatable<Animation
 
     @Override
     public void doRender(A entity, double x, double y, double z, float entityYaw, float partialTicks) {
+        DynamicRidePosSnapshot snapshot = entity instanceof IDynamicRideUser<?> rideUser && entity.isBeingRidden()
+                ? rideUser.ridePosList().snapshot : null;
+        //consume the camera pose before passenger checks so a suppressed draw is not retried later
+        boolean clientAnimationPrepared = snapshot != null
+                && snapshot.consumeClientAnimationPrepared(entity.world.getTotalWorldTime(), partialTicks);
         if (entity.getRidingEntity() instanceof IDynamicRideUser<?> mount && !mount.ridePosList().snapshot.isRenderingPassenger(entity)) return;
 
         GeoModel model = this.modelProvider.getModel(entity);
-        DynamicRidePosSnapshot snapshot = null;
         float yaw = entity.getAnimationData().getModelYaw(partialTicks);
         if (entity.isBeingRidden() && entity instanceof IDynamicRideUser<?> rideUser) {
-            snapshot = rideUser.ridePosList().snapshot;
             yaw = rideUser.getRenderYaw(partialTicks);
         }
 
-        if (snapshot == null || !snapshot.consumeClientAnimationPrepared(entity.world.getTotalWorldTime(), partialTicks)) {
+        if (!clientAnimationPrepared) {
             this.modelProvider.prepareClientAnimationPose(entity);
         }
         if (snapshot != null) {

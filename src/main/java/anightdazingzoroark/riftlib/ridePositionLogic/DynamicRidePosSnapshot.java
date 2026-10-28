@@ -78,10 +78,15 @@ public class DynamicRidePosSnapshot {
         this.clientAnimationPartialTicks = partialTicks;
     }
 
-    public boolean consumeClientAnimationPrepared(long worldTime, float partialTicks) {
-        boolean prepared = this.clientAnimationPrepared
+    //check whether the camera pose for this world view is still waiting to be rendered
+    public boolean isClientAnimationPrepared(long worldTime, float partialTicks) {
+        return this.clientAnimationPrepared
                 && this.clientAnimationWorldTime == worldTime
                 && this.clientAnimationPartialTicks == partialTicks;
+    }
+
+    public boolean consumeClientAnimationPrepared(long worldTime, float partialTicks) {
+        boolean prepared = this.isClientAnimationPrepared(worldTime, partialTicks);
         this.clientAnimationPrepared = false;
         return prepared;
     }

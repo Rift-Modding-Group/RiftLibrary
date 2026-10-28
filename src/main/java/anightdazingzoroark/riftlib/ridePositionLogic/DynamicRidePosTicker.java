@@ -3,7 +3,13 @@ package anightdazingzoroark.riftlib.ridePositionLogic;
 import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
+import anightdazingzoroark.riftlib.renderers.geo.GeoEntityLivingRenderer;
+import anightdazingzoroark.riftlib.renderers.geo.GeoEntityNonLivingRenderer;
 import anightdazingzoroark.riftlib.util.AnimationUtils;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -15,6 +21,8 @@ import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.NotNull;
+import org.lwjgl.opengl.GL11;
 
 public class DynamicRidePosTicker {
     @SideOnly(Side.CLIENT)
@@ -100,21 +108,48 @@ public class DynamicRidePosTicker {
             passenger.lastTickPosZ = passenger.posZ;
         }
 
-        //restore the camera entity after the world finishes rendering.
         @SubscribeEvent
-        public void onRenderWorldLast(RenderWorldLastEvent event) {
-            if (this.cameraRestoreEntity == null) return;
+        public void onRenderWorldLast(@NotNull RenderWorldLastEvent event) {
+            Minecraft minecraft = Minecraft.getMinecraft();
+            Entity camera = minecraft.getRenderViewEntity();
 
-            this.cameraRestoreEntity.posX = this.cameraRestorePosX;
-            this.cameraRestoreEntity.posY = this.cameraRestorePosY;
-            this.cameraRestoreEntity.posZ = this.cameraRestorePosZ;
-            this.cameraRestoreEntity.prevPosX = this.cameraRestorePrevPosX;
-            this.cameraRestoreEntity.prevPosY = this.cameraRestorePrevPosY;
-            this.cameraRestoreEntity.prevPosZ = this.cameraRestorePrevPosZ;
-            this.cameraRestoreEntity.lastTickPosX = this.cameraRestoreLastTickPosX;
-            this.cameraRestoreEntity.lastTickPosY = this.cameraRestoreLastTickPosY;
-            this.cameraRestoreEntity.lastTickPosZ = this.cameraRestoreLastTickPosZ;
-            this.cameraRestoreEntity = null;
+            //draw the camera mount if its origin chunk section was skipped by normal rendering
+            if (camera != null && camera.getRidingEntity() instanceof IDynamicRideUser<?> rideUser) {
+                Entity mount = rideUser.getDynamicRideUser();
+                DynamicRidePosSnapshot snapshot = rideUser.ridePosList().snapshot;
+                Render<?> renderer = minecraft.getRenderManager().getEntityRenderObject(mount);
+                if (!mount.isDead && mount.world == minecraft.world
+                        && (renderer instanceof GeoEntityLivingRenderer<?> || renderer instanceof GeoEntityNonLivingRenderer<?>)
+                        && snapshot.isClientAnimationPrepared(mount.world.getTotalWorldTime(), event.getPartialTicks())
+                ) {
+                    //an unused camera pose means neither renderer attempted this mount in the current view
+                    //draw it before restoring the rider position so the model and camera use the same origin
+                    boolean fog = GL11.glIsEnabled(GL11.GL_FOG);
+                    GlStateManager.pushMatrix();
+                    GlStateManager.enableFog();
+                    minecraft.entityRenderer.enableLightmap();
+                    RenderHelper.enableStandardItemLighting();
+                    minecraft.getRenderManager().renderEntityStatic(mount, event.getPartialTicks(), false);
+                    RenderHelper.disableStandardItemLighting();
+                    minecraft.entityRenderer.disableLightmap();
+                    if (!fog) GlStateManager.disableFog();
+                    GlStateManager.popMatrix();
+                }
+            }
+
+            //restore the camera entity after the world finishes rendering.
+            if (this.cameraRestoreEntity != null) {
+                this.cameraRestoreEntity.posX = this.cameraRestorePosX;
+                this.cameraRestoreEntity.posY = this.cameraRestorePosY;
+                this.cameraRestoreEntity.posZ = this.cameraRestorePosZ;
+                this.cameraRestoreEntity.prevPosX = this.cameraRestorePrevPosX;
+                this.cameraRestoreEntity.prevPosY = this.cameraRestorePrevPosY;
+                this.cameraRestoreEntity.prevPosZ = this.cameraRestorePrevPosZ;
+                this.cameraRestoreEntity.lastTickPosX = this.cameraRestoreLastTickPosX;
+                this.cameraRestoreEntity.lastTickPosY = this.cameraRestoreLastTickPosY;
+                this.cameraRestoreEntity.lastTickPosZ = this.cameraRestoreLastTickPosZ;
+                this.cameraRestoreEntity = null;
+            }
         }
     }
 }

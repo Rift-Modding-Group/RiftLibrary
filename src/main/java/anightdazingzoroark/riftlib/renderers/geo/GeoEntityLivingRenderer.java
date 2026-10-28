@@ -61,14 +61,18 @@ public abstract class GeoEntityLivingRenderer<A extends EntityLivingBase & IAnim
 
 	@Override
 	public void doRender(A entity, double x, double y, double z, float entityYaw, float partialTicks) {
+		//---snapshot ride position for dynamic ride position users---
+		DynamicRidePosSnapshot ridePosSnapshot = entity instanceof IDynamicRideUser<?> dynamicRideUser && entity.isBeingRidden()
+				? dynamicRideUser.ridePosList().snapshot : null;
+		//consume the camera pose before render events so a canceled draw is not retried later
+		boolean clientAnimationPrepared = ridePosSnapshot != null
+				&& ridePosSnapshot.consumeClientAnimationPrepared(entity.world.getTotalWorldTime(), partialTicks);
+
+		//vanilla renderer compat
 		if (MinecraftForge.EVENT_BUS.post(new RenderLivingEvent.Pre<>(entity, this, partialTicks, x, y, z))) return;
 
         //---get model---
         GeoModel model = this.modelProvider.getModel(entity);
-
-		//---snapshot ride position for dynamic ride position users---
-		DynamicRidePosSnapshot ridePosSnapshot = entity instanceof IDynamicRideUser<?> dynamicRideUser && entity.isBeingRidden()
-				? dynamicRideUser.ridePosList().snapshot : null;
 
 		//rest is good ol rendering code
 		GlStateManager.pushMatrix();
@@ -82,7 +86,7 @@ public abstract class GeoEntityLivingRenderer<A extends EntityLivingBase & IAnim
 		this.applyRotations(entity, finalYaw, partialTicks);
 
 		//---set up client animations and update animated locators---
-		if (ridePosSnapshot == null || !ridePosSnapshot.consumeClientAnimationPrepared(entity.world.getTotalWorldTime(), partialTicks)) {
+		if (!clientAnimationPrepared) {
 			this.modelProvider.prepareClientAnimationPose(entity);
 		}
 

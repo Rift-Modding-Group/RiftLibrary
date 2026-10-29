@@ -23,7 +23,6 @@ import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import org.jetbrains.annotations.NotNull;
@@ -31,16 +30,36 @@ import org.jspecify.annotations.NonNull;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 
-public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntityLiving>, IRayCreator<DragonEntity>, IMultiHitboxUser<DragonEntity>, IDynamicRideUser<DragonEntity> {
+public class DragonEntity extends EntityCreature implements IAnimatable<AnimationDataEntityLiving>, IMultiHitboxUser<DragonEntity>, IDynamicRideUser<DragonEntity> {
     private static final DataParameter<Boolean> BREATHING_FIRE = EntityDataManager.createKey(DragonEntity.class, DataSerializers.BOOLEAN);
     @NotNull
     private final AnimationDataEntityLiving animationData = new AnimationDataEntityLiving(this);
     private final MultiHitboxList<DragonEntity> multiHitboxList;
     @NotNull
     private final DynamicRidePosList ridePositions;
-    private final Map<String, RiftLibRayBuilder> rayMap;
+    @NotNull
+    private static final RiftLibRayBuilder FIRE_BREATH_RAY = new RiftLibRayBuilder("riftlib:dragon_fire_breath")
+            .setMotionThenImpact()
+            .setMotionSpeed(1D)
+            .setMaxMotionDistance(12D)
+            .setMovementShape(() -> new RiftLibRayBoxMotionShape(
+                    0.1D, 4D,
+                    false, false
+            ))
+            .setImpactShape(RiftLibRaySphereImpactShape::new)
+            .setHitHandler((rayCreator, originPos, rayHitResult) -> {
+                if (!(rayCreator instanceof DragonEntity dragon)) return;
+                for (Entity hitEntity : rayHitResult.hitEntities()) {
+                    if (hitEntity instanceof EntityLivingBase) {
+                        hitEntity.setFire(5);
+                        DamageSource dragonFireDamageSrc = DamageSource.causeMobDamage(dragon);
+                        dragonFireDamageSrc.setFireDamage();
+                        hitEntity.attackEntityFrom(dragonFireDamageSrc, (float) ((int) dragon.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getAttributeValue()));
+                        dragon.setLastAttackedEntity(hitEntity);
+                    }
+                }
+            });
 
     public DragonEntity(World worldIn) {
         super(worldIn);
@@ -48,17 +67,6 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
         this.enablePersistence();
         this.multiHitboxList = new MultiHitboxList<>(this, this.animationData);
         this.ridePositions = new DynamicRidePosList(this, this.animationData);
-        this.rayMap = Map.of(
-                "breatheFire", new RiftLibRayBuilder()
-                        .setMotionThenImpact()
-                        .setMotionSpeed(1D)
-                        .setMaxMotionDistance(12D)
-                        .setMovementShape(() -> new RiftLibRayBoxMotionShape(
-                                0.1D, 4D,
-                                false, false
-                        ))
-                        .setImpactShape(RiftLibRaySphereImpactShape::new)
-        );
         this.isImmuneToFire = true;
     }
 
@@ -227,60 +235,6 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     }
     //ride management stuff ends here
 
-    //ray management stuff starts here
-    @Override
-    @NotNull
-    public DragonEntity getRayCreator() {
-        return this;
-    }
-
-    @Override
-    @NotNull
-    public Map<String, RiftLibRayBuilder> getRayBuilders() {
-        return this.rayMap;
-    }
-
-    @Override
-    public void applyRaySegments(String rayName, BlockPos originPos, RiftLibRay.RayHitResult rayHitResult) {
-        if (rayName.equals("breatheFire")) {
-            for (Entity hitEntity : rayHitResult.hitEntities()) {
-                if (hitEntity instanceof EntityLivingBase) {
-                    hitEntity.setFire(5);
-                    DamageSource dragonFireDamageSrc = DamageSource.causeMobDamage(this);
-                    dragonFireDamageSrc.setFireDamage();
-                    hitEntity.attackEntityFrom(dragonFireDamageSrc, (float) ((int) this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getAttributeValue()));
-                    this.setLastAttackedEntity(hitEntity);
-                }
-            }
-
-            /*
-            int fireChecks = 0;
-            int fireBlocksPlaced = 0;
-            for (BlockPos pos : rayHitResult.hitBlockPositions()) {
-                //make sure that only 4 fire blocks are placed every tick
-                //and for the amount of fire checks done to be up to 48 times
-                if (fireChecks >= 48 || fireBlocksPlaced >= 4) break;
-                fireChecks++;
-
-                //1 in 8 chance to burn block
-                if (this.world.rand.nextInt(8) != 0) continue;
-
-                //skip if theres already fire at the pos
-                IBlockState iBlockState = this.world.getBlockState(pos);
-                if (iBlockState.getBlock() == Blocks.FIRE) continue;
-
-                //create fire when blockpos is air and fire can exist there
-                Material blockMaterial = iBlockState.getMaterial();
-                if (blockMaterial == Material.AIR && Blocks.FIRE.canPlaceBlockAt(this.world, pos)) {
-                    this.world.setBlockState(pos, Blocks.FIRE.getDefaultState());
-                    fireBlocksPlaced++;
-                }
-            }
-             */
-        }
-    }
-    //ray management stuff ends here
-
     public boolean isBreathingFire() {
         return this.dataManager.get(BREATHING_FIRE);
     }
@@ -292,7 +246,6 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
     public float attackWidth() {
         return 8f;
     }
-
 
     @Override
     public void initializeAnimationData(@NonNull AnimationDataEntityLiving animationData) {
@@ -318,8 +271,8 @@ public class DragonEntity extends EntityCreature implements IAnimatable<Animatio
                         .addExitEffect(data -> data.sendMessage("endBreathUse"))
         ));
 
-        animationData.addAnimationMessageEffect("startFireBreath", new AnimatableRunValue(() -> RiftLibRayHelper.createRay(this, "breatheFire", "fireLocator"), Side.SERVER));
-        animationData.addAnimationMessageEffect("endFireBreath", new AnimatableRunValue(() -> RiftLibRayHelper.killRay(this, "breatheFire"), Side.SERVER));
+        animationData.addAnimationMessageEffect("startFireBreath", new AnimatableRunValue(() -> RiftLibRayHelper.createRay(FIRE_BREATH_RAY, "fireLocator", this), Side.SERVER));
+        animationData.addAnimationMessageEffect("endFireBreath", new AnimatableRunValue(() -> RiftLibRayHelper.killRay(this, FIRE_BREATH_RAY.getName()), Side.SERVER));
         animationData.addAnimationMessageEffect("endBreathUse", new AnimatableRunValue(() -> this.setBreathingFire(false), Side.CLIENT, Side.SERVER));
     }
 

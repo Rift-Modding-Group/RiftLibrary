@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.ray;
 
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationDataAdvancedEntity;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.ray.rayShape.motion.RiftLibRayMotionShape;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
@@ -24,13 +25,15 @@ import java.util.function.BiConsumer;
  */
 public class RiftLibRay {
     @NotNull
-    public final IRayCreator<?> rayCreator;
+    public final Entity rayCreator;
     @NotNull
     public final String rayName;
     @NotNull
     public final AnimatedLocator parentLocator;
     @NotNull
     public final RiftLibRayBuilder builder;
+    @NotNull
+    private final AbstractAnimationDataAdvancedEntity<?, ?> animData;
 
     //the origin of the ray. is nullable so that upon initialization there
     //will not be a giant puddle below the user
@@ -60,13 +63,14 @@ public class RiftLibRay {
     private boolean isDead;
 
     public RiftLibRay(
-            @NotNull IRayCreator<?> rayCreator,
-            @NotNull String rayName,
+            @NotNull Entity rayCreator,
+            @NotNull AbstractAnimationDataAdvancedEntity<?, ?> animData,
             @NotNull AnimatedLocator parentLocator,
             @NotNull RiftLibRayBuilder builder
     ) {
         this.rayCreator = rayCreator;
-        this.rayName = rayName;
+        this.rayName = builder.getName();
+        this.animData = animData;
         this.parentLocator = parentLocator;
         this.builder = builder;
         this.movementShape = builder.getMovementShape().get();
@@ -77,7 +81,7 @@ public class RiftLibRay {
      */
     public void onUpdate() {
         //-----kill the ray and its segments if the ray creator died, or if the locator disappeared-----
-        if (!this.rayCreator.getRayCreator().isEntityAlive() || !this.parentLocator.isValid()) {
+        if (!this.rayCreator.isEntityAlive() || !this.parentLocator.isValid()) {
             this.killRay();
         }
 
@@ -86,7 +90,55 @@ public class RiftLibRay {
 
         //-----define the ray pose when not fading out-----
         if (!this.isEnded) {
-            this.rayPose = this.currentPose();
+            //---common stuff---
+            //determine entity yaw and turn into quaternion
+            double finalYawRadians = -Math.toRadians(this.animData.getModelYaw());
+
+            //---for origin---
+            //set initial entity offset from center, in model space ofc
+            Vec3d animatedLocatorPos = this.parentLocator.getModelSpacePosition();
+            float parentScale = this.animData.getScale();
+            Vec3d posVec = new Vec3d(
+                    -animatedLocatorPos.x / 16f * parentScale,
+                    animatedLocatorPos.y / 16f * parentScale,
+                    -animatedLocatorPos.z / 16f * parentScale
+            );
+
+            //rotate the locator position only by the entity yaw; the locator's own rotation affects direction, not origin
+            posVec = VectorUtils.rotateVectorWithQuaternion(
+                    posVec,
+                    QuaternionUtils.createXYZQuaternion(0D, finalYawRadians, 0D)
+            );
+
+            //position to entity pos
+            posVec = new Vec3d(
+                    posVec.x + this.rayCreator.posX,
+                    posVec.y + this.rayCreator.posY,
+                    posVec.z + this.rayCreator.posZ
+            );
+
+            //---for direction vector and up vector---
+            //rotate the model axes by the locator, then apply the same X/Z conversion
+            //used by the locator position before rotating into entity world space
+            Quaternion locatorQuaternion = this.parentLocator.getModelSpaceYXZQuaternion();
+            Quaternion.normalise(locatorQuaternion, locatorQuaternion);
+
+            Vec3d modelForward = VectorUtils.rotateVectorWithQuaternion(
+                    new Vec3d(0D, 0D, -1D),
+                    locatorQuaternion
+            ).normalize();
+            Vec3d modelUp = VectorUtils.rotateVectorWithQuaternion(
+                    new Vec3d(0D, 1D, 0D),
+                    locatorQuaternion
+            ).normalize();
+            Vec3d forwardVec = new Vec3d(-modelForward.x, modelForward.y, -modelForward.z);
+            Vec3d upVec = new Vec3d(-modelUp.x, modelUp.y, -modelUp.z);
+
+            Quaternion entityYaw = QuaternionUtils.createYXZQuaternion(0D, finalYawRadians, 0D);
+            forwardVec = VectorUtils.rotateVectorWithQuaternion(forwardVec, entityYaw).normalize();
+            upVec = VectorUtils.rotateVectorWithQuaternion(upVec, entityYaw).normalize();
+
+            this.rayPose = new RayPose(posVec, forwardVec, upVec);
             this.originPos = this.rayPose.origin();
         }
 
@@ -134,11 +186,11 @@ public class RiftLibRay {
         }
 
         //-----send ray information to the ray creator-----
-        if (!this.rayCreator.getRayCreator().world.isRemote
+        if (!this.rayCreator.world.isRemote
                 && this.originPos != null
                 && (!hitBlocks.isEmpty() || !hitEntities.isEmpty())) {
-            this.rayCreator.applyRaySegments(
-                    this.rayName,
+            this.builder.hitHandler.apply(
+                    this.rayCreator,
                     new BlockPos(this.originPos),
                     new RayHitResult(hitEntities, hitBlocks)
             );
@@ -181,62 +233,6 @@ public class RiftLibRay {
     }
 
     /**
-     * Define the current ray pose using ray creator and locator position
-     * */
-    @NotNull
-    private RayPose currentPose() {
-        //---common stuff---
-        //determine entity yaw and turn into quaternion
-        double finalYawRadians = -Math.toRadians(this.rayCreator.getRayCreator().getAnimationData().getModelYaw());
-
-        //---for origin---
-        //set initial entity offset from center, in model space ofc
-        Vec3d animatedLocatorPos = this.parentLocator.getModelSpacePosition();
-        float parentScale = this.rayCreator.getRayCreator().getAnimationData().getScale();
-        Vec3d posVec = new Vec3d(
-                -animatedLocatorPos.x / 16f * parentScale,
-                animatedLocatorPos.y / 16f * parentScale,
-                -animatedLocatorPos.z / 16f * parentScale
-        );
-
-        //rotate the locator position only by the entity yaw; the locator's own rotation affects direction, not origin
-        posVec = VectorUtils.rotateVectorWithQuaternion(
-                posVec,
-                QuaternionUtils.createXYZQuaternion(0D, finalYawRadians, 0D)
-        );
-
-        //position to entity pos
-        posVec = new Vec3d(
-                posVec.x + this.rayCreator.getRayCreator().posX,
-                posVec.y + this.rayCreator.getRayCreator().posY,
-                posVec.z + this.rayCreator.getRayCreator().posZ
-        );
-
-        //---for direction vector and up vector---
-        //rotate the model axes by the locator, then apply the same X/Z conversion
-        //used by the locator position before rotating into entity world space
-        Quaternion locatorQuaternion = this.parentLocator.getModelSpaceYXZQuaternion();
-        Quaternion.normalise(locatorQuaternion, locatorQuaternion);
-
-        Vec3d modelForward = VectorUtils.rotateVectorWithQuaternion(
-                new Vec3d(0D, 0D, -1D),
-                locatorQuaternion
-        ).normalize();
-        Vec3d modelUp = VectorUtils.rotateVectorWithQuaternion(
-                new Vec3d(0D, 1D, 0D),
-                locatorQuaternion
-        ).normalize();
-        Vec3d forwardVec = new Vec3d(-modelForward.x, modelForward.y, -modelForward.z);
-        Vec3d upVec = new Vec3d(-modelUp.x, modelUp.y, -modelUp.z);
-
-        Quaternion entityYaw = QuaternionUtils.createYXZQuaternion(0D, finalYawRadians, 0D);
-        forwardVec = VectorUtils.rotateVectorWithQuaternion(forwardVec, entityYaw).normalize();
-        upVec = VectorUtils.rotateVectorWithQuaternion(upVec, entityYaw).normalize();
-
-        return new RayPose(posVec, forwardVec, upVec);
-    }
-
-    /**
      * Debug grid lines are the visualization of the ray and are visible when hitbox view is on.
      * They are meant for client use only.
      */
@@ -248,9 +244,9 @@ public class RiftLibRay {
     }
 
     /**
-     * This ray result is immutable and is sent to the IRayCreator on the server only.
+     * A tick's hits, delivered to the builder's hit handler on the server only.
      */
-    public record RayHitResult(Set<Entity> hitEntities, Set<BlockPos> hitBlockPositions) {}
+    public record RayHitResult(@NotNull Set<Entity> hitEntities, @NotNull Set<BlockPos> hitBlockPositions) {}
 
     /**
      * World-space locator pose for this tick.

@@ -56,7 +56,7 @@ public class ServerProxy {
         SERVER_MODEL_MESSAGE_WRAPPER.registerMessage(RiftLibTickClientFromServer.class, RiftLibMessageSide.CLIENT);
 
         RAY_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID + "_ray");
-        RAY_MESSAGE_WRAPPER.registerMessage(RiftLibCreateOrDestroyRay.class, RiftLibMessageSide.BOTH);
+        RAY_MESSAGE_WRAPPER.registerMessage(RiftLibCreateOrDestroyRay.class, RiftLibMessageSide.CLIENT);
 
         PROPERTIES_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID + "_wrapper");
         PROPERTIES_WRAPPER.registerMessage(RiftLibUpdateSinglePropertyKey.class, RiftLibMessageSide.CLIENT);

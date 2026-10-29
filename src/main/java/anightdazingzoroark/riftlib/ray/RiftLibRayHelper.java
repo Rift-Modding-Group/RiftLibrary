@@ -1,11 +1,15 @@
 package anightdazingzoroark.riftlib.ray;
 
 import anightdazingzoroark.riftlib.RiftLib;
+import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.core.manager.AbstractAnimationDataAdvancedEntity;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibCreateOrDestroyRay;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.model.ServerModelRegistry;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
+import net.minecraft.entity.Entity;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -16,51 +20,66 @@ public class RiftLibRayHelper {
     /**
      * Creates a ray. Meant for use on server only.
      * */
-    public static void createRay(IRayCreator<?> rayCreator, String rayName, String locatorName) {
-        if (rayCreator.getRayCreator().world.isRemote) return;
+    @Nullable
+    public static <T extends Entity & IAnimatable<? extends AbstractAnimationDataAdvancedEntity<?, ?>>> RiftLibRay createRay(
+            @NotNull RiftLibRayBuilder rayBuilder, @NotNull String locatorName, @NotNull T rayCreator
+    ) {
+        if (rayCreator.world.isRemote) return null;
+        RiftLibRay ray = createRayOnSide(rayBuilder, locatorName, rayCreator);
+        if (ray == null) return null;
+
         ServerProxy.RAY_MESSAGE_WRAPPER.sendToAllTracking(
-                new RiftLibCreateOrDestroyRay(true, rayCreator, rayName, locatorName),
-                rayCreator.getRayCreator()
+                new RiftLibCreateOrDestroyRay(true, rayCreator, rayBuilder.getName(), locatorName),
+                rayCreator
         );
-        createRayOnSide(rayCreator, rayName, locatorName);
+        return ray;
     }
 
     /**
      * Create a ray on the side it was called on only.
      * */
-    public static void createRayOnSide(IRayCreator<?> rayCreator, String rayName, String locatorName) {
-        RiftLibRayBuilder rayBuilder = rayCreator.getRayBuilders().get(rayName);
-
+    @Nullable
+    public static RiftLibRay createRayOnSide(
+            @NotNull RiftLibRayBuilder rayBuilder, @NotNull String locatorName, @NotNull Entity rayCreator
+    ) {
+        if (!(rayCreator instanceof IAnimatable<?> animatable
+                && animatable.getAnimationData() instanceof AbstractAnimationDataAdvancedEntity<?, ?> animData)) {
+            RiftLib.LOGGER.warn("Cannot create ray {} on an entity without advanced animation data!", rayBuilder.getName());
+            return null;
+        }
         //test validity
         if (!rayBuilder.isValid()) {
-            RiftLib.LOGGER.warn("This ray is invalid, and thus will not form.");
-            return;
+            RiftLib.LOGGER.warn("Ray {} is invalid, and thus will not form.", rayBuilder.getName());
+            return null;
         }
 
         //ensure theres a server model
-        ServerModelRegistry.requireServerModel(rayCreator.getRayCreator(), "rays");
-        ServerModelRegistry.prepareServerSyncedAnimationData(rayCreator.getRayCreator());
+        if (!rayCreator.world.isRemote) {
+            ServerModelRegistry.requireServerModel(animatable, "rays");
+        }
+        ServerModelRegistry.prepareServerSyncedAnimationData(animatable);
 
         //ensure theres a locator
-        AnimatedLocator locator = rayCreator.getRayCreator().getAnimationData().getAnimatedLocator(locatorName);
+        AnimatedLocator locator = animData.getAnimatedLocator(locatorName);
         if (locator == null) {
             RiftLib.LOGGER.warn("Given locator {} does not exist on the entity!", locatorName);
-            return;
+            return null;
         }
 
-        RiftLibRay ray = new RiftLibRay(rayCreator, rayName, locator, rayBuilder);
-        if (rayCreator.getRayCreator().world.isRemote) RayTicker.Client.RAY_LIST.add(ray);
+        RiftLibRay ray = new RiftLibRay(rayCreator, animData, locator, rayBuilder);
+        if (rayCreator.world.isRemote) RayTicker.Client.RAY_LIST.add(ray);
         else RayTicker.Server.RAY_LIST.add(ray);
+        return ray;
     }
 
     /**
      * Kills a ray.  Meant for use on server only.
      * */
-    public static void killRay(IRayCreator<?> rayCreator, @NotNull String rayName) {
-        if (rayCreator.getRayCreator().world.isRemote) return;
+    public static void killRay(@NotNull Entity rayCreator, @NotNull String rayName) {
+        if (rayCreator.world.isRemote) return;
         ServerProxy.RAY_MESSAGE_WRAPPER.sendToAllTracking(
                 new RiftLibCreateOrDestroyRay(false, rayCreator, rayName, ""),
-                rayCreator.getRayCreator()
+                rayCreator
         );
         killRayOnSide(rayCreator, rayName);
     }
@@ -68,8 +87,8 @@ public class RiftLibRayHelper {
     /**
      * Kill a ray on the side it was called on only.
      * */
-    public static void killRayOnSide(IRayCreator<?> rayCreator, @NotNull String rayName) {
-        List<RiftLibRay> listToKillOn = rayCreator.getRayCreator().world.isRemote ? RayTicker.Client.RAY_LIST : RayTicker.Server.RAY_LIST;
+    public static void killRayOnSide(@NotNull Entity rayCreator, @NotNull String rayName) {
+        List<RiftLibRay> listToKillOn = rayCreator.world.isRemote ? RayTicker.Client.RAY_LIST : RayTicker.Server.RAY_LIST;
 
         for (RiftLibRay ray : listToKillOn) {
             if (!rayCreator.equals(ray.rayCreator) || !rayName.equals(ray.rayName)) continue;

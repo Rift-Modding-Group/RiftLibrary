@@ -2,14 +2,10 @@ package anightdazingzoroark.example.entity;
 
 import anightdazingzoroark.riftlib.core.AnimatableRunValue;
 import anightdazingzoroark.riftlib.core.IAnimatable;
-import anightdazingzoroark.riftlib.core.controller.AnimationController;
-import anightdazingzoroark.riftlib.core.controller.AnimationControllerState;
 import anightdazingzoroark.riftlib.core.manager.AnimationDataEntityLiving;
 import anightdazingzoroark.riftlib.hitbox.IMultiHitboxUser;
 import anightdazingzoroark.riftlib.hitbox.MultiHitboxList;
-import anightdazingzoroark.riftlib.ray.IRayCreator;
 import anightdazingzoroark.riftlib.ray.rayShape.impact.RiftLibRaySphereImpactShape;
-import anightdazingzoroark.riftlib.ray.RiftLibRay;
 import anightdazingzoroark.riftlib.ray.RiftLibRayBuilder;
 import anightdazingzoroark.riftlib.ray.RiftLibRayHelper;
 import net.minecraft.block.state.IBlockState;
@@ -17,39 +13,41 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityFlying;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
-import java.util.Map;
-
-public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<AnimationDataEntityLiving>, IMultiHitboxUser<FlyingPufferfishEntity>, IRayCreator<FlyingPufferfishEntity> {
+public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<AnimationDataEntityLiving>, IMultiHitboxUser<FlyingPufferfishEntity> {
     @NotNull
     private final MultiHitboxList<FlyingPufferfishEntity> multiHitboxList;
     @NotNull
     private final AnimationDataEntityLiving animationData = new AnimationDataEntityLiving(this);
-    private final Map<String, RiftLibRayBuilder> rayMap;
+    @NotNull
+    private static RiftLibRayBuilder PUFF_UP_RAY = new RiftLibRayBuilder("riftlib:puff_up")
+            .setImpactOnly()
+            .setImpactShape(RiftLibRaySphereImpactShape::new)
+            .setMotionSpeed(1D)
+            .setMaxMotionDistance(8)
+            .setBlockBreakCheck((rayCreator, blockPos) -> {
+                World world = rayCreator.world;
+                IBlockState blockState = world.getBlockState(blockPos);
+                float hardness = blockState.getBlockHardness(world, blockPos);
+                return hardness <= 1f && hardness >= 0f;
+            })
+            .setImpactCreationInterval(1)
+            .setHitHandler((rayCreator, originPos, rayHitResult) -> {
+                if (!(rayCreator instanceof FlyingPufferfishEntity pufferfish)) return;
+                for (Entity entity : rayHitResult.hitEntities()) {
+                    if (!(entity instanceof EntityLivingBase entityLivingBase)) continue;
+                    entityLivingBase.attackEntityFrom(DamageSource.causeMobDamage(pufferfish), 1f);
+                }
+            });
 
     public FlyingPufferfishEntity(World worldIn) {
         super(worldIn);
         this.setSize(1f, 1f);
         this.multiHitboxList = new MultiHitboxList<>(this, this.animationData);
-        this.rayMap = Map.of(
-                "puffUp", new RiftLibRayBuilder()
-                        .setImpactOnly()
-                        .setImpactShape(RiftLibRaySphereImpactShape::new)
-                        .setMotionSpeed(1D)
-                        .setMaxMotionDistance(8)
-                        .setBlockBreakCheck((rayCreator, blockPos) -> {
-                            World world = rayCreator.getRayCreator().world;
-                            IBlockState blockState = world.getBlockState(blockPos);
-                            float hardness = blockState.getBlockHardness(world, blockPos);
-                            return hardness <= 1f && hardness >= 0f;
-                        })
-                        .setImpactCreationInterval(1)
-        );
     }
 
     @Override
@@ -77,28 +75,6 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
     }
     //hitbox stuff ends here
 
-    //ray stuff starts here
-    @Override
-    @NonNull
-    public FlyingPufferfishEntity getRayCreator() {
-        return this;
-    }
-
-    @Override
-    @NonNull
-    public Map<String, RiftLibRayBuilder> getRayBuilders() {
-        return this.rayMap;
-    }
-
-    @Override
-    public void applyRaySegments(String rayName, BlockPos originPos, RiftLibRay.RayHitResult rayHitResult) {
-        for (Entity entity : rayHitResult.hitEntities()) {
-            if (!(entity instanceof EntityLivingBase entityLivingBase)) continue;
-            entityLivingBase.attackEntityFrom(DamageSource.causeMobDamage(this), 1f);
-        }
-    }
-    //ray stuff ends here
-
     @Override
     public void initializeAnimationData(@NonNull AnimationDataEntityLiving animationData) {
         //---scaling---
@@ -108,10 +84,10 @@ public class FlyingPufferfishEntity extends EntityFlying implements IAnimatable<
         animationData.addAnimation("animation.flying_pufferfish.inflate_loop");
 
         animationData.addAnimationMessageEffect("startPuffUpRay", new AnimatableRunValue(
-                () -> RiftLibRayHelper.createRay(this, "puffUp", "rayCenter"), Side.SERVER
+                () -> RiftLibRayHelper.createRay(PUFF_UP_RAY, "rayCenter", this), Side.SERVER
         ));
         animationData.addAnimationMessageEffect("endPuffUpRay", new AnimatableRunValue(
-                () -> RiftLibRayHelper.killRay(this, "puffUp"), Side.SERVER
+                () -> RiftLibRayHelper.killRay(this, PUFF_UP_RAY.getName()), Side.SERVER
         ));
     }
 

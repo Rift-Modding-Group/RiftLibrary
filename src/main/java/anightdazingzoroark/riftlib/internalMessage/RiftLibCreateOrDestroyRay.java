@@ -1,9 +1,8 @@
 package anightdazingzoroark.riftlib.internalMessage;
 
+import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
-import anightdazingzoroark.riftlib.ray.IRayCreator;
-import anightdazingzoroark.riftlib.ray.RayTicker;
-import anightdazingzoroark.riftlib.ray.RiftLibRay;
+import anightdazingzoroark.riftlib.ray.RiftLibRayBuilder;
 import anightdazingzoroark.riftlib.ray.RiftLibRayHelper;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
@@ -12,7 +11,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.jetbrains.annotations.NotNull;
 
 public class RiftLibCreateOrDestroyRay extends RiftLibMessage<RiftLibCreateOrDestroyRay> {
     private boolean create;
@@ -22,9 +21,9 @@ public class RiftLibCreateOrDestroyRay extends RiftLibMessage<RiftLibCreateOrDes
 
     public RiftLibCreateOrDestroyRay() {}
 
-    public RiftLibCreateOrDestroyRay(boolean create, IRayCreator<?> rayCreator, String rayName, String locatorName) {
+    public RiftLibCreateOrDestroyRay(boolean create, @NotNull Entity rayCreator, @NotNull String rayName, @NotNull String locatorName) {
         this.create = create;
-        this.entityId = rayCreator.getRayCreator().getEntityId();
+        this.entityId = rayCreator.getEntityId();
         this.rayName = rayName;
         this.locatorName = locatorName;
     }
@@ -46,20 +45,22 @@ public class RiftLibCreateOrDestroyRay extends RiftLibMessage<RiftLibCreateOrDes
     }
 
     @Override
-    public void executeOnServer(MinecraftServer server, RiftLibCreateOrDestroyRay message, EntityPlayer player, MessageContext messageContext) {
-        Entity entity = server.getEntityWorld().getEntityByID(message.entityId);
-        if (!(entity instanceof IRayCreator<?> rayCreator)) return;
-
-        if (message.create) RiftLibRayHelper.createRayOnSide(rayCreator, message.rayName, message.locatorName);
-        else RiftLibRayHelper.killRayOnSide(rayCreator, message.rayName);
-    }
+    public void executeOnServer(MinecraftServer server, RiftLibCreateOrDestroyRay message, EntityPlayer player, MessageContext messageContext) {}
 
     @Override
     public void executeOnClient(Minecraft client, RiftLibCreateOrDestroyRay message, EntityPlayer player, MessageContext messageContext) {
+        if (client.world == null) return;
         Entity entity = client.world.getEntityByID(message.entityId);
-        if (!(entity instanceof IRayCreator<?> rayCreator)) return;
+        if (entity == null) return;
 
-        if (message.create) RiftLibRayHelper.createRayOnSide(rayCreator, message.rayName, message.locatorName);
-        else RiftLibRayHelper.killRayOnSide(rayCreator, message.rayName);
+        if (message.create) {
+            RiftLibRayBuilder rayBuilder = RiftLibRayBuilder.getByName(message.rayName);
+            if (rayBuilder == null) {
+                RiftLib.LOGGER.warn("Cannot create ray {} because its builder is not defined on the client!", message.rayName);
+                return;
+            }
+            RiftLibRayHelper.createRayOnSide(rayBuilder, message.locatorName, entity);
+        }
+        else RiftLibRayHelper.killRayOnSide(entity, message.rayName);
     }
 }

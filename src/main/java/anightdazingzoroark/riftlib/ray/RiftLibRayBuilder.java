@@ -4,16 +4,29 @@ import anightdazingzoroark.riftlib.ray.rayShape.impact.RiftLibImpactShape;
 import anightdazingzoroark.riftlib.ray.rayShape.impact.RiftLibRaySphereImpactShape;
 import anightdazingzoroark.riftlib.ray.rayShape.motion.RiftLibRayMotionShape;
 import anightdazingzoroark.riftlib.ray.rayShape.motion.RiftLibRayStraightMotionShape;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
- * Builder for ray creation to be passed into RiftLibRay
+ * Named ray definition to pass into {@link RiftLibRayHelper#createRay}.
+ * Define builders once on both logical sides, before creating rays, using unique
+ * names (preferably prefixed with the mod ID). Callbacks must use their supplied
+ * entity rather than capturing a particular entity instance.
  */
 public class RiftLibRayBuilder {
+    @NotNull
+    private static Map<String, RiftLibRayBuilder> builders = new ConcurrentHashMap<>();
+    @NotNull
+    private String name;
+
     private boolean motionDefined;
     private boolean hasMotion = true;
     private boolean hasImpact;
@@ -32,7 +45,38 @@ public class RiftLibRayBuilder {
     private int impactCreationInterval = 1;
 
     @NotNull
-    private BiFunction<IRayCreator<?>, BlockPos, Boolean> blockBreakCheck = (rayCreator, pos) -> false;
+    private BiFunction<Entity, BlockPos, Boolean> blockBreakCheck = (rayCreator, pos) -> false;
+
+    /**
+     * Receives nonempty hit results on the server only.
+     */
+    @NotNull
+    public HitHandler hitHandler = (rayCreator, originPos, rayHitResult) -> {};
+
+    public RiftLibRayBuilder(@NotNull String name) {
+        Objects.requireNonNull(name, "Ray name must not be null");
+        if (name.isBlank()) throw new IllegalArgumentException("Ray name must not be blank");
+        this.name = name;
+        if (builders.putIfAbsent(name, this) != null) {
+            throw new IllegalArgumentException("A ray builder named " + name + " already exists");
+        }
+    }
+
+    @NotNull
+    public String getName() {
+        return this.name;
+    }
+
+    @Nullable
+    public static RiftLibRayBuilder getByName(@NotNull String name) {
+        return builders.get(name);
+    }
+
+    @NotNull
+    public RiftLibRayBuilder setHitHandler(@NotNull HitHandler hitHandler) {
+        this.hitHandler = Objects.requireNonNull(hitHandler, "Ray hit handler must not be null");
+        return this;
+    }
 
     /**
      * Use this to make the ray only move, no impacts
@@ -190,17 +234,22 @@ public class RiftLibRayBuilder {
      * Create a block break check
      * */
     @NotNull
-    public RiftLibRayBuilder setBlockBreakCheck(@NotNull BiFunction<IRayCreator<?>, BlockPos, Boolean> canBreakBlock) {
+    public RiftLibRayBuilder setBlockBreakCheck(@NotNull BiFunction<Entity, BlockPos, Boolean> canBreakBlock) {
         this.blockBreakCheck = canBreakBlock;
         return this;
     }
 
     @NotNull
-    public BiFunction<IRayCreator<?>, BlockPos, Boolean> getBlockBreakCheck() {
+    public BiFunction<Entity, BlockPos, Boolean> getBlockBreakCheck() {
         return this.blockBreakCheck;
     }
 
     public boolean isValid() {
         return this.hasMotion || this.hasImpact;
+    }
+
+    @FunctionalInterface
+    public interface HitHandler {
+        void apply(@NotNull Entity rayCreator, @NotNull BlockPos originPos, @NotNull RiftLibRay.RayHitResult rayHitResult);
     }
 }

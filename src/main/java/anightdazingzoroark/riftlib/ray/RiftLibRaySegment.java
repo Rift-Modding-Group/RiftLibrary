@@ -32,7 +32,7 @@ import java.util.function.BiConsumer;
  */
 public class RiftLibRaySegment {
     @NotNull
-    private final IRayCreator<?> rayCreator;
+    private final Entity rayCreator;
     @NotNull
     private final RiftLibRayBuilder builder;
     @NotNull
@@ -84,7 +84,7 @@ public class RiftLibRaySegment {
      * Create a segment that starts out in motion.
      */
     public RiftLibRaySegment(
-            @NotNull IRayCreator<?> rayCreator,
+            @NotNull Entity rayCreator,
             @NotNull Vec3d center,
             @NotNull Vec3d direction,
             double length,
@@ -106,7 +106,7 @@ public class RiftLibRaySegment {
      * Create a segment that starts as an impact.
      */
     public RiftLibRaySegment(
-            @NotNull IRayCreator<?> rayCreator,
+            @NotNull Entity rayCreator,
             @NotNull Vec3d center,
             @NotNull Vec3d incomingDirection,
             @NotNull Vec3d poseUp,
@@ -158,7 +158,8 @@ public class RiftLibRaySegment {
         this.collectEntitiesAlongLine(line.start(), trace.reachedEnd(), hitEntities);
 
         //stuff to do when segment in motion is blocked by unbreakable block
-        if (trace.blocked()) {
+        BlockPos blockingBlock = trace.blockingBlock();
+        if (blockingBlock != null) {
             double distanceBeforeImpact = trace.reachedEnd()
                     .subtract(leadingEdgeBeforeMovement)
                     .dotProduct(this.direction);
@@ -168,7 +169,7 @@ public class RiftLibRaySegment {
                 this.beginImpact(
                         trace.reachedEnd(),
                         pose.up(),
-                        trace.blockingBlock(),
+                        blockingBlock,
                         trace.blockingFace()
                 );
                 if (!this.isDead) this.tickImpact(hitBlocks, hitEntities);
@@ -228,10 +229,10 @@ public class RiftLibRaySegment {
             Vec3d hitVec = hit != null && hit.hitVec != null
                     ? hit.hitVec
                     : new Vec3d(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
-            return new TraceData(true, hitVec, pos, blockingFace);
+            return new TraceData(hitVec, pos, blockingFace);
         }
 
-        return new TraceData(false, line.end(), null, null);
+        return new TraceData(line.end(), null, null);
     }
 
     /**
@@ -240,7 +241,7 @@ public class RiftLibRaySegment {
     private void collectEntitiesAlongLine(@NotNull Vec3d lineStart, @NotNull Vec3d lineEnd, @NotNull Set<Entity> entities) {
         AxisAlignedBB searchBox = RiftLibRayGeometry.createAABB(lineStart, lineEnd, 0.25D);
         List<Entity> candidates = this.world().getEntitiesWithinAABBExcludingEntity(
-                this.rayCreator.getRayCreator(),
+                this.rayCreator,
                 searchBox
         );
 
@@ -417,10 +418,18 @@ public class RiftLibRaySegment {
     private ImpactBasis impactBasis() {
         if (this.cachedImpactBasis != null) return this.cachedImpactBasis;
 
-        Vec3d up = this.hitFace == null ? this.poseUp.normalize() : RiftLibRayGeometry.facingVector(this.hitFace).normalize();
-        Vec3d forwardSeed = this.hitFace == null ? this.direction : (this.hitFace.getAxis() == EnumFacing.Axis.Y
-                                                                     ? new Vec3d(0D, 0D, 1D)
-                                                                     : new Vec3d(0D, 1D, 0D));
+        Vec3d up;
+        Vec3d forwardSeed;
+        if (this.hitFace == null) {
+            if (this.poseUp == null) throw new IllegalStateException("Cannot calculate an impact basis before the impact pose is initialized");
+            up = this.poseUp.normalize();
+            forwardSeed = this.direction;
+        }
+        else {
+            up = RiftLibRayGeometry.facingVector(this.hitFace).normalize();
+            if (this.hitFace.getAxis() == EnumFacing.Axis.Y) forwardSeed = new Vec3d(0D, 0D, 1D);
+            else forwardSeed = new Vec3d(0D, 1D, 0D);
+        }
         if (Math.abs(forwardSeed.dotProduct(up)) > 0.999D) {
             forwardSeed = new Vec3d(1D, 0D, 0D);
         }
@@ -445,7 +454,7 @@ public class RiftLibRaySegment {
                 this.impactCenter.z + extent
         );
         List<Entity> candidates = this.world().getEntitiesWithinAABBExcludingEntity(
-                this.rayCreator.getRayCreator(),
+                this.rayCreator,
                 searchBox
         );
 
@@ -639,7 +648,8 @@ public class RiftLibRaySegment {
 
     @Nullable
     private Vec3d impactBoundaryPoint(@NotNull Region<Vector3D> region, @NotNull Vector3D boundaryDirection, double size) {
-        if (this.impactCenter == null) return null;
+        Vec3d impactCenter = this.impactCenter;
+        if (impactCenter == null) return null;
 
         double searchDistance = Math.max(this.impactShape.blockExtent(size) * 2D + 2D, 1D);
         double lastInside = this.impactShape.contains(region, Vector3D.ZERO, size) ? 0D : -1D;
@@ -672,13 +682,13 @@ public class RiftLibRaySegment {
 
         Vector3D localPoint = boundaryDirection.multiply(low);
         ImpactBasis basis = this.impactBasis();
-        Vec3d boundaryPoint = this.impactCenter
+        Vec3d boundaryPoint = impactCenter
                 .add(basis.right().scale(localPoint.getX()))
                 .add(basis.up().scale(localPoint.getY()))
                 .add(basis.forward().scale(localPoint.getZ()));
 
         if (this.impactSurfaceNormal != null && this.impactSurfacePoint != null) {
-            double centerDistance = this.impactCenter.subtract(this.impactSurfacePoint)
+            double centerDistance = impactCenter.subtract(this.impactSurfacePoint)
                     .dotProduct(this.impactSurfaceNormal);
             double boundaryDistance = boundaryPoint.subtract(this.impactSurfacePoint)
                     .dotProduct(this.impactSurfaceNormal);
@@ -688,75 +698,30 @@ public class RiftLibRaySegment {
                         0D,
                         1D
                 );
-                boundaryPoint = this.impactCenter.add(
-                        boundaryPoint.subtract(this.impactCenter).scale(intersection)
+                boundaryPoint = impactCenter.add(
+                        boundaryPoint.subtract(impactCenter).scale(intersection)
                 );
             }
         }
 
-        return this.clipDebugBoundaryAtBlocks(boundaryPoint);
-    }
-
-    @NotNull
-    private Vec3d clipDebugBoundaryAtBlocks(@NotNull Vec3d boundaryPoint) {
-        int x = (int) Math.floor(this.impactCenter.x);
-        int y = (int) Math.floor(this.impactCenter.y);
-        int z = (int) Math.floor(this.impactCenter.z);
-        int endX = (int) Math.floor(boundaryPoint.x);
-        int endY = (int) Math.floor(boundaryPoint.y);
-        int endZ = (int) Math.floor(boundaryPoint.z);
-        double dx = boundaryPoint.x - this.impactCenter.x;
-        double dy = boundaryPoint.y - this.impactCenter.y;
-        double dz = boundaryPoint.z - this.impactCenter.z;
-        int stepX = Integer.compare(endX, x);
-        int stepY = Integer.compare(endY, y);
-        int stepZ = Integer.compare(endZ, z);
-        double tMaxX = this.intBound(this.impactCenter.x, dx);
-        double tMaxY = this.intBound(this.impactCenter.y, dy);
-        double tMaxZ = this.intBound(this.impactCenter.z, dz);
-        double tDeltaX = dx == 0D ? Double.POSITIVE_INFINITY : Math.abs(1D / dx);
-        double tDeltaY = dy == 0D ? Double.POSITIVE_INFINITY : Math.abs(1D / dy);
-        double tDeltaZ = dz == 0D ? Double.POSITIVE_INFINITY : Math.abs(1D / dz);
-        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-
-        while (true) {
-            pos.setPos(x, y, z);
+        for (BlockPos pos : this.blocksBetween(impactCenter, boundaryPoint)) {
             if (!this.isPassable(pos) && !this.builder.getBlockBreakCheck().apply(this.rayCreator, pos)) {
                 IBlockState state = this.world().getBlockState(pos);
                 AxisAlignedBB localCollisionBox = state.getCollisionBoundingBox(this.world(), pos);
-                AxisAlignedBB worldCollisionBox = localCollisionBox == null
-                        ? new AxisAlignedBB(pos)
-                        : new AxisAlignedBB(
-                        localCollisionBox.minX + x,
-                        localCollisionBox.minY + y,
-                        localCollisionBox.minZ + z,
-                        localCollisionBox.maxX + x,
-                        localCollisionBox.maxY + y,
-                        localCollisionBox.maxZ + z
-                );
-                RayTraceResult hit = worldCollisionBox.calculateIntercept(this.impactCenter, boundaryPoint);
-                if (hit != null && hit.hitVec != null) return hit.hitVec;
-            }
-
-            if (x == endX && y == endY && z == endZ) break;
-
-            if (tMaxX < tMaxY) {
-                if (tMaxX < tMaxZ) {
-                    x += stepX;
-                    tMaxX += tDeltaX;
-                }
+                AxisAlignedBB worldCollisionBox;
+                if (localCollisionBox == null) worldCollisionBox = new AxisAlignedBB(pos);
                 else {
-                    z += stepZ;
-                    tMaxZ += tDeltaZ;
+                    worldCollisionBox = new AxisAlignedBB(
+                            localCollisionBox.minX + pos.getX(),
+                            localCollisionBox.minY + pos.getY(),
+                            localCollisionBox.minZ + pos.getZ(),
+                            localCollisionBox.maxX + pos.getX(),
+                            localCollisionBox.maxY + pos.getY(),
+                            localCollisionBox.maxZ + pos.getZ()
+                    );
                 }
-            }
-            else if (tMaxY < tMaxZ) {
-                y += stepY;
-                tMaxY += tDeltaY;
-            }
-            else {
-                z += stepZ;
-                tMaxZ += tDeltaZ;
+                RayTraceResult hit = worldCollisionBox.calculateIntercept(impactCenter, boundaryPoint);
+                if (hit != null && hit.hitVec != null) return hit.hitVec;
             }
         }
 
@@ -769,7 +734,7 @@ public class RiftLibRaySegment {
      * */
     @NotNull
     private World world() {
-        return this.rayCreator.getRayCreator().world;
+        return this.rayCreator.world;
     }
 
     /**
@@ -781,7 +746,7 @@ public class RiftLibRaySegment {
      * Result of tracing a moving segment through blocks.
      */
     private record TraceData(
-            boolean blocked, @NotNull Vec3d reachedEnd,
+            @NotNull Vec3d reachedEnd,
             @Nullable BlockPos blockingBlock, @Nullable EnumFacing blockingFace
     ) {}
 

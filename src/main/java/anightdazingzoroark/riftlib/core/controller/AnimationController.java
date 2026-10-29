@@ -738,7 +738,7 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                 }
 
                 if (this.animationState == AnimationState.Transitioning) {
-                    if (tick == 0 || this.isJustStarting) {
+                    if ((tick == 0 || this.isJustStarting) && !this.animationQueue.isEmpty()) {
                         this.justStartedTransition = false;
                         this.currentAnimation = this.animationQueue.poll();
                         this.resetEventKeyFrames();

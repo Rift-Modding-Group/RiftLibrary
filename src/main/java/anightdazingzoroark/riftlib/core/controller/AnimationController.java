@@ -20,7 +20,7 @@ import anightdazingzoroark.riftlib.core.util.Axis;
 import anightdazingzoroark.riftlib.core.util.MathUtil;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.model.ServerModelRegistry;
-import anightdazingzoroark.riftlib.particle.ParticleBuilder;
+import anightdazingzoroark.riftlib.particle.ParticleInformation;
 import anightdazingzoroark.riftlib.particle.ParticleTicker;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
@@ -419,11 +419,11 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             AnimatedLocator locator = animationData.getAnimatedLocator(stateParticleEvent.particleLocator());
             if (locator == null) return;
 
-            ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(stateParticleEvent.particleName());
-            if (particleBuilder == null) return;
+            ParticleInformation particleInformation = RiftLibParticleHelper.getParticleConstructor(stateParticleEvent.particleName());
+            if (particleInformation == null) return;
 
             this.removeStateParticleEmitter(stateParticleEvent);
-            RiftLibParticleEmitter emitter = locator.createParticleEmitter(particleBuilder);
+            RiftLibParticleEmitter emitter = locator.createParticleEmitter(particleInformation);
             emitter.setStateParticleOwner(
                     stateParticleEvent.controllerId(),
                     stateParticleEvent.stateName(),

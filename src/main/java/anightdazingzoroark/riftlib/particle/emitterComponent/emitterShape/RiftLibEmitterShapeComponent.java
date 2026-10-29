@@ -4,13 +4,13 @@ import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
-import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class RiftLibEmitterShapeComponent extends RiftLibEmitterComponent {
     protected IValue[] offset = new IValue[]{MolangParser.ZERO, MolangParser.ZERO, MolangParser.ZERO};
 
-    public void applyComponent(RiftLibParticleEmitter emitter) {
+    public void applyComponent(@NotNull RiftLibParticleEmitter emitter) {
         emitter.setEmitterShape(this);
     }
 

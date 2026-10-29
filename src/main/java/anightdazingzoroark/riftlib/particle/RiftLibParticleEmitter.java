@@ -4,8 +4,8 @@ import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
-import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangObject;
+import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.molang.expressions.MolangExpression;
 import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
@@ -63,6 +63,8 @@ public class RiftLibParticleEmitter implements MolangObject {
     @NotNull
     private final List<ImmutablePair<String, RawParticleComponent>> rawParticleComponents;
     @NotNull
+    private final List<RiftLibParticleComponent> particleComponents;
+    @NotNull
     private List<MolangExpression> initialOperations = List.of();
     @NotNull
     private List<MolangExpression> repeatingOperations = List.of();
@@ -87,32 +89,33 @@ public class RiftLibParticleEmitter implements MolangObject {
     private int age;
     private int lifetime;
 
-    public RiftLibParticleEmitter(@NotNull ParticleBuilder particleBuilder, @Nullable World world, @NotNull AnimatedLocator locator, @NotNull String... variables) {
-        this(particleBuilder, world, 0, 0, 0, locator, variables);
+    public RiftLibParticleEmitter(@NotNull ParticleInformation particleInformation, @Nullable World world, @NotNull AnimatedLocator locator, @NotNull String... variables) {
+        this(particleInformation, world, 0, 0, 0, locator, variables);
     }
 
     public RiftLibParticleEmitter(
-            @NotNull ParticleBuilder particleBuilder, @Nullable World world,
+            @NotNull ParticleInformation particleInformation, @Nullable World world,
             double x, double y, double z, double rotationX, double rotationY, @NotNull String... variables
     ) {
-        this(particleBuilder, world, x, y, z, variables);
+        this(particleInformation, world, x, y, z, variables);
         this.rotationQuaternion = QuaternionUtils.createXYZQuaternion(rotationX, rotationY, 0);
     }
 
-    public RiftLibParticleEmitter(@NotNull ParticleBuilder particleBuilder, @Nullable World world, double x, double y, double z, @NotNull String... variables) {
-        this(particleBuilder, world, x, y, z, null, variables);
+    public RiftLibParticleEmitter(@NotNull ParticleInformation particleInformation, @Nullable World world, double x, double y, double z, @NotNull String... variables) {
+        this(particleInformation, world, x, y, z, null, variables);
     }
 
     private RiftLibParticleEmitter(
-            @NotNull ParticleBuilder particleBuilder, @Nullable World world,
+            @NotNull ParticleInformation particleInformation, @Nullable World world,
             double x, double y, double z, @Nullable AnimatedLocator locator,
             @NotNull String... variables
     ) {
-        this.textureLocation = Objects.requireNonNull(particleBuilder.texture, "Particle texture cannot be null");
-        this.particleIdentifier = Objects.requireNonNull(particleBuilder.identifier, "Particle identifier cannot be null");
-        this.material = Objects.requireNonNull(particleBuilder.material, "Particle material cannot be null");
-        this.molangParser = Objects.requireNonNull(particleBuilder.molangParser, "Particle Molang parser cannot be null");
-        this.rawParticleComponents = List.copyOf(particleBuilder.rawParticleComponents);
+        this.textureLocation = Objects.requireNonNull(particleInformation.texture, "Particle texture cannot be null");
+        this.particleIdentifier = Objects.requireNonNull(particleInformation.identifier, "Particle identifier cannot be null");
+        this.material = Objects.requireNonNull(particleInformation.material, "Particle material cannot be null");
+        this.molangParser = Objects.requireNonNull(particleInformation.molangParser, "Particle Molang parser cannot be null");
+        this.rawParticleComponents = List.copyOf(particleInformation.rawParticleComponents);
+        this.particleComponents = List.copyOf(particleInformation.particleComponents);
         this.emitterId = ParticleTicker.EMITTER_ID++;
         this.world = world;
         this.locator = locator;
@@ -120,7 +123,7 @@ public class RiftLibParticleEmitter implements MolangObject {
         this.posY = y;
         this.posZ = z;
 
-        for (RiftLibEmitterComponent component : particleBuilder.emitterComponents) {
+        for (RiftLibEmitterComponent component : particleInformation.emitterComponents) {
             component.applyComponent(this);
         }
 
@@ -174,34 +177,35 @@ public class RiftLibParticleEmitter implements MolangObject {
             this.molangParser.setVariable("variable.emitter_age", this.age / 20D);
             this.molangParser.setVariable("variable.emitter_lifetime", this.lifetime / 20D);
             for (MolangExpression expression : this.repeatingOperations) expression.get();
+
+            this.age++;
+
+            if (lifetimeComponent.canExpire(this) && this.particles.isEmpty()) this.killEmitter();
+
+            if (this.locator != null && !this.locator.isValid()) this.killEmitter();
+
+            if (this.locator != null) {
+                Vec3d locatorPos = this.locator.getWorldSpacePosition();
+                this.posX = locatorPos.x;
+                this.posY = locatorPos.y;
+                this.posZ = locatorPos.z;
+
+                this.rotationQuaternion = this.locator.getWorldSpaceYXZQuaternion();
+            }
+
+            if (lifetimeComponent.canCreateParticles(this) && !this.hasExpired
+                    && (this.locator == null || this.locator.isUpdated())
+            ) {
+                rateComponent.createParticles(this);
+            }
+
+            Iterator<RiftLibParticle> it = this.particles.iterator();
+            while (it.hasNext()) {
+                RiftLibParticle particle = it.next();
+                particle.update();
+                if (particle.isDead()) it.remove();
+            }
         });
-
-        this.age++;
-
-        if (lifetimeComponent.canExpire(this) && this.particles.isEmpty()) this.killEmitter();
-
-        if (this.locator != null && !this.locator.isValid()) this.killEmitter();
-
-        if (this.locator != null) {
-            Vec3d locatorPos = this.locator.getWorldSpacePosition();
-            this.posX = locatorPos.x;
-            this.posY = locatorPos.y;
-            this.posZ = locatorPos.z;
-
-            this.rotationQuaternion = this.locator.getWorldSpaceYXZQuaternion();
-        }
-
-        if (lifetimeComponent.canCreateParticles(this) && !this.hasExpired
-                && (this.locator == null || this.locator.isUpdated())) {
-            rateComponent.createParticles(this);
-        }
-
-        Iterator<RiftLibParticle> it = this.particles.iterator();
-        while (it.hasNext()) {
-            RiftLibParticle particle = it.next();
-            particle.update();
-            if (particle.isDead()) it.remove();
-        }
     }
 
     @NotNull
@@ -221,6 +225,10 @@ public class RiftLibParticleEmitter implements MolangObject {
                 RiftLib.LOGGER.error("Could not apply particle component '{}' to '{}'.",
                         rawParticleComponent.getKey(), this.particleIdentifier, exception);
             }
+        }
+
+        for (RiftLibParticleComponent component : this.particleComponents) {
+            component.applyComponent(particle);
         }
 
         RiftLibEmitterShapeComponent shapeComponent = this.emitterShape;

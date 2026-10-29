@@ -8,11 +8,10 @@ import anightdazingzoroark.riftlib.core.keyframe.*;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.model.ServerModelRegistry;
-import anightdazingzoroark.riftlib.particle.ParticleBuilder;
+import anightdazingzoroark.riftlib.particle.ParticleInformation;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundHelper;
-import anightdazingzoroark.riftlib.util.MolangUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -251,9 +250,9 @@ public class AnimationProcessor {
 				EventKeyFrame.ParticleEventKeyFrame particleEvent = particleEventEntry.getValue();
 				AnimatedLocator locator = animationData.getAnimatedLocator(particleEvent.locator);
 				if (locator != null) {
-					ParticleBuilder particleBuilder = RiftLibParticleHelper.getParticleBuilder(particleEvent.effect);
-					if (particleBuilder != null) {
-						RiftLibParticleEmitter emitter = locator.createParticleEmitter(particleBuilder);
+					ParticleInformation particleInformation = RiftLibParticleHelper.getParticleConstructor(particleEvent.effect);
+					if (particleInformation != null) {
+						RiftLibParticleEmitter emitter = locator.createParticleEmitter(particleInformation);
 						emitter.setStateParticleOwner(
 								particleEventEntry.getKey().getStateParticleControllerId(),
 								particleEventEntry.getKey().getCurrentState(),

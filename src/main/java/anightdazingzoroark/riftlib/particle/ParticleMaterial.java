@@ -1,11 +1,12 @@
 package anightdazingzoroark.riftlib.particle;
 
 import net.minecraft.client.renderer.GlStateManager;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL11;
 
 public enum ParticleMaterial {
     //Enables color blending and transparency in colored pixels, uses an additive blend mode
-    ADD(() -> {
+    ADD("particles_add", () -> {
         GlStateManager.enableBlend();
         GlStateManager.disableAlpha();
         GlStateManager.blendFunc(
@@ -15,14 +16,14 @@ public enum ParticleMaterial {
         GlStateManager.depthMask(false);
     }),
     //Pixels with an colorAlpha of less than 255 will be fully transparent, colored pixels will always be opaque
-    ALPHA(() -> {
+    ALPHA("particles_alpha", () -> {
         GlStateManager.disableBlend();
         GlStateManager.enableAlpha();
         GlStateManager.alphaFunc(GL11.GL_GREATER, 0.99f);
         GlStateManager.disableCull();
     }),
     //Enables color blending and transparency in colored pixels, uses a normal blend mode
-    BLEND(() -> {
+    BLEND("particles_blend", () -> {
         GlStateManager.enableBlend();
         GlStateManager.enableAlpha();
         GlStateManager.blendFunc(
@@ -33,7 +34,7 @@ public enum ParticleMaterial {
         GlStateManager.depthMask(true);
     }),
     //No transparency whatsoever in all colors, including uncolored areas
-    OPAQUE(() -> {
+    OPAQUE("particles_opaque", () -> {
         GlStateManager.disableBlend();
         GlStateManager.enableAlpha();
         GlStateManager.alphaFunc(GL11.GL_ALWAYS, 0f);
@@ -41,9 +42,13 @@ public enum ParticleMaterial {
         GlStateManager.depthMask(true);
     });
 
+    @NotNull
+    public final String materialName;
+    @NotNull
     private final Runnable beginDraw;
 
-    ParticleMaterial(Runnable beginDraw) {
+    ParticleMaterial(@NotNull String materialName, @NotNull Runnable beginDraw) {
+        this.materialName = materialName;
         this.beginDraw = beginDraw;
     }
 
@@ -66,13 +71,10 @@ public enum ParticleMaterial {
         );
     }
 
-    public static ParticleMaterial getMaterialFromString(String value) {
-        return switch (value) {
-            case "particles_add" -> ADD;
-            case "particles_alpha" -> ALPHA;
-            case "particles_blend" -> BLEND;
-            case "particles_opaque" -> OPAQUE;
-            default -> throw new IllegalArgumentException("Invalid particle material "+value);
-        };
+    public static ParticleMaterial getMaterialFromString(@NotNull String value) {
+        for (ParticleMaterial material : ParticleMaterial.values()) {
+            if (material.materialName.equals(value)) return material;
+        }
+        throw new IllegalArgumentException("Invalid particle material "+value);
     }
 }

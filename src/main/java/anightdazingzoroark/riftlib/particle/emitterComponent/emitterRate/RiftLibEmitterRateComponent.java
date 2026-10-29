@@ -2,11 +2,11 @@ package anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate;
 
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
-import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class RiftLibEmitterRateComponent extends RiftLibEmitterComponent {
     @Override
-    public void applyComponent(RiftLibParticleEmitter emitter) {
+    public void applyComponent(@NotNull RiftLibParticleEmitter emitter) {
         emitter.setEmitterRate(this);
     }
 

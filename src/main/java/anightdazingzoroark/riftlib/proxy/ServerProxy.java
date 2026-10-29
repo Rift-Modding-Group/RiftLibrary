@@ -18,6 +18,7 @@ import anightdazingzoroark.riftlib.message.RiftLibMessageWrapper;
 import anightdazingzoroark.riftlib.model.ServerModelRegistry;
 import anightdazingzoroark.riftlib.model.ServerModelTicker;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleComponentRegistry;
+import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.registry.PropertiesBootstrap;
 import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.PropertyEvents;
 import anightdazingzoroark.riftlib.ray.RayTicker;
@@ -46,17 +47,18 @@ public class ServerProxy {
         MESSAGE_WRAPPER.registerMessage(RiftLibPlaySoundForPlayer.class, RiftLibMessageSide.CLIENT);
         MESSAGE_WRAPPER.registerMessage(RiftLibApplyMessageEffect.class, RiftLibMessageSide.BOTH);
         MESSAGE_WRAPPER.registerMessage(RiftLibDebugBoundingBox.class, RiftLibMessageSide.CLIENT);
+        MESSAGE_WRAPPER.registerMessage(RiftLibCreateBuiltParticle.class, RiftLibMessageSide.CLIENT);
 
-        HITBOX_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_hitbox");
+        HITBOX_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID + "_hitbox");
         HITBOX_MESSAGE_WRAPPER.registerMessage(RiftLibSyncHitboxEntityId.class, RiftLibMessageSide.CLIENT);
 
-        SERVER_MODEL_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_server_model");
+        SERVER_MODEL_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID + "_server_model");
         SERVER_MODEL_MESSAGE_WRAPPER.registerMessage(RiftLibTickClientFromServer.class, RiftLibMessageSide.CLIENT);
 
-        RAY_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_ray");
+        RAY_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID + "_ray");
         RAY_MESSAGE_WRAPPER.registerMessage(RiftLibCreateOrDestroyRay.class, RiftLibMessageSide.BOTH);
 
-        PROPERTIES_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID+"_wrapper");
+        PROPERTIES_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID + "_wrapper");
         PROPERTIES_WRAPPER.registerMessage(RiftLibUpdateSinglePropertyKey.class, RiftLibMessageSide.CLIENT);
         PROPERTIES_WRAPPER.registerMessage(RiftLibUpdateMultiPropertyKey.class, RiftLibMessageSide.CLIENT);
         PROPERTIES_WRAPPER.registerMessage(RiftLibUpdateAllPropertyKeys.class, RiftLibMessageSide.CLIENT);
@@ -100,7 +102,13 @@ public class ServerProxy {
         ));
     }
 
-    public void spawnParticle(String name, double x, double y, double z, String... variables) {}
+    public void spawnParticle(String name, double x, double y, double z, String... variables) {
+    }
 
-    public void spawnParticle(String name, double x, double y, double z, double rotationX, double rotationY, String... variables) {}
+    public void spawnParticle(String name, double x, double y, double z, double rotationX, double rotationY, String... variables) {
+    }
+
+    public void spawnParticle(ParticleBuilder builder, double x, double y, double z,
+                              double rotationX, double rotationY, String... variables) {
+    }
 }

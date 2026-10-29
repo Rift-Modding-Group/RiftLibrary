@@ -18,6 +18,7 @@ import anightdazingzoroark.riftlib.hitbox.RiftLibCollisionHitbox;
 import anightdazingzoroark.riftlib.hitbox.EntityHitboxRenderer;
 import anightdazingzoroark.riftlib.hitbox.HitboxTicker;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
+import anightdazingzoroark.riftlib.particle.ParticleInformation;
 import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.ParticleTicker;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
@@ -30,6 +31,8 @@ import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosTicker;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffect;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffectRegistry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
@@ -113,7 +116,7 @@ public class ClientProxy extends ServerProxy {
     @Override
     public void spawnParticle(String name, double x, double y, double z, String... variables) {
         //get particle builder
-        ParticleBuilder builder = RiftLibParticleHelper.getParticleBuilder(name);
+        ParticleInformation builder = RiftLibParticleHelper.getParticleConstructor(name);
 
         //create an emitter
         if (builder != null) {
@@ -126,11 +129,28 @@ public class ClientProxy extends ServerProxy {
     @Override
     public void spawnParticle(String name, double x, double y, double z, double rotationX, double rotationY, String... variables) {
         //get particle builder
-        ParticleBuilder builder = RiftLibParticleHelper.getParticleBuilder(name);
+        ParticleInformation builder = RiftLibParticleHelper.getParticleConstructor(name);
         if (builder == null) return;
 
         //create an emitter
         RiftLibParticleEmitter emitter = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, x, y, z, rotationX, rotationY, variables);
         ParticleTicker.EMITTER_LIST.add(emitter);
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void spawnParticle(@NotNull ParticleBuilder builder, double x, double y, double z,
+                              double rotationX, double rotationY, @NotNull String... variables) {
+        Minecraft client = Minecraft.getMinecraft();
+        if (client.world == null) return;
+        World targetWorld = client.world;
+        // Snapshot before scheduling so callers can safely reuse their definition.
+        ParticleInformation snapshot = builder.build();
+        String[] inputs = variables.clone();
+        client.addScheduledTask(() -> {
+            if (client.world != targetWorld) return;
+            ParticleTicker.EMITTER_LIST.add(new RiftLibParticleEmitter(snapshot, targetWorld,
+                    x, y, z, rotationX, rotationY, inputs));
+        });
     }
 }

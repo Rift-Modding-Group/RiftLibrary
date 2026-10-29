@@ -3,10 +3,10 @@ package anightdazingzoroark.riftlib.jsonParsing.constructor;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticle;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.molang.MolangParser;
-import anightdazingzoroark.riftlib.particle.ParticleBuilder;
+import anightdazingzoroark.riftlib.particle.ParticleInformation;
 import anightdazingzoroark.riftlib.particle.ParticleMaterial;
-import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleComponentRegistry;
+import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jetbrains.annotations.NotNull;
@@ -15,8 +15,8 @@ import java.util.Map;
 
 public class ParticleConstructor {
     @NotNull
-    public ParticleBuilder createParticleBuilder(RawParticle rawParticle, MolangParser parser) throws NumberFormatException {
-        ParticleBuilder toReturn = new ParticleBuilder();
+    public ParticleInformation createParticleBuilder(RawParticle rawParticle, MolangParser parser) throws NumberFormatException {
+        ParticleInformation toReturn = new ParticleInformation();
 
         //---get name---
         toReturn.identifier = rawParticle.rawParticleEffect.description.identifier;
@@ -65,4 +65,5 @@ public class ParticleConstructor {
 
         return toReturn;
     }
+
 }

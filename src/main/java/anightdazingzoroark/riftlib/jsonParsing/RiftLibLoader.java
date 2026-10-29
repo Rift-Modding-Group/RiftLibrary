@@ -11,7 +11,7 @@ import anightdazingzoroark.riftlib.jsonParsing.raw.geo.*;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticle;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.molang.MolangParser;
-import anightdazingzoroark.riftlib.particle.ParticleBuilder;
+import anightdazingzoroark.riftlib.particle.ParticleInformation;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.minecraft.util.ResourceLocation;
@@ -44,7 +44,7 @@ public class RiftLibLoader {
     private final ParticleConstructor particleConstructor = new ParticleConstructor(); //create particles
 
     @NotNull
-	public Map<String, GeoModel> loadGeoModels(RiftLibResourceReader resourceReader, ResourceLocation location) {
+	public Map<String, GeoModel> loadGeoModels(@NotNull RiftLibResourceReader resourceReader, @NotNull ResourceLocation location) {
 		try {
             Map<String, GeoModel> toReturn = new HashMap<>();
 
@@ -86,7 +86,7 @@ public class RiftLibLoader {
 	}
 
     @NotNull
-    public Map<String, Animation> loadAnimationFile(RiftLibResourceReader resourceReader, ResourceLocation location) {
+    public Map<String, Animation> loadAnimationFile(@NotNull RiftLibResourceReader resourceReader, @NotNull ResourceLocation location) {
         try {
             Map<String, Animation> toReturn = new HashMap<>();
 
@@ -109,7 +109,7 @@ public class RiftLibLoader {
 
     //for use in client
     @NotNull
-    public ParticleBuilder loadParticle(MolangParser parser, RiftLibResourceReader resourceReader, ResourceLocation location) {
+    public ParticleInformation loadParticle(@NotNull MolangParser parser, @NotNull RiftLibResourceReader resourceReader, @NotNull ResourceLocation location) {
         try {
             RawParticle rawParticle = this.gson.fromJson(this.getResourceAsString(location, resourceReader), RawParticle.class);
             return this.particleConstructor.createParticleBuilder(rawParticle, parser);
@@ -122,7 +122,7 @@ public class RiftLibLoader {
 
     //for use in server, mostly for the particle command
     @NotNull
-    public String loadParticleIdentifier(RiftLibResourceReader resourceReader, ResourceLocation location) {
+    public String loadParticleIdentifier(@NotNull RiftLibResourceReader resourceReader, @NotNull ResourceLocation location) {
         try {
             RawParticle rawParticle = this.gson.fromJson(this.getResourceAsString(location, resourceReader), RawParticle.class);
             return Objects.requireNonNull(rawParticle.rawParticleEffect.description.identifier, location + " has no particle identifier!");
@@ -134,7 +134,7 @@ public class RiftLibLoader {
     }
 
     @NotNull
-    private String getResourceAsString(ResourceLocation location, RiftLibResourceReader resourceReader) {
+    private String getResourceAsString(@NotNull ResourceLocation location, @NotNull RiftLibResourceReader resourceReader) {
         try (InputStream inputStream = resourceReader.open(location)) {
             return IOUtils.toString(inputStream, Charset.defaultCharset());
         }

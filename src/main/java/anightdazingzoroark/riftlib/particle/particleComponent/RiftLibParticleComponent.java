@@ -1,67 +1,45 @@
 package anightdazingzoroark.riftlib.particle.particleComponent;
 
-import anightdazingzoroark.riftlib.core.ConstantValue;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
-import anightdazingzoroark.riftlib.exceptions.MolangException;
 import anightdazingzoroark.riftlib.molang.MolangParser;
-import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.particle.RiftLibParticle;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
 public abstract class RiftLibParticleComponent {
-    public abstract void parseRawComponent(Map.Entry<String, RawParticleComponent> rawComponent, MolangParser parser) throws MolangException;
+    /**
+     * Parse a component from raw json
+     * */
+    public abstract void parseRawComponent(@NotNull Map.Entry<String, RawParticleComponent> rawComponent, @NotNull MolangParser parser);
 
-    public abstract void applyComponent(RiftLibParticle particle);
+    /**
+     * Apply a component to the particle
+     * */
+    public abstract void applyComponent(@NotNull RiftLibParticle particle);
 
-    protected IValue parseExpression(MolangParser parser, RawParticleComponent.ComponentValue componentValue) {
-        //component value was a string
-        if (componentValue.valueType == RawParticleComponent.ComponentValueType.STRING) {
-            try {
-                return parser.parseExpression(componentValue.string);
-            }
-            catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-        //component value was a double
-        else return ConstantValue.fromDouble(componentValue.number);
+    /**
+     * JSON representation of component
+     * */
+    public abstract static class RawComponent {
+        @NotNull
+        public abstract String identifier();
+
+        @NotNull
+        public abstract Map<String, Object> fields();
     }
 
-    protected IValue parseBooleanExpression(MolangParser parser, RawParticleComponent.ComponentValue componentValue) {
-        //component value was a string
-        if (componentValue.valueType == RawParticleComponent.ComponentValueType.STRING) {
-            try {
-                return parser.parseExpression(componentValue.string);
-            }
-            catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-        //component value was a boolean
-        else return componentValue.bool ? MolangParser.ONE : MolangParser.ZERO;
-    }
+    /**
+     * A builder class for the component, a great option if u dont wanna make a json file
+     * */
+    public abstract static class Builder<T extends RiftLibParticleComponent> {
+        @NotNull
+        public abstract T build(@NotNull MolangParser parser);
 
-    protected IValue[] parseExpressionArray(MolangParser parser, int intendedSize, RawParticleComponent.ComponentValue componentValue) {
-        return this.parseExpressionArray(parser, intendedSize, componentValue, false);
-    }
-
-    protected IValue[] parseExpressionArray(MolangParser parser, int intendedSize, RawParticleComponent.ComponentValue componentValue, boolean floatOnly) {
-        if (componentValue.valueType == RawParticleComponent.ComponentValueType.ARRAY) {
-            if (componentValue.array.size() != intendedSize) throw new IllegalArgumentException("Invalid array length!");
-
-            IValue[] toReturn = new IValue[componentValue.array.size()];
-            for (int i = 0; i < toReturn.length; i++) {
-                RawParticleComponent.ComponentValue value = componentValue.array.get(i);
-                if (floatOnly) {
-                    //this assumes that the value was a string, in this case return an exception
-                    if (value.string != null) throw new IllegalArgumentException("Expected float but got string!");
-                    else toReturn[i] = this.parseExpression(parser, value);
-                }
-                else toReturn[i] = this.parseExpression(parser, value);
-            }
-            return toReturn;
-        }
-        else throw new IllegalArgumentException("Component was not an array!");
+        /**
+         * Convert the component definition to JSON, mostly for packets.
+         */
+        @NotNull
+        public abstract RawComponent toRawComponent();
     }
 }

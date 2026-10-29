@@ -15,7 +15,7 @@ import java.util.zip.ZipFile;
 import anightdazingzoroark.riftlib.core.builder.Animation;
 import anightdazingzoroark.riftlib.jsonParsing.RiftLibResourceReader;
 
-import anightdazingzoroark.riftlib.particle.ParticleBuilder;
+import anightdazingzoroark.riftlib.particle.ParticleInformation;
 import anightdazingzoroark.riftlib.resource.RiftLibResourceHolder;
 import net.minecraft.client.resources.AbstractResourcePack;
 import net.minecraft.client.resources.FileResourcePack;
@@ -39,7 +39,7 @@ public class RiftLibCacheClient extends RiftLibResourceHolder implements IResour
 	@NotNull
 	private Map<String, Map<String, GeoModel>> geoModels = new HashMap<>();
     @NotNull
-	private Map<ResourceLocation, ParticleBuilder> particleBuilders = new HashMap<>();
+	private Map<ResourceLocation, ParticleInformation> particleBuilders = new HashMap<>();
 
 	public static RiftLibCacheClient getInstance() {
 		if (INSTANCE == null) INSTANCE = new RiftLibCacheClient();
@@ -50,7 +50,7 @@ public class RiftLibCacheClient extends RiftLibResourceHolder implements IResour
 	public void onResourceManagerReload(IResourceManager resourceManager) {
 		Map<String, Map<String, Animation>> tempAnimations = new HashMap<>();
 		Map<String, Map<String, GeoModel>> tempModels = new HashMap<>();
-        Map<ResourceLocation, ParticleBuilder> tempParticleBuilders = new HashMap<>();
+        Map<ResourceLocation, ParticleInformation> tempParticleBuilders = new HashMap<>();
 		List<IResourcePack> packs = this.getPacks();
 		RiftLibResourceReader resourceReader = location -> resourceManager.getResource(location).getInputStream();
 
@@ -144,7 +144,7 @@ public class RiftLibCacheClient extends RiftLibResourceHolder implements IResour
 	}
 
 	//particle builders are only relevant on the client
-	public Map<ResourceLocation, ParticleBuilder> getParticleBuilders() {
+	public Map<ResourceLocation, ParticleInformation> getParticleBuilders() {
 		if (!RiftLib.isInitialized()) {
 			throw new RuntimeException("RiftLib was never initialized! Please read the documentation!");
 		}

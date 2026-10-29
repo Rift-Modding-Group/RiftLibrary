@@ -3,7 +3,7 @@ package anightdazingzoroark.riftlib.model;
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.geo.GeoBone;
 import anightdazingzoroark.riftlib.geo.GeoLocator;
-import anightdazingzoroark.riftlib.particle.ParticleBuilder;
+import anightdazingzoroark.riftlib.particle.ParticleInformation;
 import anightdazingzoroark.riftlib.particle.ParticleTicker;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
 import anightdazingzoroark.riftlib.util.QuaternionUtils;
@@ -211,7 +211,7 @@ public class AnimatedLocator {
         );
     }
 
-    public RiftLibParticleEmitter createParticleEmitter(ParticleBuilder builder) {
+    public RiftLibParticleEmitter createParticleEmitter(ParticleInformation builder) {
         RiftLibParticleEmitter emitterToAdd = new RiftLibParticleEmitter(builder, Minecraft.getMinecraft().world, this);
         ParticleTicker.EMITTER_LIST.add(emitterToAdd);
         return emitterToAdd;

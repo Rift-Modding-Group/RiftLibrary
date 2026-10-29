@@ -524,8 +524,10 @@ public class RiftLibParticle implements MolangObject {
         this.rotationDragCoefficient = rotationDragCoefficient;
     }
 
-    public void setCollision(@NotNull IValue enabled, float collisionDrag, float coefficientOfRestitution,
-                             @Nullable Float collisionRadius, boolean expireOnContact) {
+    public void setCollision(
+            @NotNull IValue enabled, float collisionDrag, float coefficientOfRestitution,
+            @Nullable Float collisionRadius, boolean expireOnContact
+    ) {
         this.collisionEnabled = enabled;
         this.collisionDrag = collisionDrag;
         this.coeffOfRestitution = coefficientOfRestitution;

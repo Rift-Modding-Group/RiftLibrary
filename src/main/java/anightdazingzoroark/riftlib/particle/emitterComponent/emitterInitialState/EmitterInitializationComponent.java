@@ -102,6 +102,15 @@ public class EmitterInitializationComponent extends RiftLibEmitterComponent {
 
         @Override
         @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.initialOperations = List.copyOf(this.toReturn.initialOperations);
+            result.toReturn.repeatingOperations = List.copyOf(this.toReturn.repeatingOperations);
+            return result;
+        }
+
+        @Override
+        @NotNull
         public EmitterInitializationComponent build(@NotNull MolangParser parser) {
             EmitterInitializationComponent result = new EmitterInitializationComponent();
             result.initialOperations = this.toReturn.initialOperations.stream().map(expression -> (MolangExpression) RawMolangValue.copy(expression, parser)).toList();

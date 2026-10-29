@@ -143,6 +143,18 @@ public class ParticleMotionCollisionComponent extends RiftLibParticleComponent {
 
         @Override
         @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.enabled = this.toReturn.enabled;
+            result.toReturn.collisionDrag = this.toReturn.collisionDrag;
+            result.toReturn.coeffOfRestitution = this.toReturn.coeffOfRestitution;
+            result.toReturn.collisionRadius = this.toReturn.collisionRadius;
+            result.toReturn.expireOnContact = this.toReturn.expireOnContact;
+            return result;
+        }
+
+        @Override
+        @NotNull
         public ParticleMotionCollisionComponent build(@NotNull MolangParser parser) {
             ParticleMotionCollisionComponent result = new ParticleMotionCollisionComponent();
             result.enabled = RawMolangValue.copy(this.toReturn.enabled, parser);

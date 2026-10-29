@@ -207,6 +207,18 @@ public class EmitterShapeBoxComponent extends RiftLibEmitterShapeComponent {
 
         @Override
         @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.offset = this.toReturn.offset.clone();
+            result.toReturn.halfDimensions = this.toReturn.halfDimensions.clone();
+            result.toReturn.surfaceOnly = this.toReturn.surfaceOnly;
+            result.toReturn.particleDirection = this.toReturn.particleDirection;
+            result.toReturn.customParticleDirection = this.toReturn.customParticleDirection == null ? null : this.toReturn.customParticleDirection.clone();
+            return result;
+        }
+
+        @Override
+        @NotNull
         public EmitterShapeBoxComponent build(@NotNull MolangParser parser) {
             EmitterShapeBoxComponent result = new EmitterShapeBoxComponent();
             result.offset = RawMolangValue.copy(this.toReturn.offset, parser);

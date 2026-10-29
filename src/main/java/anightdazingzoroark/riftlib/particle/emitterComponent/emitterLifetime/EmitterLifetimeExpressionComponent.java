@@ -112,6 +112,15 @@ public class EmitterLifetimeExpressionComponent extends RiftLibEmitterLifetimeCo
 
         @Override
         @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.emitterActivationValue = this.toReturn.emitterActivationValue;
+            result.toReturn.emitterExpirationValue = this.toReturn.emitterExpirationValue;
+            return result;
+        }
+
+        @Override
+        @NotNull
         public EmitterLifetimeExpressionComponent build(@NotNull MolangParser parser) {
             EmitterLifetimeExpressionComponent result = new EmitterLifetimeExpressionComponent();
             result.emitterActivationValue = RawMolangValue.copy(this.toReturn.emitterActivationValue, parser);

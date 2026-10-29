@@ -20,6 +20,7 @@ import anightdazingzoroark.riftlib.core.util.Axis;
 import anightdazingzoroark.riftlib.core.util.MathUtil;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.model.ServerModelRegistry;
+import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.particle.ParticleInformation;
 import anightdazingzoroark.riftlib.particle.ParticleTicker;
 import anightdazingzoroark.riftlib.particle.RiftLibParticleEmitter;
@@ -27,6 +28,7 @@ import anightdazingzoroark.riftlib.particle.RiftLibParticleHelper;
 import anightdazingzoroark.riftlib.util.MolangUtils;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
@@ -414,12 +416,19 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
         return toReturn;
     }
 
+    @SideOnly(Side.CLIENT)
     public void applyStateParticleEvent(AbstractAnimationData<?, ?> animationData, StateParticleEvent stateParticleEvent) {
         if (stateParticleEvent.createsParticle()) {
             AnimatedLocator locator = animationData.getAnimatedLocator(stateParticleEvent.particleLocator());
             if (locator == null) return;
 
-            ParticleInformation particleInformation = RiftLibParticleHelper.getParticleConstructor(stateParticleEvent.particleName());
+            ParticleInformation particleInformation;
+            if (stateParticleEvent.particleBuilder() != null) {
+                particleInformation = stateParticleEvent.particleBuilder().build();
+            }
+            else {
+                particleInformation = RiftLibParticleHelper.getParticleConstructor(stateParticleEvent.particleName());
+            }
             if (particleInformation == null) return;
 
             this.removeStateParticleEmitter(stateParticleEvent);
@@ -504,7 +513,8 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                     i,
                     particle.particleName(),
                     particle.particleLocator(),
-                    createsParticle
+                    createsParticle,
+                    particle.particleBuilder()
             ));
         }
     }
@@ -526,8 +536,17 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             int particleIndex,
             @NotNull String particleName,
             @NotNull String particleLocator,
-            boolean createsParticle
-    ) {}
+            boolean createsParticle,
+            @Nullable ParticleBuilder particleBuilder
+    ) {
+        public StateParticleEvent(
+                int controllerId, @NotNull String controllerName, @NotNull String stateName,
+                int particleIndex, @NotNull String particleName, @NotNull String particleLocator,
+                boolean createsParticle
+        ) {
+            this(controllerId, controllerName, stateName, particleIndex, particleName, particleLocator, createsParticle, null);
+        }
+    }
 
     private static class SingleAnimationRuntime<A extends IAnimatable<D>, D extends AbstractAnimationData<?, ?>> {
         private final Map<String, BoneAnimationQueue> boneAnimationQueues = new HashMap<>();

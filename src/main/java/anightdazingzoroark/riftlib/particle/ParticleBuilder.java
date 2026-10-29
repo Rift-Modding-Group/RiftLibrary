@@ -1,10 +1,18 @@
 package anightdazingzoroark.riftlib.particle;
 
+import anightdazingzoroark.riftlib.jsonParsing.raw.RawMolangValue;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticle;
 import anightdazingzoroark.riftlib.jsonParsing.raw.particle.RawParticleComponent;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.RiftLibParticleComponent;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTPrimitive;
+import net.minecraft.nbt.NBTTagByte;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagDouble;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -138,8 +146,7 @@ public class ParticleBuilder {
     @NotNull
     public static ParticleBuilder fromRawParticle(@NotNull RawParticle raw) {
         RawParticle.RawParticleDescription description = raw.rawParticleEffect.description;
-        ParticleBuilder builder = new ParticleBuilder()
-                .setIdentifier(description.identifier)
+        ParticleBuilder builder = new ParticleBuilder().setIdentifier(description.identifier)
                 .setTexture(new ResourceLocation(description.basicRenderParameters.texture))
                 .setMaterial(ParticleMaterial.getMaterialFromString(description.basicRenderParameters.material));
         for (Map.Entry<String, RawParticleComponent> entry : raw.rawParticleEffect.components.entrySet()) {
@@ -148,5 +155,109 @@ public class ParticleBuilder {
             builder.rawComponents.put(entry.getKey(), component);
         }
         return builder;
+    }
+
+    /**
+     * Stores metadata and component definitions without building runtime components.
+     */
+    @NotNull
+    public static NBTTagCompound toNBT(@NotNull ParticleBuilder builder) {
+        RawParticle raw = toRawParticle(builder);
+        RawParticle.RawParticleDescription description = raw.rawParticleEffect.description;
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setString("identifier", description.identifier);
+        tag.setString("texture", description.basicRenderParameters.texture);
+        tag.setString("material", description.basicRenderParameters.material);
+        NBTTagCompound components = new NBTTagCompound();
+        for (Map.Entry<String, RawParticleComponent> entry : raw.rawParticleEffect.components.entrySet()) {
+            components.setTag(entry.getKey(), writeComponentValue(new RawParticleComponent.ObjectValue(entry.getValue().componentValues)));
+        }
+        tag.setTag("components", components);
+        return tag;
+    }
+
+    /**
+     * Restores a builder from toNBT() output; runtime construction remains deferred.
+     */
+    @NotNull
+    public static ParticleBuilder fromNBT(@NotNull NBTTagCompound tag) {
+        if (!tag.hasKey("identifier", 8) || !tag.hasKey("texture", 8)
+                || !tag.hasKey("material", 8) || !tag.hasKey("components", 10)) {
+            throw new IllegalArgumentException("Particle NBT requires identifier, texture, material, and components");
+        }
+        ParticleBuilder builder = new ParticleBuilder().setIdentifier(tag.getString("identifier"))
+                .setTexture(new ResourceLocation(tag.getString("texture")))
+                .setMaterial(ParticleMaterial.getMaterialFromString(tag.getString("material")));
+        NBTTagCompound components = tag.getCompoundTag("components");
+        for (String identifier : components.getKeySet()) {
+            if (!components.hasKey(identifier, 10)) {
+                throw new IllegalArgumentException("Particle component must be an NBT compound: " + identifier);
+            }
+            RawParticleComponent component = new RawParticleComponent();
+            component.componentValues = readComponentValue(components.getCompoundTag(identifier)).asObject();
+            builder.rawComponents.put(identifier, component);
+        }
+        return builder;
+    }
+
+    //helper for writing component to nbt
+    @NotNull
+    private static NBTBase writeComponentValue(@NotNull RawParticleComponent.ComponentValue value) {
+        return switch (value) {
+            case RawParticleComponent.MolangValue(RawMolangValue raw) -> {
+                if (raw.stringValue != null) yield new NBTTagString(raw.stringValue);
+                yield new NBTTagDouble(Objects.requireNonNull(raw.numericalValue, "Empty Molang value"));
+            }
+            case RawParticleComponent.BooleanValue(boolean bool) -> new NBTTagByte((byte) (bool ? 1 : 0));
+            case RawParticleComponent.ArrayValue(List<RawParticleComponent.ComponentValue> values) -> {
+                NBTTagList array = new NBTTagList();
+                // Wrapping entries preserves mixed numbers, expressions, and nested values.
+                for (RawParticleComponent.ComponentValue element : values) {
+                    NBTTagCompound entry = new NBTTagCompound();
+                    entry.setTag("value", writeComponentValue(element));
+                    array.appendTag(entry);
+                }
+                yield array;
+            }
+            case RawParticleComponent.ObjectValue(Map<String, RawParticleComponent.ComponentValue> values) -> {
+                NBTTagCompound object = new NBTTagCompound();
+                for (Map.Entry<String, RawParticleComponent.ComponentValue> entry : values.entrySet()) {
+                    object.setTag(entry.getKey(), writeComponentValue(entry.getValue()));
+                }
+                yield object;
+            }
+        };
+    }
+
+    //helper for writing component from nbt
+    @NotNull
+    private static RawParticleComponent.ComponentValue readComponentValue(@NotNull NBTBase tag) {
+        return switch (tag) {
+            case NBTTagByte bool -> new RawParticleComponent.BooleanValue(bool.getByte() != 0);
+            case NBTPrimitive number -> RawParticleComponent.fromValue(number.getDouble());
+            case NBTTagString string -> RawParticleComponent.fromValue(string.getString());
+            case NBTTagList array -> {
+                if (array.tagCount() > 0 && array.getTagType() != 10) {
+                    throw new IllegalArgumentException("Particle NBT arrays require compound entries");
+                }
+                List<RawParticleComponent.ComponentValue> values = new ArrayList<>(array.tagCount());
+                for (int index = 0; index < array.tagCount(); index++) {
+                    NBTTagCompound entry = array.getCompoundTagAt(index);
+                    if (!entry.hasKey("value")) {
+                        throw new IllegalArgumentException("Particle NBT array entry is missing its value");
+                    }
+                    values.add(readComponentValue(Objects.requireNonNull(entry.getTag("value"))));
+                }
+                yield new RawParticleComponent.ArrayValue(values);
+            }
+            case NBTTagCompound object -> {
+                Map<String, RawParticleComponent.ComponentValue> values = new LinkedHashMap<>();
+                for (String key : object.getKeySet()) {
+                    values.put(key, readComponentValue(Objects.requireNonNull(object.getTag(key))));
+                }
+                yield new RawParticleComponent.ObjectValue(values);
+            }
+            default -> throw new IllegalArgumentException("Unsupported particle NBT tag: " + tag.getId());
+        };
     }
 }

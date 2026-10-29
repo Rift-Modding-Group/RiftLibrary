@@ -74,6 +74,14 @@ public class ParticleInitialSpeedComponent extends RiftLibParticleComponent {
 
         @Override
         @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.initialSpeed = this.toReturn.initialSpeed;
+            return result;
+        }
+
+        @Override
+        @NotNull
         public ParticleInitialSpeedComponent build(@NotNull MolangParser parser) {
             ParticleInitialSpeedComponent result = new ParticleInitialSpeedComponent();
             result.initialSpeed = RawMolangValue.copy(this.toReturn.initialSpeed, parser);

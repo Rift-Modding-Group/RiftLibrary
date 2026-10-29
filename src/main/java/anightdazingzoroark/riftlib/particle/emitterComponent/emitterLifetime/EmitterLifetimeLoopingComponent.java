@@ -115,6 +115,15 @@ public class EmitterLifetimeLoopingComponent extends RiftLibEmitterLifetimeCompo
 
         @Override
         @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.emitterActiveTime = this.toReturn.emitterActiveTime;
+            result.toReturn.emitterSleepTime = this.toReturn.emitterSleepTime;
+            return result;
+        }
+
+        @Override
+        @NotNull
         public EmitterLifetimeLoopingComponent build(@NotNull MolangParser parser) {
             EmitterLifetimeLoopingComponent result = new EmitterLifetimeLoopingComponent();
             result.emitterActiveTime = RawMolangValue.copy(this.toReturn.emitterActiveTime, parser);

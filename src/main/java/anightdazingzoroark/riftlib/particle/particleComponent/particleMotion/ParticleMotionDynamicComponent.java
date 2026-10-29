@@ -150,6 +150,17 @@ public class ParticleMotionDynamicComponent extends RiftLibParticleComponent {
 
         @Override
         @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.linearAcceleration = this.toReturn.linearAcceleration.clone();
+            result.toReturn.linearDragCoefficient = this.toReturn.linearDragCoefficient;
+            result.toReturn.rotationAcceleration = this.toReturn.rotationAcceleration;
+            result.toReturn.rotationDragCoefficient = this.toReturn.rotationDragCoefficient;
+            return result;
+        }
+
+        @Override
+        @NotNull
         public ParticleMotionDynamicComponent build(@NotNull MolangParser parser) {
             ParticleMotionDynamicComponent result = new ParticleMotionDynamicComponent();
             result.linearAcceleration = RawMolangValue.copy(this.toReturn.linearAcceleration, parser);

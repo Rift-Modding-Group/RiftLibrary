@@ -2,12 +2,15 @@ package anightdazingzoroark.riftlib.core.controller;
 
 import anightdazingzoroark.riftlib.core.manager.AbstractAnimationData;
 import anightdazingzoroark.riftlib.core.easing.EasingType;
+import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -137,6 +140,16 @@ public class AnimationControllerState<D extends AbstractAnimationData<?, ?>> {
         return this;
     }
 
+    /**
+     * Defines a particle without a JSON resource. It is built on the client when
+     * entering this state and deleted when transitioning away from this state.
+     */
+    @NotNull
+    public AnimationControllerState<D> addParticleEffect(@NotNull ParticleBuilder particleBuilder, @NotNull String particleLocator) {
+        this.particleEffects.add(new StateParticle("", particleLocator, Objects.requireNonNull(particleBuilder)));
+        return this;
+    }
+
     @NotNull
     public List<StateParticle> getParticleEffects() {
         return this.particleEffects;
@@ -144,5 +157,13 @@ public class AnimationControllerState<D extends AbstractAnimationData<?, ?>> {
 
     public record StateAnimation<D extends AbstractAnimationData<?, ?>> (@NotNull String name, @NotNull Function<D, Boolean> predicate) {}
 
-    public record StateParticle(@NotNull String particleName, @NotNull String particleLocator) {}
+    public record StateParticle(
+            @NotNull String particleName,
+            @NotNull String particleLocator,
+            @Nullable ParticleBuilder particleBuilder
+    ) {
+        public StateParticle(@NotNull String particleName, @NotNull String particleLocator) {
+            this(particleName, particleLocator, null);
+        }
+    }
 }

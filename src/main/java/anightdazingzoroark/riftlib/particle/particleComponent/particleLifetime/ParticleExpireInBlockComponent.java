@@ -81,6 +81,14 @@ public class ParticleExpireInBlockComponent extends RiftLibParticleComponent {
 
         @Override
         @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.blocksExpireIfIn = List.copyOf(this.toReturn.blocksExpireIfIn);
+            return result;
+        }
+
+        @Override
+        @NotNull
         public ParticleExpireInBlockComponent build(@NotNull MolangParser parser) {
             ParticleExpireInBlockComponent result = new ParticleExpireInBlockComponent();
             result.blocksExpireIfIn = List.copyOf(this.toReturn.blocksExpireIfIn);

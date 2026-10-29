@@ -113,6 +113,15 @@ public class EmitterSteadyComponent extends RiftLibEmitterRateComponent {
 
         @Override
         @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.spawnRate = this.toReturn.spawnRate;
+            result.toReturn.maxParticleCount = this.toReturn.maxParticleCount;
+            return result;
+        }
+
+        @Override
+        @NotNull
         public EmitterSteadyComponent build(@NotNull MolangParser parser) {
             EmitterSteadyComponent result = new EmitterSteadyComponent();
             result.spawnRate = RawMolangValue.copy(this.toReturn.spawnRate, parser);

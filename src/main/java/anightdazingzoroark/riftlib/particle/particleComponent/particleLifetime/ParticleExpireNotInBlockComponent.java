@@ -83,6 +83,14 @@ public class ParticleExpireNotInBlockComponent extends RiftLibParticleComponent 
 
         @Override
         @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.blocksExpireIfNotIn = List.copyOf(this.toReturn.blocksExpireIfNotIn);
+            return result;
+        }
+
+        @Override
+        @NotNull
         public ParticleExpireNotInBlockComponent build(@NotNull MolangParser parser) {
             ParticleExpireNotInBlockComponent result = new ParticleExpireNotInBlockComponent();
             result.blocksExpireIfNotIn = List.copyOf(this.toReturn.blocksExpireIfNotIn);

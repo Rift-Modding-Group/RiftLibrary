@@ -15,6 +15,7 @@ import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.molang.math.IValue;
 import anightdazingzoroark.riftlib.molang.math.MolangFunction;
+import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import anightdazingzoroark.riftlib.resource.client.RiftLibCacheClient;
 import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
@@ -125,6 +126,30 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
                 )
         );
         animationController.getState("default").addAnimation(animationName, animationPredicate::apply);
+    }
+
+    /**
+     * Helper that registers a particle effect that will load the moment this entity starts rendering
+     */
+    public void addParticleEffect(@NotNull String particleName, @NotNull String locatorName) {
+        AnimationController<?, ? extends D> animationController = this.animationControllers.computeIfAbsent(
+                "", name -> new AnimationController<>(
+                        this.animatable, name, "default", new AnimationControllerState<D>("default")
+                )
+        );
+        animationController.getState("default").addParticleEffect(particleName, locatorName);
+    }
+
+    /**
+     * Same as above but with builder
+     */
+    public void addParticleEffect(@NotNull ParticleBuilder particleBuilder, @NotNull String locatorName) {
+        AnimationController<?, ? extends D> animationController = this.animationControllers.computeIfAbsent(
+                "", name -> new AnimationController<>(
+                        this.animatable, name, "default", new AnimationControllerState<D>("default")
+                )
+        );
+        animationController.getState("default").addParticleEffect(particleBuilder, locatorName);
     }
 
     /**

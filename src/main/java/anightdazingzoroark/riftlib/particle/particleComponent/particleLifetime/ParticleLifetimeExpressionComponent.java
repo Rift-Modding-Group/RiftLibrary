@@ -107,6 +107,15 @@ public class ParticleLifetimeExpressionComponent extends RiftLibParticleComponen
 
         @Override
         @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.expirationValue = this.toReturn.expirationValue;
+            result.toReturn.lifetimeValue = this.toReturn.lifetimeValue;
+            return result;
+        }
+
+        @Override
+        @NotNull
         public ParticleLifetimeExpressionComponent build(@NotNull MolangParser parser) {
             ParticleLifetimeExpressionComponent result = new ParticleLifetimeExpressionComponent();
             result.expirationValue = RawMolangValue.copy(this.toReturn.expirationValue, parser);

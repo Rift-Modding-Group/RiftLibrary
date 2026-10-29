@@ -94,6 +94,15 @@ public class EmitterShapePointComponent extends RiftLibEmitterShapeComponent {
 
         @Override
         @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.offset = this.toReturn.offset.clone();
+            result.toReturn.particleDirection = this.toReturn.particleDirection.clone();
+            return result;
+        }
+
+        @Override
+        @NotNull
         public EmitterShapePointComponent build(@NotNull MolangParser parser) {
             EmitterShapePointComponent result = new EmitterShapePointComponent();
             result.offset = RawMolangValue.copy(this.toReturn.offset, parser);

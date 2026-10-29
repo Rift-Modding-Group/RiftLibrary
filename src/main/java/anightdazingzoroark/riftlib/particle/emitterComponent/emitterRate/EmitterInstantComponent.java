@@ -78,6 +78,14 @@ public class EmitterInstantComponent extends RiftLibEmitterRateComponent {
 
         @Override
         @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.particleCount = this.toReturn.particleCount;
+            return result;
+        }
+
+        @Override
+        @NotNull
         public EmitterInstantComponent build(@NotNull MolangParser parser) {
             EmitterInstantComponent result = new EmitterInstantComponent();
             result.particleCount = RawMolangValue.copy(this.toReturn.particleCount, parser);

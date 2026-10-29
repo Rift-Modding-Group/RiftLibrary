@@ -326,6 +326,25 @@ public class AppearanceBillboardComponent extends RiftLibParticleComponent {
 
         @Override
         @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.size = this.toReturn.size.clone();
+            result.toReturn.cameraMode = this.toReturn.cameraMode;
+            result.toReturn.textureWidth = this.toReturn.textureWidth;
+            result.toReturn.textureHeight = this.toReturn.textureHeight;
+            result.toReturn.uv = this.toReturn.uv.clone();
+            result.toReturn.uvSize = this.toReturn.uvSize.clone();
+            result.toReturn.particleFlipbook = this.toReturn.particleFlipbook;
+            result.toReturn.particleUVStepSize = this.toReturn.particleUVStepSize.clone();
+            result.toReturn.particleFPS = this.toReturn.particleFPS;
+            result.toReturn.particleMaxFrame = this.toReturn.particleMaxFrame;
+            result.toReturn.particleFlipbookStretchToLifetime = this.toReturn.particleFlipbookStretchToLifetime;
+            result.toReturn.particleFlipbookLoop = this.toReturn.particleFlipbookLoop;
+            return result;
+        }
+
+        @Override
+        @NotNull
         public AppearanceBillboardComponent build(@NotNull MolangParser parser) {
             AppearanceBillboardComponent result = new AppearanceBillboardComponent();
             result.size = RawMolangValue.copy(this.toReturn.size, parser);

@@ -79,6 +79,14 @@ public class EmitterLifetimeOnceComponent extends RiftLibEmitterLifetimeComponen
 
         @Override
         @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.activeTime = this.toReturn.activeTime;
+            return result;
+        }
+
+        @Override
+        @NotNull
         public EmitterLifetimeOnceComponent build(@NotNull MolangParser parser) {
             EmitterLifetimeOnceComponent result = new EmitterLifetimeOnceComponent();
             result.activeTime = RawMolangValue.copy(this.toReturn.activeTime, parser);

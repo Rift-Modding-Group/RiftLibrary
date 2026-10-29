@@ -30,6 +30,12 @@ public abstract class RiftLibEmitterComponent {
     }
 
     public abstract static class Builder<T extends RiftLibEmitterComponent> {
+        /**
+         * Copies the builder settings without building runtime components.
+         */
+        @NotNull
+        public abstract Builder<T> copy();
+
         @NotNull
         public abstract T build(@NotNull MolangParser parser);
 

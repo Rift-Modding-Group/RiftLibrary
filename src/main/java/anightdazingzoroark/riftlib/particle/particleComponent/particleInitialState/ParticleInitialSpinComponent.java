@@ -101,6 +101,15 @@ public class ParticleInitialSpinComponent extends RiftLibParticleComponent {
 
         @Override
         @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.initialRotation = this.toReturn.initialRotation;
+            result.toReturn.rotationRate = this.toReturn.rotationRate;
+            return result;
+        }
+
+        @Override
+        @NotNull
         public ParticleInitialSpinComponent build(@NotNull MolangParser parser) {
             ParticleInitialSpinComponent result = new ParticleInitialSpinComponent();
             result.initialRotation = RawMolangValue.copy(this.toReturn.initialRotation, parser);

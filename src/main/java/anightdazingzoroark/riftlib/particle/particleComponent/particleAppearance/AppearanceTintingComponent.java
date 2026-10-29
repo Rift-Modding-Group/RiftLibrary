@@ -44,7 +44,8 @@ public class AppearanceTintingComponent extends RiftLibParticleComponent {
                     this.red = new Constant((stringAsHex >> 16) / 255f);
                     this.green = new Constant(((stringAsHex >> 8) & 0xFF) / 255f);
                     this.blue = new Constant((stringAsHex & 0xFF) / 255f);
-                } else if (colorAsString.length() == 8) {
+                }
+                else if (colorAsString.length() == 8) {
                     this.alpha = new Constant((stringAsHex >> 24) / 255f);
                     this.red = new Constant(((stringAsHex >> 16) & 0xFF) / 255f);
                     this.green = new Constant(((stringAsHex >> 8) & 0xFF) / 255f);
@@ -80,6 +81,23 @@ public class AppearanceTintingComponent extends RiftLibParticleComponent {
 
     public static class Builder extends RiftLibParticleComponent.Builder<AppearanceTintingComponent> {
         private final AppearanceTintingComponent toReturn = new AppearanceTintingComponent();
+
+        @NotNull
+        public Builder setColor(int color, boolean hasAlpha) {
+            if (hasAlpha) {
+                this.setRed((color >> 24) / 255D);
+                this.setGreen(((color >> 16) & 0xFF) / 255D);
+                this.setBlue(((color >> 8) & 0xFF) / 255D);
+                this.setAlpha((color & 0xFF) / 255D);
+            }
+            else {
+                this.setRed((color >> 16) / 255D);
+                this.setGreen(((color >> 8) & 0xFF) / 255D);
+                this.setBlue((color & 0xFF) / 255D);
+                this.setAlpha(1D);
+            }
+            return this;
+        }
 
         @NotNull
         public Builder setRed(@NotNull IValue value) {
@@ -183,6 +201,17 @@ public class AppearanceTintingComponent extends RiftLibParticleComponent {
                     );
                 }
             };
+        }
+
+        @Override
+        @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.red = this.toReturn.red;
+            result.toReturn.green = this.toReturn.green;
+            result.toReturn.blue = this.toReturn.blue;
+            result.toReturn.alpha = this.toReturn.alpha;
+            return result;
         }
 
         @Override

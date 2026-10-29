@@ -40,6 +40,12 @@ public class AppearanceLightingComponent extends RiftLibParticleComponent {
 
         @Override
         @NotNull
+        public Builder copy() {
+            return new Builder();
+        }
+
+        @Override
+        @NotNull
         public AppearanceLightingComponent build(@NotNull MolangParser parser) {
             return new AppearanceLightingComponent();
         }

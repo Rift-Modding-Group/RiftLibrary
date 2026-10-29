@@ -33,6 +33,12 @@ public abstract class RiftLibParticleComponent {
      * A builder class for the component, a great option if u dont wanna make a json file
      * */
     public abstract static class Builder<T extends RiftLibParticleComponent> {
+        /**
+         * Copies the builder settings without building runtime components.
+         */
+        @NotNull
+        public abstract Builder<T> copy();
+
         @NotNull
         public abstract T build(@NotNull MolangParser parser);
 

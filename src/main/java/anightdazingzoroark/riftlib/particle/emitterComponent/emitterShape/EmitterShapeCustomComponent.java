@@ -97,6 +97,15 @@ public class EmitterShapeCustomComponent extends RiftLibEmitterShapeComponent {
 
         @Override
         @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.offset = this.toReturn.offset.clone();
+            result.toReturn.customParticleDirection = this.toReturn.customParticleDirection.clone();
+            return result;
+        }
+
+        @Override
+        @NotNull
         public EmitterShapeCustomComponent build(@NotNull MolangParser parser) {
             EmitterShapeCustomComponent result = new EmitterShapeCustomComponent();
             result.offset = RawMolangValue.copy(this.toReturn.offset, parser);

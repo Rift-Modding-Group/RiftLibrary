@@ -223,6 +223,19 @@ public class EmitterShapeDiscComponent extends RiftLibEmitterShapeComponent {
 
         @Override
         @NotNull
+        public Builder copy() {
+            Builder result = new Builder();
+            result.toReturn.offset = this.toReturn.offset.clone();
+            result.toReturn.planeNormal = this.toReturn.planeNormal.clone();
+            result.toReturn.radius = this.toReturn.radius;
+            result.toReturn.surfaceOnly = this.toReturn.surfaceOnly;
+            result.toReturn.particleDirection = this.toReturn.particleDirection;
+            result.toReturn.customParticleDirection = this.toReturn.customParticleDirection == null ? null : this.toReturn.customParticleDirection.clone();
+            return result;
+        }
+
+        @Override
+        @NotNull
         public EmitterShapeDiscComponent build(@NotNull MolangParser parser) {
             EmitterShapeDiscComponent result = new EmitterShapeDiscComponent();
             result.offset = RawMolangValue.copy(this.toReturn.offset, parser);

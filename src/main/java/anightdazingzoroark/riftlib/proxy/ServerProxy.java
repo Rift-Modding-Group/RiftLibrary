@@ -10,6 +10,7 @@ import anightdazingzoroark.example.registry.ItemRegistry;
 import anightdazingzoroark.riftlib.core.manager.LivingBodyRotationTicker;
 import anightdazingzoroark.riftlib.RiftLib;
 import anightdazingzoroark.riftlib.RiftLibMod;
+import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.hitbox.HitboxTicker;
 import anightdazingzoroark.riftlib.internalMessage.*;
 import anightdazingzoroark.riftlib.message.RiftLibMessage;
@@ -22,8 +23,13 @@ import anightdazingzoroark.riftlib.particle.ParticleBuilder;
 import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.registry.PropertiesBootstrap;
 import anightdazingzoroark.riftlib.nbtStorageUser.propertySystem.PropertyEvents;
 import anightdazingzoroark.riftlib.ray.RayTicker;
+import anightdazingzoroark.riftlib.sounds.RiftLibSoundHelper;
 import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
 import net.minecraft.world.WorldServer;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.SoundCategory;
+import org.jetbrains.annotations.NotNull;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -48,6 +54,8 @@ public class ServerProxy {
         MESSAGE_WRAPPER.registerMessage(RiftLibApplyMessageEffect.class, RiftLibMessageSide.BOTH);
         MESSAGE_WRAPPER.registerMessage(RiftLibDebugBoundingBox.class, RiftLibMessageSide.CLIENT);
         MESSAGE_WRAPPER.registerMessage(RiftLibCreateBuiltParticle.class, RiftLibMessageSide.CLIENT);
+        MESSAGE_WRAPPER.registerMessage(RiftLibAttachedParticle.class, RiftLibMessageSide.CLIENT);
+        MESSAGE_WRAPPER.registerMessage(RiftLibUpdateLoopingSound.class, RiftLibMessageSide.CLIENT);
 
         HITBOX_MESSAGE_WRAPPER = new RiftLibMessageWrapper<>(RiftLib.ModID + "_hitbox");
         HITBOX_MESSAGE_WRAPPER.registerMessage(RiftLibSyncHitboxEntityId.class, RiftLibMessageSide.CLIENT);
@@ -63,6 +71,7 @@ public class ServerProxy {
         PROPERTIES_WRAPPER.registerMessage(RiftLibUpdateMultiPropertyKey.class, RiftLibMessageSide.CLIENT);
         PROPERTIES_WRAPPER.registerMessage(RiftLibUpdateAllPropertyKeys.class, RiftLibMessageSide.CLIENT);
 
+        MinecraftForge.EVENT_BUS.register(new RiftLibSoundHelper.Events());
         MinecraftForge.EVENT_BUS.register(new LivingBodyRotationTicker());
         //internal model related events
         MinecraftForge.EVENT_BUS.register(new HitboxTicker.Server());
@@ -102,13 +111,17 @@ public class ServerProxy {
         ));
     }
 
-    public void spawnParticle(String name, double x, double y, double z, String... variables) {
-    }
+    public void spawnParticle(String name, double x, double y, double z, String... variables) {}
 
-    public void spawnParticle(String name, double x, double y, double z, double rotationX, double rotationY, String... variables) {
-    }
+    public void spawnParticle(String name, double x, double y, double z, double rotationX, double rotationY, String... variables) {}
 
-    public void spawnParticle(ParticleBuilder builder, double x, double y, double z,
-                              double rotationX, double rotationY, String... variables) {
-    }
+    public void spawnParticle(ParticleBuilder builder, double x, double y, double z, double rotationX, double rotationY, String... variables) {}
+
+    public <T extends Entity & IAnimatable<?>> void spawnParticle(@NotNull String name, @NotNull String locatorName, @NotNull T entity, @NotNull String... variables) {}
+
+    public <T extends Entity & IAnimatable<?>> void spawnParticle(@NotNull ParticleBuilder builder, @NotNull String locatorName, @NotNull T entity, @NotNull String... variables) {}
+
+    public <T extends Entity & IAnimatable<?>> void killParticle(@NotNull T entity, @NotNull String name, @NotNull String locatorName) {}
+
+    public void updateLoopingSound(@NotNull Entity source, @NotNull SoundEvent sound, @NotNull SoundCategory category, boolean playing) {}
 }

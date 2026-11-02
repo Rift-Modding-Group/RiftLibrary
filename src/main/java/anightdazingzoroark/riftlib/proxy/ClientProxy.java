@@ -14,6 +14,7 @@ import anightdazingzoroark.riftlib.block.AnimatedBlockModelLoader;
 import anightdazingzoroark.riftlib.renderers.geo.GeoBlockRenderer;
 import anightdazingzoroark.riftlib.renderers.geo.GeoBlockRendererTicker;
 import anightdazingzoroark.riftlib.RiftLibMod;
+import anightdazingzoroark.riftlib.core.IAnimatable;
 import anightdazingzoroark.riftlib.hitbox.RiftLibCollisionHitbox;
 import anightdazingzoroark.riftlib.hitbox.EntityHitboxRenderer;
 import anightdazingzoroark.riftlib.hitbox.HitboxTicker;
@@ -29,8 +30,12 @@ import anightdazingzoroark.riftlib.renderers.geo.GeoArmorRenderer;
 import anightdazingzoroark.riftlib.renderers.geo.GeoItemRendererTicker;
 import anightdazingzoroark.riftlib.ridePositionLogic.DynamicRidePosTicker;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffect;
+import anightdazingzoroark.riftlib.sounds.RiftLibLoopingSound;
 import anightdazingzoroark.riftlib.sounds.RiftLibSoundEffectRegistry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import net.minecraftforge.common.MinecraftForge;
@@ -52,6 +57,7 @@ public class ClientProxy extends ServerProxy {
         MinecraftForge.EVENT_BUS.register(new LivingBodyRotationTicker.Client());
         MinecraftForge.EVENT_BUS.register(new ParticleTicker());
         MinecraftForge.EVENT_BUS.register(new RiftLibSoundEffectRegistry());
+        MinecraftForge.EVENT_BUS.register(new RiftLibLoopingSound.Events());
         MinecraftForge.EVENT_BUS.register(new GeoItemRendererTicker());
         MinecraftForge.EVENT_BUS.register(new GeoBlockRendererTicker());
         MinecraftForge.EVENT_BUS.register(new AnimatedBlockRegistry.Events());
@@ -152,5 +158,35 @@ public class ClientProxy extends ServerProxy {
             ParticleTicker.EMITTER_LIST.add(new RiftLibParticleEmitter(snapshot, targetWorld,
                     x, y, z, rotationX, rotationY, inputs));
         });
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public <T extends Entity & IAnimatable<?>> void spawnParticle(
+            @NotNull String name, @NotNull String locatorName, @NotNull T entity, @NotNull String... variables
+    ) {
+        ParticleInformation particle = RiftLibParticleHelper.getParticleConstructor(name);
+        if (particle != null) ParticleTicker.attachParticle(particle, locatorName, entity, variables);
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public <T extends Entity & IAnimatable<?>> void spawnParticle(
+            @NotNull ParticleBuilder builder, @NotNull String locatorName, @NotNull T entity, @NotNull String... variables
+    ) {
+        ParticleTicker.attachParticle(builder.build(), locatorName, entity, variables);
+    }
+
+    @SideOnly(Side.CLIENT)
+    @Override
+    public <T extends Entity & IAnimatable<?>> void killParticle(
+            @NotNull T entity, @NotNull String name, @NotNull String locatorName
+    ) {
+        ParticleTicker.killAttachedParticle(entity, name, locatorName);
+    }
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void updateLoopingSound(@NotNull Entity source, @NotNull SoundEvent sound, @NotNull SoundCategory category, boolean playing) {
+        RiftLibLoopingSound.updateSound(source, sound, category, playing);
     }
 }

@@ -23,9 +23,9 @@ import java.util.function.Supplier;
  */
 public class RiftLibRayBuilder {
     @NotNull
-    private static Map<String, RiftLibRayBuilder> builders = new ConcurrentHashMap<>();
+    private static final Map<String, RiftLibRayBuilder> builders = new ConcurrentHashMap<>();
     @NotNull
-    private String name;
+    private final String name;
 
     private boolean motionDefined;
     private boolean hasMotion = true;
@@ -57,9 +57,7 @@ public class RiftLibRayBuilder {
         Objects.requireNonNull(name, "Ray name must not be null");
         if (name.isBlank()) throw new IllegalArgumentException("Ray name must not be blank");
         this.name = name;
-        if (builders.putIfAbsent(name, this) != null) {
-            throw new IllegalArgumentException("A ray builder named " + name + " already exists");
-        }
+        builders.put(name, this);
     }
 
     @NotNull

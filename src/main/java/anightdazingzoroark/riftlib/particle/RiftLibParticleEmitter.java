@@ -83,6 +83,7 @@ public class RiftLibParticleEmitter implements MolangObject {
     private double posY;
     private double posZ;
     private boolean hasExpired;
+    private boolean localSpacePosition;
     private int particleId;
     private int stateParticleControllerId = -1;
     private int stateParticleIndex = -1;
@@ -184,6 +185,7 @@ public class RiftLibParticleEmitter implements MolangObject {
 
             if (this.locator != null && !this.locator.isValid()) this.killEmitter();
 
+            Vec3d previousPosition = new Vec3d(this.posX, this.posY, this.posZ);
             if (this.locator != null) {
                 Vec3d locatorPos = this.locator.getWorldSpacePosition();
                 this.posX = locatorPos.x;
@@ -193,16 +195,22 @@ public class RiftLibParticleEmitter implements MolangObject {
                 this.rotationQuaternion = this.locator.getWorldSpaceYXZQuaternion();
             }
 
+            Vec3d emitterMovement = Vec3d.ZERO;
+            if (this.localSpacePosition && !this.hasExpired) {
+                emitterMovement = new Vec3d(this.posX, this.posY, this.posZ).subtract(previousPosition);
+            }
+            int existingParticleCount = this.particles.size();
             if (lifetimeComponent.canCreateParticles(this) && !this.hasExpired
                     && (this.locator == null || this.locator.isUpdated())
             ) {
                 rateComponent.createParticles(this);
             }
 
+            int particleIndex = 0;
             Iterator<RiftLibParticle> it = this.particles.iterator();
             while (it.hasNext()) {
                 RiftLibParticle particle = it.next();
-                particle.update();
+                particle.update(particleIndex++ < existingParticleCount ? emitterMovement : Vec3d.ZERO);
                 if (particle.isDead()) it.remove();
             }
         });
@@ -310,6 +318,10 @@ public class RiftLibParticleEmitter implements MolangObject {
     @Nullable
     public Object getMolangActorOwner() {
         return this.locator == null ? null : this.locator.getAnimationData().getAnimatable();
+    }
+
+    public void setLocalSpacePosition(boolean position) {
+        this.localSpacePosition = position;
     }
 
     public void setEmitterShape(@NotNull RiftLibEmitterShapeComponent emitterShape) {

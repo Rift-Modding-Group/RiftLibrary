@@ -8,6 +8,7 @@ import anightdazingzoroark.riftlib.particle.particleComponent.particleAppearance
 import anightdazingzoroark.riftlib.particle.particleComponent.particleAppearance.AppearanceLightingComponent;
 import anightdazingzoroark.riftlib.particle.particleComponent.particleAppearance.AppearanceTintingComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterInitialState.EmitterInitializationComponent;
+import anightdazingzoroark.riftlib.particle.emitterComponent.emitterInitialState.EmitterLocalSpaceComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate.EmitterInstantComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate.EmitterSteadyComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.EmitterLifetimeLoopingComponent;
@@ -40,6 +41,7 @@ public class RiftLibParticleComponentRegistry {
         emitterComponentMap.put("minecraft:emitter_shape_custom", EmitterShapeCustomComponent::new);
 
         emitterComponentMap.put("minecraft:emitter_initialization", EmitterInitializationComponent::new);
+        emitterComponentMap.put("minecraft:emitter_local_space", EmitterLocalSpaceComponent::new);
 
         emitterComponentMap.put("minecraft:emitter_lifetime_expression", EmitterLifetimeExpressionComponent::new);
         emitterComponentMap.put("minecraft:emitter_lifetime_looping", EmitterLifetimeLoopingComponent::new);

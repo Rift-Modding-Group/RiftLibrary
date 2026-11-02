@@ -52,7 +52,7 @@ public abstract class AnimatedGeoModel<T extends IAnimatable<?>> extends GeoMode
 		boolean hasServerModel = this.hasServerModel(entity) || animData.isServerSynced();
 		GeoModel model = this.getModel(entity);
 		List<IBone> modelRenderers = this.getModelRenderers(model);
-		if (hasServerModel) this.createAndUpdateAnimatedLocators(entity);
+		this.createAndUpdateAnimatedLocators(entity);
 
 		if (this.hasServerModel(entity) && !animData.isServerSynced()) return;
 

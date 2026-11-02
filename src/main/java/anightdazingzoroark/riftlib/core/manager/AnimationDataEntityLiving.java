@@ -166,6 +166,9 @@ public class AnimationDataEntityLiving extends AbstractAnimationDataAdvancedEnti
      * Head pitch in Blockbench degrees, positive when looking down.
      * */
     public float getHeadPitch(float partialTicks) {
+        if (this.getHolder().isBeingRidden() && this.getHolder() instanceof IDynamicRideUser<?> rideUser) {
+            return rideUser.getRenderPitch(partialTicks);
+        }
         if (this.hasServerHeadPitch && !this.getHolder().isBeingRidden() && !this.getHolder().isRiding()) {
             //movement packets interpolate pitch independently and can retain an old attack pose.
             if (!this.serverHeadPitchTracker.initialized) {

@@ -1,11 +1,14 @@
 package anightdazingzoroark.riftlib.particle;
 
 import anightdazingzoroark.riftlib.RiftLibMod;
+import anightdazingzoroark.riftlib.core.IAnimatable;
+import anightdazingzoroark.riftlib.internalMessage.RiftLibAttachedParticle;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibCreateBuiltParticle;
 import anightdazingzoroark.riftlib.internalMessage.RiftLibCreateParticle;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import anightdazingzoroark.riftlib.resource.client.RiftLibCacheClient;
 import anightdazingzoroark.riftlib.resource.server.RiftLibCacheServer;
+import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +18,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class RiftLibParticleHelper {
+
     public static boolean isRiftLibParticle(String name) {
         return getParticleIdentifiers().contains(name);
     }
@@ -93,6 +97,46 @@ public class RiftLibParticleHelper {
                     world.provider.getDimension()
             );
         }
+    }
+
+    //-----particles attached to animated entities-----
+    /**
+     * Attaches a JSON particle to an entity's animated locator. Server calls notify tracking clients.
+     */
+    public static <T extends Entity & IAnimatable<?>> void createParticle(
+            @NotNull String name, @NotNull String locatorName, @NotNull T entity,
+            @NotNull String... variables
+    ) {
+        validateVariableArray(variables);
+        if (entity.world.isRemote) RiftLibMod.PROXY.spawnParticle(name, locatorName, entity, variables);
+        else ServerProxy.MESSAGE_WRAPPER.sendToAllTracking(
+                new RiftLibAttachedParticle(entity, name, locatorName, variables), entity);
+    }
+
+    /**
+     * Attaches a builder particle to an entity's animated locator, following its position and rotation.
+     * Server calls transfer the definition to tracking clients; client calls affect only that client.
+     */
+    public static <T extends Entity & IAnimatable<?>> void createParticle(
+            @NotNull ParticleBuilder builder, @NotNull String locatorName, @NotNull T entity,
+            @NotNull String... variables
+    ) {
+        validateVariableArray(variables);
+        if (entity.world.isRemote) RiftLibMod.PROXY.spawnParticle(builder, locatorName, entity, variables);
+        else ServerProxy.MESSAGE_WRAPPER.sendToAllTracking(
+                new RiftLibAttachedParticle(entity, builder, locatorName, variables), entity);
+    }
+
+    /**
+     * Stops attached emitters with this identifier and locator, allowing existing particles to finish.
+     * Also cancels matching requests waiting for the entity's model to become available.
+     */
+    public static <T extends Entity & IAnimatable<?>> void killParticle(
+            @NotNull T entity, @NotNull String name, @NotNull String locatorName
+    ) {
+        if (entity.world.isRemote) RiftLibMod.PROXY.killParticle(entity, name, locatorName);
+        else ServerProxy.MESSAGE_WRAPPER.sendToAllTracking(
+                RiftLibAttachedParticle.forRemoval(entity, name, locatorName), entity);
     }
 
     //-----misc-----

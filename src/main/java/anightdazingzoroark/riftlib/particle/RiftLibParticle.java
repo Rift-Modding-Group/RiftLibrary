@@ -153,6 +153,10 @@ public class RiftLibParticle implements MolangObject {
     }
 
     public void update() {
+        this.update(Vec3d.ZERO);
+    }
+
+    public void update(@NotNull Vec3d emitterMovement) {
         IValue lifetimeValue = this.lifetimeExpression;
         IValue expirationValue = this.expirationExpression;
         AppearanceBillboardComponent appearance = this.particleAppearance;
@@ -201,9 +205,9 @@ public class RiftLibParticle implements MolangObject {
             this.prevY = this.y;
             this.prevZ = this.z;
 
-            double nextX = this.x + this.velX;
-            double nextY = this.y + this.velY;
-            double nextZ = this.z + this.velZ;
+            double nextX = this.x + this.velX + emitterMovement.x;
+            double nextY = this.y + this.velY + emitterMovement.y;
+            double nextZ = this.z + this.velZ + emitterMovement.z;
 
             boolean collided = false;
             if (this.collisionEnabled.get() != 0D && this.collisionRadius != null && this.collisionRadius > 0F) {

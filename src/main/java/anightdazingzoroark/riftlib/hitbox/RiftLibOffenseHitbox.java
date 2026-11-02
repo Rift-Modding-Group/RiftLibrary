@@ -12,11 +12,13 @@ import net.minecraft.entity.MultiPartEntityPart;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * This optional hitbox deals with attacks performed by IMultiHitboxUser instances
@@ -27,21 +29,26 @@ public class RiftLibOffenseHitbox<T extends IMultiHitboxUser<?>> implements IHit
     private final T parent;
     @NotNull
     private final AnimatedBoundingBox boundingBox;
-    private Set<Integer> alreadyHitEntities;
+    private final Set<Integer> alreadyHitEntities;
+    private final int maxLifetime; //max time the offense hitbox stays in ticks, -1 means its forever
+    @Nullable
+    private final Consumer<Entity> hitEffect;
     private Map<String, BoneSnapshot> previousPose;
     private Vec3d previousPosition;
     private float previousYaw;
     private float previousScale;
     private boolean isDead;
+    private int lifetime;
 
-    public RiftLibOffenseHitbox(@NotNull T parent, @NotNull AnimatedBoundingBox boundingBox) {
-        this(parent, boundingBox, new HashSet<>());
-    }
-
-    public RiftLibOffenseHitbox(@NotNull T parent, @NotNull AnimatedBoundingBox boundingBox, @NotNull Set<Integer> alreadyHitEntities) {
+    public RiftLibOffenseHitbox(
+            @NotNull T parent, @NotNull AnimatedBoundingBox boundingBox, @NotNull Set<Integer> alreadyHitEntities,
+            int maxLifetime, @Nullable Consumer<Entity> hitEffect
+    ) {
         this.parent = parent;
         this.boundingBox = boundingBox;
         this.alreadyHitEntities = alreadyHitEntities;
+        this.maxLifetime = maxLifetime;
+        this.hitEffect = hitEffect;
     }
 
     /**
@@ -55,7 +62,16 @@ public class RiftLibOffenseHitbox<T extends IMultiHitboxUser<?>> implements IHit
             return;
         }
 
-        // Sample the posed volume between server ticks instead of skipping a fast jaw/tail sweep.
+        //count down based on max timeline, kill when it expires
+        if (this.maxLifetime > -1) {
+            if (this.lifetime <= this.maxLifetime) this.lifetime++;
+            else {
+                this.kill();
+                return;
+            }
+        }
+
+        //sample the posed volume between server ticks instead of skipping a fast jaw/tail sweep.
         Entity parentEntity = this.getParent().getMultiHitboxUser();
         Map<String, BoneSnapshot> pose = AnimationPoseSampler.capture(this.getParent().getMultiHitboxUser().getAnimationData());
         Vec3d position = parentEntity.getPositionVector();
@@ -101,6 +117,7 @@ public class RiftLibOffenseHitbox<T extends IMultiHitboxUser<?>> implements IHit
             if (target instanceof MultiPartEntityPart part && part.parent instanceof Entity entity) victim = entity;
             if (!this.alreadyHitEntities.add(victim.getEntityId())) continue;
             this.getParent().attackEntityWithHitbox(target);
+            if (this.hitEffect != null) this.hitEffect.accept(target);
         }
         this.previousPose = pose;
         this.previousPosition = position;

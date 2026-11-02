@@ -6,8 +6,10 @@ import anightdazingzoroark.riftlib.model.AnimatedBoundingBox;
 import anightdazingzoroark.riftlib.proxy.ServerProxy;
 import net.minecraft.entity.Entity;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -113,28 +115,63 @@ public class MultiHitboxList<T extends IMultiHitboxUser<?>> {
                 }).toList();
     }
 
+    /**
+     * create an offense hitbox that lasts forever
+     * */
     public boolean createOffenseHitboxByName(@NotNull String name) {
+        return this.createOffenseHitboxByName(name, -1);
+    }
+
+    public boolean createOffenseHitboxByName(@NotNull String name, int maxLifetime) {
+        return this.createOffenseHitboxByName(name, maxLifetime, null);
+    }
+
+    public boolean createOffenseHitboxByName(@NotNull String name, @Nullable Consumer<Entity> hitEffect) {
+        return this.createOffenseHitboxByName(name, -1, hitEffect);
+    }
+
+    public boolean createOffenseHitboxByName(@NotNull String name, int maxLifetime, @Nullable Consumer<Entity> hitEffect) {
         for (AnimatedBoundingBox animatedBoundingBox : this.animData.getAnimatedBoundingBoxes().values()) {
             if (!animatedBoundingBox.getName().equals(name)) continue;
-            this.createOffenseHitbox(animatedBoundingBox, new HashSet<>());
+            this.createOffenseHitbox(animatedBoundingBox, new HashSet<>(), maxLifetime, hitEffect);
             return true;
         }
         return false;
     }
 
+    /**
+     * create offense hitboxes by tag that last forever
+     * */
     public boolean createOffenseHitboxesByTag(@NotNull String tagName) {
+        return this.createOffenseHitboxesByTag(tagName, -1);
+    }
+
+    public boolean createOffenseHitboxesByTag(@NotNull String tagName, int maxLifetime) {
+        return this.createOffenseHitboxesByTag(tagName, maxLifetime, null);
+    }
+
+    public boolean createOffenseHitboxesByTag(@NotNull String tagName, @Nullable Consumer<Entity> hitEffect) {
+        return this.createOffenseHitboxesByTag(tagName, -1, hitEffect);
+    }
+
+    public boolean createOffenseHitboxesByTag(@NotNull String tagName, int maxLifetime, @Nullable Consumer<Entity> hitEffect) {
         if (!this.animData.getAnimatedBoundingBoxesByTag().containsKey(tagName)) return false;
 
         List<AnimatedBoundingBox> animatedBoundingBoxes = this.animData.getAnimatedBoundingBoxesByTag().get(tagName);
         Set<Integer> alreadyHitEntities = new HashSet<>();
         for (AnimatedBoundingBox animatedBoundingBox : animatedBoundingBoxes) {
-            this.createOffenseHitbox(animatedBoundingBox, alreadyHitEntities);
+            this.createOffenseHitbox(animatedBoundingBox, alreadyHitEntities, maxLifetime, hitEffect);
         }
         return true;
     }
 
-    private void createOffenseHitbox(@NotNull AnimatedBoundingBox animatedBoundingBox, @NotNull Set<Integer> alreadyHitEntities) {
-        RiftLibOffenseHitbox<T> offenseHitbox = new RiftLibOffenseHitbox<>(this.multiHitboxUser, animatedBoundingBox, alreadyHitEntities);
+    private void createOffenseHitbox(
+            @NotNull AnimatedBoundingBox animatedBoundingBox, @NotNull Set<Integer> alreadyHitEntities,
+            int maxLifetime, @Nullable Consumer<Entity> hitEffect
+    ) {
+        RiftLibOffenseHitbox<T> offenseHitbox = new RiftLibOffenseHitbox<>(
+                this.multiHitboxUser, animatedBoundingBox, alreadyHitEntities, maxLifetime, hitEffect
+        );
         RiftLibOffenseHitbox<T> previous = this.offenseHitboxes.put(animatedBoundingBox.getName(), offenseHitbox);
         if (previous != null) {
             previous.kill();

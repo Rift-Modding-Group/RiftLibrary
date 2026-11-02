@@ -120,6 +120,18 @@ public interface IDynamicRideUser<T extends Entity & IAnimatable<? extends Abstr
         return true;
     }
 
+    /**
+     * Pitch used by head-rotation queries while this entity is being ridden.
+     * Override when a mounted action follows the controller's input directly.
+     */
+    default float getRenderPitch(float partialTicks) {
+        return Interpolations.lerp(
+                this.getDynamicRideUser().prevRotationPitch,
+                this.getDynamicRideUser().rotationPitch,
+                partialTicks
+        );
+    }
+
     default float getRenderYaw(float partialTicks) {
         if (this.getDynamicRideUser() instanceof EntityLivingBase livingMount) {
             return Interpolations.lerpYaw(livingMount.prevRenderYawOffset, livingMount.renderYawOffset, partialTicks);

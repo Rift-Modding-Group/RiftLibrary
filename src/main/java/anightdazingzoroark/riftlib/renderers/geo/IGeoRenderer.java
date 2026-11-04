@@ -7,7 +7,6 @@ import anightdazingzoroark.riftlib.geo.*;
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import anightdazingzoroark.riftlib.util.MatrixUtils;
 import anightdazingzoroark.riftlib.util.ParticleUtils;
-import net.minecraft.client.renderer.RenderHelper;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
@@ -215,8 +214,6 @@ public interface IGeoRenderer<T> {
             double newPosY = position.y;
             double newPosZ = position.z;
 
-            RenderHelper.disableStandardItemLighting();
-
             GL11.glPushMatrix();
 
             Matrix4f curRot = ParticleUtils.getCurrentMatrix();
@@ -256,7 +253,6 @@ public interface IGeoRenderer<T> {
             animatedLocator.setWorldSpacePosition(newPosX, newPosY, newPosZ);
 
             MATRIX_STACK.pop();
-            RenderHelper.enableStandardItemLighting();
             GL11.glPopMatrix();
         }
     }

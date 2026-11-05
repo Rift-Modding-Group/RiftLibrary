@@ -20,7 +20,7 @@ public class LivingBodyRotationTicker {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void onWorldTick(@NotNull TickEvent.WorldTickEvent event) {
         if (event.side.isClient() || event.phase != TickEvent.Phase.END) return;
-        event.world.getLoadedEntityList().forEach(LivingBodyRotationTicker::updateBodyRotation);
+        event.world.loadedEntityList.forEach(LivingBodyRotationTicker::updateBodyRotation);
     }
 
     public static void updateBodyRotation(@NotNull Entity entity) {

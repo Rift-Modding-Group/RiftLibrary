@@ -9,6 +9,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class RiftLibSyncHitboxEntityId extends RiftLibMessage<RiftLibSyncHitboxEntityId> {
     private int parentEntityId;
@@ -49,6 +51,7 @@ public class RiftLibSyncHitboxEntityId extends RiftLibMessage<RiftLibSyncHitboxE
     @Override
     public void executeOnServer(MinecraftServer server, RiftLibSyncHitboxEntityId message, EntityPlayer player, MessageContext messageContext) {}
 
+    @SideOnly(Side.CLIENT)
     @Override
     public void executeOnClient(Minecraft client, RiftLibSyncHitboxEntityId message, EntityPlayer player, MessageContext messageContext) {
         Entity entity = player.world.getEntityByID(message.parentEntityId);

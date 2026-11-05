@@ -14,7 +14,7 @@ public class ServerModelTicker {
         if (event.side.isClient()) return;
         if (event.phase != TickEvent.Phase.END) return;
 
-        for (Entity entity : new ArrayList<>(event.world.getLoadedEntityList())) {
+        for (Entity entity : new ArrayList<>(event.world.loadedEntityList)) {
             if (!entity.isEntityAlive() || !(entity instanceof IAnimatable<?>)) continue;
             this.update((IAnimatable<?>) entity);
         }

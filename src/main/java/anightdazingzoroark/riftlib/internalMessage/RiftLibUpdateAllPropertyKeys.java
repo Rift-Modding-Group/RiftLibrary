@@ -11,6 +11,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class RiftLibUpdateAllPropertyKeys extends RiftLibMessage<RiftLibUpdateAllPropertyKeys> {
     private int entityId;
@@ -42,6 +44,7 @@ public class RiftLibUpdateAllPropertyKeys extends RiftLibMessage<RiftLibUpdateAl
     @Override
     public void executeOnServer(MinecraftServer server, RiftLibUpdateAllPropertyKeys message, EntityPlayer player, MessageContext messageContext) {}
 
+    @SideOnly(Side.CLIENT)
     @Override
     public void executeOnClient(Minecraft client, RiftLibUpdateAllPropertyKeys message, EntityPlayer player, MessageContext messageContext) {
         Entity entity = client.world.getEntityByID(message.entityId);

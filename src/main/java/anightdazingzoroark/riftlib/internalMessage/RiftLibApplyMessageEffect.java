@@ -9,6 +9,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class RiftLibApplyMessageEffect extends RiftLibMessage<RiftLibApplyMessageEffect> {
     private NBTTagCompound animDataNBT;
@@ -41,6 +43,7 @@ public class RiftLibApplyMessageEffect extends RiftLibMessage<RiftLibApplyMessag
         resolvedAnimData.getAnimationMessageEffects().get(message.messageName).runValue().run();
     }
 
+    @SideOnly(Side.CLIENT)
     @Override
     public void executeOnClient(Minecraft client, RiftLibApplyMessageEffect message, EntityPlayer player, MessageContext messageContext) {
         AbstractAnimationData<?, ?> resolvedAnimData = AnimationDataResolver.resolveNBTAsData(client.world, message.animDataNBT);

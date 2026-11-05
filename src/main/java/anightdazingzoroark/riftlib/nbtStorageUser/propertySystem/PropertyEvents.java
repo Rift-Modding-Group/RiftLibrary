@@ -81,7 +81,7 @@ public class PropertyEvents {
     }
 
     private void tickProperties(World world) {
-        for (Entity entity : new ArrayList<>(world.getLoadedEntityList())) {
+        for (Entity entity : new ArrayList<>(world.loadedEntityList)) {
             if (!entity.isEntityAlive()) continue;
             for (String name : PropertyRegistry.getAllPropertyNames()) {
                 if (!PropertyRegistry.entityCanHaveProperty(name, entity)) continue;

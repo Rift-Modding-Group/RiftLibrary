@@ -11,6 +11,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 
 public class RiftLibCreateOrDestroyRay extends RiftLibMessage<RiftLibCreateOrDestroyRay> {
@@ -47,6 +49,7 @@ public class RiftLibCreateOrDestroyRay extends RiftLibMessage<RiftLibCreateOrDes
     @Override
     public void executeOnServer(MinecraftServer server, RiftLibCreateOrDestroyRay message, EntityPlayer player, MessageContext messageContext) {}
 
+    @SideOnly(Side.CLIENT)
     @Override
     public void executeOnClient(Minecraft client, RiftLibCreateOrDestroyRay message, EntityPlayer player, MessageContext messageContext) {
         if (client.world == null) return;

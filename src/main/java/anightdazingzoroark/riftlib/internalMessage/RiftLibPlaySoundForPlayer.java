@@ -11,6 +11,8 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class RiftLibPlaySoundForPlayer extends RiftLibMessage<RiftLibPlaySoundForPlayer> {
     private int playerId;
@@ -42,6 +44,7 @@ public class RiftLibPlaySoundForPlayer extends RiftLibMessage<RiftLibPlaySoundFo
     @Override
     public void executeOnServer(MinecraftServer server, RiftLibPlaySoundForPlayer message, EntityPlayer messagePlayer, MessageContext messageContext) {}
 
+    @SideOnly(Side.CLIENT)
     @Override
     public void executeOnClient(Minecraft client, RiftLibPlaySoundForPlayer message, EntityPlayer messagePlayer, MessageContext messageContext) {
         EntityPlayer player = (EntityPlayer) client.world.getEntityByID(message.playerId);

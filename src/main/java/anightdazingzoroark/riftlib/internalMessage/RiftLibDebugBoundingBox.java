@@ -10,6 +10,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class RiftLibDebugBoundingBox extends RiftLibMessage<RiftLibDebugBoundingBox> {
     private int entityId;
@@ -41,6 +43,7 @@ public class RiftLibDebugBoundingBox extends RiftLibMessage<RiftLibDebugBounding
     @Override
     public void executeOnServer(MinecraftServer server, RiftLibDebugBoundingBox message, EntityPlayer player, MessageContext messageContext) {}
 
+    @SideOnly(Side.CLIENT)
     @Override
     public void executeOnClient(Minecraft client, RiftLibDebugBoundingBox message, EntityPlayer player, MessageContext messageContext) {
         Entity entity = client.world.getEntityByID(message.entityId);

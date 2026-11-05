@@ -417,7 +417,7 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
         this.registerMolangQuery("actor_count", (values, animData) -> {
             World world = this.getWorld();
             if (world == null) return 0D;
-            return (double) world.getLoadedEntityList().size();
+            return (double) world.loadedEntityList.size();
         });
         this.registerMolangQuery("time_of_day", (values, animData) -> {
             World world = this.getWorld();

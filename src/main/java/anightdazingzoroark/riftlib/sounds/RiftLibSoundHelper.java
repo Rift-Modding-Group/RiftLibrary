@@ -19,6 +19,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,6 +57,7 @@ public class RiftLibSoundHelper {
     /**
      * This function is used in AnimationProcessor to play a sound event registered in RiftLibSoundEffectRegistry.
      */
+    @SideOnly(Side.CLIENT)
     public static void playSound(IAnimatable<?> source, AnimatedLocator locator, String soundName) {
         if (!RiftLibSoundEffectRegistry.soundEffectMap.containsKey(soundName)) return;
 

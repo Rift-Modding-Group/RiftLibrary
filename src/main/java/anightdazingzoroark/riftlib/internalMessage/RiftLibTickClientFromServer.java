@@ -11,6 +11,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class RiftLibTickClientFromServer extends RiftLibMessage<RiftLibTickClientFromServer> {
     private NBTTagCompound targetDataNBT;
@@ -34,6 +36,7 @@ public class RiftLibTickClientFromServer extends RiftLibMessage<RiftLibTickClien
     @Override
     public void executeOnServer(MinecraftServer server, RiftLibTickClientFromServer message, EntityPlayer player, MessageContext messageContext) {}
 
+    @SideOnly(Side.CLIENT)
     @Override
     public void executeOnClient(Minecraft client, RiftLibTickClientFromServer message, EntityPlayer player, MessageContext messageContext) {
         //test for matching valid anim data on client end

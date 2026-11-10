@@ -87,9 +87,9 @@ public class AnimationDataItemStack extends AbstractAnimationData<AnimatedItemSt
         if (!(entity instanceof EntityLivingBase living)) return null;
         ItemStack stack = this.getHolder().getStack();
         if (this.hasRenderContext) {
-            if (this.entityHolderHand != null && this.isSameStack(living.getHeldItem(this.entityHolderHand), stack)) {
-                return this.entityHolderHand;
-            }
+            if (this.entityHolderHand == null) return null;
+            ItemStack heldStack = living.getHeldItem(this.entityHolderHand);
+            if (!heldStack.isEmpty() && heldStack.getItem() == stack.getItem()) return this.entityHolderHand;
             return null;
         }
         if (this.isSameStack(living.getHeldItemMainhand(), stack)) return EnumHand.MAIN_HAND;

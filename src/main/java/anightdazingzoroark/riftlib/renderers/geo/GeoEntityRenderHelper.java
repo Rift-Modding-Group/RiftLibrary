@@ -15,7 +15,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
-import org.lwjglx.util.vector.Quaternion;
+import org.joml.Quaternionf;
 
 /**
  * Shared transforms for living and non-living entity renderers.
@@ -35,8 +35,8 @@ public class GeoEntityRenderHelper {
         }
 
         double yawRadians = -Math.toRadians(renderYaw);
-        Quaternion entityYaw = QuaternionUtils.createYXZQuaternion(0D, yawRadians, 0D);
-        Quaternion modelToWorldRotation = QuaternionUtils.createYXZQuaternion(0D, Math.PI + yawRadians, 0D);
+        Quaternionf entityYaw = QuaternionUtils.createYXZQuaternion(0D, yawRadians, 0D);
+        Quaternionf modelToWorldRotation = QuaternionUtils.createYXZQuaternion(0D, Math.PI + yawRadians, 0D);
         float scale = data.getScale();
         for (AnimatedLocator locator : data.getAnimatedLocators().values()) {
             Vec3d modelPosition = locator.getModelSpacePosition();
@@ -47,9 +47,9 @@ public class GeoEntityRenderHelper {
             ), entityYaw);
             locator.setWorldSpacePosition(entityX + relativePosition.x, entityY + relativePosition.y, entityZ + relativePosition.z);
 
-            Quaternion worldRotation = new Quaternion();
-            Quaternion.mul(modelToWorldRotation, locator.getModelSpaceYXZQuaternion(), worldRotation);
-            Quaternion.normalise(worldRotation, worldRotation);
+            Quaternionf worldRotation = new Quaternionf();
+            modelToWorldRotation.mul(locator.getModelSpaceYXZQuaternion(), worldRotation);
+            worldRotation.normalize();
             locator.setWorldSpaceYXZQuaternion(worldRotation);
         }
     }

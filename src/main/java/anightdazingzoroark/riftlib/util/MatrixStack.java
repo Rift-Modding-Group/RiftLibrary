@@ -8,7 +8,7 @@ import javax.vecmath.Vector3f;
 
 import anightdazingzoroark.riftlib.model.AnimatedLocator;
 import net.minecraft.util.math.Vec3d;
-import org.lwjglx.util.vector.Quaternion;
+import org.joml.Quaternionf;
 
 import anightdazingzoroark.riftlib.geo.GeoBone;
 import anightdazingzoroark.riftlib.geo.GeoCube;
@@ -201,9 +201,9 @@ public class MatrixStack {
     }
 
     public void rotate(AnimatedLocator locator) {
-		//Quaternion locatorRotQuat = locator.getRenderSpaceQuaternion();
-		Quaternion locatorRotQuat = locator.getModelSpaceYXZQuaternion();
-        Quaternion.normalise(locatorRotQuat, locatorRotQuat);
+		//Quaternionf locatorRotQuat = locator.getRenderSpaceQuaternion();
+		Quaternionf locatorRotQuat = locator.getModelSpaceYXZQuaternion();
+        locatorRotQuat.normalize();
         Matrix3f matrixFromQuat = MatrixUtils.quaternionToMatrix(locatorRotQuat);
 
         //apply to model matrix
@@ -242,7 +242,7 @@ public class MatrixStack {
     }
 
 	@SuppressWarnings("unused")
-	private Quaternion fromAngles(float x, float y, float z) {
+	private Quaternionf fromAngles(float x, float y, float z) {
 		float sx = (float) Math.sin(0.5F * x);
 		float cx = (float) Math.cos(0.5F * x);
 		float sy = (float) Math.sin(0.5F * y);
@@ -255,6 +255,6 @@ public class MatrixStack {
 		float oz = sx * sy * cz + cx * cy * sz;
 		float ow = cx * cy * cz - sx * sy * sz;
 
-		return new Quaternion(ox, oy, oz, ow);
+		return new Quaternionf(ox, oy, oz, ow);
 	}
 }

@@ -18,7 +18,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.lwjglx.util.vector.Quaternion;
+import org.joml.Quaternionf;
 
 import java.util.List;
 import java.util.Objects;
@@ -138,7 +138,7 @@ public class RiftLibParticle implements MolangObject {
      * Initializes motion in the emitter's orientation at birth. Later emitter rotations
      * must not change the acceleration frame of particles already in flight.
      */
-    public void initializeVelocity(@NotNull Vec3d direction, @NotNull Quaternion emitterRotation) {
+    public void initializeVelocity(@NotNull Vec3d direction, @NotNull Quaternionf emitterRotation) {
         this.initializeVelocity(direction);
         this.accelerationAxisX = VectorUtils.rotateVectorWithQuaternion(new Vec3d(1, 0, 0), emitterRotation);
         this.accelerationAxisY = VectorUtils.rotateVectorWithQuaternion(new Vec3d(0, 1, 0), emitterRotation);

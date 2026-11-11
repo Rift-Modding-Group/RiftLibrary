@@ -10,7 +10,7 @@ import anightdazingzoroark.riftlib.util.ParticleUtils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
-import org.lwjglx.util.vector.Quaternion;
+import org.joml.Quaternionf;
 
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -223,11 +223,11 @@ public interface IGeoRenderer<T> {
             Matrix4f cur2 = ParticleUtils.getCurrentRotation(curRot, ParticleUtils.getCurrentMatrix());
 
             //apply rotations
-            Quaternion renderRotation = MatrixUtils.extractRotationQuaternion(cur2);
-            Quaternion locatorRotation = animatedLocator.getModelSpaceYXZQuaternion();
-            Quaternion worldRotation = new Quaternion();
-            Quaternion.mul(renderRotation, locatorRotation, worldRotation);
-            Quaternion.normalise(worldRotation, worldRotation);
+            Quaternionf renderRotation = MatrixUtils.extractRotationQuaternion(cur2);
+            Quaternionf locatorRotation = animatedLocator.getModelSpaceYXZQuaternion();
+            Quaternionf worldRotation = new Quaternionf();
+            renderRotation.mul(locatorRotation, worldRotation);
+            worldRotation.normalize();
 
             MATRIX_STACK.push();
             MATRIX_STACK.getModelMatrix().mul(new Matrix4f(

@@ -13,7 +13,7 @@ import javax.vecmath.Vector3f;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
-import org.lwjglx.util.vector.Quaternion;
+import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -154,22 +154,22 @@ public class AnimatedBoundingBox {
             Vec3d vecDirection = vecPos.subtract(vecPivot);
 
             //create quaternion from current rotations, conjugate it too
-            Quaternion quatBoneRot = QuaternionUtils.createXYZQuaternion(
+            Quaternionf quatBoneRot = QuaternionUtils.createXYZQuaternion(
                     boneToTest.getRotation().x,
                     boneToTest.getRotation().y,
                     boneToTest.getRotation().z
             );
-            Quaternion.normalise(quatBoneRot, quatBoneRot);
+            quatBoneRot.normalize();
 
-            Quaternion quatBoneRotConj = new Quaternion();
-            Quaternion.negate(quatBoneRot, quatBoneRotConj);
+            Quaternionf quatBoneRotConj = new Quaternionf();
+            quatBoneRot.conjugate(quatBoneRotConj);
 
             //rotate vecDirection
-            Quaternion quatVecDirection = VectorUtils.convertToQuaternion(vecDirection);
-            Quaternion temp = new Quaternion();
-            Quaternion quatRotatedVecDirection = new Quaternion();
-            Quaternion.mul(quatBoneRot, quatVecDirection, temp);
-            Quaternion.mul(temp, quatBoneRotConj, quatRotatedVecDirection);
+            Quaternionf quatVecDirection = VectorUtils.convertToQuaternion(vecDirection);
+            Quaternionf temp = new Quaternionf();
+            Quaternionf quatRotatedVecDirection = new Quaternionf();
+            quatBoneRot.mul(quatVecDirection, temp);
+            temp.mul(quatBoneRotConj, quatRotatedVecDirection);
             Vec3d rotatedVecDirection = VectorUtils.convertQuaternionToVec(quatRotatedVecDirection);
 
             //update vecPos

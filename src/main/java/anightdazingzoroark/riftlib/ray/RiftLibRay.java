@@ -10,7 +10,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.lwjglx.util.vector.Quaternion;
+import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -120,8 +120,8 @@ public class RiftLibRay {
             //---for direction vector and up vector---
             //rotate the model axes by the locator, then apply the same X/Z conversion
             //used by the locator position before rotating into entity world space
-            Quaternion locatorQuaternion = this.parentLocator.getModelSpaceYXZQuaternion();
-            Quaternion.normalise(locatorQuaternion, locatorQuaternion);
+            Quaternionf locatorQuaternion = this.parentLocator.getModelSpaceYXZQuaternion();
+            locatorQuaternion.normalize();
 
             Vec3d modelForward = VectorUtils.rotateVectorWithQuaternion(
                     new Vec3d(0D, 0D, -1D),
@@ -134,7 +134,7 @@ public class RiftLibRay {
             Vec3d forwardVec = new Vec3d(-modelForward.x, modelForward.y, -modelForward.z);
             Vec3d upVec = new Vec3d(-modelUp.x, modelUp.y, -modelUp.z);
 
-            Quaternion entityYaw = QuaternionUtils.createYXZQuaternion(0D, finalYawRadians, 0D);
+            Quaternionf entityYaw = QuaternionUtils.createYXZQuaternion(0D, finalYawRadians, 0D);
             forwardVec = VectorUtils.rotateVectorWithQuaternion(forwardVec, entityYaw).normalize();
             upVec = VectorUtils.rotateVectorWithQuaternion(upVec, entityYaw).normalize();
 

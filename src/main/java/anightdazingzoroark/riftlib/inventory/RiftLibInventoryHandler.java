@@ -40,8 +40,31 @@ public class RiftLibInventoryHandler extends ItemStackHandler {
         return this.itemFilter;
     }
 
+    @Override
+    @NotNull
+    public ItemStack getStackInSlot(int slot) {
+        return this.func_70301_a(slot);
+    }
+
+    /**
+     * Strange but is needed to not crash in production.
+     */
+    @NotNull
+    @SuppressWarnings("unused")
+    public ItemStack func_70301_a(int slot) {
+        return super.getStackInSlot(slot);
+    }
+
     //check if all slots are empty
     public boolean isEmpty() {
+        return this.func_191420_l();
+    }
+
+    /**
+     * Strange but is needed to not crash in production.
+     */
+    @SuppressWarnings("unused")
+    public boolean func_191420_l() {
         for (ItemStack itemStack : this.stacks) {
             if (!itemStack.isEmpty()) return false;
         }

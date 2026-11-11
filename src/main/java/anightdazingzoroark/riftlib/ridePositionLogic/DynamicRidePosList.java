@@ -11,7 +11,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.lwjglx.util.vector.Quaternion;
+import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,7 +81,7 @@ public class DynamicRidePosList {
 
         //change based on yaw of ridden mob
         double yawRadians = -Math.toRadians(this.animData.getModelYaw());
-        Quaternion quaternion = QuaternionUtils.createXYZQuaternion(0, yawRadians, 0);
+        Quaternionf quaternion = QuaternionUtils.createXYZQuaternion(0, yawRadians, 0);
         posVec = VectorUtils.rotateVectorWithQuaternion(posVec, quaternion);
 
         //reposition to ridden mob

@@ -1,9 +1,11 @@
 package anightdazingzoroark.riftlib.util;
 
-import org.lwjglx.util.vector.Quaternion;
+import org.joml.Quaternionf;
+import org.jetbrains.annotations.NotNull;
 
 public class QuaternionUtils {
-    public static Quaternion createXYZQuaternion(double rotationX, double rotationY, double rotationZ) {
+    @NotNull
+    public static Quaternionf createXYZQuaternion(double rotationX, double rotationY, double rotationZ) {
         double cosX = Math.cos(rotationX / 2);
         double sinX = Math.sin(rotationX / 2);
         double cosY = Math.cos(rotationY / 2);
@@ -11,7 +13,7 @@ public class QuaternionUtils {
         double cosZ = Math.cos(rotationZ / 2);
         double sinZ = Math.sin(rotationZ / 2);
 
-        return new Quaternion(
+        return new Quaternionf(
                 (float) (sinX * cosY * cosZ - cosX * sinY * sinZ),
                 (float) (cosX * sinY * cosZ + sinX * cosY * sinZ),
                 (float) (cosX * cosY * sinZ - sinX * sinY * cosZ),
@@ -19,7 +21,8 @@ public class QuaternionUtils {
         );
     }
 
-    public static Quaternion createYXZQuaternion(double rotationX, double rotationY, double rotationZ) {
+    @NotNull
+    public static Quaternionf createYXZQuaternion(double rotationX, double rotationY, double rotationZ) {
         double cosY = Math.cos(rotationY / 2);
         double sinY = Math.sin(rotationY / 2);
         double cosX = Math.cos(rotationX / 2);
@@ -27,7 +30,7 @@ public class QuaternionUtils {
         double cosZ = Math.cos(rotationZ / 2);
         double sinZ = Math.sin(rotationZ / 2);
 
-        return new Quaternion(
+        return new Quaternionf(
                 (float) (sinX * cosY * cosZ + cosX * sinY * sinZ),
                 (float) (cosX * sinY * cosZ - sinX * cosY * sinZ),
                 (float) (cosX * cosY * sinZ + sinX * sinY * cosZ),
@@ -35,7 +38,8 @@ public class QuaternionUtils {
         );
     }
 
-    public static Quaternion createYZXQuaternion(double rotationX, double rotationY, double rotationZ) {
+    @NotNull
+    public static Quaternionf createYZXQuaternion(double rotationX, double rotationY, double rotationZ) {
         double cosY = Math.cos(rotationY / 2);
         double sinY = Math.sin(rotationY / 2);
         double cosX = Math.cos(rotationX / 2);
@@ -43,7 +47,7 @@ public class QuaternionUtils {
         double cosZ = Math.cos(rotationZ / 2);
         double sinZ = Math.sin(rotationZ / 2);
 
-        return new Quaternion(
+        return new Quaternionf(
                 (float) (sinX * cosY * cosZ + cosX * sinY * sinZ),
                 (float) (cosX * sinY * cosZ + sinX * cosY * sinZ),
                 (float) (cosX * cosY * sinZ - sinX * sinY * cosZ),
@@ -51,7 +55,8 @@ public class QuaternionUtils {
         );
     }
 
-    public static Quaternion createZYXQuaternion(double rotationX, double rotationY, double rotationZ) {
+    @NotNull
+    public static Quaternionf createZYXQuaternion(double rotationX, double rotationY, double rotationZ) {
         double cosZ = Math.cos(rotationZ / 2);
         double sinZ = Math.sin(rotationZ / 2);
         double cosY = Math.cos(rotationY / 2);
@@ -59,7 +64,7 @@ public class QuaternionUtils {
         double cosX = Math.cos(rotationX / 2);
         double sinX = Math.sin(rotationX / 2);
 
-        return new Quaternion(
+        return new Quaternionf(
                 (float) (sinX * cosY * cosZ + cosX * sinY * sinZ),
                 (float) (cosX * sinY * cosZ - sinX * cosY * sinZ),
                 (float) (cosX * cosY * sinZ + sinX * sinY * cosZ),

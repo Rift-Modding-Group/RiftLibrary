@@ -18,7 +18,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.lwjglx.util.vector.Quaternion;
+import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -166,7 +166,7 @@ public abstract class AbstractAnimationDataAdvancedEntity<T extends Entity, D ex
         float scale = this.getScale();
 
         double yaw = -Math.toRadians(this.getModelYaw());
-        Quaternion quaternion = QuaternionUtils.createXYZQuaternion(0D, yaw, 0D);
+        Quaternionf quaternion = QuaternionUtils.createXYZQuaternion(0D, yaw, 0D);
         Vec3d hitboxPos = VectorUtils.rotateVectorWithQuaternion(new Vec3d(
                 -modelSpacePos.x * scale / 16D,
                 (modelSpacePos.y - modelSpaceSize[1] / 2D) * scale / 16D,

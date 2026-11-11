@@ -6,7 +6,7 @@ import org.apache.commons.geometry.euclidean.threed.Bounds3D;
 import org.apache.commons.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.geometry.euclidean.threed.rotation.QuaternionRotation;
 import org.jetbrains.annotations.NotNull;
-import org.lwjglx.util.vector.Quaternion;
+import org.joml.Quaternionf;
 
 public class RiftLibRayGeometry {
     private static final double AABB_PADDING = 0.001D;
@@ -24,7 +24,7 @@ public class RiftLibRayGeometry {
     }
 
     @NotNull
-    public static QuaternionRotation toQuaternionRotation(@NotNull Quaternion quaternion) {
+    public static QuaternionRotation toQuaternionRotation(@NotNull Quaternionf quaternion) {
         return QuaternionRotation.of(quaternion.w, quaternion.x, quaternion.y, quaternion.z);
     }
 

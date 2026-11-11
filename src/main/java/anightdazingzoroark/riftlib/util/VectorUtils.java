@@ -6,7 +6,8 @@ import javax.vecmath.Vector3f;
 import net.minecraft.util.math.Vec3d;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Validate;
-import org.lwjglx.util.vector.Quaternion;
+import org.joml.Quaternionf;
+import org.jetbrains.annotations.NotNull;
 
 public class VectorUtils {
 	public static Vector3d fromArray(double[] array) {
@@ -27,27 +28,30 @@ public class VectorUtils {
 		return new Vector3d(vector.getX(), vector.getY(), vector.getZ());
 	}
 
-    public static Quaternion convertToQuaternion(Vec3d vec3d) {
-        return new Quaternion((float) vec3d.x, (float) vec3d.y, (float) vec3d.z, 0);
+    @NotNull
+    public static Quaternionf convertToQuaternion(@NotNull Vec3d vec3d) {
+        return new Quaternionf((float) vec3d.x, (float) vec3d.y, (float) vec3d.z, 0);
     }
 
-    public static Vec3d convertQuaternionToVec(Quaternion quaternion) {
+    @NotNull
+    public static Vec3d convertQuaternionToVec(@NotNull Quaternionf quaternion) {
         return new Vec3d(quaternion.x, quaternion.y, quaternion.z);
     }
 
     //rotate a Vec3d with an already existing quaternion
-    public static Vec3d rotateVectorWithQuaternion(Vec3d vec3d, Quaternion quaternion) {
+    @NotNull
+    public static Vec3d rotateVectorWithQuaternion(@NotNull Vec3d vec3d, @NotNull Quaternionf quaternion) {
         //conjugate quaternion
-        Quaternion conjQuaternion = new Quaternion();
-        Quaternion.negate(quaternion, conjQuaternion);
+        Quaternionf conjQuaternion = new Quaternionf();
+        quaternion.conjugate(conjQuaternion);
 
         //turn vector into quaternion
-        Quaternion vecQuaternion = new Quaternion((float) vec3d.x, (float) vec3d.y, (float) vec3d.z, 0);
+        Quaternionf vecQuaternion = new Quaternionf((float) vec3d.x, (float) vec3d.y, (float) vec3d.z, 0);
 
         //now multiply
-        Quaternion toReturn = new Quaternion();
-        Quaternion.mul(quaternion, vecQuaternion, toReturn);
-        Quaternion.mul(toReturn, conjQuaternion, toReturn);
+        Quaternionf toReturn = new Quaternionf();
+        quaternion.mul(vecQuaternion, toReturn);
+        toReturn.mul(conjQuaternion, toReturn);
 
         return new Vec3d(toReturn.x, toReturn.y, toReturn.z);
     }
@@ -61,7 +65,7 @@ public class VectorUtils {
         double sinX = Math.sin(xRotation / 2);
         double cosZ = Math.cos(zRotation / 2);
         double sinZ = Math.sin(zRotation / 2);
-        Quaternion rotationQuaternion = new Quaternion(
+        Quaternionf rotationQuaternion = new Quaternionf(
                 (float) (sinX * cosY * cosZ + cosX * sinY * sinZ),
                 (float) (cosX * sinY * cosZ - sinX * cosY * sinZ),
                 (float) (sinX * sinY * cosZ + cosX * cosY * sinZ),
@@ -69,16 +73,16 @@ public class VectorUtils {
         );
 
         //conjugate
-        Quaternion conjRotationQuaternion = new Quaternion();
-        Quaternion.negate(rotationQuaternion, conjRotationQuaternion);
+        Quaternionf conjRotationQuaternion = new Quaternionf();
+        rotationQuaternion.conjugate(conjRotationQuaternion);
 
         //turn vector into quaternion
-        Quaternion vecQuaternion = new Quaternion((float) vec3d.x, (float) vec3d.y, (float) vec3d.z, 0);
+        Quaternionf vecQuaternion = new Quaternionf((float) vec3d.x, (float) vec3d.y, (float) vec3d.z, 0);
 
         //now multiply
-        Quaternion toReturn = new Quaternion();
-        Quaternion.mul(rotationQuaternion, vecQuaternion, toReturn);
-        Quaternion.mul(toReturn, conjRotationQuaternion, toReturn);
+        Quaternionf toReturn = new Quaternionf();
+        rotationQuaternion.mul(vecQuaternion, toReturn);
+        toReturn.mul(conjRotationQuaternion, toReturn);
 
         return new Vec3d(toReturn.x, toReturn.y, toReturn.z);
     }
@@ -92,7 +96,7 @@ public class VectorUtils {
         double sinZ = Math.sin(zRotation / 2);
         double cosX = Math.cos(xRotation / 2);
         double sinX = Math.sin(xRotation / 2);
-        Quaternion rotationQuaternion = new Quaternion(
+        Quaternionf rotationQuaternion = new Quaternionf(
                 (float) (sinX * cosY * cosZ - cosX * sinY * sinZ),
                 (float) (cosX * sinY * cosZ + sinX * cosY * sinZ),
                 (float) (cosX * cosY * sinZ - sinX * sinY * cosZ),
@@ -100,16 +104,16 @@ public class VectorUtils {
         );
 
         //conjugate
-        Quaternion conjRotationQuaternion = new Quaternion();
-        Quaternion.negate(rotationQuaternion, conjRotationQuaternion);
+        Quaternionf conjRotationQuaternion = new Quaternionf();
+        rotationQuaternion.conjugate(conjRotationQuaternion);
 
         //turn vector into quaternion
-        Quaternion vecQuaternion = new Quaternion((float) vec3d.x, (float) vec3d.y, (float) vec3d.z, 0);
+        Quaternionf vecQuaternion = new Quaternionf((float) vec3d.x, (float) vec3d.y, (float) vec3d.z, 0);
 
         //now multiply
-        Quaternion toReturn = new Quaternion();
-        Quaternion.mul(rotationQuaternion, vecQuaternion, toReturn);
-        Quaternion.mul(toReturn, conjRotationQuaternion, toReturn);
+        Quaternionf toReturn = new Quaternionf();
+        rotationQuaternion.mul(vecQuaternion, toReturn);
+        toReturn.mul(conjRotationQuaternion, toReturn);
 
         return new Vec3d(toReturn.x, toReturn.y, toReturn.z);
     }
@@ -124,7 +128,7 @@ public class VectorUtils {
         double sinY = Math.sin(yRotation / 2);
         double cosZ = Math.cos(zRotation / 2);
         double sinZ = Math.sin(zRotation / 2);
-        Quaternion rotationQuaternion = new Quaternion(
+        Quaternionf rotationQuaternion = new Quaternionf(
                 (float) (sinX * cosY * cosZ - cosX * sinY * sinZ),
                 (float) (cosX * sinY * cosZ + sinX * cosY * sinZ),
                 (float) (cosX * cosY * sinZ - sinX * sinY * cosZ),
@@ -132,16 +136,16 @@ public class VectorUtils {
         );
 
         //conjugate
-        Quaternion conjRotationQuaternion = new Quaternion();
-        Quaternion.negate(rotationQuaternion, conjRotationQuaternion);
+        Quaternionf conjRotationQuaternion = new Quaternionf();
+        rotationQuaternion.conjugate(conjRotationQuaternion);
 
         //turn vector into quaternion
-        Quaternion vecQuaternion = new Quaternion((float) vec3d.x, (float) vec3d.y, (float) vec3d.z, 0);
+        Quaternionf vecQuaternion = new Quaternionf((float) vec3d.x, (float) vec3d.y, (float) vec3d.z, 0);
 
         //now multiply
-        Quaternion toReturn = new Quaternion();
-        Quaternion.mul(rotationQuaternion, vecQuaternion, toReturn);
-        Quaternion.mul(toReturn, conjRotationQuaternion, toReturn);
+        Quaternionf toReturn = new Quaternionf();
+        rotationQuaternion.mul(vecQuaternion, toReturn);
+        toReturn.mul(conjRotationQuaternion, toReturn);
 
         return new Vec3d(toReturn.x, toReturn.y, toReturn.z);
     }

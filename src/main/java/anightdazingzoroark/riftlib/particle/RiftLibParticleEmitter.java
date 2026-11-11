@@ -29,7 +29,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
-import org.lwjglx.util.vector.Quaternion;
+import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,7 +69,7 @@ public class RiftLibParticleEmitter implements MolangObject {
     @NotNull
     private List<MolangExpression> repeatingOperations = List.of();
     @NotNull
-    private Quaternion rotationQuaternion = new Quaternion();
+    private Quaternionf rotationQuaternion = new Quaternionf();
     @Nullable
     private RiftLibEmitterShapeComponent emitterShape;
     @Nullable

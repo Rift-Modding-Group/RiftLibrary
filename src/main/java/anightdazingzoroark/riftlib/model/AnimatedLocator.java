@@ -13,7 +13,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.jetbrains.annotations.NotNull;
-import org.lwjglx.util.vector.Quaternion;
+import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +29,7 @@ public class AnimatedLocator {
     @NotNull
     private Vec3d worldSpacePos = new Vec3d(0, 0, 0);
     @NotNull
-    private Quaternion worldSpaceYXZQuaternion = new Quaternion();
+    private Quaternionf worldSpaceYXZQuaternion = new Quaternionf();
     private boolean isUpdated = true;
 
     public AnimatedLocator(GeoLocator geoLocator, AbstractAnimationData<?, ?> animationData) {
@@ -73,8 +73,8 @@ public class AnimatedLocator {
     }
 
     @NotNull
-    public Quaternion getModelSpaceYXZQuaternion() {
-        Quaternion toReturn = new Quaternion(0, 0, 0, 1);
+    public Quaternionf getModelSpaceYXZQuaternion() {
+        Quaternionf toReturn = new Quaternionf(0, 0, 0, 1);
 
         //setup for getting from ancestor -> from child
         ArrayList<GeoBone> chain = new ArrayList<>();
@@ -83,34 +83,30 @@ public class AnimatedLocator {
         //multiply rotation quaternions in each chain
         for (int i = chain.size() - 1; i >= 0; i--) {
             GeoBone boneToTest = chain.get(i);
-            Quaternion quatBone = QuaternionUtils.createYXZQuaternion(
+            Quaternionf quatBone = QuaternionUtils.createYXZQuaternion(
                     boneToTest.getRotation().x,
                     boneToTest.getRotation().y,
                     boneToTest.getRotation().z
             );
 
-            Quaternion.normalise(quatBone, quatBone);
+            quatBone.normalize();
 
-            Quaternion tmp = new Quaternion();
-            Quaternion.mul(toReturn, quatBone, tmp);
-            toReturn.set(tmp);
+            toReturn.mul(quatBone);
         }
 
         //now apply the locator's rotation
-        Quaternion quatLocator = QuaternionUtils.createYXZQuaternion(
+        Quaternionf quatLocator = QuaternionUtils.createYXZQuaternion(
                 this.locator.getRotation().x,
                 this.locator.getRotation().y,
                 this.locator.getRotation().z
         );
 
-        Quaternion.normalise(quatLocator, quatLocator);
+        quatLocator.normalize();
 
-        Quaternion tmp = new Quaternion();
-        Quaternion.mul(toReturn, quatLocator, tmp);
-        toReturn.set(tmp);
+        toReturn.mul(quatLocator);
 
         //normalize and return
-        Quaternion.normalise(toReturn, toReturn);
+        toReturn.normalize();
 
         return toReturn;
     }
@@ -132,7 +128,7 @@ public class AnimatedLocator {
     }
 
     @SideOnly(Side.CLIENT)
-    public void setWorldSpaceYXZQuaternion(@NotNull Quaternion quaternion) {
+    public void setWorldSpaceYXZQuaternion(@NotNull Quaternionf quaternion) {
         this.worldSpaceYXZQuaternion = quaternion;
     }
 
@@ -143,7 +139,7 @@ public class AnimatedLocator {
      * */
     @SideOnly(Side.CLIENT)
     @NotNull
-    public Quaternion getWorldSpaceYXZQuaternion() {
+    public Quaternionf getWorldSpaceYXZQuaternion() {
         return this.worldSpaceYXZQuaternion;
     }
     //-----world space stuff ends here-----
@@ -178,22 +174,22 @@ public class AnimatedLocator {
             Vec3d vecDirection = vecPos.subtract(vecPivot);
 
             //create quaternion from current rotations, conjugate it too
-            Quaternion quatBoneRot = QuaternionUtils.createXYZQuaternion(
+            Quaternionf quatBoneRot = QuaternionUtils.createXYZQuaternion(
                     boneToTest.getRotation().x,
                     boneToTest.getRotation().y,
                     boneToTest.getRotation().z
             );
-            Quaternion.normalise(quatBoneRot, quatBoneRot);
+            quatBoneRot.normalize();
 
-            Quaternion quatBoneRotConj = new Quaternion();
-            Quaternion.negate(quatBoneRot, quatBoneRotConj);
+            Quaternionf quatBoneRotConj = new Quaternionf();
+            quatBoneRot.conjugate(quatBoneRotConj);
 
             //rotate vecDirection
-            Quaternion quatVecDirection = VectorUtils.convertToQuaternion(vecDirection);
-            Quaternion temp = new Quaternion();
-            Quaternion quatRotatedVecDirection = new Quaternion();
-            Quaternion.mul(quatBoneRot, quatVecDirection, temp);
-            Quaternion.mul(temp, quatBoneRotConj, quatRotatedVecDirection);
+            Quaternionf quatVecDirection = VectorUtils.convertToQuaternion(vecDirection);
+            Quaternionf temp = new Quaternionf();
+            Quaternionf quatRotatedVecDirection = new Quaternionf();
+            quatBoneRot.mul(quatVecDirection, temp);
+            temp.mul(quatBoneRotConj, quatRotatedVecDirection);
             Vec3d rotatedVecDirection = VectorUtils.convertQuaternionToVec(quatRotatedVecDirection);
 
             //update vecPos

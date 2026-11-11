@@ -5,10 +5,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjglx.BufferUtils;
-import org.lwjglx.opengl.GL11;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
 import anightdazingzoroark.riftlib.molang.utils.Interpolations;
-import org.lwjglx.util.vector.Quaternion;
+import org.joml.Quaternionf;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import javax.vecmath.*;
@@ -50,7 +51,7 @@ public class MatrixUtils {
     public static Matrix4f readModelView(Matrix4f matrix4f)
     {
         buffer.clear();
-        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, buffer);
+        GL11.glGetFloatv(GL11.GL_MODELVIEW_MATRIX, buffer);
         buffer.get(floats);
 
         matrix4f.set(floats);
@@ -67,7 +68,7 @@ public class MatrixUtils {
     private static void readCamera()
     {
         doubleBuffer.clear();
-        GL11.glGetDouble(GL11.GL_MODELVIEW_MATRIX, doubleBuffer);
+        GL11.glGetDoublev(GL11.GL_MODELVIEW_MATRIX, doubleBuffer);
         doubleBuffer.get(doubles);
         camera.set(doubles);
         camera.transpose();
@@ -81,7 +82,7 @@ public class MatrixUtils {
     public static Matrix4d readModelViewDouble()
     {
         doubleBuffer.clear();
-        GL11.glGetDouble(GL11.GL_MODELVIEW_MATRIX, doubleBuffer);
+        GL11.glGetDoublev(GL11.GL_MODELVIEW_MATRIX, doubleBuffer);
         doubleBuffer.get(doubles);
 
         Matrix4d matrix4d = new Matrix4d();
@@ -102,7 +103,7 @@ public class MatrixUtils {
         buffer.clear();
         buffer.put(floats);
         buffer.rewind();
-        GL11.glLoadMatrix(buffer);
+        GL11.glLoadMatrixf(buffer);
     }
 
     /**
@@ -177,7 +178,8 @@ public class MatrixUtils {
         matrix = null;
     }
 
-    public static Quaternion matrixToQuaternion(Matrix3f matrix) {
+    @NotNull
+    public static Quaternionf matrixToQuaternion(@NotNull Matrix3f matrix) {
         float tr = matrix.m00 + matrix.m11 + matrix.m22;
         float qw = 0;
         float qx = 0;
@@ -217,21 +219,23 @@ public class MatrixUtils {
             qz = 0.25f * S;
         }
 
-        return new Quaternion(qx, qy, qz, qw);
+        return new Quaternionf(qx, qy, qz, qw);
     }
 
     /**
      * get rotations from a transformation matrix and turn them into a quaternion
      * quaternions are love, quaternions are life
      * */
-    public static Quaternion extractRotationQuaternion(Matrix4f transformation) {
+    @NotNull
+    public static Quaternionf extractRotationQuaternion(@NotNull Matrix4f transformation) {
         Matrix3f rotation = extractTransformations(null, transformation, MatrixMajor.COLUMN).getRotation3f();
-        Quaternion quaternion = matrixToQuaternion(rotation);
-        Quaternion.normalise(quaternion, quaternion);
+        Quaternionf quaternion = matrixToQuaternion(rotation);
+        quaternion.normalize();
         return quaternion;
     }
 
-    public static Matrix3f quaternionToMatrix(Quaternion quaternion) {
+    @NotNull
+    public static Matrix3f quaternionToMatrix(@NotNull Quaternionf quaternion) {
         float xx = quaternion.x * quaternion.x;
         float yy = quaternion.y * quaternion.y;
         float zz = quaternion.z * quaternion.z;

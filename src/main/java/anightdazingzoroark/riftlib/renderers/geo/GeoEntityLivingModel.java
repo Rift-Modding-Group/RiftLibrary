@@ -7,8 +7,8 @@ import net.minecraft.client.model.ModelBase;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import org.jetbrains.annotations.NotNull;
-import org.lwjglx.BufferUtils;
-import org.lwjglx.opengl.GL11;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
 
 import java.nio.FloatBuffer;
 
@@ -39,7 +39,7 @@ public class GeoEntityLivingModel<A extends EntityLivingBase & IAnimatable<? ext
         A animatable = (A) entity;
         GeoModel model = this.renderer.modelProvider.getModel(animatable);
         this.colorBuffer.clear();
-        GL11.glGetFloat(GL11.GL_CURRENT_COLOR, this.colorBuffer);
+        GL11.glGetFloatv(GL11.GL_CURRENT_COLOR, this.colorBuffer);
         this.renderer.renderModel(
                 model,
                 this.colorBuffer.get(0),

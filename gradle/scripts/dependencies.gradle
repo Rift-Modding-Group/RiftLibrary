@@ -20,6 +20,7 @@ repositories {
 }
 
 dependencies {
+    api 'org.joml:joml:1.10.9'
     compileOnly "com.cleanroommc:sponge-mixin:0.20.12+mixin.0.8.7"
     if (propertyBool('enable_lwjglx')) {
         compileOnly "com.cleanroommc:lwjglx:1.0.0"

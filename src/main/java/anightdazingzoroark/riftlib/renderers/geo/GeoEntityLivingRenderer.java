@@ -1,5 +1,6 @@
 package anightdazingzoroark.riftlib.renderers.geo;
 
+import java.nio.FloatBuffer;
 import java.util.List;
 
 import anightdazingzoroark.riftlib.core.IAnimatable;
@@ -37,6 +38,9 @@ import anightdazingzoroark.riftlib.model.AnimatedGeoModel;
 import anightdazingzoroark.riftlib.model.provider.GeoModelProvider;
 import anightdazingzoroark.riftlib.util.AnimationUtils;
 import org.jetbrains.annotations.NotNull;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL14;
 
 @SuppressWarnings({"unchecked"})
 public abstract class GeoEntityLivingRenderer<A extends EntityLivingBase & IAnimatable<? extends AnimationDataEntityLiving>> extends RenderLivingBase<A> implements IGeoRenderer<A>, IGeoEntityItemRenderer<A> {
@@ -52,6 +56,8 @@ public abstract class GeoEntityLivingRenderer<A extends EntityLivingBase & IAnim
 	protected final AnimatedGeoModel<A> modelProvider;
 	protected final List<GeoEntityLivingLayerRenderer<A>> layerRenderers = Lists.newArrayList();
 	private float locatorPartialTicks;
+	@NotNull
+	private FloatBuffer layerColorBuffer = BufferUtils.createFloatBuffer(4);
 
 	public GeoEntityLivingRenderer(@NotNull RenderManager renderManager, @NotNull AnimatedGeoModel<A> modelProvider) {
 		super(renderManager, new ModelBase() {}, 0f);
@@ -129,10 +135,31 @@ public abstract class GeoEntityLivingRenderer<A extends EntityLivingBase & IAnim
 		float netHeadYaw = entity.getAnimationData().getHeadYaw(partialTicks);
 		float headPitch = entity.getAnimationData().getHeadPitch(partialTicks);
 		for (LayerRenderer<A> layerRenderer : super.layerRenderers) {
+			boolean depthMask = GL11.glGetBoolean(GL11.GL_DEPTH_WRITEMASK);
+			boolean blend = GL11.glIsEnabled(GL11.GL_BLEND);
+			int blendSourceRgb = GL11.glGetInteger(GL14.GL_BLEND_SRC_RGB);
+			int blendDestinationRgb = GL11.glGetInteger(GL14.GL_BLEND_DST_RGB);
+			int blendSourceAlpha = GL11.glGetInteger(GL14.GL_BLEND_SRC_ALPHA);
+			int blendDestinationAlpha = GL11.glGetInteger(GL14.GL_BLEND_DST_ALPHA);
+			this.layerColorBuffer.clear();
+			GL11.glGetFloatv(GL11.GL_CURRENT_COLOR, this.layerColorBuffer);
+			float red = this.layerColorBuffer.get(0);
+			float green = this.layerColorBuffer.get(1);
+			float blue = this.layerColorBuffer.get(2);
+			float alpha = this.layerColorBuffer.get(3);
+
 			layerRenderer.doRenderLayer(
 					entity, limbSwing, limbSwingAmount, partialTicks,
 					ageInTicks, netHeadYaw, headPitch, 1f / 16f
 			);
+
+			GlStateManager.depthMask(depthMask);
+			GL14.glBlendFuncSeparate(blendSourceRgb, blendDestinationRgb, blendSourceAlpha, blendDestinationAlpha);
+			GlStateManager.tryBlendFuncSeparate(blendSourceRgb, blendDestinationRgb, blendSourceAlpha, blendDestinationAlpha);
+			if (blend) GlStateManager.enableBlend();
+			else GlStateManager.disableBlend();
+			GlStateManager.resetColor();
+			GlStateManager.color(red, green, blue, alpha);
 		}
 
 		if (entity instanceof EntityLiving entityLiving) {

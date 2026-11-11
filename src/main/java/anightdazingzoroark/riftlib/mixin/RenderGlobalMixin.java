@@ -14,7 +14,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * */
 @Mixin(RenderGlobal.class)
 public abstract class RenderGlobalMixin {
-    @Inject(method = "renderEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher;preDrawBatch()V", remap = false))
+    @Inject(
+            method = "renderEntities",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderHelper;enableStandardItemLighting()V", ordinal = 1, shift = At.Shift.AFTER),
+            order = 900,
+            require = 1,
+            allow = 1
+    )
     private void riftlib$renderAnimatedBlocks(Entity cameraEntity, ICamera camera, float partialTicks, CallbackInfo callback) {
         GeoBlockRendererTicker.INSTANCE.render(cameraEntity, camera, partialTicks);
     }

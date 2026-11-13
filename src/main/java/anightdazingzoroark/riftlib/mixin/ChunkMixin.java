@@ -1,32 +1,36 @@
 package anightdazingzoroark.riftlib.mixin;
 
 import anightdazingzoroark.riftlib.block.AnimatedBlockRegistry;
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * updates animated block indexes after individual changes and decoded chunk sections.
  * */
 @Mixin(Chunk.class)
 public abstract class ChunkMixin {
-    @Inject(method = "setBlockState", at = @At("RETURN"))
-    private void riftlib$updateAnimatedBlock(BlockPos pos, IBlockState state, CallbackInfoReturnable<IBlockState> callback) {
-        if (callback.getReturnValue() == null) return;
+    @Nullable
+    @WrapMethod(method = "setBlockState")
+    private IBlockState riftlib$updateAnimatedBlock(BlockPos pos, IBlockState state, Operation<IBlockState> original) {
+        // Wrap the entire call so cancellable replacement implementations also update the index.
+        IBlockState previous = original.call(pos, state);
+        if (previous == null) return null;
         Chunk chunk = (Chunk) (Object) this;
-        if (!chunk.getWorld().isRemote || !chunk.isLoaded()) return;
-        if (!AnimatedBlockRegistry.INSTANCE.isRegistered(state.getBlock()) && !AnimatedBlockRegistry.INSTANCE.isRegistered(callback.getReturnValue().getBlock())) return;
+        if (!chunk.getWorld().isRemote || !chunk.isLoaded()) return previous;
+        if (!AnimatedBlockRegistry.INSTANCE.isRegistered(state.getBlock()) && !AnimatedBlockRegistry.INSTANCE.isRegistered(previous.getBlock())) return previous;
         AnimatedBlockRegistry.INSTANCE.update(chunk.getWorld(), pos, chunk.getBlockState(pos));
+        return previous;
     }
 
-    @Inject(method = "read", at = @At("RETURN"))
-    private void riftlib$readAnimatedBlocks(PacketBuffer buffer, int sections, boolean fullChunk, CallbackInfo callback) {
-        AnimatedBlockRegistry.INSTANCE.scan((Chunk) (Object) this, fullChunk ? 0xffff : sections);
+    @WrapMethod(method = "read")
+    private void riftlib$readAnimatedBlocks(PacketBuffer buffer, int sections, boolean fullChunk, Operation<Void> original) {
+        original.call(buffer, sections, fullChunk);
+        AnimatedBlockRegistry.INSTANCE.scan((Chunk) (Object) this, fullChunk ? -1 : sections);
     }
 }

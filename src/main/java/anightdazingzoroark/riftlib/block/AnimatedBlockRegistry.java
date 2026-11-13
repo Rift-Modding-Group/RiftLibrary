@@ -118,14 +118,13 @@ public class AnimatedBlockRegistry {
         Long2ObjectOpenHashMap<Long2ObjectOpenHashMap<Entry>> chunks = this.worlds.get(world);
         Long2ObjectOpenHashMap<Entry> entries = chunks == null ? null : chunks.get(ChunkPos.asLong(chunk.x, chunk.z));
         if (entries != null) {
-            // Refresh existing entries first, including sections which have become empty.
             for (Entry entry : entries.values().toArray(new Entry[0])) {
-                if ((sectionMask & 1 << (entry.pos.getY() >> 4)) != 0) this.update(world, entry.pos, chunk.getBlockState(entry.pos));
+                this.update(world, entry.pos, chunk.getBlockState(entry.pos));
             }
         }
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         ExtendedBlockStorage[] sections = chunk.getBlockStorageArray();
-        for (int sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
+        for (int sectionIndex = 0; sectionIndex < Math.min(sections.length, Integer.SIZE); sectionIndex++) {
             ExtendedBlockStorage section = sections[sectionIndex];
             if ((sectionMask & 1 << sectionIndex) == 0 || section == null || section.isEmpty()) continue;
             for (int y = 0; y < 16; y++) {
@@ -133,7 +132,7 @@ public class AnimatedBlockRegistry {
                     for (int x = 0; x < 16; x++) {
                         IBlockState state = section.get(x, y, z);
                         if (!this.isRegistered(state.getBlock())) continue;
-                        pos.setPos((chunk.x << 4) + x, (sectionIndex << 4) + y, (chunk.z << 4) + z);
+                        pos.setPos((chunk.x << 4) + x, section.getYLocation() + y, (chunk.z << 4) + z);
                         this.update(world, pos, state);
                     }
                 }

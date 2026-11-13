@@ -8,6 +8,8 @@ import anightdazingzoroark.riftlib.molang.MolangObject;
 import anightdazingzoroark.riftlib.molang.MolangParser;
 import anightdazingzoroark.riftlib.molang.MolangScope;
 import anightdazingzoroark.riftlib.molang.expressions.MolangExpression;
+import anightdazingzoroark.riftlib.molang.math.IValue;
+import anightdazingzoroark.riftlib.molang.math.StringValue;
 import anightdazingzoroark.riftlib.particle.emitterComponent.RiftLibEmitterComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterLifetime.RiftLibEmitterLifetimeComponent;
 import anightdazingzoroark.riftlib.particle.emitterComponent.emitterRate.RiftLibEmitterRateComponent;
@@ -84,6 +86,8 @@ public class RiftLibParticleEmitter implements MolangObject {
     private double posZ;
     private boolean hasExpired;
     private boolean localSpacePosition;
+    @NotNull
+    private Vec3d renderOffset = Vec3d.ZERO;
     private int particleId;
     private int stateParticleControllerId = -1;
     private int stateParticleIndex = -1;
@@ -133,7 +137,7 @@ public class RiftLibParticleEmitter implements MolangObject {
             throw new IllegalArgumentException("Emitter variables must be supplied as name-expression pairs");
         }
 
-        List<ImmutablePair<String, MolangExpression>> parsedVariables = new ArrayList<>(variables.length / 2);
+        List<ImmutablePair<String, IValue>> parsedVariables = new ArrayList<>(variables.length / 2);
         for (int index = 0; index < variables.length; index += 2) {
             String variableName = Objects.requireNonNull(variables[index], "Emitter variable name cannot be null");
             String variableExpression = Objects.requireNonNull(variables[index + 1], "Emitter variable expression cannot be null");
@@ -141,7 +145,7 @@ public class RiftLibParticleEmitter implements MolangObject {
                 parsedVariables.add(new ImmutablePair<>(variableName, this.molangParser.parseExpression(variableExpression)));
             }
             catch (MolangException exception) {
-                throw new IllegalArgumentException("Could not parse expression for emitter variable '" + variableName + "'", exception);
+                parsedVariables.add(new ImmutablePair<>(variableName, new StringValue(variableExpression)));
             }
         }
 
@@ -154,8 +158,8 @@ public class RiftLibParticleEmitter implements MolangObject {
             this.molangParser.setVariable("variable.emitter_random_3", this.random.nextDouble());
             this.molangParser.setVariable("variable.emitter_random_4", this.random.nextDouble());
 
-            for (ImmutablePair<String, MolangExpression> variable : parsedVariables) {
-                this.molangParser.setVariable(variable.getKey(), variable.getValue().get());
+            for (ImmutablePair<String, IValue> variable : parsedVariables) {
+                this.molangParser.getVariable(variable.getKey()).setValue(variable.getValue().getValue());
             }
 
             for (MolangExpression expression : this.initialOperations) expression.get();
@@ -273,17 +277,30 @@ public class RiftLibParticleEmitter implements MolangObject {
         this.material.beginDraw();
         Tessellator tess = Tessellator.getInstance();
         BufferBuilder buffer = tess.getBuffer();
+        if (!this.hasExpired) {
+            this.renderOffset = Vec3d.ZERO;
+            if (this.localSpacePosition && this.locator != null && this.locator.isValid()) {
+                // Locators have the current rendered pose, which may be newer than the last tick.
+                this.renderOffset = this.locator.getWorldSpacePosition().subtract(this.posX, this.posY, this.posZ);
+            }
+        }
+        buffer.setTranslation(this.renderOffset.x, this.renderOffset.y, this.renderOffset.z);
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_LMAP_COLOR);
 
         for (RiftLibParticle particle : this.particles) {
             particle.renderParticle(buffer, camera, partialTicks);
         }
 
+        buffer.setTranslation(0D, 0D, 0D);
         tess.draw();
         this.material.endDraw();
     }
 
     public void killEmitter() {
+        if (!this.hasExpired && this.localSpacePosition && this.locator != null && this.locator.isValid()) {
+            // Released particles finish at the last attached position instead of following the tail.
+            this.renderOffset = this.locator.getWorldSpacePosition().subtract(this.posX, this.posY, this.posZ);
+        }
         this.hasExpired = true;
     }
 

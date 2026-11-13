@@ -201,13 +201,13 @@ public class RiftLibParticle implements MolangObject {
                 this.velRotation *= factor;
             }
 
-            this.prevX = this.x;
-            this.prevY = this.y;
-            this.prevZ = this.z;
+            this.prevX = this.x + emitterMovement.x;
+            this.prevY = this.y + emitterMovement.y;
+            this.prevZ = this.z + emitterMovement.z;
 
-            double nextX = this.x + this.velX + emitterMovement.x;
-            double nextY = this.y + this.velY + emitterMovement.y;
-            double nextZ = this.z + this.velZ + emitterMovement.z;
+            double nextX = this.prevX + this.velX;
+            double nextY = this.prevY + this.velY;
+            double nextZ = this.prevZ + this.velZ;
 
             boolean collided = false;
             if (this.collisionEnabled.get() != 0D && this.collisionRadius != null && this.collisionRadius > 0F) {

@@ -12,12 +12,15 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
+import java.util.function.Function;
+
 /**
  * Common entity animation data, including projectile queries and locators.
  * */
 public abstract class AbstractAnimationDataEntity<T extends Entity, D extends AbstractAnimationDataEntity<T, D>> extends AbstractAnimationData<T, D> {
     @NonNull
     private final MovementDistanceTracker movementDistance = new MovementDistanceTracker();
+    private Function<T, Float> holderScale;
 
     public AbstractAnimationDataEntity(@NonNull T holder, @NotNull IAnimatable<D> animatable) {
         super(holder, animatable);
@@ -43,6 +46,21 @@ public abstract class AbstractAnimationDataEntity<T extends Entity, D extends Ab
 
     public double getVerticalSpeed() {
         return MiscUtils.getEntityVerticalSpeed(this.getHolder());
+    }
+
+    public void setScale(float value) {
+        this.setScale(entity -> value);
+    }
+
+    public void setScale(@NotNull Function<T, Float> holderScale) {
+        this.holderScale = holderScale;
+    }
+
+    /**
+     * The basis of model scaling of the entity.
+     * */
+    public float getScale() {
+        return this.holderScale == null ? 1f : this.holderScale.apply(this.getHolder());
     }
 
     @Override

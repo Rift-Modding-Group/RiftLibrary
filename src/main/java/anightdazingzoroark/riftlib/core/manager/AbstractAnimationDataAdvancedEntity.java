@@ -35,7 +35,6 @@ public abstract class AbstractAnimationDataAdvancedEntity<T extends Entity, D ex
         extends AbstractAnimationDataEntity<T, D> {
     @NotNull
     private final GroundWalkDistanceTracker groundWalkDistanceTracker = new GroundWalkDistanceTracker();
-    private Function<T, Float> holderScale;
     private final Map<String, AnimatedBoundingBox> animatedBoundingBoxes = new HashMap<>();
     private final Map<String, List<AnimatedBoundingBox>> animatedBoundingBoxesByTag = new HashMap<>();
     private final Map<String, AxisAlignedBB> debugBoundingBoxes = new HashMap<>();
@@ -106,21 +105,6 @@ public abstract class AbstractAnimationDataAdvancedEntity<T extends Entity, D ex
 
     public float getModelYaw(float partialTicks) {
         return Interpolations.lerpYaw(this.getHolder().prevRotationYaw, this.getHolder().rotationYaw, partialTicks);
-    }
-
-    public void setScale(float value) {
-        this.setScale(entity -> value);
-    }
-
-    public void setScale(@NotNull Function<T, Float> holderScale) {
-        this.holderScale = holderScale;
-    }
-
-    /**
-     * The basis of model scaling of the entity.
-     * */
-    public float getScale() {
-        return this.holderScale == null ? 1f : this.holderScale.apply(this.getHolder());
     }
 
     @Override

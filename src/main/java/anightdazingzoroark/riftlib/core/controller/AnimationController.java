@@ -188,6 +188,22 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
         return this.name;
     }
 
+    /**
+     * Playback multiplier for this controller. Zero pauses its animations.
+     * Server-model animation data synchronizes this value to tracking clients.
+     */
+    public double getAnimationSpeed() {
+        return this.animationSpeed;
+    }
+
+    public void setAnimationSpeed(double speed) {
+        if (speed >= 0D && speed <= Double.MAX_VALUE) {
+            this.animationSpeed = speed;
+            return;
+        }
+        throw new IllegalArgumentException("Animation speed must be a finite, non-negative multiplier");
+    }
+
     public int getStateParticleControllerId() {
         return this.stateParticleControllerId;
     }
@@ -568,6 +584,9 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
         private boolean justStartedTransition;
         private boolean needsAnimationReload;
         private double tickOffset;
+        private double adjustedTick;
+        private double previousExpressionTick;
+        private double adjustedExpressionTick;
         private double lastResolvedAnimTick;
         private double lastFrameTick = -1D;
         private double transitionLengthTicks;
@@ -663,6 +682,9 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             this.lastResolvedAnimTick = 0D;
             this.lastFrameTick = -1D;
             this.tickOffset = 0D;
+            this.adjustedTick = 0D;
+            this.previousExpressionTick = 0D;
+            this.adjustedExpressionTick = 0D;
             this.boneSnapshots.clear();
             this.shouldResetTick = true;
             this.animationState = AnimationState.Transitioning;
@@ -1033,20 +1055,22 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
 
         private double adjustTick(double tick) {
             if (this.shouldResetTick) {
+                this.tickOffset = tick;
+                this.adjustedTick = 0D;
+                this.shouldResetTick = false;
                 if (this.animatable.getAnimationData().isServerSynced()
                         && this.currentAnimation != null
                         && this.currentAnimation.loop == LoopType.LOOP
                 ) {
-                    this.tickOffset = 0D;
-                    this.shouldResetTick = false;
-                    return this.animationSpeed * Math.max(tick, 0.0D);
+                    this.adjustedTick = this.animationSpeed * Math.max(tick, 0D);
                 }
-
-                this.tickOffset = tick;
-                this.shouldResetTick = false;
-                return 0;
             }
-            else return this.animationSpeed * Math.max(tick - this.tickOffset, 0.0D);
+            else {
+                //A speed change affects only new time, preserving the current pose and event cursor.
+                this.adjustedTick += this.animationSpeed * Math.max(tick - this.tickOffset, 0D);
+                this.tickOffset = Math.max(this.tickOffset, tick);
+            }
+            return this.adjustedTick;
         }
 
         private double resolveAnimTick(double fallbackTick) {
@@ -1055,7 +1079,10 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             double resolved = fallbackTick;
 
             if (this.hasAnimTimeExpression()) {
-                resolved = MolangUtils.parseValueAndGet(this.animatable.getAnimationData(), this.currentAnimation.animTimeUpdateExpression) * this.animationSpeed * 20D;
+                double expressionTick = MolangUtils.parseValueAndGet(this.animatable.getAnimationData(), this.currentAnimation.animTimeUpdateExpression) * 20D;
+                this.adjustedExpressionTick += (expressionTick - this.previousExpressionTick) * this.animationSpeed;
+                this.previousExpressionTick = expressionTick;
+                resolved = this.adjustedExpressionTick;
             }
 
             if (this.currentAnimation.loop == LoopType.LOOP) {
@@ -1087,6 +1114,9 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
             this.lastResolvedAnimTick = 0D;
             this.lastFrameTick = -1D;
             this.tickOffset = 0D;
+            this.adjustedTick = 0D;
+            this.previousExpressionTick = 0D;
+            this.adjustedExpressionTick = 0D;
             this.shouldResetTick = false;
             this.justStopped = false;
             this.justStartedTransition = false;

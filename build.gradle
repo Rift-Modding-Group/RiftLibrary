@@ -229,6 +229,10 @@ compileTestJava {
 
 test {
     useJUnitPlatform()
+    workingDir = layout.buildDirectory.dir('test-run').get().asFile
+    doFirst {
+        workingDir.mkdirs()
+    }
     javaLauncher.set(javaToolchains.launcherFor {
         languageVersion = JavaLanguageVersion.of(25)
     })

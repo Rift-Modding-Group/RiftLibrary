@@ -76,14 +76,17 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
     public double deltaTime;
     public double lifeTime;
 
-    @SuppressWarnings("unchecked")
     public AbstractAnimationData(@NotNull T holder, @NotNull IAnimatable<D> animatable) {
+        this(holder, animatable, FMLCommonHandler.instance().getSide().isClient()
+                ? RiftLibCacheClient.getInstance().parser : RiftLibCacheServer.getInstance().parser);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected AbstractAnimationData(@NotNull T holder, @NotNull IAnimatable<D> animatable, @NotNull MolangParser parser) {
         this.holder = holder;
         this.animatable = animatable;
         this.dataScope = new MolangScope(null, animatable);
-        //looks unintuitive i know, but its to prevent NPEs from armor data
-        this.parser = FMLCommonHandler.instance().getSide().isClient() ?
-                RiftLibCacheClient.getInstance().parser : RiftLibCacheServer.getInstance().parser;
+        this.parser = parser;
         this.createMolangQueries();
         animatable.initializeAnimationData((D) this);
         this.initAnimationVariables();
@@ -385,6 +388,12 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
         }
         toReturn.setTag("MolangVariables", molangVariablesNBT);
 
+        NBTTagCompound controllerSpeeds = new NBTTagCompound();
+        for (Map.Entry<String, AnimationController<?, ? extends D>> entry : this.animationControllers.entrySet()) {
+            controllerSpeeds.setDouble(entry.getKey(), entry.getValue().getAnimationSpeed());
+        }
+        toReturn.setTag("AnimationControllerSpeeds", controllerSpeeds);
+
         return toReturn;
     }
 
@@ -402,6 +411,13 @@ public abstract class AbstractAnimationData<T, D extends AbstractAnimationData<T
             values.put(key, variablesTag.getDouble(key));
         }
         this.dataScope.replaceValues(values);
+
+        NBTTagCompound controllerSpeeds = nbtTagCompound.getCompoundTag("AnimationControllerSpeeds");
+        for (Map.Entry<String, AnimationController<?, ? extends D>> entry : this.animationControllers.entrySet()) {
+            if (controllerSpeeds.hasKey(entry.getKey(), 99)) {
+                entry.getValue().setAnimationSpeed(controllerSpeeds.getDouble(entry.getKey()));
+            }
+        }
     }
 
     //-----molang query related stuff starts here-----

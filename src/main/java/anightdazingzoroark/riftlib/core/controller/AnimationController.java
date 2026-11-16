@@ -794,13 +794,19 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                                 AnimationPoint zPoint = rotationKeyFrames.getAnimationPointAtTick(data, transitionResolvedTick, Axis.Z);
 
                                 boneAnimationQueue.rotationXQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
-                                        fadingRotationBones.contains(boneAnimation.boneName) ? 0D : boneSnapshot.getRotation().x - initialSnapshot.getRotation().x,
+                                        MathUtil.getNearestEquivalentAngle(
+                                                fadingRotationBones.contains(boneAnimation.boneName) ? 0D : boneSnapshot.getRotation().x - initialSnapshot.getRotation().x,
+                                                xPoint.animationStartValue),
                                         xPoint.animationStartValue));
                                 boneAnimationQueue.rotationYQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
-                                        fadingRotationBones.contains(boneAnimation.boneName) ? 0D : boneSnapshot.getRotation().y - initialSnapshot.getRotation().y,
+                                        MathUtil.getNearestEquivalentAngle(
+                                                fadingRotationBones.contains(boneAnimation.boneName) ? 0D : boneSnapshot.getRotation().y - initialSnapshot.getRotation().y,
+                                                yPoint.animationStartValue),
                                         yPoint.animationStartValue));
                                 boneAnimationQueue.rotationZQueue.add(new AnimationPoint(null, tick, this.transitionLengthTicks,
-                                        fadingRotationBones.contains(boneAnimation.boneName) ? 0D : boneSnapshot.getRotation().z - initialSnapshot.getRotation().z,
+                                        MathUtil.getNearestEquivalentAngle(
+                                                fadingRotationBones.contains(boneAnimation.boneName) ? 0D : boneSnapshot.getRotation().z - initialSnapshot.getRotation().z,
+                                                zPoint.animationStartValue),
                                         zPoint.animationStartValue));
                             }
 
@@ -868,11 +874,11 @@ public class AnimationController<A extends IAnimatable<D>, D extends AbstractAni
                     BoneSnapshot initialSnapshot = first.get().getInitialSnapshot();
 
                     boneAnimationQueue.rotationXQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
-                            boneSnapshot.getRotation().x - initialSnapshot.getRotation().x, 0));
+                            MathUtil.getNearestEquivalentAngle(boneSnapshot.getRotation().x - initialSnapshot.getRotation().x, 0D), 0D));
                     boneAnimationQueue.rotationYQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
-                            boneSnapshot.getRotation().y - initialSnapshot.getRotation().y, 0));
+                            MathUtil.getNearestEquivalentAngle(boneSnapshot.getRotation().y - initialSnapshot.getRotation().y, 0D), 0D));
                     boneAnimationQueue.rotationZQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
-                            boneSnapshot.getRotation().z - initialSnapshot.getRotation().z, 0));
+                            MathUtil.getNearestEquivalentAngle(boneSnapshot.getRotation().z - initialSnapshot.getRotation().z, 0D), 0D));
 
                     boneAnimationQueue.positionXQueue.add(new AnimationPoint(null, transitionTick, this.transitionLengthTicks,
                             boneSnapshot.getPosition().x, 0));

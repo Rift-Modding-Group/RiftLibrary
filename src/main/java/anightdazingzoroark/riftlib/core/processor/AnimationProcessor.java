@@ -184,9 +184,21 @@ public class AnimationProcessor {
 
 				dBoneAnimationValues.addRotations(
 						model.getName(),
-						MathUtil.lerpValues(percentageReset, saveSnapshot.getRotation().x, initialSnapshot.getRotation().x),
-						MathUtil.lerpValues(percentageReset, saveSnapshot.getRotation().y, initialSnapshot.getRotation().y),
-						MathUtil.lerpValues(percentageReset, saveSnapshot.getRotation().z, initialSnapshot.getRotation().z)
+						MathUtil.lerpValues(
+								percentageReset,
+								MathUtil.getNearestEquivalentAngle(saveSnapshot.getRotation().x, initialSnapshot.getRotation().x),
+                                initialSnapshot.getRotation().x
+						),
+						MathUtil.lerpValues(
+								percentageReset,
+                                MathUtil.getNearestEquivalentAngle(saveSnapshot.getRotation().y, initialSnapshot.getRotation().y),
+                                initialSnapshot.getRotation().y
+						),
+						MathUtil.lerpValues(
+								percentageReset,
+                                MathUtil.getNearestEquivalentAngle(saveSnapshot.getRotation().z, initialSnapshot.getRotation().z),
+                                initialSnapshot.getRotation().z
+						)
 				);
 				model.getRotation().set(
 						dBoneAnimationValues.getRotations(model.getName())[0],

@@ -48,6 +48,21 @@ public class MathUtil {
 		return (float) lerp(percentCompleted, startValue, endValue);
 	}
 
+    /**
+     * Returns an equivalent angle in radians within half a turn of the reference.
+     * Use for pose transitions, not authored keyframes which may contain full turns.
+     */
+    public static double getNearestEquivalentAngle(double angle, double reference) {
+        double difference = (angle - reference) % (2D * Math.PI);
+        if (difference > Math.PI) {
+            difference -= 2D * Math.PI;
+        }
+        else if (difference < -Math.PI) {
+            difference += 2D * Math.PI;
+        }
+        return reference + difference;
+    }
+
 	public static double lerp(double pct, double start, double end) {
 		return start + pct * (end - start);
 	}
